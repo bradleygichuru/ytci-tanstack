@@ -50,28 +50,52 @@ pnpm dlx shadcn@latest add button
 
 2. Visit the [Better Auth documentation](https://www.better-auth.com) to unlock the full potential of authentication in your app.
 
-### Adding a Database (Optional)
+## Database (local dev)
 
-Better Auth can work in stateless mode, but to persist user data, add a database:
+This project uses **PostgreSQL on bare metal** (not Docker). Postgres 18.4 is installed locally.
 
-```typescript
-// src/lib/auth.ts
-import { betterAuth } from "better-auth";
-import { Pool } from "pg";
+### Setup
 
-export const auth = betterAuth({
-  database: new Pool({
-    connectionString: process.env.DATABASE_URL,
-  }),
-  // ... rest of config
-});
-```
-
-Then run migrations:
+The `ytci` database and `ytci` role should already exist. To verify:
 
 ```bash
-pnpm dlx @better-auth/cli migrate
+psql -U postgres -c "\du ytci"
+psql -U postgres -c "\l ytci"
 ```
+
+If they don't exist:
+
+```bash
+psql -U postgres <<SQL
+CREATE ROLE ytci WITH LOGIN PASSWORD '<your-password>' CREATEDB;
+CREATE DATABASE ytci OWNER ytci;
+SQL
+```
+
+### Connection string
+
+Add to `.env.local` (already present if following the scaffold):
+
+```
+DATABASE_URL=postgres://ytci:<password>@localhost:5432/ytci
+```
+
+The file is gitignored (`.gitignore` covers `*.local` and `.env`). A template lives at `.env.local.example` with `CHANGE_ME` placeholders.
+
+### Smoke test
+
+```bash
+bun run db:smoke
+```
+
+Connects with Drizzle, runs `SELECT 1`, creates/drops a test table. Exit code 0 = connectivity OK.
+
+### Production
+
+- **Same URL convention**, different credentials.
+- **Rotate the password** — the value in `.env.local` is for local dev only.
+- **Switch `pg_hba.conf` off `trust`** — dev uses `trust` for convenience; production must use `scram-sha-256` or equivalent.
+- **Scoped roles** — the `ytci` role is shared for convenience in dev; production should have separate roles for TanStack Start (write to auth tables) and Go backend (read-only role for auth tables; read/write to business tables).
 
 
 
