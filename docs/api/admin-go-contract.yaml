@@ -1,0 +1,1269 @@
+openapi: "3.1.0"
+info:
+  title: YTCI Explorer Admin — Go API Contract
+  version: "1.0.0"
+  description: |
+    API contract produced by ticket #8 — Admin ↔ Go API contract.
+    The Go backend implements to this spec; the TanStack admin dashboard
+    consumes it via a typed mock layer until Go lands.
+    Spec source: docs/spec/ytci-extract.md
+  contact:
+    name: YTCI Team
+
+servers:
+  - url: https://api.yourdomain.com/v1
+    description: Production (placeholder — replace before deploy)
+
+paths:
+  # ──────────────── Analytics ────────────────
+  /analytics/summary:
+    get:
+      summary: Platform-level metrics
+      security: [{ BearerAuth: [] }]
+      tags: [Analytics]
+      parameters: []
+      responses:
+        "200":
+          description: Aggregated dashboard metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsSummary"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /analytics/destinations/top:
+    get:
+      summary: Top destinations by engagement
+      security: [{ BearerAuth: [] }]
+      tags: [Analytics]
+      responses:
+        "200":
+          description: Ordered list of top destinations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TopDestination"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /analytics/stories:
+    get:
+      summary: Story moderation KPIs
+      security: [{ BearerAuth: [] }]
+      tags: [Analytics]
+      responses:
+        "200":
+          description: Story metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoryMetrics"
+  /analytics/reports/export:
+    post:
+      summary: Generate and return a CSV/PDF report
+      security: [{ BearerAuth: [] }]
+      tags: [Analytics]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                format: { type: string, enum: [csv, pdf] }
+                dateFrom: { type: string, format: date }
+                dateTo: { type: string, format: date }
+                sections:
+                  type: array
+                  items: { type: string }
+      responses:
+        "200":
+          description: Binary report file
+          content:
+            application/csv: {}
+            application/pdf: {}
+
+  # ──────────────── Destinations ────────────────
+  /destinations:
+    get:
+      summary: List destinations (paginated)
+      security: [{ BearerAuth: [] }]
+      tags: [Destinations]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated destinations
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/DestinationSummary"
+    post:
+      summary: Create a destination
+      security: [{ BearerAuth: [] }]
+      tags: [Destinations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationInput"
+      responses:
+        "201":
+          description: Created destination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDetail"
+        "422": { $ref: "#/components/responses/ValidationError" }
+  /destinations/{id}:
+    get:
+      summary: Get destination by ID
+      security: [{ BearerAuth: [] }]
+      tags: [Destinations]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Destination detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDetail"
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      summary: Partial update a destination
+      security: [{ BearerAuth: [] }]
+      tags: [Destinations]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationInput"
+      responses:
+        "200":
+          description: Updated destination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDetail"
+    delete:
+      summary: Delete (archive) a destination
+      security: [{ BearerAuth: [] }]
+      tags: [Destinations]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted — no body }
+  /destinations/bulk-import:
+    post:
+      summary: Bulk import destinations from CSV
+      security: [{ BearerAuth: [] }]
+      tags: [Destinations]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imported: { type: integer }
+                  errors: { type: array, items: { type: string } }
+
+  # ──────────────── Media ────────────────
+  /media:
+    get:
+      summary: List media assets (paginated)
+      security: [{ BearerAuth: [] }]
+      tags: [Media]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated media
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/MediaItem"
+    post:
+      summary: Upload a media asset
+      security: [{ BearerAuth: [] }]
+      tags: [Media]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+                caption: { type: string }
+                altText: { type: string }
+                credit: { type: string }
+      responses:
+        "201":
+          description: Uploaded media
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaItem"
+  /media/{id}:
+    patch:
+      summary: Update media metadata
+      security: [{ BearerAuth: [] }]
+      tags: [Media]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                caption: { type: string }
+                altText: { type: string }
+                credit: { type: string }
+      responses:
+        "200":
+          description: Updated media
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaItem"
+    delete:
+      summary: Remove media (hard delete)
+      security: [{ BearerAuth: [] }]
+      tags: [Media]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+
+  # ──────────────── Stories (UGC Moderation) ────────────────
+  /stories/moderation:
+    get:
+      summary: List stories pending moderation
+      security: [{ BearerAuth: [] }]
+      tags: [Moderation]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } }
+      responses:
+        "200":
+          description: Paginated moderation queue
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ModerationItem"
+  /stories/{id}/moderation:
+    post:
+      summary: Approve or reject a story
+      security: [{ BearerAuth: [] }]
+      tags: [Moderation]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action: { type: string, enum: [approve, reject] }
+                reason: { type: string }
+              required: [action]
+      responses:
+        "200":
+          description: Story moderation status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  status: { type: string }
+                  moderatedBy: { type: string }
+                  moderatedAt: { type: string, format: date-time }
+  /stories/{id}/report:
+    post:
+      summary: Report a story
+      security: [{ BearerAuth: [] }]
+      tags: [Moderation]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+                comment: { type: string }
+              required: [reason]
+      responses:
+        "201": { description: Report submitted }
+
+  # ──────────────── LMS (Courses) ────────────────
+  /courses:
+    get:
+      summary: List courses
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated courses
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CourseSummary"
+    post:
+      summary: Create a course
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseInput"
+      responses:
+        "201":
+          description: Created course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseDetail"
+  /courses/{id}:
+    get:
+      summary: Get course detail
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Course detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseDetail"
+    patch:
+      summary: Update course
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseInput"
+      responses:
+        "200":
+          description: Updated course
+    delete:
+      summary: Delete course
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+
+  # ──────────────── Conservation ────────────────
+  /conservation/activities:
+    get:
+      summary: List conservation activities
+      security: [{ BearerAuth: [] }]
+      tags: [Conservation]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated activities
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ConservationActivity"
+    post:
+      summary: Create a conservation activity
+      security: [{ BearerAuth: [] }]
+      tags: [Conservation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                organizer: { type: string }
+                location: { type: string }
+                description: { type: string }
+                date: { type: string, format: date }
+                impactMetric: { type: string }
+              required: [title, organizer, location, date]
+      responses:
+        "201":
+          description: Created activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConservationActivity"
+  /conservation/activities/{id}:
+    patch:
+      summary: Update activity
+      security: [{ BearerAuth: [] }]
+      tags: [Conservation]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Updated activity
+  /conservation/evidence:
+    get:
+      summary: List evidence submissions
+      security: [{ BearerAuth: [] }]
+      tags: [Conservation]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated evidence items
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id: { type: string }
+                            userId: { type: string }
+                            activityId: { type: string }
+                            description: { type: string }
+                            imageUrl: { type: string, format: uri }
+                            status: { type: string, enum: [pending, approved, rejected] }
+                            submittedAt: { type: string, format: date-time }
+  /conservation/evidence/{id}/review:
+    post:
+      summary: Review evidence submission
+      security: [{ BearerAuth: [] }]
+      tags: [Conservation]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action: { type: string, enum: [approve, reject] }
+                note: { type: string }
+              required: [action]
+      responses:
+        "200":
+          description: Evidence reviewed
+
+  # ──────────────── Events ────────────────
+  /events:
+    get:
+      summary: List events
+      security: [{ BearerAuth: [] }]
+      tags: [Events]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated events
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/EventItem"
+    post:
+      summary: Create an event
+      security: [{ BearerAuth: [] }]
+      tags: [Events]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                organizer: { type: string }
+                county: { type: string }
+                venue: { type: string }
+                date: { type: string, format: date }
+                type: { type: string, enum: [cultural, sports, conservation, tourism] }
+                description: { type: string }
+                contactEmail: { type: string, format: email }
+              required: [title, organizer, county, date, type]
+      responses:
+        "201":
+          description: Created event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventItem"
+  /events/{id}:
+    get:
+      summary: Get event detail
+      security: [{ BearerAuth: [] }]
+      tags: [Events]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Event detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventItem"
+    patch:
+      summary: Update event
+      security: [{ BearerAuth: [] }]
+      tags: [Events]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Updated event
+    delete:
+      summary: Delete event
+      security: [{ BearerAuth: [] }]
+      tags: [Events]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+  /events/{id}/status:
+    patch:
+      summary: Transition event status (scheduled / postponed / cancelled)
+      security: [{ BearerAuth: [] }]
+      tags: [Events]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [scheduled, postponed, cancelled] }
+              required: [status]
+      responses:
+        "200":
+          description: Status updated
+
+  # ──────────────── AI Config ────────────────
+  /ai/config:
+    get:
+      summary: Get AI engine configuration
+      security: [{ BearerAuth: [] }]
+      tags: [AI Config]
+      responses:
+        "200":
+          description: Current AI config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiConfig"
+    patch:
+      summary: Update AI engine configuration
+      security: [{ BearerAuth: [] }]
+      tags: [AI Config]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiConfigInput"
+      responses:
+        "200":
+          description: Updated config
+  /ai/sources:
+    get:
+      summary: List approved data sources
+      security: [{ BearerAuth: [] }]
+      tags: [AI Config]
+      responses:
+        "200":
+          description: Approved sources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiSource"
+    post:
+      summary: Add an approved source
+      security: [{ BearerAuth: [] }]
+      tags: [AI Config]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                url: { type: string, format: uri }
+                type: { type: string, enum: [database, api, document] }
+              required: [name, url, type]
+      responses:
+        "201":
+          description: Source added
+  /ai/sources/{id}:
+    delete:
+      summary: Remove an approved source
+      security: [{ BearerAuth: [] }]
+      tags: [AI Config]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+  /ai/feedback:
+    get:
+      summary: List answer feedback (for review)
+      security: [{ BearerAuth: [] }]
+      tags: [AI Config]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated feedback
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id: { type: string }
+                            query: { type: string }
+                            rating: { type: integer, minimum: 1, maximum: 5 }
+                            comment: { type: string }
+                            reviewed: { type: boolean }
+                            createdAt: { type: string, format: date-time }
+
+  # ──────────────── Campaigns ────────────────
+  /campaigns:
+    get:
+      summary: List campaigns
+      security: [{ BearerAuth: [] }]
+      tags: [Campaigns]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated campaigns
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Campaign"
+    post:
+      summary: Create a campaign
+      security: [{ BearerAuth: [] }]
+      tags: [Campaigns]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                bannerUrl: { type: string, format: uri }
+                type: { type: string, enum: [home_banner, featured_destination, push_notification, seasonal] }
+                startDate: { type: string, format: date }
+                endDate: { type: string, format: date }
+                targetUrl: { type: string }
+              required: [title, type, startDate, endDate]
+      responses:
+        "201":
+          description: Created campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+  /campaigns/{id}:
+    get:
+      summary: Get campaign detail
+      security: [{ BearerAuth: [] }]
+      tags: [Campaigns]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Campaign detail
+    patch:
+      summary: Update campaign
+      security: [{ BearerAuth: [] }]
+      tags: [Campaigns]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Updated campaign
+    delete:
+      summary: Delete campaign
+      security: [{ BearerAuth: [] }]
+      tags: [Campaigns]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+
+  # ──────────────── Users ────────────────
+  /users:
+    get:
+      summary: List users (paginated)
+      security: [{ BearerAuth: [] }]
+      tags: [Users]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated users
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/UserItem"
+    post:
+      summary: Create a new user (admin)
+      security: [{ BearerAuth: [] }]
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                name: { type: string }
+                role: { type: string, enum: [super_admin, administrator, moderator, county_officer] }
+                password: { type: string, writeOnly: true }
+              required: [email, name, password]
+      responses:
+        "201":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserItem"
+  /users/{id}:
+    get:
+      summary: Get user detail
+      security: [{ BearerAuth: [] }]
+      tags: [Users]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: User detail
+    patch:
+      summary: Update user
+      security: [{ BearerAuth: [] }]
+      tags: [Users]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                role: { type: string, enum: [super_admin, administrator, moderator, county_officer] }
+                email: { type: string, format: email }
+      responses:
+        "200":
+          description: Updated user
+    delete:
+      summary: Delete user
+      security: [{ BearerAuth: [] }]
+      tags: [Users]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204": { description: Deleted }
+  /users/{id}/suspend:
+    post:
+      summary: Suspend or unsuspend a user
+      security: [{ BearerAuth: [] }]
+      tags: [Users]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                suspend: { type: boolean }
+                reason: { type: string }
+              required: [suspend]
+      responses:
+        "200":
+          description: User suspension status updated
+  /users/{id}/role:
+    post:
+      summary: Change user role (super-admin only)
+      security: [{ BearerAuth: [] }]
+      tags: [Users]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role: { type: string, enum: [super_admin, administrator, moderator, county_officer] }
+              required: [role]
+      responses:
+        "200":
+          description: User role updated
+  /users/consent-audit:
+    get:
+      summary: List consent audit log entries
+      security: [{ BearerAuth: [] }]
+      tags: [Users]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated audit log
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id: { type: string }
+                            userId: { type: string }
+                            action: { type: string }
+                            details: { type: string }
+                            timestamp: { type: string, format: date-time }
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT issued by TanStack Start /api/auth/jwks
+
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema: { type: string }
+      description: Opaque cursor for cursor-based pagination
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      description: Page size (default 50, max 100)
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid JWT
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Authenticated but insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ValidationError:
+      description: Request body failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code (e.g. INVALID_SLUG, USER_NOT_FOUND)
+            message:
+              type: string
+              description: Human-readable error description
+            details:
+              type: object
+              description: Optional structured context (field errors, IDs, etc.)
+
+    Paginated:
+      type: object
+      properties:
+        items:
+          type: array
+          items: {}
+        nextCursor:
+          type: string
+          nullable: true
+          description: Opaque cursor for the next page. null if there is no next page.
+        hasMore:
+          type: boolean
+          description: false if the current page is the last
+
+    # ── Analytics ──
+    AnalyticsSummary:
+      type: object
+      properties:
+        dau: { type: integer }
+        wau: { type: integer }
+        mau: { type: integer }
+        newRegistrations: { type: integer }
+        topDestinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopDestination"
+        itinerariesGenerated: { type: integer }
+        storiesSubmitted: { type: integer }
+        courseEnrollments: { type: integer }
+        conservationParticipants: { type: integer }
+    TopDestination:
+      type: object
+      properties:
+        name: { type: string }
+        views: { type: integer }
+    StoryMetrics:
+      type: object
+      properties:
+        submitted: { type: integer }
+        approved: { type: integer }
+        rejected: { type: integer }
+        pending: { type: integer }
+
+    # ── Destinations ──
+    DestinationSummary:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        county: { type: string }
+        category: { type: string }
+        status: { type: string, enum: [draft, published, archived] }
+        shortDescription: { type: string }
+        updatedAt: { type: string, format: date-time }
+    DestinationDetail:
+      allOf:
+        - $ref: "#/components/schemas/DestinationSummary"
+        - type: object
+          properties:
+            latitude: { type: number }
+            longitude: { type: number }
+            fullDescription: { type: string }
+            significance: { type: string }
+            fees: { type: string }
+            openingInfo: { type: string }
+            transportNotes: { type: string }
+            facilities: { type: string }
+            safetyNotes: { type: string }
+            heroImageUrl: { type: string, format: uri }
+            createdAt: { type: string, format: date-time }
+    DestinationInput:
+      type: object
+      properties:
+        name: { type: string }
+        slug: { type: string }
+        county: { type: string }
+        category: { type: string }
+        shortDescription: { type: string }
+        fullDescription: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
+        fees: { type: string }
+        openingInfo: { type: string }
+        transportNotes: { type: string }
+        facilities: { type: string }
+        safetyNotes: { type: string }
+
+    # ── Media ──
+    MediaItem:
+      type: object
+      properties:
+        id: { type: string }
+        url: { type: string, format: uri, description: Time-limited signed GET URL }
+        thumbnailUrl: { type: string, format: uri }
+        altText: { type: string }
+        caption: { type: string }
+        credit: { type: string }
+        type: { type: string, enum: [image, video, audio, pdf, 360] }
+        status: { type: string, enum: [uploading, processing, ready, failed] }
+        fileSizeBytes: { type: integer }
+        createdAt: { type: string, format: date-time }
+
+    # ── Moderation ──
+    ModerationItem:
+      type: object
+      properties:
+        id: { type: string }
+        storyId: { type: string }
+        creatorEmail: { type: string, format: email }
+        caption: { type: string }
+        mediaType: { type: string }
+        mediaUrl: { type: string, format: uri }
+        status: { type: string, enum: [pending, approved, rejected] }
+        moderatedBy: { type: string, nullable: true }
+        submittedAt: { type: string, format: date-time }
+
+    # ── LMS ──
+    CourseSummary:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        difficulty: { type: string, enum: [beginner, intermediate, advanced] }
+        lessonCount: { type: integer }
+        status: { type: string, enum: [draft, published] }
+        updatedAt: { type: string, format: date-time }
+    CourseDetail:
+      allOf:
+        - $ref: "#/components/schemas/CourseSummary"
+        - type: object
+          properties:
+            description: { type: string }
+            lessons:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string }
+                  title: { type: string }
+                  duration: { type: integer }
+                  videoUrl: { type: string, format: uri }
+            createdAt: { type: string, format: date-time }
+    CourseInput:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        difficulty: { type: string, enum: [beginner, intermediate, advanced] }
+        status: { type: string, enum: [draft, published] }
+
+    # ── Conservation ──
+    ConservationActivity:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        organizer: { type: string }
+        location: { type: string }
+        description: { type: string }
+        date: { type: string, format: date }
+        impactMetric: { type: string }
+        participantCount: { type: integer }
+        status: { type: string, enum: [open, full, completed, cancelled] }
+        createdAt: { type: string, format: date-time }
+
+    # ── Events ──
+    EventItem:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        organizer: { type: string }
+        county: { type: string }
+        venue: { type: string }
+        date: { type: string, format: date }
+        type: { type: string, enum: [cultural, sports, conservation, tourism] }
+        status: { type: string, enum: [scheduled, postponed, cancelled] }
+        description: { type: string }
+        contactEmail: { type: string, format: email }
+        createdAt: { type: string, format: date-time }
+
+    # ── AI Config ──
+    AiConfig:
+      type: object
+      properties:
+        rateLimitPerMinute: { type: integer }
+        tokenBudgetPerHour: { type: integer }
+        fallbackEnabled: { type: boolean }
+        modelTemperature: { type: number }
+        maxTokens: { type: integer }
+        guardrailBlockedTopics:
+          type: array
+          items: { type: string }
+    AiConfigInput:
+      type: object
+      properties:
+        rateLimitPerMinute: { type: integer }
+        tokenBudgetPerHour: { type: integer }
+        fallbackEnabled: { type: boolean }
+        modelTemperature: { type: number, minimum: 0, maximum: 2 }
+        maxTokens: { type: integer }
+        guardrailBlockedTopics:
+          type: array
+          items: { type: string }
+    AiSource:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        url: { type: string, format: uri }
+        type: { type: string, enum: [database, api, document] }
+        enabled: { type: boolean }
+        addedAt: { type: string, format: date-time }
+
+    # ── Campaigns ──
+    Campaign:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        bannerUrl: { type: string, format: uri }
+        type: { type: string, enum: [home_banner, featured_destination, push_notification, seasonal] }
+        status: { type: string, enum: [draft, active, paused, ended] }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        targetUrl: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    # ── Users ──
+    UserItem:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        name: { type: string }
+        role: { type: string, enum: [super_admin, administrator, moderator, county_officer] }
+        banned: { type: boolean }
+        banReason: { type: string, nullable: true }
+        emailVerified: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+security:
+  - BearerAuth: []
