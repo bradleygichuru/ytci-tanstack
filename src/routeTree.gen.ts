@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as DemoBetterAuthRouteImport } from './routes/demo/better-auth'
 import { Route as DemoTableRouteImport } from './routes/demo/table'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
+import { Route as PrototypeShellRouteImport } from './routes/prototype/shell'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DemoFormAddressRouteImport } from './routes/demo/form.address'
 import { Route as DemoFormSimpleRouteImport } from './routes/demo/form.simple'
@@ -43,6 +44,11 @@ const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   path: '/demo/tanstack-query',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrototypeShellRoute = PrototypeShellRouteImport.update({
+  id: '/prototype/shell',
+  path: '/prototype/shell',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/demo/better-auth': typeof DemoBetterAuthRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/prototype/shell': typeof PrototypeShellRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/demo/better-auth': typeof DemoBetterAuthRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/prototype/shell': typeof PrototypeShellRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/demo/better-auth': typeof DemoBetterAuthRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/prototype/shell': typeof PrototypeShellRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/demo/better-auth'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/prototype/shell'
     | '/api/auth/$'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/demo/better-auth'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/prototype/shell'
     | '/api/auth/$'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/demo/better-auth'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/prototype/shell'
     | '/api/auth/$'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   DemoBetterAuthRoute: typeof DemoBetterAuthRoute
   DemoTableRoute: typeof DemoTableRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  PrototypeShellRoute: typeof PrototypeShellRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
   DemoFormSimpleRoute: typeof DemoFormSimpleRoute
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoTanstackQueryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/prototype/shell': {
+      id: '/prototype/shell'
+      path: '/prototype/shell'
+      fullPath: '/prototype/shell'
+      preLoaderRoute: typeof PrototypeShellRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoBetterAuthRoute: DemoBetterAuthRoute,
   DemoTableRoute: DemoTableRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  PrototypeShellRoute: PrototypeShellRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
   DemoFormSimpleRoute: DemoFormSimpleRoute,
