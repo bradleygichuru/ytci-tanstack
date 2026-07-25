@@ -6,6 +6,7 @@
       "name": "ytci-tanstack",
       "dependencies": {
         "@faker-js/faker": "^10.3.0",
+        "@opentelemetry/semantic-conventions": "^1.43.0",
         "@phosphor-icons/react": "^2.1.10",
         "@tailwindcss/vite": "^4.1.18",
         "@tanstack/match-sorter-utils": "latest",
