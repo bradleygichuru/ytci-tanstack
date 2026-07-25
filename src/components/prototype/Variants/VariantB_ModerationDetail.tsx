@@ -1,150 +1,221 @@
 // THROWAWAY — UI prototype for ticket #9.
 // Lives on branch prototype/shell-design. Throw away when verdict is captured.
+// Variant B — split-pane review with AI insights (matches Stitch "Action Items" tab view)
 
 import { useState } from 'react'
 import {
-  ClockAfternoon,
-  CheckCircle,
-  XCircle,
-  ThumbsUp,
-  ThumbsDown,
-  ArrowsCounterClockwise,
-  ImageSquare,
-  User,
-  Tag,
-  Flag,
   Clock,
+  MapPin,
+  Path,
+  IdentificationCard,
+  ShieldCheck,
+  Sparkle,
 } from '@phosphor-icons/react'
 import { ShellLayout } from '../ShellLayout'
-import { Badge } from '#/components/ui/badge'
-import { Button } from '#/components/ui/button'
 
-const queueItems = [
-  { id: '1', creator: 'Jane Wanjiku', caption: 'Sunset over Maasai Mara', mediaType: 'image', status: 'pending', submitted: '2h ago' },
-  { id: '2', creator: 'Peter Ochieng', caption: 'Diani coral reef exploration', mediaType: 'video', status: 'pending', submitted: '5h ago' },
-  { id: '3', creator: 'Amina Hassan', caption: 'Mountain trek on Mt Kenya', mediaType: 'image', status: 'approved', submitted: '1d ago' },
-  { id: '4', creator: 'Brian Kiprop', caption: 'Street food in Mombasa', mediaType: 'image', status: 'rejected', submitted: '2d ago' },
-  { id: '5', creator: 'Grace Akinyi', caption: 'Lake Nakuru flamingos', mediaType: 'video', status: 'pending', submitted: '2d ago' },
+const queue = [
+  {
+    id: '1',
+    handle: '@eco_traveler',
+    destination: 'Costa Rica Canopy Tour',
+    caption: 'Sharing my trip story with you all — first time in CR.',
+    timeAgo: '2h ago',
+    gradient: 'from-emerald-700 via-emerald-800 to-emerald-950',
+  },
+  {
+    id: '2',
+    handle: '@nomad_jess',
+    destination: 'Hidden Cove Discovery',
+    caption: 'Possible protected wildlife found in this area.',
+    timeAgo: '4h ago',
+    gradient: 'from-sky-700 via-sky-800 to-slate-900',
+  },
+  {
+    id: '3',
+    handle: '@trail_runner',
+    destination: 'Volcanic Highlands',
+    caption: 'Sunrise hike on the active ridge — breathtaking.',
+    timeAgo: '6h ago',
+    gradient: 'from-orange-500 via-rose-600 to-purple-900',
+  },
+  {
+    id: '4',
+    handle: '@safari_kenya',
+    destination: 'Maasai Mara Migration',
+    caption: 'Wildebeest crossing at dawn — full herd in motion.',
+    timeAgo: '8h ago',
+    gradient: 'from-amber-500 via-orange-600 to-red-700',
+  },
 ]
 
-const reports = [
-  { label: 'Inappropriate content', count: 2 },
-  { label: 'Copyright violation', count: 1 },
-  { label: 'Misleading location', count: 0 },
+const aiInsights = [
+  {
+    icon: ShieldCheck,
+    label: 'Auto-flagged',
+    text: 'EXIF location data stripped successfully. Wildlife coordinates removed.',
+    color: 'text-emerald-600',
+  },
+  {
+    icon: Path,
+    label: 'Similar past',
+    text: 'A similar story from @eco_traveler was approved 2 days ago.',
+    color: 'text-sky-600',
+  },
+  {
+    icon: Sparkle,
+    label: 'Caption quality',
+    text: 'On-brand. No policy flags detected. Alt text suggested for 2 of 5 images.',
+    color: 'text-amber-600',
+  },
+  {
+    icon: IdentificationCard,
+    label: 'Reporter signal',
+    text: 'No active reports against this creator. Account age 14 months.',
+    color: 'text-neutral-500',
+  },
+]
+
+const TABS = [
+  { label: 'Dashboard' },
+  { label: 'Action Items' },
+  { label: 'Insights' },
 ]
 
 export function VariantB_ModerationDetail() {
+  const [activeTab, setActiveTab] = useState('Action Items')
   const [selectedId, setSelectedId] = useState('1')
-  const selected = queueItems.find((i) => i.id === selectedId)!
+  const selected = queue.find((q) => q.id === selectedId)!
 
   return (
     <ShellLayout
-      title="UGC Moderation & Media Library"
-      tabs={[
-        { label: 'Queue', active: true },
-        { label: 'Reports' },
-      ]}
-      leftSlot={
-        <div className="flex gap-1 rounded-lg bg-amber-100/60 p-0.5">
-          <button className="rounded-md bg-white px-3 py-1.5 text-sm font-medium text-neutral-800 shadow-sm">
-            <ThumbsUp className="-mt-0.5 mr-1 inline h-4 w-4" weight="fill" /> Approve
-          </button>
-          <button className="rounded-md px-3 py-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-700">
-            <ArrowsCounterClockwise className="-mt-0.5 mr-1 inline h-4 w-4" weight="duotone" /> Request changes
-          </button>
-          <button className="rounded-md px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">
-            <ThumbsDown className="-mt-0.5 mr-1 inline h-4 w-4" weight="fill" /> Reject
-          </button>
-        </div>
-      }
+      title="Story Recap & Moderation"
+      subtitle="Review user-generated travel journals, manage media assets, and monitor optimization logs."
+      tabs={TABS}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
     >
-      <div className="flex gap-6">
-        {/* Left pane — compact queue */}
-        <div className="w-[280px] shrink-0">
-          <h3 className="mb-2 text-sm font-semibold text-neutral-700">Queue</h3>
-          <div className="space-y-1">
-            {queueItems.map((item) => {
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
+        {/* LEFT: Queue list */}
+        <div className="overflow-hidden rounded-2xl border border-neutral-200/60 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4">
+            <h2 className="font-serif text-base font-semibold text-neutral-800">Queue</h2>
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+              {queue.length} Pending
+            </span>
+          </div>
+          <ul className="divide-y divide-neutral-100">
+            {queue.map((item) => {
               const isActive = item.id === selectedId
               return (
-                <button
-                  key={item.id}
-                  onClick={() => setSelectedId(item.id)}
-                  className={
-                    isActive
-                      ? 'flex w-full items-center gap-3 rounded-lg bg-emerald-50 p-3 text-left'
-                      : 'flex w-full items-center gap-3 rounded-lg p-3 text-left hover:bg-neutral-50'
-                  }
-                >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-500">
-                    <ImageSquare className="h-5 w-5" weight="duotone" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-neutral-800">{item.creator}</p>
-                    <p className="truncate text-xs text-neutral-500">{item.caption}</p>
-                  </div>
-                  <span className="shrink-0 text-[10px] text-neutral-400">{item.submitted}</span>
-                </button>
+                <li key={item.id}>
+                  <button
+                    onClick={() => setSelectedId(item.id)}
+                    className={`flex w-full items-stretch gap-3 p-3 text-left transition-colors ${
+                      isActive
+                        ? 'bg-amber-50/60'
+                        : 'hover:bg-neutral-50'
+                    }`}
+                  >
+                    <div
+                      className={`w-1 self-stretch rounded ${
+                        isActive ? 'bg-amber-500' : 'bg-transparent'
+                      }`}
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">
+                          {item.handle}
+                        </div>
+                        <div className="text-[10px] text-neutral-400">{item.timeAgo}</div>
+                      </div>
+                      <div className="mt-0.5 truncate text-[11px] font-medium text-neutral-700">
+                        {item.destination}
+                      </div>
+                      <div className="mt-1 line-clamp-2 text-[11px] text-neutral-500">
+                        {item.caption}
+                      </div>
+                    </div>
+                  </button>
+                </li>
               )
             })}
-          </div>
+          </ul>
         </div>
 
-        {/* Right pane — full detail */}
-        <div className="flex-1">
-          <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-            {/* Media preview */}
-            <div className="flex aspect-[16/9] items-center justify-center bg-gradient-to-br from-emerald-800 to-emerald-950">
-              <div className="text-center text-emerald-200/50">
-                <ImageSquare className="mx-auto mb-2 h-12 w-12" weight="duotone" />
-                <p className="text-sm">Media preview</p>
+        {/* RIGHT: Review card */}
+        <div className="overflow-hidden rounded-2xl border border-neutral-200/60 bg-white shadow-sm">
+          {/* Media preview */}
+          <div className={`relative h-64 w-full bg-gradient-to-br ${selected.gradient}`}>
+            <div className="absolute inset-0 flex items-end p-5">
+              <span className="rounded-md bg-black/30 px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-white backdrop-blur">
+                {selected.handle}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-serif text-xl font-semibold text-neutral-800">
+                  {selected.destination}
+                </h2>
+                <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-neutral-500">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" weight="duotone" /> Kenya
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" weight="duotone" /> {selected.timeAgo}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {['Wildlife', 'Conservation', 'Eco-tourism', 'Africa'].map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-medium text-neutral-600"
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
 
-            {/* Detail fields */}
-            <div className="p-5">
-              <div className="mb-4 flex items-start justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-neutral-800">{selected.caption}</h2>
-                  <p className="text-sm text-neutral-500">by {selected.creator}</p>
-                </div>
-                <Badge variant="outline" className="flex items-center gap-1 text-xs">
-                  <ClockAfternoon className="h-3.5 w-3.5" weight="fill" />
-                  Pending
-                </Badge>
-              </div>
+            <p className="mt-4 text-sm leading-relaxed text-neutral-700">
+              {selected.caption}
+            </p>
 
-              <div className="mb-5 grid grid-cols-3 gap-4 rounded-lg bg-neutral-50 p-4 text-sm">
-                {[
-                  { icon: User, label: 'Creator', value: selected.creator },
-                  { icon: Tag, label: 'Media type', value: selected.mediaType },
-                  { icon: Clock, label: 'Submitted', value: selected.submitted },
-                ].map((row) => (
-                  <div key={row.label}>
-                    <div className="mb-0.5 flex items-center gap-1 text-xs text-neutral-500">
-                      <row.icon className="h-3.5 w-3.5" weight="duotone" /> {row.label}
+            {/* AI insights */}
+            <div className="mt-6">
+              <h3 className="mb-3 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                <Sparkle className="h-3 w-3" weight="duotone" /> AI Insights
+              </h3>
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                {aiInsights.map((insight) => (
+                  <div
+                    key={insight.label}
+                    className="rounded-lg border border-neutral-200/60 bg-neutral-50/60 p-3"
+                  >
+                    <div className={`mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${insight.color}`}>
+                      <insight.icon className="h-3 w-3" weight="duotone" />
+                      {insight.label}
                     </div>
-                    <p className="font-medium text-neutral-700">{row.value}</p>
+                    <p className="text-xs leading-relaxed text-neutral-600">{insight.text}</p>
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Reports section */}
-              <div>
-                <h4 className="mb-2 flex items-center gap-1 text-sm font-semibold text-neutral-700">
-                  <Flag className="h-4 w-4" weight="duotone" /> Reports (3)
-                </h4>
-                <div className="space-y-1">
-                  {reports.map(
-                    (r) =>
-                      r.count > 0 && (
-                        <div key={r.label} className="flex items-center justify-between rounded-lg border border-red-100 bg-red-50/50 px-3 py-2 text-sm">
-                          <span className="text-neutral-700">{r.label}</span>
-                          <Badge variant="destructive" className="text-xs">{r.count}</Badge>
-                        </div>
-                      ),
-                  )}
-                </div>
-              </div>
+            {/* CTAs */}
+            <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-neutral-100 pt-5">
+              <button className="flex-1 rounded-full bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
+                Approve & Publish
+              </button>
+              <button className="flex-1 rounded-full bg-amber-500 py-3 text-sm font-semibold text-white shadow-sm hover:bg-amber-600">
+                Request Changes
+              </button>
+              <button className="flex-1 rounded-full bg-red-500 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-600">
+                Reject
+              </button>
             </div>
           </div>
         </div>

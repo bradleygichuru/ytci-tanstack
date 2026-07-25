@@ -1,149 +1,174 @@
 // THROWAWAY — UI prototype for ticket #9.
 // Lives on branch prototype/shell-design. Throw away when verdict is captured.
+// Variant A — card-feed pattern (matches Stitch "Story Recap & Moderation" Insights tab view)
 
 import { useState } from 'react'
 import {
-  CheckCircle,
-  XCircle,
-  ClockAfternoon,
-  Trash,
-  Eye,
+  MapPin,
+  Clock,
+  Image as ImageIcon,
+  CloudArrowUp,
 } from '@phosphor-icons/react'
 import { ShellLayout } from '../ShellLayout'
-import { Badge } from '#/components/ui/badge'
-import { Button } from '#/components/ui/button'
-import { Checkbox } from '#/components/ui/checkbox'
 
-const statusConfig: Record<string, { icon: typeof ClockAfternoon; label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  pending: { icon: ClockAfternoon, label: 'Pending', variant: 'outline' },
-  approved: { icon: CheckCircle, label: 'Approved', variant: 'default' },
-  rejected: { icon: XCircle, label: 'Rejected', variant: 'destructive' },
-}
-
-const items = [
-  { id: '1', creator: 'Jane Wanjiku', caption: 'Sunset over Maasai Mara', mediaType: 'image', status: 'pending', submitted: '2h ago' },
-  { id: '2', creator: 'Peter Ochieng', caption: 'Diani coral reef exploration', mediaType: 'video', status: 'pending', submitted: '5h ago' },
-  { id: '3', creator: 'Amina Hassan', caption: 'Mountain trek on Mt Kenya', mediaType: 'image', status: 'approved', submitted: '1d ago' },
-  { id: '4', creator: 'Brian Kiprop', caption: 'Street food in Mombasa', mediaType: 'image', status: 'rejected', submitted: '2d ago' },
-  { id: '5', creator: 'Grace Akinyi', caption: 'Lake Nakuru flamingos', mediaType: 'video', status: 'pending', submitted: '2d ago' },
+const stories = [
+  {
+    id: '1',
+    handle: '@eco_traveler',
+    destination: 'Costa Rica Canopy Tour',
+    caption: 'Sharing my trip story with you all — First time in CR, absolute bucket list moment.',
+    timeAgo: '2h ago',
+    gradient: 'from-emerald-700 via-emerald-800 to-emerald-950',
+  },
+  {
+    id: '2',
+    handle: '@nomad_jess',
+    destination: 'Hidden Cove Discovery',
+    caption: 'Possible protected wildlife found in this area. Click to learn more about this protected zone.',
+    timeAgo: '4h ago',
+    gradient: 'from-sky-700 via-sky-800 to-slate-900',
+  },
+  {
+    id: '3',
+    handle: '@trail_runner',
+    destination: 'Volcanic Highlands',
+    caption: 'Sunrise hike on the active ridge — breathtaking views and an unforgettable day.',
+    timeAgo: '6h ago',
+    gradient: 'from-orange-500 via-rose-600 to-purple-900',
+  },
 ]
 
-const filters = ['All', 'Pending', 'Approved', 'Rejected', 'Images', 'Videos']
+const logs = [
+  { time: '10:32:00 AM', tag: 'CONTENT PROVENANCE', text: 'Specific_upload.md/.jpg successfully processed via 290. - 4200kb.' },
+  { time: '10:31:55 AM', tag: 'CONTENT PROVENANCE', text: 'Asset match found #88A sound asset successfully stored digital #99a reddit.' },
+  { time: '10:31:48 AM', tag: 'CMS POST', text: 'Flagger: low confidence excret (D (.95). Flag to be sent to Head Mod.' },
+  { time: '10:31:36 AM', tag: 'CMS POST', text: 'Particle public from a public red. An alt-text tag generated.' },
+  { time: '10:31:32 AM', tag: 'CMS PROCESSING', text: 'Cache: PRO public for converting to webP. Converted 4.0% to webP.' },
+  { time: '10:31:24 AM', tag: 'CMS POST', text: 'Original new post 1 (00). Converted 4.0% to webP.' },
+]
+
+const globalAssets = [
+  { id: 'g1', label: 'Beach cleanup volunteer' },
+  { id: 'g2', label: 'Heritage site visit' },
+  { id: 'g3', label: 'Sunrise safari drive' },
+  { id: 'g4', label: '' },
+]
+
+const TABS = [
+  { label: 'Dashboard' },
+  { label: 'Action Items' },
+  { label: 'Insights' },
+]
 
 export function VariantA_ModerationQueue() {
-  const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [activeFilter, setActiveFilter] = useState('All')
-
-  const filtered = activeFilter === 'All'
-    ? items
-    : items.filter((i) =>
-        ['Pending', 'Approved', 'Rejected'].includes(activeFilter)
-          ? i.status === activeFilter.toLowerCase()
-          : activeFilter === 'Images'
-            ? i.mediaType === 'image'
-            : i.mediaType === 'video',
-      )
-
-  const toggle = (id: string) => {
-    const next = new Set(selected)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    setSelected(next)
-  }
+  const [activeTab, setActiveTab] = useState('Insights')
 
   return (
     <ShellLayout
-      title="UGC Moderation & Media Library"
-      tabs={[
-        { label: 'Queue', active: true },
-        { label: 'Reports' },
-      ]}
+      title="Story Recap & Moderation"
+      subtitle="Review user-generated travel journals, manage media assets, and monitor optimization logs."
+      tabs={TABS}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
     >
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {filters.map((f) => (
-          <button
-            key={f}
-            onClick={() => setActiveFilter(f)}
-            className={
-              activeFilter === f
-                ? 'rounded-full border border-emerald-600 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700'
-                : 'rounded-full border border-neutral-200 bg-white px-3 py-1 text-sm font-medium text-neutral-600 hover:border-neutral-300 hover:bg-neutral-50'
-            }
-          >
-            {f}
-          </button>
-        ))}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
+        {/* LEFT: Moderation Queue card */}
+        <div className="overflow-hidden rounded-2xl border border-neutral-200/60 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-4">
+            <h2 className="font-serif text-lg font-semibold text-neutral-800">Moderation Queue</h2>
+            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+              3 Pending
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
+            {stories.map((story) => (
+              <article
+                key={story.id}
+                className="flex flex-col overflow-hidden rounded-2xl border border-neutral-200/60 bg-white"
+              >
+                <div
+                  className={`relative h-44 w-full bg-gradient-to-br ${story.gradient}`}
+                >
+                  <div className="absolute inset-0 flex items-end p-4">
+                    <div className="rounded-md bg-black/30 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur">
+                      {story.handle}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col p-4">
+                  <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-700">
+                    <MapPin className="h-3 w-3" weight="duotone" /> {story.destination}
+                  </div>
+                  <p className="mt-2 line-clamp-3 flex-1 text-xs leading-relaxed text-neutral-600">
+                    {story.caption}
+                  </p>
+                  <div className="mt-3 flex items-center gap-1 text-[10px] text-neutral-400">
+                    <Clock className="h-3 w-3" weight="duotone" /> {story.timeAgo}
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <button className="flex-1 rounded-full bg-emerald-600 py-2 text-xs font-semibold text-white hover:bg-emerald-700">
+                      Approve
+                    </button>
+                    <button className="flex-1 rounded-full bg-red-500 py-2 text-xs font-semibold text-white hover:bg-red-600">
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT: System Logs card */}
+        <div className="overflow-hidden rounded-2xl border border-neutral-200/60 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4">
+            <h2 className="font-serif text-base font-semibold text-neutral-800">System Logs</h2>
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+          </div>
+          <ul className="divide-y divide-neutral-100 text-xs">
+            {logs.map((log, i) => (
+              <li key={i} className="px-5 py-3">
+                <div className="text-[10px] text-neutral-400">{log.time}</div>
+                <div className="mt-0.5 font-bold uppercase tracking-wider text-emerald-800">
+                  {log.tag}
+                </div>
+                <div className="mt-1 leading-relaxed text-neutral-600">{log.text}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
-      {selected.size > 0 && (
-        <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm">
-          <span className="font-medium text-amber-800">{selected.size} selected</span>
-          <Button size="sm" variant="outline" className="ml-auto h-7 text-xs">
-            <CheckCircle className="mr-1 h-3.5 w-3.5" weight="duotone" /> Approve
-          </Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs text-red-600">
-            <XCircle className="mr-1 h-3.5 w-3.5" weight="duotone" /> Reject
-          </Button>
+      {/* BOTTOM: Global Assets */}
+      <div className="mt-6 overflow-hidden rounded-2xl border border-neutral-200/60 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-4">
+          <h2 className="font-serif text-lg font-semibold text-neutral-800">Global Assets</h2>
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-700">
+            Cloudflare R2
+          </span>
         </div>
-      )}
-
-      <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-neutral-50/80 text-left text-xs font-semibold uppercase tracking-wider text-neutral-500">
-              <th className="w-10 px-4 py-3">
-                <Checkbox
-                  checked={selected.size === filtered.length && filtered.length > 0}
-                  onCheckedChange={() => {
-                    if (selected.size === filtered.length) setSelected(new Set())
-                    else setSelected(new Set(filtered.map((i) => i.id)))
-                  }}
-                />
-              </th>
-              <th className="px-4 py-3">Creator</th>
-              <th className="px-4 py-3">Caption</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Submitted</th>
-              <th className="w-20 px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((item) => {
-              const s = statusConfig[item.status]
-              const StatusIcon = s.icon
-              return (
-                <tr key={item.id} className="border-b last:border-0 hover:bg-neutral-50">
-                  <td className="px-4 py-3">
-                    <Checkbox checked={selected.has(item.id)} onCheckedChange={() => toggle(item.id)} />
-                  </td>
-                  <td className="px-4 py-3 font-medium text-neutral-800">{item.creator}</td>
-                  <td className="max-w-[240px] truncate px-4 py-3 text-neutral-600">{item.caption}</td>
-                  <td className="px-4 py-3 text-neutral-500">{item.mediaType}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant={s.variant} className="flex w-fit items-center gap-1 text-xs">
-                      <StatusIcon className="h-3.5 w-3.5" weight="fill" /> {s.label}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-neutral-500">{item.submitted}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button className="rounded p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"><Eye className="h-4 w-4" weight="duotone" /></button>
-                      <button className="rounded p-1 text-neutral-400 hover:bg-red-50 hover:text-red-500"><Trash className="h-4 w-4" weight="duotone" /></button>
-                    </div>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-        <div className="flex items-center justify-between border-t px-4 py-3 text-sm text-neutral-500">
-          <span>1–{filtered.length} of {items.length}</span>
-          <div className="flex items-center gap-2">
-            <button className="rounded px-2 py-1 text-neutral-400 hover:text-neutral-600" disabled>Previous</button>
-            <span className="font-medium text-neutral-700">1</span>
-            <button className="rounded px-2 py-1 text-neutral-400 hover:text-neutral-600" disabled>Next</button>
-          </div>
+        <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
+          {globalAssets.map((asset) => (
+            <div
+              key={asset.id}
+              className="flex h-32 flex-col items-center justify-center overflow-hidden rounded-xl border border-neutral-200/60 bg-gradient-to-br from-neutral-100 to-neutral-50 text-center"
+            >
+              {asset.label ? (
+                <>
+                  <div className="mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
+                    <ImageIcon className="h-4 w-4 text-emerald-700" weight="duotone" />
+                  </div>
+                  <div className="text-[10px] font-medium text-neutral-600">{asset.label}</div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-neutral-400">
+                  <CloudArrowUp className="h-6 w-6" weight="duotone" />
+                  <span className="text-[10px]">Upload Asset</span>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </ShellLayout>
