@@ -11,6 +11,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "db:smoke": "bun --env-file=.env.local run scripts/db-smoke.ts",
+    "db:generate": "better-auth generate -y --output ./src/db/schema/auth.ts && drizzle-kit generate",
+    "db:migrate": "bunx drizzle-kit migrate",
+    "db:setup": "bun run db:generate && bun run db:migrate && bun run db:smoke",
     "bootstrap:admin": "bun --env-file=.env.local run scripts/bootstrap-admin.ts"
   },
   "dependencies": {
@@ -42,6 +45,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@better-auth/cli": "^1.4.21",
     "@tailwindcss/typography": "^0.5.16",
     "@tanstack/devtools-vite": "latest",
     "@tanstack/intent": "^0.3.6",
