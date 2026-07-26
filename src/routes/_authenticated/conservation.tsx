@@ -45,11 +45,13 @@ function ConservationPage() {
 
   return (
     <div>
-      <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Conservation Tracker Administration</h1>
-      <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Create activity sign-ups, review evidence, and track participation.</p>
+      <div className="mb-6">
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Conservation Tracker Administration</h1>
+        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Create activity sign-ups, review evidence, and track participation.</p>
+      </div>
 
       {/* Aggregate stat cards */}
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {Object.entries(agg).map(([key, s]) => (
           <div key={key} className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
             <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">{s.label}</div>
@@ -65,7 +67,7 @@ function ConservationPage() {
       </div>
 
       {/* Tabs */}
-      <div className="my-4 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
+      <div className="mb-6 mt-4 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
         {(['activities', 'evidence'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 text-sm font-semibold ${tab === t ? 'bg-white text-[var(--on-surface)] shadow-sm' : 'text-[var(--on-surface-variant)]'}`}>
             {t === 'activities' ? 'Activities' : 'Evidence Review'} <span className="ml-1 rounded-full bg-[var(--surface-3)] px-1.5 py-0.5 text-[10px]">{t === 'activities' ? acts.length : evids.length}</span>
@@ -80,7 +82,8 @@ function ConservationPage() {
             <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{acts.length} activities</span>
             <button className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New Activity</button>
           </div>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px] text-sm">
             <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
               <th className="px-5 py-3">Name</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Date</th><th className="px-5 py-3">Participants</th><th className="px-5 py-3">Impact</th><th className="px-5 py-3">Status</th><th className="w-12 px-5 py-3" />
             </tr></thead>
@@ -116,7 +119,7 @@ function ConservationPage() {
                     {isSelected && editData && (
                       <tr><td colSpan={7} className="border-b p-0">
                         <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <EField label="Title" value={editData.title} onChange={v => setEditData({ ...editData, title: v })} />
                             <EField label="Organizer" value={editData.organizer} onChange={v => setEditData({ ...editData, organizer: v })} />
                             <EField label="Location" value={editData.locationPrivacyLevel === 'sensitive' ? '[RESTRICTED]' : editData.location} onChange={() => {}} disabled />
@@ -137,8 +140,8 @@ function ConservationPage() {
                             <EField label="Impact Metric" value={editData.impactMetric} onChange={v => setEditData({ ...editData, impactMetric: v })} />
                             <EField label="Goal Count" value={String(editData.impactGoal)} onChange={v => setEditData({ ...editData, impactGoal: Number(v) })} />
                             <EField label="Measurement Unit" value={editData.measurementUnit} onChange={v => setEditData({ ...editData, measurementUnit: v })} />
-                            <EField label="Badge Name" value={editData.badgeName} onChange={v => setEditData({ ...editData, badgeName: v })} className="col-span-2" />
-                            <div className="col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Verification Rules</label><textarea value={editData.verificationRules} onChange={e => setEditData({ ...editData, verificationRules: e.target.value })} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
+                            <EField label="Badge Name" value={editData.badgeName} onChange={v => setEditData({ ...editData, badgeName: v })} className="sm:col-span-2" />
+                            <div className="sm:col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Verification Rules</label><textarea value={editData.verificationRules} onChange={e => setEditData({ ...editData, verificationRules: e.target.value })} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
                           </div>
                           <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
                             <button onClick={async () => { await api.update('conservation', editData.id, editData); api.list('conservation').then(r => setActs(r.items as Act[])); setSelectedId(null) }} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm"><FloppyDisk className="h-4 w-4" weight="duotone" /> Save</button>
@@ -152,13 +155,15 @@ function ConservationPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {/* Evidence Review tab */}
       {tab === 'evidence' && (
         <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px] text-sm">
             <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
               <th className="px-5 py-3">Activity</th><th className="px-5 py-3">User</th><th className="px-5 py-3">Description</th><th className="px-5 py-3">Submitted</th><th className="px-5 py-3">Status</th><th className="w-28 px-5 py-3 text-right">Actions</th>
             </tr></thead>
@@ -184,6 +189,7 @@ function ConservationPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

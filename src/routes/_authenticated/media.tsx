@@ -64,9 +64,11 @@ function MediaPage() {
 
   return (
     <div>
-      <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">UGC Moderation & Media Library</h1>
-      <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Review user-generated travel journals, manage media assets, and monitor optimization logs.</p>
-      <div className="my-4 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
+      <div className="mb-6">
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">UGC Moderation & Media Library</h1>
+        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Review user-generated travel journals, manage media assets, and monitor optimization logs.</p>
+      </div>
+      <div className="mb-6 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold ${tab === t.key ? 'bg-white text-[var(--on-surface)] shadow-sm' : 'text-[var(--on-surface-variant)] hover:text-[var(--on-surface)]'}`}>
@@ -171,7 +173,7 @@ function MediaPage() {
       {/* Optimization Logs */}
       {tab === 'logs' && (
         <div>
-          <div className="mb-4 grid grid-cols-3 gap-4">
+            <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {[
               { label: 'Total Assets', value: assets.length, color: 'var(--forest)' },
               { label: 'Compression Saved', value: `${logs.filter(l => l.eventType === 'COMPRESSION').reduce((a, l) => a + (l.compressionSavedKB ?? 0), 0).toLocaleString()} KB`, color: 'var(--leaf)' },
@@ -184,7 +186,8 @@ function MediaPage() {
             ))}
           </div>
           <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-            <table className="w-full text-xs">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px] text-xs">
               <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[10px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
                 <th className="px-4 py-3">Time</th><th className="px-4 py-3">Event</th><th className="px-4 py-3">Asset</th><th className="px-4 py-3">Details</th>
               </tr></thead>
@@ -205,6 +208,7 @@ function MediaPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}

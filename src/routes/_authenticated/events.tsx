@@ -67,7 +67,7 @@ function EventsPage() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Events Calendar Admin</h1>
           <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Publish and manage event entries. Scheduled, postponed, cancelled status transitions.</p>
@@ -79,7 +79,8 @@ function EventsPage() {
       </div>
 
       <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[700px] text-sm">
           <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
             <th className="px-5 py-3">Event</th><th className="px-5 py-3">County</th><th className="px-5 py-3">Date</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Status</th><th className="w-12 px-5 py-3" />
           </tr></thead>
@@ -99,16 +100,16 @@ function EventsPage() {
                   {isSelected && editData && (
                     <tr><td colSpan={6} className="border-b p-0">
                       <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
-                          <EField label="Title" value={editData.title} onChange={v => setEditData({ ...editData, title: v })} className="col-span-2" />
+                          <EField label="Title" value={editData.title} onChange={v => setEditData({ ...editData, title: v })} className="md:col-span-2" />
                           <EField label="Organizer" value={editData.organizer} onChange={v => setEditData({ ...editData, organizer: v })} />
                           <EField label="County" value={editData.county} onChange={v => setEditData({ ...editData, county: v })} />
                           <EField label="Venue" value={editData.venue} onChange={v => setEditData({ ...editData, venue: v })} />
                           <EField label="Start Date" value={editData.date} onChange={v => setEditData({ ...editData, date: v })} />
                           <EField label="End Date" value={editData.endDate} onChange={v => setEditData({ ...editData, endDate: v })} />
                           <ESelect label="Type" value={editData.type} options={['cultural', 'sports', 'conservation', 'tourism']} onChange={v => setEditData({ ...editData, type: v })} />
-                          <div className="col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Description</label><textarea value={editData.description} onChange={e => setEditData({ ...editData, description: e.target.value })} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
+                          <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Description</label><textarea value={editData.description} onChange={e => setEditData({ ...editData, description: e.target.value })} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
 
                           {/* Status Workflow */}
                           <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-4">
@@ -177,12 +178,13 @@ function EventsPage() {
                 </FragmentRow>
               )
             })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+          </div>
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
 function EField({ label, value, onChange, className }: { label: string; value?: string; onChange: (v: string) => void; className?: string }) {
   return <div className={className}><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><input value={value ?? ''} onChange={e => onChange(e.target.value)} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>

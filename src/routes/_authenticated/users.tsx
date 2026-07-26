@@ -69,11 +69,13 @@ function UsersPage() {
 
   return (
     <div>
-      <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">User Management & Security</h1>
-      <p className="mt-1 text-sm text-[var(--on-surface-variant)]">RBAC permissions, user accounts, and compliance consent auditing.</p>
+      <div className="mb-6">
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">User Management & Security</h1>
+        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">RBAC permissions, user accounts, and compliance consent auditing.</p>
+      </div>
 
       {/* Security Health */}
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Total Users</div>
           <div className="mt-1 font-sans text-3xl font-bold text-[var(--on-surface)]">{counts.total}</div>
@@ -97,7 +99,7 @@ function UsersPage() {
       </div>
 
       {/* Tabs */}
-      <div className="my-4 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
+      <div className="mb-6 mt-6 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
         {(['users', 'audit'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 text-sm font-semibold ${tab === t ? 'bg-white text-[var(--on-surface)] shadow-sm' : 'text-[var(--on-surface-variant)]'}`}>
             {t === 'users' ? 'Users' : 'Consent Audit'} <span className="ml-1 rounded-full bg-[var(--surface-3)] px-1.5 py-0.5 text-[10px]">{t === 'users' ? data.length : audit.length}</span>
@@ -112,7 +114,8 @@ function UsersPage() {
             <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data.length} users</span>
             <button className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New User</button>
           </div>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px] text-sm">
             <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
               <th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Role</th><th className="px-5 py-3">County</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Created</th><th className="w-12 px-5 py-3" />
             </tr></thead>
@@ -133,7 +136,7 @@ function UsersPage() {
                     {isSelected && editData && (
                       <tr><td colSpan={7} className="border-b p-0">
                         <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <UField label="Name" value={editData.name} onChange={v => setEditData({ ...editData, name: v })} />
                             <UField label="Email" value={editData.email} onChange={v => setEditData({ ...editData, email: v })} />
                             <div>
@@ -150,7 +153,7 @@ function UsersPage() {
                             <UField label="Preferences" value={editData.preferences} onChange={v => setEditData({ ...editData, preferences: v })} />
 
                             {/* Suspension */}
-                            <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-4">
+                            <div className="rounded-lg border border-[var(--surface-4)] p-4 md:col-span-2">
                               <label className="flex cursor-pointer items-center gap-2">
                                 <input type="checkbox" checked={editData.banned} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, banned: e.target.checked, banReason: e.target.checked ? '' : undefined })}
                                   className="accent-[var(--error)] disabled:cursor-not-allowed" />
@@ -165,7 +168,7 @@ function UsersPage() {
                             </div>
 
                             {/* Consent */}
-                            <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-3 text-xs text-[var(--on-surface-variant)]">
+                            <div className="rounded-lg border border-[var(--surface-4)] p-3 text-xs text-[var(--on-surface-variant)] md:col-span-2">
                               <span className="font-semibold text-[var(--leaf)]">Consent</span> granted at {new Date(editData.consentGrantedAt).toLocaleDateString()}. <span className="text-[10px]">§11 privacy: consent management, data minimization, account deletion, retention controls apply.</span>
                             </div>
                           </div>
@@ -182,13 +185,15 @@ function UsersPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {/* Consent Audit tab */}
       {tab === 'audit' && (
         <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px] text-sm">
             <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
               <th className="px-5 py-3">User</th><th className="px-5 py-3">Action</th><th className="px-5 py-3">Details</th><th className="px-5 py-3">Timestamp</th>
             </tr></thead>
@@ -203,6 +208,7 @@ function UsersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

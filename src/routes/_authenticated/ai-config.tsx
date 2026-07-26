@@ -42,10 +42,12 @@ function AiConfigPage() {
 
   return (
     <div>
-      <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">AI Engine Configuration & Guardrails</h1>
-      <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Safety escalations, approved data sources, inference management, and answer feedback.</p>
+      <div className="mb-6">
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">AI Engine Configuration & Guardrails</h1>
+        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Safety escalations, approved data sources, inference management, and answer feedback.</p>
+      </div>
 
-      <div className="mt-8 space-y-8">
+      <div className="space-y-6">
         {/* Card 1 — Safety Guardrails */}
         <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="flex items-center gap-2 border-b border-[var(--surface-4)] bg-[var(--surface-2)] px-6 py-4">
@@ -162,7 +164,7 @@ function AiConfigPage() {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+              <table className="w-full min-w-[600px] text-sm">
               <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
                 <th className="px-6 py-3">Query</th><th className="px-6 py-3">Rating</th><th className="px-6 py-3">Comment</th><th className="px-6 py-3">Date</th><th className="px-6 py-3">Status</th>
               </tr></thead>

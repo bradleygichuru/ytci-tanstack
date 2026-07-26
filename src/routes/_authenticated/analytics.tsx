@@ -70,7 +70,7 @@ function HeroStat({ icon: Icon, label, value, change }: { icon: typeof ChartBar;
         <span className="text-sm font-semibold text-[var(--on-surface-variant)]">{label}</span>
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="font-sans text-4xl font-bold text-[var(--on-surface)]">{fmtNum(value)}</span>
+          <span className="font-sans text-3xl font-bold text-[var(--on-surface)] md:text-4xl">{fmtNum(value)}</span>
         <ChangeChip value={change} />
       </div>
     </div>
@@ -117,7 +117,7 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
         <HeroStat icon={Users} label="MONTHLY ACTIVE USERS" value={data.mau} change={data.mauChange} />
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-3">
+      <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
         <StatCard icon={Users} label="New Registrations" value={data.newRegistrations} change={data.newRegistrationsChange} bg="bg-sky-50" />
         <StatCard icon={ClipboardText} label="Itineraries Generated" value={data.itinerariesGenerated} change={data.itinerariesGeneratedChange} bg="bg-amber-50" />
         <StatCard icon={MapPin} label="Map Interactions" value={data.mapInteractions} change={data.mapInteractionsChange} bg="bg-emerald-50" />
@@ -278,7 +278,7 @@ function AnalyticsPage() {
 
   return (
     <div>
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">
             Analytics & Metrics

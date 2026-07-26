@@ -34,7 +34,7 @@ export function AdminShell({ title, subtitle, tabs, activeTab, onTabChange, chil
             )}
             {children}
           </main>
-          <footer className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-[#e7e8e9] bg-[#f8f9fa] px-8 py-4 text-xs text-[#42493e]">
+          <footer className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-[#e7e8e9] bg-[#f8f9fa] px-4 py-4 text-xs text-[#42493e] sm:px-6 lg:px-8">
             <span>© 2024 Eco-Tourism Explorer. All rights reserved.</span>
             <div className="flex items-center gap-5">
               <a href="#" className="hover:text-[#191c1d]">Privacy Policy</a>

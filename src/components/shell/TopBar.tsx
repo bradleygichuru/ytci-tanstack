@@ -10,9 +10,9 @@ interface TopBarProps {
 
 export function TopBar({ tabs, activeTab, onTabChange }: TopBarProps) {
   return (
-    <header className="flex h-16 items-center gap-6 border-b border-[#e7e8e9] bg-white px-8">
+    <header className="flex h-16 items-center gap-3 border-b border-[#e7e8e9] bg-white px-4 sm:gap-6 sm:px-6 lg:px-8">
       {tabs && tabs.length > 0 && (
-        <div className="flex gap-6">
+        <div className="flex gap-3 sm:gap-6">
           {tabs.map((tab) => {
             const isActive = tab.label === activeTab
             return (
@@ -39,7 +39,7 @@ export function TopBar({ tabs, activeTab, onTabChange }: TopBarProps) {
           />
           <input
             placeholder="Search tours..."
-            className="h-9 w-64 rounded-md border border-[#c2c9bb] bg-white pl-9 text-sm text-[#191c1d] outline-none placeholder:text-[#42493e] focus:border-[#154212] focus:ring-1 focus:ring-[#154212]"
+            className="h-9 w-36 rounded-md border border-[#c2c9bb] bg-white pl-9 text-sm text-[#191c1d] outline-none placeholder:text-[#42493e] focus:border-[#154212] focus:ring-1 focus:ring-[#154212] sm:w-48 lg:w-64"
           />
         </div>
         <button className="relative rounded-full p-1.5 text-[#42493e] hover:bg-[#f3f4f5] hover:text-[#191c1d]">

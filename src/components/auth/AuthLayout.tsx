@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 export function AuthLayout({ title, subtitle, children, nav }: AuthLayoutProps) {
   return (
     <div className="flex min-h-screen">
-      <div className="hidden w-1/2 flex-col items-center justify-center p-12 lg:flex" style={{ backgroundColor: '#154212' }}>
+      <div className="hidden w-1/2 flex-col items-center justify-center p-8 lg:flex lg:p-12" style={{ backgroundColor: '#154212' }}>
         <div className="max-w-sm text-center">
           <div className="mb-6 flex items-center justify-center gap-3">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
@@ -38,7 +38,7 @@ export function AuthLayout({ title, subtitle, children, nav }: AuthLayoutProps) 
         </div>
       </div>
 
-      <div className="flex w-full flex-col items-center justify-center bg-white p-8 lg:w-1/2">
+      <div className="flex w-full flex-col items-center justify-center bg-white px-6 py-8 sm:p-8 lg:w-1/2">
         <div className="w-full max-w-sm">
           <div className="mb-6">
             <h2 className="text-lg font-bold" style={{ color: '#191c1d' }}>{title}</h2>

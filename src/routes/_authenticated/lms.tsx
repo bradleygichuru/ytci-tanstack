@@ -78,7 +78,7 @@ function LmsPage() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Learning Hub & Course Builder</h1>
           <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Create and manage courses, quizzes, and certifications.</p>
@@ -90,7 +90,8 @@ function LmsPage() {
       </div>
 
       <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[700px] text-sm">
           <thead>
             <tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
               <th className="px-5 py-3">Course Title</th><th className="px-5 py-3">Difficulty</th><th className="px-5 py-3">Lessons</th><th className="px-5 py-3">Enrolled</th><th className="px-5 py-3">Completed</th><th className="px-5 py-3">Status</th><th className="w-16 px-5 py-3" />
@@ -127,8 +128,8 @@ function LmsPage() {
 
                             {/* Lessons tab */}
                             {activeTab === 'lessons' && (
-                              <div className="flex gap-6">
-                                <div className="w-64 shrink-0">
+                              <div className="flex flex-col gap-6 md:flex-row">
+                                <div className="w-full shrink-0 md:w-64">
                                   <div className="mb-2 flex items-center justify-between">
                                     <span className="text-xs font-bold text-[var(--on-surface)]">Module Lessons</span>
                                     <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px]">{editData.lessons.length}</span>
@@ -175,7 +176,7 @@ function LmsPage() {
                                   {editData.quizQuestions.map((q, i) => (
                                     <div key={q.id} className="rounded-lg border border-[var(--surface-4)] p-4">
                                       <div className="flex items-center gap-2"><span className="text-xs font-bold text-[var(--on-surface-variant)]">Q{i + 1}</span><input value={q.text} onChange={e => { const qs = [...editData.quizQuestions]; qs[i] = { ...qs[i], text: e.target.value }; handleField('quizQuestions', qs) }} className="flex-1 rounded-md border border-[var(--outline-muted)] px-3 py-1.5 text-sm text-[var(--on-surface)]" /></div>
-                                      <div className="mt-2 grid grid-cols-2 gap-2">
+                                      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                                         {q.options.map((o, oi) => (
                                           <label key={oi} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs cursor-pointer ${oi === q.correctIndex ? 'border-[var(--leaf)] bg-[var(--leaf-bg)]' : 'border-[var(--surface-4)]'}`}>
                                             <input type="radio" name={`q-${q.id}`} checked={oi === q.correctIndex} onChange={() => { const qs = [...editData.quizQuestions]; qs[i] = { ...qs[i], correctIndex: oi }; handleField('quizQuestions', qs) }} className="sr-only" />
@@ -209,9 +210,9 @@ function LmsPage() {
 
                             {/* Settings tab */}
                             {activeTab === 'settings' && (
-                              <div className="grid grid-cols-2 gap-4">
-                                <SField label="Title" value={editData.title} onChange={v => handleField('title', v)} className="col-span-2" />
-                                <SField label="Description" value={editData.description} onChange={v => handleField('description', v)} className="col-span-2" />
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <SField label="Title" value={editData.title} onChange={v => handleField('title', v)} className="md:col-span-2" />
+                                <SField label="Description" value={editData.description} onChange={v => handleField('description', v)} className="md:col-span-2" />
                                 <Select label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
                                 <Select label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
                                 <SField label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />
@@ -233,6 +234,7 @@ function LmsPage() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       <p className="mt-3 text-[10px] text-[var(--on-surface-variant)]">§7.1 Media readiness: lessons with captions/transcripts show a <CheckCircle className="inline h-3 w-3 text-[var(--leaf)]" weight="fill" /> checkmark.</p>

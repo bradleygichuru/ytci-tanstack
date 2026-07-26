@@ -89,7 +89,7 @@ function DestinationsPage() {
 
   return (
     <div>
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Destination CMS</h1>
           <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Manage location profiles, pricing guides, GIS data, and rich media.</p>
@@ -121,7 +121,8 @@ function DestinationsPage() {
       {/* Table */}
       {visible && (
         <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px] text-sm">
             <thead>
               <tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
                 <th className="px-5 py-3">Name</th> <th className="px-5 py-3">County</th> <th className="px-5 py-3">Category</th> <th className="px-5 py-3">Status</th> <th className="px-5 py-3">Updated</th> <th className="w-24 px-5 py-3 text-right">Actions</th>
@@ -160,7 +161,7 @@ function DestinationsPage() {
                           {/* Tab content */}
                           <div className="bg-white px-6 py-5">
                             {activeTab === 'identity' && (
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <Field label="Name" value={editData.name} onChange={v => handleField('name', v)} />
                                 <Field label="Slug" value={editData.slug} onChange={v => handleField('slug', v)} />
                                 <Field label="County" value={editData.county} onChange={v => handleField('county', v)} />
@@ -170,14 +171,14 @@ function DestinationsPage() {
                               </div>
                             )}
                             {activeTab === 'location' && (
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <Field label="Latitude" value={String(editData.latitude)} onChange={v => handleField('latitude', Number(v))} />
                                 <Field label="Longitude" value={String(editData.longitude)} onChange={v => handleField('longitude', Number(v))} />
                                 <Field label="Map Label" value={editData.mapLabel} onChange={v => handleField('mapLabel', v)} />
                                 <Field label="Access Route" value={editData.accessRoute} onChange={v => handleField('accessRoute', v)} />
-                                <Field label="Distance Reference" value={editData.distanceReference} onChange={v => handleField('distanceReference', v)} className="col-span-2" />
+                                <Field label="Distance Reference" value={editData.distanceReference} onChange={v => handleField('distanceReference', v)} className="md:col-span-2" />
                                 {/* Map placeholder */}
-                                <div className="col-span-2 flex h-48 items-center justify-center rounded-lg border border-dashed border-[var(--surface-4)] bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
+                                <div className="md:col-span-2 flex h-48 items-center justify-center rounded-lg border border-dashed border-[var(--surface-4)] bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
                                   <div className="text-center">
                                     <MapPin className="mx-auto h-8 w-8 text-[var(--on-surface-variant)]" weight="duotone" />
                                     <p className="mt-2 text-xs text-[var(--on-surface-variant)]">County boundary map + cluster markers (Leaflet/Mapbox — pending)</p>
@@ -194,8 +195,8 @@ function DestinationsPage() {
                               </div>
                             )}
                             {activeTab === 'experience' && (
-                              <div className="grid grid-cols-2 gap-4">
-                                <Field label="Things to Do" value={editData.thingsToDo} onChange={v => handleField('thingsToDo', v)} className="col-span-2" />
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <Field label="Things to Do" value={editData.thingsToDo} onChange={v => handleField('thingsToDo', v)} className="md:col-span-2" />
                                 <Field label="Suitable Audiences" value={editData.suitableAudiences} onChange={v => handleField('suitableAudiences', v)} />
                                 <Field label="Duration" value={editData.duration} onChange={v => handleField('duration', v)} />
                                 <Select label="Difficulty" value={editData.difficulty} options={['easy', 'moderate', 'hard']} onChange={v => handleField('difficulty', v)} />
@@ -203,13 +204,13 @@ function DestinationsPage() {
                               </div>
                             )}
                             {activeTab === 'planning' && (
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <Field label="Indicative Fees" value={editData.indicativeFees} onChange={v => handleField('indicativeFees', v)} />
                                 <Field label="Opening Info" value={editData.openingInfo} onChange={v => handleField('openingInfo', v)} />
                                 <Field label="Transport Notes" value={editData.transportNotes} onChange={v => handleField('transportNotes', v)} />
                                 <Field label="Facilities" value={editData.facilities} onChange={v => handleField('facilities', v)} />
-                                <Field label="Safety Notes" value={editData.safetyNotes} onChange={v => handleField('safetyNotes', v)} className="col-span-2" />
-                                <div className="col-span-2">
+                                <Field label="Safety Notes" value={editData.safetyNotes} onChange={v => handleField('safetyNotes', v)} className="md:col-span-2" />
+                                <div className="md:col-span-2">
                                   <label className="mb-1 text-xs font-semibold text-[var(--on-surface)]">Accessibility Tags</label>
                                   <div className="flex flex-wrap gap-2">
                                     {['wheelchair-accessible-lodges', 'guided-tours', 'wheelchair-accessible-hotels', 'beach-wheelchair', 'guide-required'].map(tag => (
@@ -224,7 +225,7 @@ function DestinationsPage() {
                                   </div>
                                 </div>
                                 {/* No Book Now / Checkout — hard boundary. Planning tab has NO booking/payment fields. */}
-                                <div className="col-span-2 mt-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--on-surface-variant)]">
+                                <div className="md:col-span-2 mt-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--on-surface-variant)]">
                                   <span className="font-semibold text-[var(--forest)]">No Book Now / Checkout</span> — per spec §5.5 and §13 boundary. No booking, payment, reservation, or checkout controls in this form.
                                 </div>
                               </div>
@@ -244,7 +245,7 @@ function DestinationsPage() {
                                 </div>
                                 <div>
                                   <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Gallery ({editData.gallery?.length ?? 0} images)</h4>
-                                  <div className="grid grid-cols-3 gap-3">
+                                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                     {(editData.gallery ?? []).map((img, i) => (
                                       <div key={i} className="flex h-24 items-center justify-center rounded-lg border border-dashed border-[var(--surface-4)] bg-[var(--surface-2)]">
                                         <div className="text-center">
@@ -268,16 +269,16 @@ function DestinationsPage() {
                               </div>
                             )}
                             {activeTab === 'related' && (
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <Field label="Nearby Attractions" value={editData.nearbyAttractions ?? ''} onChange={v => handleField('nearbyAttractions', v)} />
                                 <Field label="Associated Events" value={editData.associatedEvents ?? ''} onChange={v => handleField('associatedEvents', v)} />
                                 <Field label="Associated Stories" value={editData.associatedStories ?? ''} onChange={v => handleField('associatedStories', v)} />
                                 <Field label="Associated Courses" value={editData.associatedCourses ?? ''} onChange={v => handleField('associatedCourses', v)} />
-                                <Field label="Conservation Activities" value={editData.associatedConservation ?? ''} onChange={v => handleField('associatedConservation', v)} className="col-span-2" />
+                                <Field label="Conservation Activities" value={editData.associatedConservation ?? ''} onChange={v => handleField('associatedConservation', v)} className="md:col-span-2" />
                               </div>
                             )}
                             {activeTab === 'governance' && (
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <Field label="Source" value={editData.source ?? ''} onChange={v => handleField('source', v)} />
                                 <Field label="Content Owner" value={editData.contentOwner ?? ''} onChange={v => handleField('contentOwner', v)} />
                                 <Select label="Verification Status" value={editData.verificationStatus ?? 'pending'} options={['verified', 'unverified', 'pending']} onChange={v => handleField('verificationStatus', v)} />
@@ -307,6 +308,7 @@ function DestinationsPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
