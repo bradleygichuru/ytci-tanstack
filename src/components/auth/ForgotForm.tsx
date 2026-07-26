@@ -1,0 +1,70 @@
+import { useForm } from '@tanstack/react-form'
+import { z } from 'zod'
+import { authClient } from '#/lib/auth-client'
+import { Link } from '@tanstack/react-router'
+
+const forgotSchema = z.object({
+  email: z.string().email('Enter a valid email address'),
+})
+
+export function ForgotForm() {
+  const form = useForm({
+    defaultValues: { email: '' },
+    validators: { onSubmit: forgotSchema },
+    onSubmit: async ({ value }) => {
+      try {
+        await authClient.forgetPassword({ email: value.email })
+      } catch (err) {
+        console.error('Forgot password failed', err)
+      }
+    },
+  })
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        form.handleSubmit()
+      }}
+      className="space-y-5"
+    >
+      <p className="text-sm leading-relaxed text-[#42493e]">
+        Enter the email address associated with your account and we&apos;ll send you a link to reset your password.
+      </p>
+
+      <form.Field name="email">
+        {(field) => (
+          <div>
+            <label className="mb-1.5 block text-sm font-semibold text-[#191c1d]">Email</label>
+            <input
+              type="email"
+              placeholder="admin@example.com"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              className="w-full rounded-lg border px-4 py-3 text-sm text-[#191c1d] outline-none transition-all placeholder:text-[#42493e] focus:border-[#154212] focus:ring-1 focus:ring-[#154212]"
+              style={{ borderColor: '#c2c9bb' }}
+            />
+            {field.state.meta.errors && (
+              <p className="mt-1 text-xs text-[#ba1a1a]">{field.state.meta.errors.join(', ')}</p>
+            )}
+          </div>
+        )}
+      </form.Field>
+
+      <button
+        type="submit"
+        className="w-full rounded-full bg-[#154212] py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02]"
+      >
+        Send Reset Link
+      </button>
+
+      <p className="text-center text-xs text-[#42493e]">
+        <Link to="/login" className="font-semibold text-[#345a00] hover:underline">
+          Back to sign in
+        </Link>
+      </p>
+    </form>
+  )
+}
