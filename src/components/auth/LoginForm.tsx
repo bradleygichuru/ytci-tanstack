@@ -2,6 +2,7 @@ import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { authClient } from '#/lib/auth-client'
 import { useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email address'),
@@ -14,6 +15,7 @@ interface LoginFormProps {
 
 export function LoginForm({ redirectTo }: LoginFormProps) {
   const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
   const form = useForm({
     defaultValues: { email: '', password: '' },
     validators: { onSubmit: loginSchema },
@@ -25,6 +27,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
           password: value.password,
           callbackURL: redirectTo ?? '/',
         })
+        navigate({ to: redirectTo ?? '/analytics' })
       } catch (err) {
         setError('Login failed — check your credentials or account status.')
         console.error('Sign in failed', err)
