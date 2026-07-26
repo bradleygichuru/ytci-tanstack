@@ -10,11 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NoAccessRouteImport } from './routes/no-access'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedAiConfigRouteImport } from './routes/_authenticated/ai-config'
+import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
+import { Route as AuthenticatedConservationRouteImport } from './routes/_authenticated/conservation'
+import { Route as AuthenticatedDestinationsRouteImport } from './routes/_authenticated/destinations'
+import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
+import { Route as AuthenticatedLmsRouteImport } from './routes/_authenticated/lms'
+import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
+import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as DemoBetterAuthRouteImport } from './routes/demo/better-auth'
 import { Route as DemoTableRouteImport } from './routes/demo/table'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
@@ -25,6 +35,10 @@ import { Route as DemoFormSimpleRouteImport } from './routes/demo/form.simple'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -51,6 +65,53 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAiConfigRoute = AuthenticatedAiConfigRouteImport.update({
+  id: '/ai-config',
+  path: '/ai-config',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCampaignsRoute = AuthenticatedCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedConservationRoute =
+  AuthenticatedConservationRouteImport.update({
+    id: '/conservation',
+    path: '/conservation',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDestinationsRoute =
+  AuthenticatedDestinationsRouteImport.update({
+    id: '/destinations',
+    path: '/destinations',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedEventsRoute = AuthenticatedEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedLmsRoute = AuthenticatedLmsRouteImport.update({
+  id: '/lms',
+  path: '/lms',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMediaRoute = AuthenticatedMediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const DemoBetterAuthRoute = DemoBetterAuthRouteImport.update({
   id: '/demo/better-auth',
@@ -90,6 +151,15 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/ai-config': typeof AuthenticatedAiConfigRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/campaigns': typeof AuthenticatedCampaignsRoute
+  '/conservation': typeof AuthenticatedConservationRoute
+  '/destinations': typeof AuthenticatedDestinationsRoute
+  '/events': typeof AuthenticatedEventsRoute
+  '/lms': typeof AuthenticatedLmsRoute
+  '/media': typeof AuthenticatedMediaRoute
+  '/users': typeof AuthenticatedUsersRoute
   '/demo/better-auth': typeof DemoBetterAuthRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
@@ -104,6 +174,15 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/ai-config': typeof AuthenticatedAiConfigRoute
+  '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/campaigns': typeof AuthenticatedCampaignsRoute
+  '/conservation': typeof AuthenticatedConservationRoute
+  '/destinations': typeof AuthenticatedDestinationsRoute
+  '/events': typeof AuthenticatedEventsRoute
+  '/lms': typeof AuthenticatedLmsRoute
+  '/media': typeof AuthenticatedMediaRoute
+  '/users': typeof AuthenticatedUsersRoute
   '/demo/better-auth': typeof DemoBetterAuthRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
@@ -114,11 +193,21 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/ai-config': typeof AuthenticatedAiConfigRoute
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
+  '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
+  '/_authenticated/conservation': typeof AuthenticatedConservationRoute
+  '/_authenticated/destinations': typeof AuthenticatedDestinationsRoute
+  '/_authenticated/events': typeof AuthenticatedEventsRoute
+  '/_authenticated/lms': typeof AuthenticatedLmsRoute
+  '/_authenticated/media': typeof AuthenticatedMediaRoute
+  '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/demo/better-auth': typeof DemoBetterAuthRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
@@ -135,6 +224,15 @@ export interface FileRouteTypes {
     | '/login'
     | '/no-access'
     | '/reset-password'
+    | '/ai-config'
+    | '/analytics'
+    | '/campaigns'
+    | '/conservation'
+    | '/destinations'
+    | '/events'
+    | '/lms'
+    | '/media'
+    | '/users'
     | '/demo/better-auth'
     | '/demo/table'
     | '/demo/tanstack-query'
@@ -149,6 +247,15 @@ export interface FileRouteTypes {
     | '/login'
     | '/no-access'
     | '/reset-password'
+    | '/ai-config'
+    | '/analytics'
+    | '/campaigns'
+    | '/conservation'
+    | '/destinations'
+    | '/events'
+    | '/lms'
+    | '/media'
+    | '/users'
     | '/demo/better-auth'
     | '/demo/table'
     | '/demo/tanstack-query'
@@ -158,11 +265,21 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
     | '/forgot-password'
     | '/login'
     | '/no-access'
     | '/reset-password'
+    | '/_authenticated/ai-config'
+    | '/_authenticated/analytics'
+    | '/_authenticated/campaigns'
+    | '/_authenticated/conservation'
+    | '/_authenticated/destinations'
+    | '/_authenticated/events'
+    | '/_authenticated/lms'
+    | '/_authenticated/media'
+    | '/_authenticated/users'
     | '/demo/better-auth'
     | '/demo/table'
     | '/demo/tanstack-query'
@@ -173,6 +290,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
@@ -193,6 +311,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -229,6 +354,69 @@ declare module '@tanstack/react-router' {
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/ai-config': {
+      id: '/_authenticated/ai-config'
+      path: '/ai-config'
+      fullPath: '/ai-config'
+      preLoaderRoute: typeof AuthenticatedAiConfigRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/analytics': {
+      id: '/_authenticated/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/campaigns': {
+      id: '/_authenticated/campaigns'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof AuthenticatedCampaignsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/conservation': {
+      id: '/_authenticated/conservation'
+      path: '/conservation'
+      fullPath: '/conservation'
+      preLoaderRoute: typeof AuthenticatedConservationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/destinations': {
+      id: '/_authenticated/destinations'
+      path: '/destinations'
+      fullPath: '/destinations'
+      preLoaderRoute: typeof AuthenticatedDestinationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/events': {
+      id: '/_authenticated/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof AuthenticatedEventsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/lms': {
+      id: '/_authenticated/lms'
+      path: '/lms'
+      fullPath: '/lms'
+      preLoaderRoute: typeof AuthenticatedLmsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/media': {
+      id: '/_authenticated/media'
+      path: '/media'
+      fullPath: '/media'
+      preLoaderRoute: typeof AuthenticatedMediaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users': {
+      id: '/_authenticated/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AuthenticatedUsersRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/demo/better-auth': {
       id: '/demo/better-auth'
@@ -275,8 +463,37 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedAiConfigRoute: typeof AuthenticatedAiConfigRoute
+  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
+  AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
+  AuthenticatedConservationRoute: typeof AuthenticatedConservationRoute
+  AuthenticatedDestinationsRoute: typeof AuthenticatedDestinationsRoute
+  AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
+  AuthenticatedLmsRoute: typeof AuthenticatedLmsRoute
+  AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
+  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAiConfigRoute: AuthenticatedAiConfigRoute,
+  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
+  AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
+  AuthenticatedConservationRoute: AuthenticatedConservationRoute,
+  AuthenticatedDestinationsRoute: AuthenticatedDestinationsRoute,
+  AuthenticatedEventsRoute: AuthenticatedEventsRoute,
+  AuthenticatedLmsRoute: AuthenticatedLmsRoute,
+  AuthenticatedMediaRoute: AuthenticatedMediaRoute,
+  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
