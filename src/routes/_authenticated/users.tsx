@@ -1,11 +1,11 @@
 import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { authClient } from '#/lib/auth-client'
 import {
   Shield, Prohibit, CheckCircle, PencilSimple,
-  FloppyDisk, X, PlusCircle, Copy,
+  FloppyDisk, X, PlusCircle, Copy, MagnifyingGlass,
 } from '@phosphor-icons/react'
 import { listUsers, createUser, updateUser, listAuditLog } from '#/lib/users.functions'
 import type { UserItem, AuditItem } from '#/lib/users.functions'
@@ -35,7 +35,9 @@ export const Route = createFileRoute('/_authenticated/users')({
   },
   component: UsersPage })
 
-const ROLE_OPTIONS = ['super_admin', 'administrator', 'moderator', 'county_officer']
+const ROLE_OPTIONS = ['super_admin', 'administrator', 'moderator', 'county_officer'] as const
+type RoleFilter = (typeof ROLE_OPTIONS)[number] | null
+type StatusFilter = 'all' | 'active' | 'banned'
 
 function UsersPage() {
   const { data: session } = authClient.useSession()
@@ -52,15 +54,66 @@ function UsersPage() {
   const [createConsent, setCreateConsent] = useState(false)
   const [createResult, setCreateResult] = useState<{ email: string; password: string } | null>(null)
   const [createLoading, setCreateLoading] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>(null)
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const searchRef = useRef('')
+  const roleFilterRef = useRef<RoleFilter>(null)
+  const statusFilterRef = useRef<StatusFilter>('all')
 
-  const loadData = useCallback(async () => {
-    const r = await listUsers({ data: {} })
-    setData(r.users)
-    const ra = await listAuditLog({ data: {} })
-    setAudit(ra.items)
+  const loadData = useCallback(async (opts?: { search?: string; role?: RoleFilter; status?: StatusFilter }) => {
+    const s = opts?.search ?? searchRef.current
+    const r = opts?.role ?? roleFilterRef.current
+    const st = opts?.status ?? statusFilterRef.current
+    const params: Record<string, unknown> = {}
+    if (s) {
+      params.searchValue = s
+      params.searchField = s.includes('@') ? 'email' : 'name'
+    }
+    if (r) { params.filterField = 'role'; params.filterValue = r; params.filterOperator = 'eq' }
+    if (st === 'active') { params.filterField = 'banned'; params.filterValue = 'false'; params.filterOperator = 'eq' }
+    if (st === 'banned') { params.filterField = 'banned'; params.filterValue = 'true'; params.filterOperator = 'eq' }
+    setLoading(true)
+    try {
+      const res = await listUsers({ data: params })
+      setData(res.users)
+      setTotal(res.total)
+      const ra = await listAuditLog({ data: {} })
+      setAudit(ra.items)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  useEffect(() => { loadData() }, [loadData])
+  const loadDataRef = useRef(loadData)
+  loadDataRef.current = loadData
+
+  useEffect(() => {
+    loadData()
+    return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
+  }, [])
+
+  const handleSearchChange = useCallback((val: string) => {
+    searchRef.current = val
+    setSearchValue(val)
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => loadDataRef.current({ search: val }), 300)
+  }, [])
+
+  const handleRoleFilter = useCallback((role: RoleFilter) => {
+    roleFilterRef.current = role
+    setRoleFilter(role)
+    loadData({ role })
+  }, [loadData])
+
+  const handleStatusFilter = useCallback((status: StatusFilter) => {
+    statusFilterRef.current = status
+    setStatusFilter(status)
+    loadData({ status })
+  }, [loadData])
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
@@ -106,9 +159,18 @@ function UsersPage() {
   }, [])
 
   const counts = { total: data.length, banned: data.filter(u => u.banned).length, active: data.filter(u => !u.banned).length }
-  const roleCounts = { super_admin: data.filter(u => u.role === 'super_admin').length, administrator: data.filter(u => u.role === 'administrator').length, moderator: data.filter(u => u.role === 'moderator').length, county_officer: data.filter(u => u.role === 'county_officer').length }
+  const roleCounts = {
+    super_admin: data.filter(u => u.role === 'super_admin').length,
+    administrator: data.filter(u => u.role === 'administrator').length,
+    moderator: data.filter(u => u.role === 'moderator').length,
+    county_officer: data.filter(u => u.role === 'county_officer').length,
+  }
 
-  if (!data.length && audit.length === 0) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading...</div>
+  const statusFilters: { key: StatusFilter; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'active', label: 'Active' },
+    { key: 'banned', label: 'Banned' },
+  ]
 
   return (
     <div>
@@ -121,7 +183,7 @@ function UsersPage() {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Total Users</div>
-          <div className="mt-1 font-sans text-3xl font-bold text-[var(--on-surface)]">{counts.total}</div>
+          <div className="mt-1 font-sans text-3xl font-bold text-[var(--on-surface)]">{total}</div>
         </div>
         <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Active Directory</div>
@@ -145,7 +207,7 @@ function UsersPage() {
       <div className="mb-6 mt-6 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
         {(['users', 'audit'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 text-sm font-semibold ${tab === t ? 'bg-white text-[var(--on-surface)] shadow-sm' : 'text-[var(--on-surface-variant)]'}`}>
-            {t === 'users' ? 'Users' : 'Consent Audit'} <span className="ml-1 rounded-full bg-[var(--surface-3)] px-1.5 py-0.5 text-[10px]">{t === 'users' ? data.length : audit.length}</span>
+            {t === 'users' ? 'Users' : 'Consent Audit'} <span className="ml-1 rounded-full bg-[var(--surface-3)] px-1.5 py-0.5 text-[10px]">{t === 'users' ? total : audit.length}</span>
           </button>
         ))}
       </div>
@@ -153,93 +215,128 @@ function UsersPage() {
       {/* Users tab */}
       {tab === 'users' && (
         <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="flex items-center justify-between border-b border-[var(--surface-4)] px-5 py-3">
-            <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data.length} users</span>
-            <button onClick={() => { setCreateOpen(true); setCreateResult(null) }} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New User</button>
+          {/* Toolbar */}
+          <div className="flex flex-wrap items-center gap-3 border-b border-[var(--surface-4)] px-5 py-3">
+            <div className="relative">
+              <MagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--on-surface-variant)]" weight="duotone" />
+              <input
+                placeholder="Search by name or email..."
+                value={searchValue}
+                onChange={e => handleSearchChange(e.target.value)}
+                className="h-9 w-60 rounded-md border border-[var(--outline-muted)] bg-white pl-9 text-sm text-[var(--on-surface)] placeholder:text-[var(--on-surface-variant)] focus:border-[var(--forest)] focus:ring-1 focus:ring-[var(--forest)]" />
+            </div>
+
+            {statusFilters.map(f => (
+              <button key={f.key} onClick={() => handleStatusFilter(f.key)}
+                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${statusFilter === f.key ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
+                {f.label}
+              </button>
+            ))}
+
+            <div className="h-5 w-px bg-[var(--surface-4)]" />
+
+            {([null, ...ROLE_OPTIONS] as const).map(r => (
+              <button key={r ?? 'all'} onClick={() => handleRoleFilter(r)}
+                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${roleFilter === r ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
+                {r ? r.replace(/_/g, ' ') : 'All Roles'}
+              </button>
+            ))}
+
+            <div className="ml-auto flex items-center gap-3">
+              <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{total} users</span>
+              <button onClick={() => { setCreateOpen(true); setCreateResult(null) }} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New User</button>
+            </div>
           </div>
+
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
             <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
               <th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Role</th><th className="px-5 py-3">County</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Created</th><th className="w-12 px-5 py-3" />
             </tr></thead>
             <tbody>
-              {data.map(u => {
-                const isSelected = selectedId === u.id
-                return (
-                  <FragmentRow key={u.id}>
-                    <tr onClick={() => handleSelect(u.id)} className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${isSelected ? 'bg-[var(--amber-bg)]' : ''}`}>
-                      <td className="px-5 py-3"><span className="font-semibold text-[var(--on-surface)]">{u.name}</span></td>
-                      <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{u.email}</td>
-                      <td className="px-5 py-3"><RolePill role={u.role} /></td>
-                      <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{u.county}</td>
-                      <td className="px-5 py-3">{u.banned ? <span className="flex items-center gap-1 text-xs font-semibold text-[var(--error)]"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Banned</span> : <span className="flex items-center gap-1 text-xs font-semibold text-[var(--leaf)]"><CheckCircle className="h-3.5 w-3.5" weight="fill" /> Active</span>}</td>
-                      <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(u.createdAt).toLocaleDateString()}</td>
-                      <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" /></td>
-                    </tr>
-                    {isSelected && editData && (
-                      <tr><td colSpan={7} className="border-b p-0">
-                        <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
-                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <UField label="Name" value={editData.name} onChange={v => setEditData({ ...editData, name: v })} />
-                            <UStaticField label="Email" value={editData.email} />
-                            <div>
-                              <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Role</label>
-                              <select value={editData.role} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, role: e.target.value })}
-                                className={`w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm ${isSuperAdmin ? 'text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)]'} focus:border-[var(--forest)] disabled:cursor-not-allowed`}>
-                                {ROLE_OPTIONS.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
-                              </select>
-                              {!isSuperAdmin && <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Only super-admin can change roles (#5)</p>}
-                            </div>
-                            <UField label="Age Range" value={editData.ageRange ?? ''} onChange={v => setEditData({ ...editData, ageRange: v })} />
-                            <UField label="County" value={editData.county ?? ''} onChange={v => setEditData({ ...editData, county: v })} />
-                            <UField label="Languages" value={editData.languages ?? ''} onChange={v => setEditData({ ...editData, languages: v })} />
-                            <UField label="Preferences" value={editData.preferences ?? ''} onChange={v => setEditData({ ...editData, preferences: v })} />
+              {loading ? (
+                <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">Loading...</td></tr>
+              ) : data.length === 0 ? (
+                <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No users match the current filters.</td></tr>
+              ) : (
+                data.map(u => {
+                  const isSelected = selectedId === u.id
+                  return (
+                    <FragmentRow key={u.id}>
+                      <tr onClick={() => handleSelect(u.id)} className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${isSelected ? 'bg-[var(--amber-bg)]' : ''}`}>
+                        <td className="px-5 py-3"><span className="font-semibold text-[var(--on-surface)]">{u.name}</span></td>
+                        <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{u.email}</td>
+                        <td className="px-5 py-3"><RolePill role={u.role} /></td>
+                        <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{u.county}</td>
+                        <td className="px-5 py-3">{u.banned ? <span className="flex items-center gap-1 text-xs font-semibold text-[var(--error)]"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Banned</span> : <span className="flex items-center gap-1 text-xs font-semibold text-[var(--leaf)]"><CheckCircle className="h-3.5 w-3.5" weight="fill" /> Active</span>}</td>
+                        <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(u.createdAt).toLocaleDateString()}</td>
+                        <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" /></td>
+                      </tr>
+                      {isSelected && editData && (
+                        <tr><td colSpan={7} className="border-b p-0">
+                          <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                              <UField label="Name" value={editData.name} onChange={v => setEditData({ ...editData, name: v })} />
+                              <UStaticField label="Email" value={editData.email} />
+                              <div>
+                                <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Role</label>
+                                <select value={editData.role} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, role: e.target.value })}
+                                  className={`w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm ${isSuperAdmin ? 'text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)]'} focus:border-[var(--forest)] disabled:cursor-not-allowed`}>
+                                  {ROLE_OPTIONS.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+                                </select>
+                                {!isSuperAdmin && <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Only super-admin can change roles (#5)</p>}
+                              </div>
+                              <UField label="Age Range" value={editData.ageRange ?? ''} onChange={v => setEditData({ ...editData, ageRange: v })} />
+                              <UField label="County" value={editData.county ?? ''} onChange={v => setEditData({ ...editData, county: v })} />
+                              <UField label="Languages" value={editData.languages ?? ''} onChange={v => setEditData({ ...editData, languages: v })} />
+                              <UField label="Preferences" value={editData.preferences ?? ''} onChange={v => setEditData({ ...editData, preferences: v })} />
 
-                            {/* Suspension */}
-                            <div className="rounded-lg border border-[var(--surface-4)] p-4 md:col-span-2">
-                              <label className="flex cursor-pointer items-center gap-2">
-                                <input type="checkbox" checked={editData.banned} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, banned: e.target.checked, banReason: e.target.checked ? '' : null })}
-                                  className="accent-[var(--error)] disabled:cursor-not-allowed" />
-                                <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Suspend account</span>
-                              </label>
-                              {editData.banned && (
-                                <input value={editData.banReason ?? ''} onChange={e => setEditData({ ...editData, banReason: e.target.value })}
-                                  placeholder="Reason for suspension..."
-                                  className="mt-2 w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" />
-                              )}
-                              {!isSuperAdmin && <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Only super-admin can suspend users (#5)</p>}
-                            </div>
+                              {/* Suspension */}
+                              <div className="rounded-lg border border-[var(--surface-4)] p-4 md:col-span-2">
+                                <label className="flex cursor-pointer items-center gap-2">
+                                  <input type="checkbox" checked={editData.banned} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, banned: e.target.checked, banReason: e.target.checked ? '' : null })}
+                                    className="accent-[var(--error)] disabled:cursor-not-allowed" />
+                                  <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Suspend account</span>
+                                </label>
+                                {editData.banned && (
+                                  <input value={editData.banReason ?? ''} onChange={e => setEditData({ ...editData, banReason: e.target.value })}
+                                    placeholder="Reason for suspension..."
+                                    className="mt-2 w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" />
+                                )}
+                                {!isSuperAdmin && <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Only super-admin can suspend users (#5)</p>}
+                              </div>
 
-                            {/* Consent toggle */}
-                            <div className="rounded-lg border border-[var(--surface-4)] p-4 md:col-span-2">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Shield className="h-3.5 w-3.5" weight="duotone" /> Consent {editData.consentGrantedAt ? 'granted' : 'not granted'}</span>
-                                  {editData.consentGrantedAt && <p className="mt-0.5 text-[10px] text-[var(--on-surface-variant)]">Granted at {new Date(editData.consentGrantedAt).toLocaleDateString()}</p>}
+                              {/* Consent toggle */}
+                              <div className="rounded-lg border border-[var(--surface-4)] p-4 md:col-span-2">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Shield className="h-3.5 w-3.5" weight="duotone" /> Consent {editData.consentGrantedAt ? 'granted' : 'not granted'}</span>
+                                    {editData.consentGrantedAt && <p className="mt-0.5 text-[10px] text-[var(--on-surface-variant)]">Granted at {new Date(editData.consentGrantedAt).toLocaleDateString()}</p>}
+                                  </div>
+                                  {isSuperAdmin ? (
+                                    editData.consentGrantedAt ? (
+                                      <button onClick={() => setEditData({ ...editData, consentGrantedAt: null })}
+                                        className="rounded-md border border-[var(--error)] px-3 py-1.5 text-[11px] font-bold text-[var(--error)]">Revoke Consent</button>
+                                    ) : (
+                                      <button onClick={() => setEditData({ ...editData, consentGrantedAt: new Date().toISOString() })}
+                                        className="rounded-md border border-[var(--leaf)] px-3 py-1.5 text-[11px] font-bold text-[var(--leaf)]">Grant Consent</button>
+                                    )
+                                  ) : <p className="text-[10px] text-[var(--on-surface-variant)]">Only super-admin can manage consent</p>}
                                 </div>
-                                {isSuperAdmin ? (
-                                  editData.consentGrantedAt ? (
-                                    <button onClick={() => setEditData({ ...editData, consentGrantedAt: null })}
-                                      className="rounded-md border border-[var(--error)] px-3 py-1.5 text-[11px] font-bold text-[var(--error)]">Revoke Consent</button>
-                                  ) : (
-                                    <button onClick={() => setEditData({ ...editData, consentGrantedAt: new Date().toISOString() })}
-                                      className="rounded-md border border-[var(--leaf)] px-3 py-1.5 text-[11px] font-bold text-[var(--leaf)]">Grant Consent</button>
-                                  )
-                                ) : <p className="text-[10px] text-[var(--on-surface-variant)]">Only super-admin can manage consent</p>}
                               </div>
                             </div>
-                          </div>
 
-                          <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                            <button onClick={handleSave} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm"><FloppyDisk className="h-4 w-4" weight="duotone" /> Save</button>
-                            <button onClick={() => setSelectedId(null)} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]"><X className="h-4 w-4" weight="duotone" /> Cancel</button>
+                            <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
+                              <button onClick={handleSave} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm"><FloppyDisk className="h-4 w-4" weight="duotone" /> Save</button>
+                              <button onClick={() => setSelectedId(null)} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]"><X className="h-4 w-4" weight="duotone" /> Cancel</button>
+                            </div>
                           </div>
-                        </div>
-                      </td></tr>
-                    )}
-                  </FragmentRow>
-                )
-              })}
+                        </td></tr>
+                      )}
+                    </FragmentRow>
+                  )
+                })
+              )}
             </tbody>
           </table>
           </div>

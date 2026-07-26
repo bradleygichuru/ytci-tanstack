@@ -90,7 +90,7 @@ function reqHeaders(): Record<string, string> {
 }
 
 export const listUsers = createServerFn({ method: "GET" })
-  .validator((d: { limit?: number; offset?: number; sortBy?: string; sortDirection?: string; searchValue?: string; searchField?: string }) => d)
+  .validator((d: { limit?: number; offset?: number; sortBy?: string; sortDirection?: string; searchValue?: string; searchField?: string; filterField?: string; filterValue?: string; filterOperator?: string }) => d)
   .handler(async ({ data }) => {
     const headers = reqHeaders()
     await requireUsersRead(headers)
@@ -101,6 +101,9 @@ export const listUsers = createServerFn({ method: "GET" })
     if (data.sortDirection) query.sortDirection = data.sortDirection
     if (data.searchValue) query.searchValue = data.searchValue
     if (data.searchField) query.searchField = data.searchField
+    if (data.filterField) query.filterField = data.filterField
+    if (data.filterValue) query.filterValue = data.filterValue
+    if (data.filterOperator) query.filterOperator = data.filterOperator
     const result = await auth.api.listUsers({ query, headers }) as unknown as { users: Record<string, unknown>[]; total: number }
     const enriched = await Promise.all(result.users.map(enrichUser))
     return { users: enriched, total: result.total ?? result.users.length, limit, offset }
