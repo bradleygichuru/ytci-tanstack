@@ -5,7 +5,7 @@ export const eventSchema = z.object({
   organizer: z.string().optional().default(''),
   county: z.string().min(1, 'County is required'),
   venue: z.string().optional().default(''),
-  startDate: z.string().min(1, 'Start date is required'),
+  date: z.string().min(1, 'Start date is required'),
   endDate: z.string().optional().default(''),
   type: z.string().optional().default(''),
   description: z.string().optional().default(''),
@@ -17,7 +17,7 @@ export const eventSchema = z.object({
 }).refine(
   (data) => {
     if (!data.endDate) return true
-    return data.endDate >= data.startDate
+    return data.endDate >= data.date
   },
   { message: 'End date must be on or after start date', path: ['endDate'] }
 )

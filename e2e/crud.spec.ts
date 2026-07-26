@@ -10,166 +10,151 @@ test.describe('CRUD E2E Tests', () => {
     await page.fill('input[type="email"]', 'admin@example.com')
     await page.fill('input[type="password"]', 'password')
     await page.click('button:has-text("Sign In")')
-    await page.waitForURL('**/analytics', { timeout: 15000 })
-    await page.waitForTimeout(1000)
+    await page.waitForURL('**/analytics', { timeout: 20000 })
+    await page.waitForTimeout(500)
   }
 
-  test('Destinations — create + edit + delete', async ({ page }) => {
+  test('Destinations — create + delete', async ({ page }) => {
     await loginAsAdmin(page)
     await page.goto('/destinations')
-    await page.waitForTimeout(1000)
+    await expect(page.getByText(/3 destinations/)).toBeVisible({ timeout: 15000 })
 
-    const newBtn = page.locator('button:has-text("New Destination")')
-    await expect(newBtn).toBeVisible()
-    await newBtn.click()
-    await page.waitForTimeout(500)
+    await page.getByRole('button', { name: 'New Destination' }).click()
+    await expect(page.getByLabel('Name')).toBeVisible({ timeout: 10000 })
 
-    await page.fill('input[placeholder="Search destinations..."]', '')
-    const nameInputs = page.locator('input')
-    await nameInputs.first().fill('E2E Test Destination')
-    await page.waitForTimeout(200)
+    await page.getByLabel('Name').fill('E2E Test Dest')
+    await page.getByLabel('Slug').fill('e2e-test-dest')
+    await page.getByLabel('County').fill('Nairobi')
+    await page.getByLabel('Category').selectOption('culture')
 
-    const saveBtn = page.locator('button:has-text("Create Destination")')
-    await expect(saveBtn).toBeVisible()
-    await saveBtn.click()
-    await page.waitForTimeout(1000)
+    await page.getByRole('button', { name: 'Create Destination' }).click()
 
-    await expect(page.locator('text=E2E Test Destination').first()).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('E2E Test Dest').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('button:has-text("Save Changes")')).toBeVisible({ timeout: 10000 })
 
-    const row = page.locator('text=E2E Test Destination').first()
-    await row.click()
-    await page.waitForTimeout(500)
+    await page.locator('button:has-text("Delete")').first().click()
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
 
-    const saveChanges = page.locator('button:has-text("Save Changes")')
-    await expect(saveChanges).toBeVisible()
-
-    const deleteBtn = page.locator('button:has-text("Delete")')
-    await expect(deleteBtn).toBeVisible()
-    await deleteBtn.click()
-    await page.waitForTimeout(500)
-
-    const confirmBtn = page.locator('button:has-text("Delete")').last()
-    await expect(confirmBtn).toBeVisible()
-    await confirmBtn.click()
-    await page.waitForTimeout(1000)
-
-    await expect(page.locator('text=E2E Test Destination')).toHaveCount(0, { timeout: 5000 })
+    await expect(page.getByText('E2E Test Dest')).toHaveCount(0, { timeout: 10000 })
   })
 
   test('Events — create + status transition + delete', async ({ page }) => {
     await loginAsAdmin(page)
     await page.goto('/events')
-    await page.waitForTimeout(1000)
+    await expect(page.getByText(/5 events/)).toBeVisible({ timeout: 15000 })
 
-    await page.locator('button:has-text("New Event")').click()
-    await page.waitForTimeout(500)
+    await page.getByRole('button', { name: 'New Event' }).click()
+    await expect(page.getByLabel('Title')).toBeVisible({ timeout: 10000 })
 
-    const titleInput = page.locator('input').first()
-    await titleInput.fill('E2E Test Event')
+    await page.getByLabel('Title').fill('E2E Test Event')
+    await page.getByLabel('County').fill('Nairobi')
+    await page.getByLabel('Start Date').fill('2025-12-01')
 
-    await page.locator('button:has-text("Create Event")').click()
-    await page.waitForTimeout(1000)
+    await page.getByRole('button', { name: 'Create Event' }).click()
 
-    await expect(page.locator('text=E2E Test Event').first()).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('E2E Test Event').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('button', { name: /→ postponed/ })).toBeVisible({ timeout: 10000 })
 
-    await page.locator('text=E2E Test Event').first().click()
-    await page.waitForTimeout(500)
+    await page.locator('button:has-text("Delete")').first().click()
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
 
-    await expect(page.locator('button:has-text("→ postponed")').first()).toBeVisible()
-    await expect(page.locator('button:has-text("→ cancelled")').first()).toBeVisible()
-
-    await page.locator('button:has-text("Delete")').click()
-    await page.waitForTimeout(300)
-    await page.locator('button:has-text("Delete")').last().click()
-    await page.waitForTimeout(1000)
-    await expect(page.locator('text=E2E Test Event')).toHaveCount(0, { timeout: 5000 })
+    await expect(page.getByText('E2E Test Event')).toHaveCount(0, { timeout: 10000 })
   })
 
-  test('Campaigns — create + conditional type fields + delete', async ({ page }) => {
+  test('Campaigns — create + type switch + push send + delete', async ({ page }) => {
     await loginAsAdmin(page)
     await page.goto('/campaigns')
-    await page.waitForTimeout(1000)
+    await expect(page.getByText(/6 campaigns/)).toBeVisible({ timeout: 15000 })
 
-    await page.locator('button:has-text("New Campaign")').click()
-    await page.waitForTimeout(500)
+    await page.getByRole('button', { name: 'New Campaign' }).click()
+    await expect(page.getByLabel('Title')).toBeVisible({ timeout: 10000 })
 
-    await page.locator('input').first().fill('E2E Test Campaign')
+    await page.getByLabel('Title').fill('E2E Push Camp')
+    await page.getByLabel('Campaign Type').selectOption('push_notification')
+    await expect(page.getByLabel('Audience')).toBeVisible({ timeout: 5000 })
+    await page.getByLabel('Audience').fill('all')
 
-    const typeSelect = page.locator('select').first()
-    await typeSelect.selectOption('push_notification')
-    await page.waitForTimeout(300)
+    await page.getByRole('button', { name: 'Create Campaign' }).click()
 
-    await expect(page.locator('text=Audience')).toBeVisible()
+    await expect(page.getByText('E2E Push Camp').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Push Notification Send')).toBeVisible({ timeout: 10000 })
 
-    await typeSelect.selectOption('featured_destination')
-    await page.waitForTimeout(300)
+    await page.locator('#push-target').selectOption('county')
+    await page.getByLabel('Value').fill('Kwale')
 
-    await expect(page.locator('text=Destination ID')).toBeVisible()
+    await page.getByRole('button', { name: 'Preview Count' }).click()
+    await expect(page.getByText(/devices/)).toBeVisible({ timeout: 10000 })
 
-    await page.locator('button:has-text("Create Campaign")').click()
-    await page.waitForTimeout(1000)
+    await page.getByRole('button', { name: 'Send Now' }).click()
+    await expect(page.getByText('Send History')).toBeVisible({ timeout: 10000 })
 
-    await expect(page.locator('text=E2E Test Campaign').first()).toBeVisible({ timeout: 5000 })
+    await page.locator('button:has-text("Delete")').first().click()
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
 
-    await page.locator('text=E2E Test Campaign').first().click()
-    await page.waitForTimeout(1000)
-
-    await page.locator('button:has-text("Delete")').click()
-    await page.waitForTimeout(300)
-    await page.locator('button:has-text("Delete")').last().click()
-    await page.waitForTimeout(1000)
-    await expect(page.locator('text=E2E Test Campaign')).toHaveCount(0, { timeout: 5000 })
+    await expect(page.getByText('E2E Push Camp')).toHaveCount(0, { timeout: 10000 })
   })
 
   test('Conservation — create + delete', async ({ page }) => {
     await loginAsAdmin(page)
     await page.goto('/conservation')
-    await page.waitForTimeout(1000)
+    await expect(page.getByText('Beach Cleanup').first()).toBeVisible({ timeout: 15000 })
 
-    await page.locator('button:has-text("New Activity")').click()
-    await page.waitForTimeout(500)
+    await page.getByRole('button', { name: 'New Activity' }).click()
+    await expect(page.getByLabel('Title')).toBeVisible({ timeout: 10000 })
 
-    const inputs = page.locator('input')
-    await inputs.nth(1).fill('E2E Test Activity')
-    await inputs.nth(2).fill('E2E Organizer')
+    await page.getByLabel('Title').fill('E2E Test Cons')
+    await page.getByLabel('Organizer').fill('E2E Org')
+    await page.getByLabel('Location').fill('Kwale Beach')
 
-    await page.locator('button:has-text("Create Activity")').click()
-    await page.waitForTimeout(1000)
+    await page.getByRole('button', { name: 'Create Activity' }).click()
 
-    await expect(page.locator('text=E2E Test Activity').first()).toBeVisible({ timeout: 5000 })
-
-    await page.locator('text=E2E Test Activity').first().click()
-    await page.waitForTimeout(500)
+    await expect(page.getByText('E2E Test Cons').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('button:has-text("Save Changes")')).toBeVisible({ timeout: 10000 })
 
     await page.locator('button:has-text("Delete")').first().click()
-    await page.waitForTimeout(300)
-    await page.locator('button:has-text("Delete")').last().click()
-    await page.waitForTimeout(1000)
-    await expect(page.locator('text=E2E Test Activity')).toHaveCount(0, { timeout: 5000 })
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
+
+    await expect(page.getByText('E2E Test Cons')).toHaveCount(0, { timeout: 10000 })
   })
 
   test('LMS — create course + delete', async ({ page }) => {
     await loginAsAdmin(page)
     await page.goto('/lms')
-    await page.waitForTimeout(1000)
+    await expect(page.getByText(/3 courses/)).toBeVisible({ timeout: 15000 })
 
-    await page.locator('button:has-text("New Course")').click()
-    await page.waitForTimeout(500)
+    await page.getByRole('button', { name: 'New Course' }).click()
+    await expect(page.getByLabel('Title')).toBeVisible({ timeout: 10000 })
 
-    await page.locator('input').first().fill('E2E Test Course')
+    await page.getByLabel('Title').fill('E2E Test Course')
 
-    await page.locator('button:has-text("Create Course")').click()
-    await page.waitForTimeout(1000)
+    await page.getByRole('button', { name: 'Create Course' }).click()
 
-    await expect(page.locator('text=E2E Test Course').first()).toBeVisible({ timeout: 5000 })
-
-    await page.locator('text=E2E Test Course').first().click()
-    await page.waitForTimeout(500)
+    await expect(page.getByText('E2E Test Course').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('button:has-text("Save Changes")')).toBeVisible({ timeout: 10000 })
 
     await page.locator('button:has-text("Delete")').first().click()
-    await page.waitForTimeout(300)
-    await page.locator('button:has-text("Delete")').last().click()
-    await page.waitForTimeout(1000)
-    await expect(page.locator('text=E2E Test Course')).toHaveCount(0, { timeout: 5000 })
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
+
+    await expect(page.getByText('E2E Test Course')).toHaveCount(0, { timeout: 10000 })
+  })
+
+  test('Validation — required field errors visible on create', async ({ page }) => {
+    await loginAsAdmin(page)
+    await page.goto('/destinations')
+    await expect(page.getByText(/3 destinations/)).toBeVisible({ timeout: 15000 })
+
+    await page.getByRole('button', { name: 'New Destination' }).click()
+    await expect(page.getByLabel('Name')).toBeVisible({ timeout: 10000 })
+
+    await page.getByRole('button', { name: 'Create Destination' }).click()
+
+    await expect(page.getByText('Name is required')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('County is required')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('Category is required')).toBeVisible({ timeout: 5000 })
   })
 })

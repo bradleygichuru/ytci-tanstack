@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Field, FieldLabel, FieldDescription, FieldError } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
@@ -9,13 +10,14 @@ interface FormFieldProps {
   description?: string
   error?: string
   required?: boolean
+  id?: string
   children?: React.ReactNode
 }
 
-export function FormField({ label, description, error, required, children }: FormFieldProps) {
+export function FormField({ label, description, error, required, id, children }: FormFieldProps) {
   return (
     <Field data-invalid={!!error || undefined}>
-      <FieldLabel>
+      <FieldLabel htmlFor={id}>
         {label}
         {required && <span className="text-destructive">*</span>}
       </FieldLabel>
@@ -32,9 +34,11 @@ export function FormInput({ label, description, error, required, value, onChange
   placeholder?: string
   type?: string
 }) {
+  const id = useId()
   return (
-    <FormField label={label} description={description} error={error} required={required}>
+    <FormField label={label} description={description} error={error} required={required} id={id}>
       <Input
+        id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
@@ -51,9 +55,11 @@ export function FormTextarea({ label, description, error, required, value, onCha
   onChange: (v: string) => void
   placeholder?: string
 }) {
+  const id = useId()
   return (
-    <FormField label={label} description={description} error={error} required={required}>
+    <FormField label={label} description={description} error={error} required={required} id={id}>
       <Textarea
+        id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
@@ -69,9 +75,11 @@ export function FormSelect({ label, description, error, required, value, onChang
   onChange: (v: string) => void
   options: string[]
 }) {
+  const id = useId()
   return (
-    <FormField label={label} description={description} error={error} required={required}>
+    <FormField label={label} description={description} error={error} required={required} id={id}>
       <select
+        id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
         aria-invalid={!!error || undefined}
@@ -89,9 +97,10 @@ export function FormSwitch({ label, description, error, required, checked, onCha
   checked: boolean
   onChange: (v: boolean) => void
 }) {
+  const id = useId()
   return (
-    <FormField label={label} description={description} error={error} required={required}>
-      <Switch checked={checked} onCheckedChange={onChange} />
+    <FormField label={label} description={description} error={error} required={required} id={id}>
+      <Switch id={id} checked={checked} onCheckedChange={onChange} />
     </FormField>
   )
 }
@@ -103,10 +112,11 @@ export function FormSlider({ label, description, error, required, value, onChang
   max?: number
   step?: number
 }) {
+  const id = useId()
   return (
-    <FormField label={label} description={description} error={error} required={required}>
+    <FormField label={label} description={description} error={error} required={required} id={id}>
       <div className="flex items-center gap-3">
-        <Slider value={[value]} onValueChange={([v]) => onChange(v)} min={min} max={max} step={step} className="flex-1" />
+        <Slider id={id} value={[value]} onValueChange={([v]) => onChange(v)} min={min} max={max} step={step} className="flex-1" />
         <span className="text-sm text-muted-foreground w-10 text-right">{value}</span>
       </div>
     </FormField>

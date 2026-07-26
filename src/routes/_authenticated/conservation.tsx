@@ -24,7 +24,7 @@ export const Route = createFileRoute('/_authenticated/conservation')({
   component: ConservationPage })
 
 function emptyAct(): Act {
-  return { id: '', title: '', organizer: '', location: '', locationPrivacyLevel: 'public', date: '', impactMetric: '', measurementUnit: '', impactGoal: 0, impactActual: 0, participantCount: 0, status: 'active', verificationRules: '', badgeAwarded: false, badgeName: '' }
+  return { id: '', title: '', organizer: '', location: '', locationPrivacyLevel: 'public', date: '', impactMetric: '', measurementUnit: '', impactGoal: 0, impactActual: 0, participantCount: 0, status: 'open', verificationRules: '', badgeAwarded: false, badgeName: '' }
 }
 
 function ConservationPage() {
@@ -116,6 +116,7 @@ function ConservationPage() {
       }
       await loadList()
       if (newId) {
+        setPanelMode('edit')
         setSelectedId(newId)
       } else {
         setSelectedId(null)

@@ -113,6 +113,7 @@ function CampaignsPage() {
       }
       await loadList()
       if (newId) {
+        setPanelMode('edit')
         setSelectedId(newId)
       } else {
         setSelectedId(null)
@@ -287,8 +288,8 @@ function CampaignsPage() {
                             {/* Audience selector */}
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-4 mb-3">
                               <div>
-                                <label className="mb-1 block text-[10px] font-semibold text-[var(--on-surface-variant)]">Target</label>
-                                <select value={pushAudience.type} onChange={e => { setPushAudience({ type: e.target.value as PushAudience['type'] }); setPushCount(null) }}
+                                <label htmlFor="push-target" className="mb-1 block text-[10px] font-semibold text-[var(--on-surface-variant)]">Target</label>
+                                <select id="push-target" value={pushAudience.type} onChange={e => { setPushAudience({ type: e.target.value as PushAudience['type'] }); setPushCount(null) }}
                                   className="w-full rounded-md border border-[var(--outline-muted)] px-2 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]">
                                   <option value="all">All Users</option>
                                   <option value="county">By County</option>
@@ -298,8 +299,8 @@ function CampaignsPage() {
                               </div>
                               {pushAudience.type !== 'all' && (
                                 <div>
-                                  <label className="mb-1 block text-[10px] font-semibold text-[var(--on-surface-variant)]">Value</label>
-                                  <input value={pushAudience.value ?? ''} onChange={e => { setPushAudience({ ...pushAudience, value: e.target.value }); setPushCount(null) }}
+                                  <label htmlFor="push-value" className="mb-1 block text-[10px] font-semibold text-[var(--on-surface-variant)]">Value</label>
+                                  <input id="push-value" value={pushAudience.value ?? ''} onChange={e => { setPushAudience({ ...pushAudience, value: e.target.value }); setPushCount(null) }}
                                     placeholder={pushAudience.type === 'county' ? 'e.g. Kwale' : pushAudience.type === 'role' ? 'e.g. administrator' : 'e.g. wildlife'}
                                     className="w-full rounded-md border border-[var(--outline-muted)] px-2 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]" />
                                 </div>
@@ -326,7 +327,7 @@ function CampaignsPage() {
                               </button>
                               <div className="flex items-center gap-1">
                                 <span className="text-[10px] text-[var(--on-surface-variant)]">or schedule:</span>
-                                <input type="datetime-local" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)}
+                                <input id="push-schedule" type="datetime-local" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)}
                                   className="rounded-md border border-[var(--outline-muted)] px-2 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]" />
                                 <button onClick={handlePushSchedule} disabled={pushSending || !scheduleTime || (pushAudience.type !== 'all' && !pushAudience.value)}
                                   className="rounded-full bg-[var(--amber)] px-3 py-1.5 text-xs font-bold text-[var(--forest)] shadow-sm disabled:opacity-50">

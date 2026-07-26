@@ -217,7 +217,7 @@ function DestinationsPage() {
           <table className="w-full min-w-[700px] text-sm">
             <thead>
               <tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
-                <th className="px-5 py-3">Name</th> <th className="px-5 py-3">County</th> <th className="px-5 py-3">Category</th> <th className="px-5 py-3">Status</th> <th className="px-5 py-3">Updated</th> <th className="w-24 px-5 py-3 text-right">Actions</th>
+                <th className="px-5 py-3">Name</th><th className="px-5 py-3">County</th><th className="px-5 py-3">Category</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Updated</th><th className="w-24 px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -234,7 +234,7 @@ function DestinationsPage() {
                       <button className="rounded p-1 text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]"><PencilSimple className="h-4 w-4" weight="duotone" /></button>
                     </td>
                   </tr>
-                  {(selectedId === d.id || (panelMode === 'create' && !selectedId)) && editData && (
+                  {selectedId === d.id && editData && (
                     <tr key={`${d.id}-detail`}>
                       <td colSpan={6} className="border-b bg-[var(--surface-2)] p-0">
                         <div className="border-t border-[var(--surface-4)]">
@@ -350,13 +350,11 @@ function DestinationsPage() {
                             <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
                               <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                                 {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
-                                {panelMode === 'create' ? 'Create Destination' : 'Save Changes'}
+                                Save Changes
                               </button>
-                              {panelMode === 'edit' && (
-                                <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
-                                  <Trash className="h-4 w-4" weight="duotone" /> Delete
-                                </button>
-                              )}
+                              <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                                <Trash className="h-4 w-4" weight="duotone" /> Delete
+                              </button>
                               <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]">
                                 <X className="h-4 w-4" weight="duotone" /> Cancel
                               </button>

@@ -103,6 +103,7 @@ function EventsPage() {
       }
       await loadList()
       if (newId) {
+        setPanelMode('edit')
         setSelectedId(newId)
       } else {
         setSelectedId(null)
