@@ -20,7 +20,7 @@ const queue = [
     destination: 'Costa Rica Canopy Tour',
     caption: 'Sharing my trip story with you all — first time in CR.',
     timeAgo: '2h ago',
-    gradient: 'from-emerald-700 via-emerald-800 to-emerald-950',
+    gradient: 'linear-gradient(135deg, #154212 0%, #244100 100%)',
   },
   {
     id: '2',
@@ -28,7 +28,7 @@ const queue = [
     destination: 'Hidden Cove Discovery',
     caption: 'Possible protected wildlife found in this area.',
     timeAgo: '4h ago',
-    gradient: 'from-sky-700 via-sky-800 to-slate-900',
+    gradient: 'linear-gradient(135deg, #2d5a27 0%, #345a00 100%)',
   },
   {
     id: '3',
@@ -36,7 +36,7 @@ const queue = [
     destination: 'Volcanic Highlands',
     caption: 'Sunrise hike on the active ridge — breathtaking.',
     timeAgo: '6h ago',
-    gradient: 'from-orange-500 via-rose-600 to-purple-900',
+    gradient: 'linear-gradient(135deg, #785a00 0%, #fdc002 100%)',
   },
   {
     id: '4',
@@ -44,7 +44,7 @@ const queue = [
     destination: 'Maasai Mara Migration',
     caption: 'Wildebeest crossing at dawn — full herd in motion.',
     timeAgo: '8h ago',
-    gradient: 'from-amber-500 via-orange-600 to-red-700',
+    gradient: 'linear-gradient(135deg, #ba1a1a 0%, #fdc002 100%)',
   },
 ]
 
@@ -53,25 +53,29 @@ const aiInsights = [
     icon: ShieldCheck,
     label: 'Auto-flagged',
     text: 'EXIF location data stripped successfully. Wildlife coordinates removed.',
-    color: 'text-emerald-600',
+    color: 'var(--leaf)',
+    bg: 'var(--leaf-bg)',
   },
   {
     icon: Path,
     label: 'Similar past',
     text: 'A similar story from @eco_traveler was approved 2 days ago.',
-    color: 'text-sky-600',
+    color: 'var(--forest)',
+    bg: 'rgba(21, 66, 18, 0.10)',
   },
   {
     icon: Sparkle,
     label: 'Caption quality',
     text: 'On-brand. No policy flags detected. Alt text suggested for 2 of 5 images.',
-    color: 'text-amber-600',
+    color: 'var(--amber-deep)',
+    bg: 'var(--amber-bg)',
   },
   {
     icon: IdentificationCard,
     label: 'Reporter signal',
     text: 'No active reports against this creator. Account age 14 months.',
-    color: 'text-neutral-500',
+    color: 'var(--on-surface-variant)',
+    bg: 'var(--surface-2)',
   },
 ]
 
@@ -94,16 +98,24 @@ export function VariantB_ModerationDetail() {
       activeTab={activeTab}
       onTabChange={setActiveTab}
     >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
         {/* LEFT: Queue list */}
-        <div className="overflow-hidden rounded-2xl border border-neutral-200/60 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4">
-            <h2 className="font-serif text-base font-semibold text-neutral-800">Queue</h2>
-            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+        <div
+          className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white"
+          style={{ boxShadow: 'var(--card-shadow)' }}
+        >
+          <div className="flex items-center justify-between border-b border-[var(--surface-4)] px-5 py-4">
+            <h2 className="font-sans text-base font-bold" style={{ color: 'var(--on-surface)' }}>
+              Queue
+            </h2>
+            <span
+              className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest"
+              style={{ backgroundColor: 'var(--amber-bg)', color: 'var(--amber-deep)' }}
+            >
               {queue.length} Pending
             </span>
           </div>
-          <ul className="divide-y divide-neutral-100">
+          <ul className="divide-y divide-[var(--surface-4)]">
             {queue.map((item) => {
               const isActive = item.id === selectedId
               return (
@@ -111,27 +123,32 @@ export function VariantB_ModerationDetail() {
                   <button
                     onClick={() => setSelectedId(item.id)}
                     className={`flex w-full items-stretch gap-3 p-3 text-left transition-colors ${
-                      isActive
-                        ? 'bg-amber-50/60'
-                        : 'hover:bg-neutral-50'
+                      isActive ? '' : 'hover:bg-[var(--surface-2)]'
                     }`}
+                    style={isActive ? { backgroundColor: 'var(--amber-bg)' } : undefined}
                   >
                     <div
-                      className={`w-1 self-stretch rounded ${
-                        isActive ? 'bg-amber-500' : 'bg-transparent'
-                      }`}
+                      className="w-1 self-stretch rounded"
+                      style={
+                        isActive
+                          ? { backgroundColor: 'var(--amber)' }
+                          : { backgroundColor: 'transparent' }
+                      }
                     />
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">
+                        <div
+                          className="text-[10px] font-bold uppercase tracking-widest"
+                          style={{ color: 'var(--forest)' }}
+                        >
                           {item.handle}
                         </div>
-                        <div className="text-[10px] text-neutral-400">{item.timeAgo}</div>
+                        <div className="text-[10px] text-[var(--on-surface-variant)]">{item.timeAgo}</div>
                       </div>
-                      <div className="mt-0.5 truncate text-[11px] font-medium text-neutral-700">
+                      <div className="mt-0.5 truncate text-xs font-semibold" style={{ color: 'var(--on-surface)' }}>
                         {item.destination}
                       </div>
-                      <div className="mt-1 line-clamp-2 text-[11px] text-neutral-500">
+                      <div className="mt-1 line-clamp-2 text-[11px] text-[var(--on-surface-variant)]">
                         {item.caption}
                       </div>
                     </div>
@@ -143,11 +160,17 @@ export function VariantB_ModerationDetail() {
         </div>
 
         {/* RIGHT: Review card */}
-        <div className="overflow-hidden rounded-2xl border border-neutral-200/60 bg-white shadow-sm">
+        <div
+          className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white"
+          style={{ boxShadow: 'var(--card-shadow)' }}
+        >
           {/* Media preview */}
-          <div className={`relative h-64 w-full bg-gradient-to-br ${selected.gradient}`}>
-            <div className="absolute inset-0 flex items-end p-5">
-              <span className="rounded-md bg-black/30 px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-white backdrop-blur">
+          <div className="relative h-72 w-full" style={{ background: selected.gradient }}>
+            <div className="absolute inset-0 flex items-end p-6">
+              <span
+                className="rounded px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-white"
+                style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+              >
                 {selected.handle}
               </span>
             </div>
@@ -156,10 +179,10 @@ export function VariantB_ModerationDetail() {
           <div className="p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="font-serif text-xl font-semibold text-neutral-800">
+                <h2 className="font-sans text-2xl font-bold" style={{ color: 'var(--on-surface)' }}>
                   {selected.destination}
                 </h2>
-                <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-neutral-500">
+                <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-[var(--on-surface-variant)]">
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" weight="duotone" /> Kenya
                   </span>
@@ -172,7 +195,7 @@ export function VariantB_ModerationDetail() {
                 {['Wildlife', 'Conservation', 'Eco-tourism', 'Africa'].map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-[10px] font-medium text-neutral-600"
+                    className="rounded-full border border-[var(--outline-muted)] bg-[var(--surface-2)] px-3 py-1 text-[10px] font-semibold text-[var(--on-surface-variant)]"
                   >
                     {tag}
                   </span>
@@ -180,40 +203,56 @@ export function VariantB_ModerationDetail() {
               </div>
             </div>
 
-            <p className="mt-4 text-sm leading-relaxed text-neutral-700">
+            <p className="mt-5 text-sm leading-relaxed" style={{ color: 'var(--on-surface)' }}>
               {selected.caption}
             </p>
 
             {/* AI insights */}
-            <div className="mt-6">
-              <h3 className="mb-3 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+            <div className="mt-7">
+              <h3
+                className="mb-3 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest"
+                style={{ color: 'var(--on-surface-variant)' }}
+              >
                 <Sparkle className="h-3 w-3" weight="duotone" /> AI Insights
               </h3>
               <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                 {aiInsights.map((insight) => (
                   <div
                     key={insight.label}
-                    className="rounded-lg border border-neutral-200/60 bg-neutral-50/60 p-3"
+                    className="rounded-lg border border-[var(--surface-4)] p-4"
+                    style={{ backgroundColor: insight.bg }}
                   >
-                    <div className={`mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest ${insight.color}`}>
+                    <div
+                      className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest"
+                      style={{ color: insight.color }}
+                    >
                       <insight.icon className="h-3 w-3" weight="duotone" />
                       {insight.label}
                     </div>
-                    <p className="text-xs leading-relaxed text-neutral-600">{insight.text}</p>
+                    <p className="text-xs leading-relaxed text-[var(--on-surface)]">{insight.text}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* CTAs */}
-            <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-neutral-100 pt-5">
-              <button className="flex-1 rounded-full bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
+            <div className="mt-7 flex flex-wrap items-center gap-3 border-t border-[var(--surface-4)] pt-6">
+              <button
+                className="flex-1 rounded-full py-3 text-sm font-bold text-white transition-colors"
+                style={{ backgroundColor: 'var(--forest)' }}
+              >
                 Approve & Publish
               </button>
-              <button className="flex-1 rounded-full bg-amber-500 py-3 text-sm font-semibold text-white shadow-sm hover:bg-amber-600">
+              <button
+                className="flex-1 rounded-full py-3 text-sm font-bold transition-colors"
+                style={{ backgroundColor: 'var(--amber)', color: 'var(--forest-deep)' }}
+              >
                 Request Changes
               </button>
-              <button className="flex-1 rounded-full bg-red-500 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-600">
+              <button
+                className="flex-1 rounded-full py-3 text-sm font-bold text-white transition-colors"
+                style={{ backgroundColor: 'var(--error)' }}
+              >
                 Reject
               </button>
             </div>

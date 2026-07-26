@@ -1,5 +1,6 @@
 // THROWAWAY — UI prototype for ticket #9.
 // Lives on branch prototype/shell-design. Throw away when verdict is captured.
+// Design system tokens: see docs/stitch-design-system.md (sourced from Stitch project 17181829470439098105).
 
 import {
   ChartBar,
@@ -24,7 +25,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -35,42 +35,28 @@ import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar'
 import { Input } from '#/components/ui/input'
 import ThemeToggle from '#/components/ThemeToggle'
 
-const navGroups = [
-  {
-    label: '',
-    items: [
-      { icon: ChartBar, label: 'Analytics' },
-      { icon: MapTrifold, label: 'CMS' },
-      { icon: ImageIcon, label: 'Media Library' },
-    ],
-  },
-  {
-    label: '',
-    items: [
-      { icon: BookOpen, label: 'LMS' },
-      { icon: Leaf, label: 'Conservation' },
-      { icon: Calendar, label: 'Events' },
-    ],
-  },
-  {
-    label: '',
-    items: [
-      { icon: Gear, label: 'AI Config' },
-      { icon: Megaphone, label: 'Campaigns' },
-      { icon: Users, label: 'User Management' },
-    ],
-  },
+const navItems = [
+  { icon: ChartBar, label: 'Analytics' },
+  { icon: MapTrifold, label: 'CMS' },
+  { icon: ImageIcon, label: 'Media Library' },
+]
+
+const navItems2 = [
+  { icon: BookOpen, label: 'LMS' },
+  { icon: Leaf, label: 'Conservation' },
+  { icon: Calendar, label: 'Events' },
+]
+
+const navItems3 = [
+  { icon: Gear, label: 'AI Config' },
+  { icon: Megaphone, label: 'Campaigns' },
+  { icon: Users, label: 'User Management' },
 ]
 
 const pinnedItems = [
   { icon: GearSix, label: 'Settings' },
   { icon: Question, label: 'Support' },
 ]
-
-const SIDEBAR_BG = '#0a2e1c'
-const AMBER = '#e8a948'
-const MUTED_GREEN = '#9bb1a3'
-const CREAM = '#fbf6e9'
 
 export function ShellLayout({
   title,
@@ -89,43 +75,27 @@ export function ShellLayout({
 }) {
   return (
     <SidebarProvider defaultOpen>
-      <div
-        className="flex min-h-screen w-full"
-        style={{ backgroundColor: CREAM }}
-      >
+      <div className="flex min-h-screen w-full" style={{ backgroundColor: 'var(--bg)' }}>
         <Sidebar
           collapsible="icon"
           className="border-r-0"
-          style={{ backgroundColor: SIDEBAR_BG }}
+          style={{ backgroundColor: 'var(--forest)' }}
         >
           <SidebarHeader className="px-5 py-6">
-            <div className="flex items-center gap-2">
-              <span className="font-serif text-2xl font-bold leading-none text-emerald-50">
-                Eco-Explorer
-              </span>
+            <div className="font-sans text-2xl font-bold leading-none text-white">
+              Eco-Explorer
             </div>
-            <p
-              className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.25em]"
-              style={{ color: MUTED_GREEN }}
-            >
+            <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-white/60">
               Admin Portal
             </p>
           </SidebarHeader>
 
-          <SidebarContent className="px-3 pt-2">
-            {navGroups.map((group, gi) => (
-              <SidebarGroup key={gi}>
-                {group.label && (
-                  <SidebarGroupLabel
-                    className="px-2 text-[10px] font-semibold uppercase tracking-widest"
-                    style={{ color: MUTED_GREEN }}
-                  >
-                    {group.label}
-                  </SidebarGroupLabel>
-                )}
+          <SidebarContent className="px-3 pt-4">
+            {[navItems, navItems2, navItems3].map((group, gi) => (
+              <SidebarGroup key={gi} className="mb-4">
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {group.items.map((item) => {
+                    {group.map((item) => {
                       const isActive = item.label === 'Media Library'
                       return (
                         <SidebarMenuItem key={item.label}>
@@ -134,17 +104,17 @@ export function ShellLayout({
                             tooltip={item.label}
                             className={
                               isActive
-                                ? `text-neutral-900 hover:text-neutral-900 data-[active=true]:text-neutral-900`
-                                : 'text-emerald-100/70 hover:bg-white/5 hover:text-emerald-50'
+                                ? 'rounded-lg text-[var(--forest-deep)] hover:text-[var(--forest-deep)]'
+                                : 'rounded-lg text-white/80 hover:bg-white/5 hover:text-white'
                             }
                             style={
                               isActive
-                                ? { backgroundColor: AMBER, color: '#1a1a1a' }
+                                ? { backgroundColor: 'var(--amber)' }
                                 : undefined
                             }
                           >
                             <item.icon className="h-[18px] w-[18px]" weight="duotone" />
-                            <span className="text-sm font-medium">{item.label}</span>
+                            <span className="text-sm font-semibold">{item.label}</span>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       )
@@ -155,10 +125,10 @@ export function ShellLayout({
             ))}
           </SidebarContent>
 
-          <SidebarFooter className="mt-auto space-y-2 px-3 pb-4">
+          <SidebarFooter className="mt-auto space-y-2 px-3 pb-5">
             <button
-              className="flex w-full items-center justify-center gap-2 rounded-full px-3 py-2 text-sm font-semibold shadow-sm"
-              style={{ backgroundColor: AMBER, color: '#1a1a1a' }}
+              className="flex w-full items-center justify-center gap-2 rounded-full px-3 py-2.5 text-sm font-bold shadow-sm"
+              style={{ backgroundColor: 'var(--amber)', color: 'var(--forest-deep)' }}
             >
               <ArrowSquareUpRight className="h-4 w-4" weight="bold" />
               Deploy AI Guardrails
@@ -166,9 +136,9 @@ export function ShellLayout({
             <SidebarMenu>
               {pinnedItems.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton className="text-emerald-100/70 hover:bg-white/5 hover:text-emerald-50">
+                  <SidebarMenuButton className="rounded-lg text-white/80 hover:bg-white/5 hover:text-white">
                     <item.icon className="h-[18px] w-[18px]" weight="duotone" />
-                    <span className="text-sm">{item.label}</span>
+                    <span className="text-sm font-semibold">{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -177,8 +147,8 @@ export function ShellLayout({
         </Sidebar>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex h-16 items-center gap-6 border-b border-neutral-200/60 bg-white px-8">
-            <div className="font-serif text-lg font-semibold tracking-tight text-neutral-800">
+          <header className="flex h-16 items-center gap-6 border-b border-[var(--surface-4)] bg-white px-8">
+            <div className="font-sans text-lg font-bold tracking-tight" style={{ color: 'var(--on-surface)' }}>
               Admin Command Center
             </div>
             {tabs && tabs.length > 0 && (
@@ -189,11 +159,11 @@ export function ShellLayout({
                     <button
                       key={tab.label}
                       onClick={() => onTabChange?.(tab.label)}
-                      className={
+                      className={`border-b-2 pb-1 text-sm font-semibold transition-colors ${
                         isActive
-                          ? 'border-b-2 border-neutral-900 pb-1 text-sm font-medium text-neutral-900'
-                          : 'border-b-2 border-transparent pb-1 text-sm font-medium text-neutral-500 hover:text-neutral-700'
-                      }
+                          ? 'border-[var(--forest)] text-[var(--on-surface)]'
+                          : 'border-transparent text-[var(--on-surface-variant)] hover:text-[var(--on-surface)]'
+                      }`}
                     >
                       {tab.label}
                     </button>
@@ -204,17 +174,17 @@ export function ShellLayout({
             <div className="ml-auto flex items-center gap-4">
               <div className="relative">
                 <MagnifyingGlass
-                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
+                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--on-surface-variant)]"
                   weight="duotone"
                 />
                 <Input
                   placeholder="Search tours..."
-                  className="h-9 w-64 rounded-full border-0 bg-neutral-100 pl-9 text-sm placeholder:text-neutral-400"
+                  className="h-9 w-64 rounded-md border border-[var(--outline-muted)] bg-white pl-9 text-sm placeholder:text-[var(--on-surface-variant)] focus:border-[var(--forest)] focus:ring-1 focus:ring-[var(--forest)]"
                 />
               </div>
-              <button className="relative rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700">
+              <button className="relative rounded-full p-1.5 text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)] hover:text-[var(--on-surface)]">
                 <Bell className="h-5 w-5" weight="duotone" />
-                <span className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                <span className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--error)] text-[10px] font-bold text-white">
                   3
                 </span>
               </button>
@@ -226,17 +196,30 @@ export function ShellLayout({
             </div>
           </header>
 
-          <main className="min-w-0 flex-1 px-8 py-6">{children}</main>
+          <main className="min-w-0 flex-1 px-8 py-8">
+            {(title || subtitle) && (
+              <div className="mb-8">
+                <h1 className="font-sans text-3xl font-bold tracking-tight" style={{ color: 'var(--on-surface)' }}>
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
+            )}
+            {children}
+          </main>
 
           <footer
-            className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200/40 px-8 py-4 text-xs"
-            style={{ color: MUTED_GREEN }}
+            className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-[var(--surface-4)] px-8 py-4 text-xs text-[var(--on-surface-variant)]"
           >
             <span>© 2024 Eco-Tourism Explorer. All rights reserved.</span>
             <div className="flex items-center gap-5">
-              <a href="#" className="hover:text-neutral-700">Privacy Policy</a>
-              <a href="#" className="hover:text-neutral-700">Terms of Service</a>
-              <a href="#" className="hover:text-neutral-700">AI Ethics Guardrails</a>
+              <a href="#" className="hover:text-[var(--on-surface)]">Privacy Policy</a>
+              <a href="#" className="hover:text-[var(--on-surface)]">Terms of Service</a>
+              <a href="#" className="hover:text-[var(--on-surface)]">AI Ethics Guardrails</a>
             </div>
           </footer>
         </div>

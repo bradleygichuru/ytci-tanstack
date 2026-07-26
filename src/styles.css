@@ -1,10 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
+
+/* Eco-Explorer Command design system (from Stitch project 17181829470439098105) */
+:root {
+  --forest: #154212;
+  --forest-deep: #002b02;
+  --forest-light: #7eaf73;
+  --forest-leaf: #244100;
+  --amber: #fdc002;
+  --amber-deep: #6c5000;
+  --amber-bg: rgba(253, 192, 2, 0.2);
+  --leaf: #345a00;
+  --leaf-bg: rgba(52, 90, 0, 0.2);
+  --bg: #f8f9fa;
+  --surface-1: #ffffff;
+  --surface-2: #f3f4f5;
+  --surface-3: #edeeef;
+  --surface-4: #e7e8e9;
+  --surface-5: #e1e3e4;
+  --surface-dim: #d9dadb;
+  --on-surface: #191c1d;
+  --on-surface-variant: #42493e;
+  --outline: #72796e;
+  --outline-muted: #c2c9bb;
+  --error: #ba1a1a;
+  --card-shadow: 0px 2px 12px rgba(21, 66, 18, 0.06);
+  --card-shadow-hover: 0px 4px 16px rgba(21, 66, 18, 0.10);
+  --sidebar-expanded: 260px;
+  --sidebar-collapsed: 72px;
+  --card-padding: 20px;
+  --section-gap: 32px;
+  --grid-gutter: 24px;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
 
 :root {
   --sea-ink: #173a40;
@@ -118,7 +151,7 @@
 }
 
 @theme inline {
-  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
