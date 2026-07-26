@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PrototypeAuthRouteImport } from './routes/prototype/auth'
 import { Route as PrototypeShellRouteImport } from './routes/prototype/shell'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
+const PrototypeAuthRoute = PrototypeAuthRouteImport.update({
+  id: '/prototype/auth',
+  path: '/prototype/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrototypeShellRoute = PrototypeShellRouteImport.update({
   id: '/prototype/shell',
   path: '/prototype/shell',
@@ -24,33 +30,44 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/prototype/auth': typeof PrototypeAuthRoute
   '/prototype/shell': typeof PrototypeShellRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
+  '/prototype/auth': typeof PrototypeAuthRoute
   '/prototype/shell': typeof PrototypeShellRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/prototype/auth': typeof PrototypeAuthRoute
   '/prototype/shell': typeof PrototypeShellRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/prototype/shell' | '/api/auth/$'
+  fullPaths: '/prototype/auth' | '/prototype/shell' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/prototype/shell' | '/api/auth/$'
-  id: '__root__' | '/prototype/shell' | '/api/auth/$'
+  to: '/prototype/auth' | '/prototype/shell' | '/api/auth/$'
+  id: '__root__' | '/prototype/auth' | '/prototype/shell' | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  PrototypeAuthRoute: typeof PrototypeAuthRoute
   PrototypeShellRoute: typeof PrototypeShellRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/prototype/auth': {
+      id: '/prototype/auth'
+      path: '/prototype/auth'
+      fullPath: '/prototype/auth'
+      preLoaderRoute: typeof PrototypeAuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prototype/shell': {
       id: '/prototype/shell'
       path: '/prototype/shell'
@@ -69,6 +86,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  PrototypeAuthRoute: PrototypeAuthRoute,
   PrototypeShellRoute: PrototypeShellRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
