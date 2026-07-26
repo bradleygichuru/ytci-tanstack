@@ -6,7 +6,7 @@ import { api } from '#/lib/api/client'
 import { toast } from 'sonner'
 import {
   CheckCircle, XCircle, Flag, Image as ImageIcon,
-  Video, FilePdf, CloudArrowUp, Eye, Plus, Trash, PencilSimple, FloppyDisk, X,
+  Video, FilePdf, CloudArrowUp, Plus, Trash, FloppyDisk, X,
 } from '@phosphor-icons/react'
 import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
