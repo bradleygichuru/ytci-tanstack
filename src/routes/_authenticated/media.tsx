@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router'
+import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, useCallback } from 'react'
 import { api } from '#/lib/api/client'
@@ -23,7 +25,15 @@ function StatusPill({ status }: { status: string }) {
 
 function fmtTime(d: string) { return new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
 
-export const Route = createFileRoute('/_authenticated/media')({ component: MediaPage })
+export const Route = createFileRoute('/_authenticated/media')({
+  beforeLoad: ({ context }) => {
+    try {
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'media', ['read'])
+    } catch {
+      throw redirect({ to: '/no-access' })
+    }
+  },
+  component: MediaPage })
 
 function MediaPage() {
   const [mod, setMod] = useState<ModItem[]>([])

@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router'
+import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, useCallback } from 'react'
 import { api } from '#/lib/api/client'
@@ -21,7 +23,15 @@ function Pill({ status }: { status: string }) {
 
 const typeColors: Record<string, string> = { cultural: '#785a00', sports: '#2d5a27', conservation: '#345a00', tourism: '#154212' }
 
-export const Route = createFileRoute('/_authenticated/events')({ component: EventsPage })
+export const Route = createFileRoute('/_authenticated/events')({
+  beforeLoad: ({ context }) => {
+    try {
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'events', ['read'])
+    } catch {
+      throw redirect({ to: '/no-access' })
+    }
+  },
+  component: EventsPage })
 
 function EventsPage() {
   const [data, setData] = useState<EventItem[]>([])

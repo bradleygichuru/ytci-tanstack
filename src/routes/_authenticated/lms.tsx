@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router'
+import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, useCallback } from 'react'
 import { api } from '#/lib/api/client'
@@ -23,7 +25,15 @@ function TypeIcon({ type }: { type: string }) {
   return <FileText className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" />
 }
 
-export const Route = createFileRoute('/_authenticated/lms')({ component: LmsPage })
+export const Route = createFileRoute('/_authenticated/lms')({
+  beforeLoad: ({ context }) => {
+    try {
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'lms', ['read'])
+    } catch {
+      throw redirect({ to: '/no-access' })
+    }
+  },
+  component: LmsPage })
 
 function LmsPage() {
   const [data, setData] = useState<Course[] | null>(null)

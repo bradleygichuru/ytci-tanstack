@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router'
+import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { api } from '#/lib/api/client'
@@ -9,7 +11,15 @@ import {
 interface AiSource { id: string; name: string; url: string; type: string; enabled: boolean }
 interface AiFeedback { id: string; query: string; rating: number; comment: string; reviewed: boolean; createdAt: string }
 
-export const Route = createFileRoute('/_authenticated/ai-config')({ component: AiConfigPage })
+export const Route = createFileRoute('/_authenticated/ai-config')({
+  beforeLoad: ({ context }) => {
+    try {
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'aiConfig', ['read'])
+    } catch {
+      throw redirect({ to: '/no-access' })
+    }
+  },
+  component: AiConfigPage })
 
 function AiConfigPage() {
   const [data, setData] = useState<Record<string, unknown> | null>(null)
