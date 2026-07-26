@@ -6,7 +6,7 @@ export const conservationActivitySchema = z.object({
   location: z.string().min(1, 'Location is required'),
   locationPrivacy: z.enum(['public', 'sensitive']).default('public'),
   date: z.string().optional().default(''),
-  status: z.enum(['active', 'completed', 'cancelled']).default('active'),
+  status: z.enum(['open', 'full', 'completed', 'cancelled']).default('open'),
   impactMetrics: z.object({
     treesPlanted: z.number().optional().default(0),
     wasteCollected: z.number().optional().default(0),

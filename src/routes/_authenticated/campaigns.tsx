@@ -319,7 +319,7 @@ function CampaignsPage() {
 
                             {/* Send controls */}
                             <div className="flex flex-wrap items-center gap-2">
-                              <button onClick={handlePushSend} disabled={pushSending || pushCount === null}
+                              <button onClick={handlePushSend} disabled={pushSending || (pushAudience.type !== 'all' && !pushAudience.value)}
                                 className="flex items-center gap-1 rounded-full bg-[var(--forest)] px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                                 {pushSending ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <PaperPlaneTilt className="h-3.5 w-3.5" weight="duotone" />}
                                 Send Now
@@ -328,7 +328,7 @@ function CampaignsPage() {
                                 <span className="text-[10px] text-[var(--on-surface-variant)]">or schedule:</span>
                                 <input type="datetime-local" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)}
                                   className="rounded-md border border-[var(--outline-muted)] px-2 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]" />
-                                <button onClick={handlePushSchedule} disabled={pushSending || !scheduleTime || pushCount === null}
+                                <button onClick={handlePushSchedule} disabled={pushSending || !scheduleTime || (pushAudience.type !== 'all' && !pushAudience.value)}
                                   className="rounded-full bg-[var(--amber)] px-3 py-1.5 text-xs font-bold text-[var(--forest)] shadow-sm disabled:opacity-50">
                                   <CalendarBlank className="inline h-3 w-3" weight="duotone" /> Schedule
                                 </button>

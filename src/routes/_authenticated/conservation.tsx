@@ -145,7 +145,23 @@ function ConservationPage() {
     }
   }, [selectedId, loadList])
 
-  const agg = { trees: { value: 8054, target: 10000, label: 'Trees Planted' }, cleanups: { value: 234, target: 500, label: 'Cleanups' }, wildlife: { value: 1826, target: 3000, label: 'Wildlife Surveyed' } }
+  const agg = {
+    trees: {
+      value: acts.reduce((sum, a) => sum + (a.impactMetric === 'trees planted' ? a.impactActual : 0), 0),
+      target: Math.max(10000, acts.length * 1000),
+      label: 'Trees Planted',
+    },
+    cleanups: {
+      value: acts.reduce((sum, a) => sum + (a.impactMetric === 'kg waste collected' ? a.impactActual : 0), 0),
+      target: Math.max(500, acts.length * 200),
+      label: 'Cleanups',
+    },
+    wildlife: {
+      value: acts.reduce((sum, a) => sum + (a.impactMetric === 'corridor observations' ? a.impactActual : 0), 0),
+      target: Math.max(3000, acts.length * 500),
+      label: 'Wildlife Surveyed',
+    },
+  }
   const selected = acts.find(d => d.id === selectedId) ?? null
 
   return (
@@ -238,7 +254,7 @@ function ConservationPage() {
                               {editData.locationPrivacyLevel === 'sensitive' && <p className="mt-1 text-[10px] text-[var(--error)]">⚠ Do not display sensitive wildlife locations (§5.15)</p>}
                             </div>
                             <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
-                            <FormSelect label="Status" value={editData.status} options={['active', 'completed', 'cancelled']} onChange={v => handleField('status', v)} />
+                      <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} />
                             <FormInput label="Impact Metric" value={editData.impactMetric} onChange={v => handleField('impactMetric', v)} />
                             <FormInput label="Goal Count" value={String(editData.impactGoal)} onChange={v => handleField('impactGoal', Number(v))} />
                             <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
@@ -271,7 +287,9 @@ function ConservationPage() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} />
                       <FormInput label="Organizer" required value={editData.organizer} onChange={v => handleField('organizer', v)} error={errors.organizer} />
-                      <FormInput label="Location" value={editData.location} onChange={v => handleField('location', v)} />
+                      {editData.locationPrivacyLevel === 'sensitive'
+                        ? <div><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Location</label><div className="flex items-center gap-1 rounded-md border border-[var(--outline-muted)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--amber-deep)]"><Shield className="h-3 w-3" weight="duotone" /> Location restricted for wildlife protection</div><input type="hidden" value={editData.location} /></div>
+                        : <FormInput label="Location" value={editData.location} onChange={v => handleField('location', v)} />}
                       <div>
                         <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Privacy Level</label>
                         <div className="flex items-center gap-2">
@@ -285,7 +303,7 @@ function ConservationPage() {
                         {editData.locationPrivacyLevel === 'sensitive' && <p className="mt-1 text-[10px] text-[var(--error)]">⚠ Do not display sensitive wildlife locations (§5.15)</p>}
                       </div>
                       <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
-                      <FormSelect label="Status" value={editData.status} options={['active', 'completed', 'cancelled']} onChange={v => handleField('status', v)} />
+                      <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} />
                       <FormInput label="Impact Metric" value={editData.impactMetric} onChange={v => handleField('impactMetric', v)} />
                       <FormInput label="Goal Count" value={String(editData.impactGoal)} onChange={v => handleField('impactGoal', Number(v))} />
                       <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />

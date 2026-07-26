@@ -17,6 +17,8 @@ interface EventItem { id: string; title: string; organizer: string; county: stri
 
 const typeColors: Record<string, string> = { cultural: '#785a00', sports: '#2d5a27', conservation: '#345a00', tourism: '#154212' }
 
+const statusColors: Record<string, string> = { scheduled: 'var(--forest)', postponed: 'var(--amber-deep)', cancelled: 'var(--error)' }
+
 export const Route = createFileRoute('/_authenticated/events')({
   beforeLoad: ({ context }) => {
     try {
@@ -207,7 +209,7 @@ function EventsPage() {
                                 return (
                                   <button key={target} onClick={() => handleStatusTransition(target)}
                                     className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm transition-colors"
-                                    style={{ backgroundColor: target === 'cancelled' ? 'var(--error)' : target === 'postponed' ? 'var(--amber-deep)' : 'var(--leaf)' }}>
+                                    style={{ backgroundColor: statusColors[target] ?? 'var(--forest)' }}>
                                     → {target}
                                   </button>
                                 )
@@ -273,8 +275,22 @@ function EventsPage() {
                     <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
                     <FormInput label="Contact Email" value={editData.contactEmail} onChange={v => handleField('contactEmail', v)} />
                     <FormInput label="Contact Phone" value={editData.contactPhone} onChange={v => handleField('contactPhone', v)} />
+                    <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-4">
+                      <label className="flex cursor-pointer items-center gap-2">
+                        <input type="checkbox" checked={editData.reminderEnabled} onChange={e => handleField('reminderEnabled', e.target.checked)} className="accent-[var(--forest)]" />
+                        <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Bell className="h-3.5 w-3.5" weight="duotone" /> Enable Reminders</span>
+                      </label>
+                      {editData.reminderEnabled && (
+                        <div className="mt-3 flex items-center gap-3">
+                          <span className="text-xs text-[var(--on-surface-variant)]">Send</span>
+                          <select value={editData.reminderTime} onChange={e => handleField('reminderTime', e.target.value)} className="rounded-md border border-[var(--outline-muted)] px-3 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]">
+                            {['30 minutes before', '1 hour before', '1 day before', '3 days before', '1 week before'].map(t => <option key={t} value={t}>{t}</option>)}
+                          </select>
+                        </div>
+                      )}
+                    </div>
                     <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--on-surface-variant)]">
-                      <span className="flex items-center gap-1 font-semibold text-[var(--error)]"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span>
+                      <span className="flex items-center gap-1 font-semibold text-[var(--error)]"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span> — per spec §5.14 boundary. No ticket purchase, booking, or reservation controls in this form.
                     </div>
                   </div>
                   <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">

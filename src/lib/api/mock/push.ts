@@ -67,19 +67,32 @@ const handlers = {
       id: `ticket-${nextId++}`,
       status: 'ok' as const,
     }))
+    const sendId = `send-${nextId++}`
     const result: PushSendResult = {
-      sendId: `send-${nextId++}`,
+      sendId,
       campaignId: request.campaignId,
       audience: request.audience,
       mode: 'immediate',
-      status: 'delivered',
+      status: 'pending',
       sentAt: new Date().toISOString(),
       tickets,
       tokenCount: count,
-      deliveredCount: delivered,
-      failedCount: failed,
+      deliveredCount: 0,
+      failedCount: 0,
     }
     historyStore.unshift(result)
+    setTimeout(() => {
+      const idx = historyStore.findIndex(h => h.sendId === sendId)
+      if (idx !== -1) {
+        historyStore[idx] = { ...historyStore[idx], status: 'sent' as const, deliveredCount: Math.floor(count * 0.3), failedCount: 0 }
+      }
+      setTimeout(() => {
+        const idx2 = historyStore.findIndex(h => h.sendId === sendId)
+        if (idx2 !== -1) {
+          historyStore[idx2] = { ...historyStore[idx2], status: 'delivered' as const, deliveredCount: delivered, failedCount: failed }
+        }
+      }, 1000)
+    }, 500)
     return result
   },
 
