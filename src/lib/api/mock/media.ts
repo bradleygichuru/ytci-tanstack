@@ -71,8 +71,19 @@ const handlers: MockRegistry = {
     return { items: assetStore as unknown as Record<string, unknown>[], nextCursor: null, hasMore: false }
   },
   create(body: unknown) {
-    const input = body as Partial<ModerationItem>
-    return { id: `mod-${modStore.length + 1}`, ...input, submittedAt: new Date().toISOString() }
+    const input = body as Record<string, unknown>
+    const now = new Date().toISOString()
+    if (input.storyId || input.creatorHandle) {
+      const item: ModerationItem = { id: `mod-${modStore.length + 1}`, storyId: '', creatorHandle: '', creatorEmail: '', caption: '', mediaType: '', mediaUrl: '', thumbUrl: '', location: '', tags: [], exifStripped: false, exifDetails: '', status: 'pending', submittedAt: now, reports: [], ...input as Partial<ModerationItem>, submittedAt: now }
+      modStore.unshift(item)
+      return item
+    }
+    const asset: MediaAsset = {
+      id: `asset-${assetStore.length + 1}`, url: '', thumbnailUrl: '', altText: '', caption: '', credit: '', type: 'image', status: 'ready', fileSize: 0, compressionRatio: 0, exifStripped: false, rightsStatus: 'cleared', tags: [], uploadedBy: 'admin@example.com', createdAt: now,
+      ...input as Partial<MediaAsset>, id: `asset-${assetStore.length + 1}`, createdAt: now,
+    }
+    assetStore.push(asset)
+    return asset
   },
   update(id: string, patch: unknown) {
     const mi = modStore.findIndex(m => m.id === id)

@@ -157,4 +157,63 @@ test.describe('CRUD E2E Tests', () => {
     await expect(page.getByText('County is required')).toBeVisible({ timeout: 5000 })
     await expect(page.getByText('Category is required')).toBeVisible({ timeout: 5000 })
   })
+
+  test('Media — create asset + edit + delete + moderate', async ({ page }) => {
+    await loginAsAdmin(page)
+    await page.goto('/media')
+
+    await expect(page.getByText(/trip story/)).toBeVisible({ timeout: 15000 })
+
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('button'))
+      const btn = buttons.find(b => b.textContent?.includes('Library') && !b.closest('nav'))
+      if (btn) { btn.click(); return }
+    })
+    await page.waitForTimeout(1500)
+
+    const uploadBtn = page.getByText('Upload Asset')
+    await expect(uploadBtn).toBeVisible({ timeout: 10000 })
+    await uploadBtn.click()
+    await expect(page.getByLabel('Caption')).toBeVisible({ timeout: 10000 })
+    await page.getByLabel('Caption').fill('E2E Test Asset')
+    await page.getByLabel('Alt Text').fill('E2E alt text')
+    await page.getByLabel('Credit').fill('E2E Tester')
+    await page.getByLabel('Type').selectOption('image')
+
+    await page.getByRole('button', { name: 'Create Asset' }).click()
+    await page.waitForTimeout(1000)
+
+    await expect(page.getByText('E2E Test Asset').first()).toBeVisible({ timeout: 10000 })
+
+    const newCard = page.locator('text=E2E Test Asset').first().locator('..')
+    await newCard.click()
+    await page.waitForTimeout(500)
+
+    await page.getByRole('button', { name: 'Save Changes' }).click()
+    await page.waitForTimeout(1000)
+
+    await page.getByRole('button', { name: 'Media Library' }).click()
+    await page.waitForTimeout(500)
+    await expect(page.getByText('E2E Test Asset').first()).toBeVisible({ timeout: 10000 })
+
+    await page.locator('text=E2E Test Asset').first().click()
+    await page.waitForTimeout(500)
+    await page.getByRole('button', { name: 'Delete' }).click()
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 })
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click()
+    await page.waitForTimeout(1000)
+    await expect(page.getByText('E2E Test Asset')).toHaveCount(0, { timeout: 10000 })
+
+    await page.getByRole('button', { name: 'Queue' }).click()
+    await page.waitForTimeout(1000)
+    await expect(page.getByText('Pending').first()).toBeVisible({ timeout: 5000 })
+
+    await page.getByRole('button', { name: 'Approve' }).first().click()
+    await page.waitForTimeout(500)
+    await expect(page.getByText('approved').first()).toBeVisible({ timeout: 5000 })
+
+    await page.getByRole('button', { name: 'Reject' }).first().click()
+    await page.waitForTimeout(500)
+    await expect(page.getByText('rejected').first()).toBeVisible({ timeout: 5000 })
+  })
 })

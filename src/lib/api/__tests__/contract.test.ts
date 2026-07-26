@@ -4,6 +4,7 @@ import lmsMock from '../mock/lms'
 import consMock from '../mock/conservation'
 import eventsMock from '../mock/events'
 import campsMock from '../mock/campaigns'
+import mediaMock from '../mock/media'
 import pushMock from '../mock/push'
 
 describe('API Contract — Destinations', () => {
@@ -73,6 +74,31 @@ describe('API Contract — Campaigns', () => {
     const result = campsMock.create({ title: 'Campaign', type: 'home_banner' }) as Record<string, unknown>
     expect(result).toHaveProperty('id')
     expect(result).toHaveProperty('status', 'draft')
+  })
+})
+
+describe('API Contract — Media', () => {
+  it('list returns moderation items with cursor param', () => {
+    const result = mediaMock.list({ cursor: 'moderation' })
+    expect(result).toHaveProperty('items')
+    expect(result.items.length).toBeGreaterThanOrEqual(5)
+  })
+
+  it('list returns assets', () => {
+    const result = mediaMock.list()
+    expect(result.items.length).toBeGreaterThanOrEqual(6)
+  })
+
+  it('create returns asset with defaults', () => {
+    const result = mediaMock.create({ caption: 'Test image', type: 'image' }) as Record<string, unknown>
+    expect(result).toHaveProperty('id')
+    expect(result).toHaveProperty('url', '')
+    expect(result).toHaveProperty('rightsStatus', 'cleared')
+  })
+
+  it('update merges patch', () => {
+    const result = mediaMock.update('asset-1', { caption: 'Updated' }) as Record<string, unknown>
+    expect(result).toHaveProperty('caption', 'Updated')
   })
 })
 

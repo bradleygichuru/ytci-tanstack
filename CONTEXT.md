@@ -33,7 +33,7 @@ A scheduled public event. Has type, county, venue, dates, status workflow. Statu
 A promotional campaign. Types: `home_banner`, `featured_destination`, `push_notification`, `seasonal`. Statuses: `draft`, `active`, `paused`, `ended`.
 
 ### Media Asset
-An uploaded file (image, video, PDF, 360 media, audio). Stored in Cloudflare R2 with optimization metadata. Rights status tracked.
+An uploaded file (image, video, PDF, 360 media, audio). Stored in Cloudflare R2 with optimization metadata. Rights status tracked. The mock layer under the `media` namespace handles both moderation stories and media assets; the Go backend maps them to separate `/stories` and `/media` path groups per the contract.
 
 ### Story
 User-generated content (photo, video, journal) created by youth creators. Goes through moderation.
