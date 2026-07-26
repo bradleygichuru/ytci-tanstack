@@ -29,7 +29,6 @@ async function loadArea(area: AreaNamespace): Promise<MockRegistry> {
       case 'events': return (await import('./events')).default as MockRegistry
       case 'ai-config': return (await import('./ai-config')).default as MockRegistry
       case 'campaigns': return (await import('./campaigns')).default as MockRegistry
-      case 'users': return (await import('./users')).default as MockRegistry
     }
   } catch {
     return createEmptyMock(area)

@@ -5,9 +5,9 @@ export type ResourceKey =
   | 'analytics' | 'destinations' | 'media' | 'lms'
   | 'conservation' | 'events' | 'aiConfig' | 'campaigns' | 'users'
 
-export type Action = 'read' | 'create' | 'edit' | 'delete' | 'publish'
+export type Action = 'read' | 'create' | 'edit' | 'delete' | 'publish' | 'assign-role' | 'suspend-user'
 
-interface AuthSession {
+export interface AuthSession {
   user: { role: string }
 }
 

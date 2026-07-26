@@ -39,7 +39,13 @@ An uploaded file (image, video, PDF, 360 media, audio). Stored in Cloudflare R2 
 User-generated content (photo, video, journal) created by youth creators. Goes through moderation.
 
 ### User
-Platform user. Roles: `super_admin`, `administrator`, `moderator`, `county_officer`. Has consent records and ban state.
+Platform user. Roles: `super_admin`, `administrator`, `moderator`, `county_officer`. Auth-core identity with role, ban state stored on the `users` table (better-auth-owned). Extended profile fields live in `user_profiles`. Deleting a user cascade-deletes their profile and audit entries.
+
+### User Profile
+Extended profile data for a User, stored in the `user_profiles` table. One-to-one with `users.id`. Fields: `age_range`, `county`, `languages`, `preferences`, `consent_granted_at`. Has a `created_by` FK to the admin who created the profile. Lives in the admin dashboard's Postgres — never in the Go backend.
+
+### Audit Log
+An immutable append-only record of user lifecycle events, stored in the `audit_logs` table. Columns: `user_id` (target user), `action` (event type), `details` (human-readable description), `performed_by` (admin who performed the action), `created_at`. Event types: `user_created`, `role_assigned`, `account_suspended`, `account_unsuspended`, `consent_granted`, `consent_revoked`, `data_exported`. FK to `users(id)` with CASCADE delete.
 
 ### Push Notification
 A notification delivered to Expo mobile app users via Expo Push Service. Composed from a Campaign of type `push_notification`. The admin dashboard stores the payload; the Go backend handles delivery.

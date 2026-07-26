@@ -2,14 +2,14 @@ import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, useCallback } from 'react'
-import { api } from '#/lib/api/client'
+import { authClient } from '#/lib/auth-client'
 import {
-  Users, Shield, Prohibit, CheckCircle, XCircle, PencilSimple,
-  FloppyDisk, X, PlusCircle, MapPin, Globe,
+  Shield, Prohibit, CheckCircle, PencilSimple,
+  FloppyDisk, X, PlusCircle, Copy,
 } from '@phosphor-icons/react'
-
-interface UserItem { id: string; email: string; name: string; role: string; banned: boolean; banReason?: string; ageRange: string; county: string; languages: string; preferences: string; consentGrantedAt: string; createdAt: string }
-interface AuditItem { id: string; userName: string; action: string; details: string; timestamp: string }
+import { listUsers, createUser, updateUser, listAuditLog } from '#/lib/users.functions'
+import type { UserItem, AuditItem } from '#/lib/users.functions'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '#/components/ui/dialog'
 
 const roleColors: Record<string, { bg: string; text: string }> = {
   super_admin: { bg: '#154212', text: '#ffffff' },
@@ -23,7 +23,7 @@ function RolePill({ role }: { role: string }) {
   return <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: s.bg, color: s.text }}>{role.replace(/_/g, ' ')}</span>
 }
 
-const auditActions: Record<string, string> = { consent_granted: '#345a00', consent_revoked: '#ba1a1a', account_suspended: '#ba1a1a', account_unsuspended: '#345a00', data_exported: '#42493e', role_assigned: '#154212', login_noted: '#42493e' }
+const auditActions: Record<string, string> = { consent_granted: '#345a00', consent_revoked: '#ba1a1a', account_suspended: '#ba1a1a', account_unsuspended: '#345a00', data_exported: '#42493e', role_assigned: '#154212', user_created: '#154212' }
 
 export const Route = createFileRoute('/_authenticated/users')({
   beforeLoad: ({ context }) => {
@@ -35,14 +35,32 @@ export const Route = createFileRoute('/_authenticated/users')({
   },
   component: UsersPage })
 
+const ROLE_OPTIONS = ['super_admin', 'administrator', 'moderator', 'county_officer']
+
 function UsersPage() {
+  const { data: session } = authClient.useSession()
+  const currentRole = (session?.user as Record<string, unknown>)?.role as string ?? ''
+  const isSuperAdmin = currentRole === 'super_admin'
+
   const [data, setData] = useState<UserItem[]>([])
   const [audit, setAudit] = useState<AuditItem[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editData, setEditData] = useState<UserItem | null>(null)
   const [tab, setTab] = useState<'users' | 'audit'>('users')
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createForm, setCreateForm] = useState({ name: '', email: '', role: 'moderator', ageRange: '', county: '', languages: '', preferences: '' })
+  const [createConsent, setCreateConsent] = useState(false)
+  const [createResult, setCreateResult] = useState<{ email: string; password: string } | null>(null)
+  const [createLoading, setCreateLoading] = useState(false)
 
-  useEffect(() => { api.list('users').then(r => setData(r.items as UserItem[])); api.list('users', { cursor: 'audit' }).then(r => setAudit(r.items as AuditItem[])) }, [])
+  const loadData = useCallback(async () => {
+    const r = await listUsers({ data: {} })
+    setData(r.users)
+    const ra = await listAuditLog({ data: {} })
+    setAudit(ra.items)
+  }, [])
+
+  useEffect(() => { loadData() }, [loadData])
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
@@ -51,21 +69,46 @@ function UsersPage() {
 
   const handleSave = useCallback(async () => {
     if (!selectedId || !editData) return
-    await api.update('users', selectedId, editData)
-    const r = await api.list('users'); setData(r.items as UserItem[])
-    const ra = await api.list('users', { cursor: 'audit' }); setAudit(ra.items as AuditItem[])
+    const patch: Record<string, unknown> = {}
+    const orig = data.find(u => u.id === selectedId)
+    if (!orig) return
+    if (editData.name !== orig.name) patch.name = editData.name
+    if (editData.role !== orig.role) patch.role = editData.role
+    if (editData.banned !== orig.banned) { patch.banned = editData.banned; if (editData.banned) patch.banReason = editData.banReason }
+    if (editData.ageRange !== orig.ageRange) patch.ageRange = editData.ageRange
+    if (editData.county !== orig.county) patch.county = editData.county
+    if (editData.languages !== orig.languages) patch.languages = editData.languages
+    if (editData.preferences !== orig.preferences) patch.preferences = editData.preferences
+    if (editData.consentGrantedAt !== orig.consentGrantedAt) patch.consentGrantedAt = editData.consentGrantedAt
+    if (Object.keys(patch).length === 0) return
+    await updateUser({ data: { userId: selectedId, ...patch } })
+    await loadData()
     setSelectedId(null)
-  }, [selectedId, editData])
+  }, [selectedId, editData, data, loadData])
 
-  // current user is super_admin: role-dropdown and ban-toggle are enabled for RBAC (#5 pure separation)
-  const isSuperAdmin = true // In real app this reads from session — always true for this view
+  const handleCreate = useCallback(async () => {
+    if (!createForm.name || !createForm.email || !createConsent) return
+    setCreateLoading(true)
+    try {
+      const result = await createUser({ data: { ...createForm } })
+      setCreateResult({ email: createForm.email, password: result.tempPassword })
+      await loadData()
+    } finally {
+      setCreateLoading(false)
+    }
+  }, [createForm, createConsent, loadData])
+
+  const resetCreate = useCallback(() => {
+    setCreateOpen(false)
+    setCreateForm({ name: '', email: '', role: 'moderator', ageRange: '', county: '', languages: '', preferences: '' })
+    setCreateConsent(false)
+    setCreateResult(null)
+  }, [])
 
   const counts = { total: data.length, banned: data.filter(u => u.banned).length, active: data.filter(u => !u.banned).length }
   const roleCounts = { super_admin: data.filter(u => u.role === 'super_admin').length, administrator: data.filter(u => u.role === 'administrator').length, moderator: data.filter(u => u.role === 'moderator').length, county_officer: data.filter(u => u.role === 'county_officer').length }
 
-  const ROLE_OPTIONS = ['super_admin', 'administrator', 'moderator', 'county_officer']
-
-  if (!data.length) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading...</div>
+  if (!data.length && audit.length === 0) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading...</div>
 
   return (
     <div>
@@ -112,7 +155,7 @@ function UsersPage() {
         <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="flex items-center justify-between border-b border-[var(--surface-4)] px-5 py-3">
             <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data.length} users</span>
-            <button className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New User</button>
+            <button onClick={() => { setCreateOpen(true); setCreateResult(null) }} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New User</button>
           </div>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
@@ -138,7 +181,7 @@ function UsersPage() {
                         <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
                           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <UField label="Name" value={editData.name} onChange={v => setEditData({ ...editData, name: v })} />
-                            <UField label="Email" value={editData.email} onChange={v => setEditData({ ...editData, email: v })} />
+                            <UStaticField label="Email" value={editData.email} />
                             <div>
                               <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Role</label>
                               <select value={editData.role} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, role: e.target.value })}
@@ -147,15 +190,15 @@ function UsersPage() {
                               </select>
                               {!isSuperAdmin && <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Only super-admin can change roles (#5)</p>}
                             </div>
-                            <UField label="Age Range" value={editData.ageRange} onChange={v => setEditData({ ...editData, ageRange: v })} />
-                            <UField label="County" value={editData.county} onChange={v => setEditData({ ...editData, county: v })} />
-                            <UField label="Languages" value={editData.languages} onChange={v => setEditData({ ...editData, languages: v })} />
-                            <UField label="Preferences" value={editData.preferences} onChange={v => setEditData({ ...editData, preferences: v })} />
+                            <UField label="Age Range" value={editData.ageRange ?? ''} onChange={v => setEditData({ ...editData, ageRange: v })} />
+                            <UField label="County" value={editData.county ?? ''} onChange={v => setEditData({ ...editData, county: v })} />
+                            <UField label="Languages" value={editData.languages ?? ''} onChange={v => setEditData({ ...editData, languages: v })} />
+                            <UField label="Preferences" value={editData.preferences ?? ''} onChange={v => setEditData({ ...editData, preferences: v })} />
 
                             {/* Suspension */}
                             <div className="rounded-lg border border-[var(--surface-4)] p-4 md:col-span-2">
                               <label className="flex cursor-pointer items-center gap-2">
-                                <input type="checkbox" checked={editData.banned} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, banned: e.target.checked, banReason: e.target.checked ? '' : undefined })}
+                                <input type="checkbox" checked={editData.banned} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, banned: e.target.checked, banReason: e.target.checked ? '' : null })}
                                   className="accent-[var(--error)] disabled:cursor-not-allowed" />
                                 <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Suspend account</span>
                               </label>
@@ -167,9 +210,23 @@ function UsersPage() {
                               {!isSuperAdmin && <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Only super-admin can suspend users (#5)</p>}
                             </div>
 
-                            {/* Consent */}
-                            <div className="rounded-lg border border-[var(--surface-4)] p-3 text-xs text-[var(--on-surface-variant)] md:col-span-2">
-                              <span className="font-semibold text-[var(--leaf)]">Consent</span> granted at {new Date(editData.consentGrantedAt).toLocaleDateString()}. <span className="text-[10px]">§11 privacy: consent management, data minimization, account deletion, retention controls apply.</span>
+                            {/* Consent toggle */}
+                            <div className="rounded-lg border border-[var(--surface-4)] p-4 md:col-span-2">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Shield className="h-3.5 w-3.5" weight="duotone" /> Consent {editData.consentGrantedAt ? 'granted' : 'not granted'}</span>
+                                  {editData.consentGrantedAt && <p className="mt-0.5 text-[10px] text-[var(--on-surface-variant)]">Granted at {new Date(editData.consentGrantedAt).toLocaleDateString()}</p>}
+                                </div>
+                                {isSuperAdmin ? (
+                                  editData.consentGrantedAt ? (
+                                    <button onClick={() => setEditData({ ...editData, consentGrantedAt: null })}
+                                      className="rounded-md border border-[var(--error)] px-3 py-1.5 text-[11px] font-bold text-[var(--error)]">Revoke Consent</button>
+                                  ) : (
+                                    <button onClick={() => setEditData({ ...editData, consentGrantedAt: new Date().toISOString() })}
+                                      className="rounded-md border border-[var(--leaf)] px-3 py-1.5 text-[11px] font-bold text-[var(--leaf)]">Grant Consent</button>
+                                  )
+                                ) : <p className="text-[10px] text-[var(--on-surface-variant)]">Only super-admin can manage consent</p>}
+                              </div>
                             </div>
                           </div>
 
@@ -203,7 +260,7 @@ function UsersPage() {
                   <td className="px-5 py-3 text-sm font-semibold text-[var(--on-surface)]">{a.userName}</td>
                   <td className="px-5 py-3"><span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: `${(auditActions[a.action] ?? '#42493e')}20`, color: auditActions[a.action] ?? '#42493e' }}>{a.action.replace(/_/g, ' ')}</span></td>
                   <td className="max-w-sm truncate px-5 py-3 text-xs text-[var(--on-surface-variant)]">{a.details}</td>
-                  <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(a.timestamp).toLocaleString()}</td>
+                  <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(a.createdAt as string).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -211,11 +268,75 @@ function UsersPage() {
           </div>
         </div>
       )}
+
+      {/* New User Dialog */}
+      <Dialog open={createOpen} onOpenChange={open => { if (!open) resetCreate(); else setCreateOpen(true) }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{createResult ? 'User Created' : 'New User'}</DialogTitle>
+            <DialogDescription>
+              {createResult ? 'Share the temporary password securely with the user.' : 'Create a new user account with role and profile fields.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {createResult ? (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-[var(--leaf)] bg-green-50 p-4">
+                <p className="text-sm font-semibold text-[var(--leaf)]">User created: {createResult.email}</p>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Temporary password</label>
+                <div className="flex items-center gap-2 rounded-md border border-[var(--surface-4)] bg-[var(--surface-2)] px-3 py-2 font-mono text-sm">
+                  <span className="flex-1">{createResult.password}</span>
+                  <button onClick={() => navigator.clipboard.writeText(createResult.password)}
+                    className="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-bold text-[var(--forest)] hover:bg-[var(--surface-3)]">
+                    <Copy className="h-3.5 w-3.5" weight="duotone" /> Copy
+                  </button>
+                </div>
+                <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Share this securely. It will not be shown again.</p>
+              </div>
+              <div className="flex justify-end">
+                <button onClick={resetCreate} className="rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm">Done</button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <UField label="Name" value={createForm.name} onChange={v => setCreateForm(f => ({ ...f, name: v }))} />
+              <UField label="Email" value={createForm.email} onChange={v => setCreateForm(f => ({ ...f, email: v }))} />
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Role</label>
+                <select value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value }))}
+                  className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]">
+                  {ROLE_OPTIONS.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+                </select>
+              </div>
+              <UField label="Age Range" value={createForm.ageRange} onChange={v => setCreateForm(f => ({ ...f, ageRange: v }))} />
+              <UField label="County" value={createForm.county} onChange={v => setCreateForm(f => ({ ...f, county: v }))} />
+              <UField label="Languages" value={createForm.languages} onChange={v => setCreateForm(f => ({ ...f, languages: v }))} />
+              <UField label="Preferences" value={createForm.preferences} onChange={v => setCreateForm(f => ({ ...f, preferences: v }))} />
+              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[var(--surface-4)] p-3">
+                <input type="checkbox" checked={createConsent} onChange={e => setCreateConsent(e.target.checked)} className="accent-[var(--forest)]" />
+                <span className="text-xs text-[var(--on-surface)]">I attest that user consent has been obtained (GDPR / Kenya DPA)</span>
+              </label>
+              <div className="flex justify-end gap-3">
+                <button onClick={resetCreate} className="rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">Cancel</button>
+                <button onClick={handleCreate} disabled={!createForm.name || !createForm.email || !createConsent || createLoading}
+                  className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                  <PlusCircle className="h-4 w-4" weight="duotone" /> {createLoading ? 'Creating...' : 'Create User'}
+                </button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
 
 function UField({ label, value, onChange }: { label: string; value?: string; onChange: (v: string) => void }) {
   return <div><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><input value={value ?? ''} onChange={e => onChange(e.target.value)} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
+}
+function UStaticField({ label, value }: { label: string; value?: string }) {
+  return <div><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><div className="w-full rounded-md border border-[var(--surface-4)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--on-surface-variant)]">{value}</div></div>
 }
 function FragmentRow({ children }: { children: React.ReactNode }) { return <>{children}</> }
