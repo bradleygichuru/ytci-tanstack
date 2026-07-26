@@ -12,7 +12,7 @@ const config = defineConfig({
     exclude: ['@tanstack/start-server-core'],
   },
   ssr: {
-    noExternal: ['@better-auth/core', '@better-auth/expo', '@better-auth/drizzle-adapter'],
+    noExternal: ['@better-auth/core', '@better-auth/expo', '@better-auth/drizzle-adapter', '@better-auth/utils'],
   },
   plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact()],
 })
