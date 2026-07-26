@@ -805,6 +805,160 @@ paths:
       responses:
         "204": { description: Deleted }
 
+  # ──────────────── Push Notifications ────────────────
+  /push/send:
+    post:
+      summary: Send a push notification immediately
+      security: [{ BearerAuth: [] }]
+      tags: [Push]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                campaignId: { type: string, description: "Campaign to send from (must be type push_notification)" }
+                title: { type: string }
+                body: { type: string }
+                imageUrl: { type: string, format: uri }
+                audience:
+                  $ref: "#/components/schemas/PushAudience"
+              required: [campaignId, title, body, audience]
+      responses:
+        "202":
+          description: Push send accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushSendResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /push/schedule:
+    post:
+      summary: Schedule a push notification for future delivery
+      security: [{ BearerAuth: [] }]
+      tags: [Push]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                campaignId: { type: string }
+                title: { type: string }
+                body: { type: string }
+                imageUrl: { type: string, format: uri }
+                audience:
+                  $ref: "#/components/schemas/PushAudience"
+                scheduledAt: { type: string, format: date-time }
+              required: [campaignId, title, body, audience, scheduledAt]
+      responses:
+        "202":
+          description: Push scheduled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushSendResult"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /push/history:
+    get:
+      summary: List sent push notifications with delivery status
+      security: [{ BearerAuth: [] }]
+      tags: [Push]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated push history
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/PushHistoryItem"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /push/history/{id}:
+    get:
+      summary: Get delivery details for a specific push send
+      security: [{ BearerAuth: [] }]
+      tags: [Push]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Push send detail with per-token delivery status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushSendDetail"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /push/validate-tokens:
+    post:
+      summary: Validate a batch of Expo push tokens
+      security: [{ BearerAuth: [] }]
+      tags: [Push]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tokens:
+                  type: array
+                  items: { type: string }
+              required: [tokens]
+      responses:
+        "200":
+          description: Token validation results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PushTokenValidation"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /push/receipts:
+    post:
+      summary: Poll push receipts for a batch of ticket IDs
+      security: [{ BearerAuth: [] }]
+      tags: [Push]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticketIds:
+                  type: array
+                  items: { type: string }
+              required: [ticketIds]
+      responses:
+        "200":
+          description: Push receipt results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushReceiptResponse"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
   # ──────────────── Users ────────────────
   /users:
     get:
@@ -1251,6 +1405,97 @@ components:
         endDate: { type: string, format: date }
         targetUrl: { type: string }
         createdAt: { type: string, format: date-time }
+
+    # ── Push Notifications ──
+    PushAudience:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [all, county, role, interest]
+          description: "Target audience selector"
+        value:
+          type: string
+          description: "Value for the selector — county name, role name, interest tag; omitted when type=all"
+        count:
+          type: integer
+          description: "Estimated device count for this audience (returned by preview endpoint)"
+      required: [type]
+    PushSendResult:
+      type: object
+      properties:
+        sendId:
+          type: string
+          description: "Unique ID for this send — used to poll history/receipts"
+        ticketIds:
+          type: array
+          items: { type: string }
+          description: "Expo push ticket IDs (one per push token batch)"
+        totalTokens:
+          type: integer
+          description: "Number of push tokens the notification was sent to"
+        status:
+          type: string
+          enum: [pending, delivered, failed, partial]
+      required: [sendId, status]
+    PushHistoryItem:
+      type: object
+      properties:
+        id: { type: string }
+        campaignId: { type: string }
+        title: { type: string }
+        audience: { $ref: "#/components/schemas/PushAudience" }
+        status: { type: string, enum: [pending, sent, scheduled, failed] }
+        scheduledAt: { type: string, format: date-time, nullable: true }
+        sentAt: { type: string, format: date-time, nullable: true }
+        deliveredCount: { type: integer }
+        failedCount: { type: integer }
+        totalTarget: { type: integer }
+        createdAt: { type: string, format: date-time }
+    PushSendDetail:
+      type: object
+      properties:
+        id: { type: string }
+        campaignId: { type: string }
+        title: { type: string }
+        body: { type: string }
+        imageUrl: { type: string, format: uri, nullable: true }
+        audience: { $ref: "#/components/schemas/PushAudience" }
+        status: { type: string, enum: [pending, sent, scheduled, failed] }
+        scheduledAt: { type: string, format: date-time, nullable: true }
+        sentAt: { type: string, format: date-time, nullable: true }
+        completedAt: { type: string, format: date-time, nullable: true }
+        tokenResults:
+          type: object
+          properties:
+            total: { type: integer }
+            ok: { type: integer }
+            deviceNotRegistered: { type: integer }
+            messageTooBig: { type: integer }
+            otherError: { type: integer }
+        createdAt: { type: string, format: date-time }
+    PushTokenValidation:
+      type: object
+      properties:
+        token: { type: string }
+        valid: { type: boolean }
+        reason: { type: string, nullable: true }
+    PushReceiptResponse:
+      type: object
+      properties:
+        receipts:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status: { type: string, enum: [ok, error] }
+              message: { type: string }
+              details:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum: [DeviceNotRegistered, MessageTooBig, MessageRateExceeded, InvalidCredentials]
 
     # ── Users ──
     UserItem:

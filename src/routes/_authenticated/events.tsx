@@ -1,25 +1,19 @@
 import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { api } from '#/lib/api/client'
+import { toast } from 'sonner'
 import {
-  CalendarBlank, MapPin, Clock, Envelope, Phone, Bell, PencilSimple,
-  FloppyDisk, X, PlusCircle, ArrowRight, Ticket,
+  CalendarBlank, Clock, Bell, PencilSimple,
+  FloppyDisk, X, Plus, ArrowRight, Ticket, Trash,
 } from '@phosphor-icons/react'
+import { FormInput, FormSelect } from '#/components/shared/FormField'
+import { StatusBadge } from '#/components/shared/StatusBadge'
+import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { eventSchema } from '#/lib/schemas/event.schema'
 
 interface EventItem { id: string; title: string; organizer: string; county: string; venue: string; date: string; endDate: string; type: string; status: string; description: string; contactEmail: string; contactPhone: string; reminderEnabled: boolean; reminderTime: string }
-
-const statusColors: Record<string, { bg: string; text: string }> = {
-  scheduled: { bg: 'var(--leaf-bg)', text: 'var(--leaf)' },
-  postponed: { bg: 'var(--amber-bg)', text: 'var(--amber-deep)' },
-  cancelled: { bg: 'rgba(186,26,26,0.1)', text: 'var(--error)' },
-}
-
-function Pill({ status }: { status: string }) {
-  const s = statusColors[status] ?? statusColors.scheduled
-  return <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: s.bg, color: s.text }}>{status}</span>
-}
 
 const typeColors: Record<string, string> = { cultural: '#785a00', sports: '#2d5a27', conservation: '#345a00', tourism: '#154212' }
 
@@ -33,40 +27,125 @@ export const Route = createFileRoute('/_authenticated/events')({
   },
   component: EventsPage })
 
+function emptyEvent(): EventItem {
+  return { id: '', title: '', organizer: '', county: '', venue: '', date: '', endDate: '', type: '', status: 'scheduled', description: '', contactEmail: '', contactPhone: '', reminderEnabled: false, reminderTime: '' }
+}
+
 function EventsPage() {
   const [data, setData] = useState<EventItem[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
   const [editData, setEditData] = useState<EventItem | null>(null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
-  useEffect(() => { api.list('events').then(r => setData(r.items as EventItem[])) }, [])
+  const loadList = useCallback(async () => {
+    const r = await api.list('events')
+    setData(r.items as EventItem[])
+  }, [])
+
+  useEffect(() => { loadList() }, [loadList])
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
     setSelectedId(id)
+    setPanelMode('edit')
     const e = data.find(e => e.id === id)
     if (e) setEditData({ ...e })
+    setErrors({})
   }, [selectedId, data])
 
+  const handleNew = useCallback(() => {
+    setSelectedId(null)
+    setPanelMode('create')
+    setEditData(emptyEvent())
+    setErrors({})
+  }, [])
+
+  const handleField = (field: string, value: unknown) => {
+    setEditData(prev => prev ? { ...prev, [field]: value } : prev)
+    if (errors[field]) setErrors(prev => { const n = { ...prev }; delete n[field]; return n })
+  }
+
+  const validate = (): boolean => {
+    if (!editData) return false
+    const result = eventSchema.safeParse(editData)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const path = issue.path.join('.')
+        if (!fieldErrors[path]) fieldErrors[path] = issue.message
+      }
+      setErrors(fieldErrors)
+      return false
+    }
+    setErrors({})
+    return true
+  }
+
   const handleSave = useCallback(async () => {
-    if (!selectedId || !editData) return
-    await api.update('events', selectedId, editData)
-    const r = await api.list('events'); setData(r.items as EventItem[]); setSelectedId(null)
-  }, [selectedId, editData])
+    if (!editData) return
+    if (!validate()) return
+    setSaving(true)
+    try {
+      let newId: string | undefined
+      if (panelMode === 'create') {
+        const created = await api.create('events', editData) as { id: string }
+        newId = created.id
+        toast.success('Event created')
+      } else if (selectedId) {
+        await api.update('events', selectedId, editData)
+        toast.success('Event saved')
+      }
+      await loadList()
+      if (newId) {
+        setSelectedId(newId)
+      } else {
+        setSelectedId(null)
+        setPanelMode('view')
+      }
+    } catch {
+      toast.error('Failed to save event')
+    } finally {
+      setSaving(false)
+    }
+  }, [editData, selectedId, panelMode, loadList])
+
+  const handleDelete = useCallback(async () => {
+    if (!selectedId) return
+    setDeleting(true)
+    try {
+      await api.remove('events', selectedId)
+      toast.success('Event deleted')
+      setShowDelete(false)
+      setSelectedId(null)
+      setPanelMode('view')
+      await loadList()
+    } catch {
+      toast.error('Failed to delete event')
+    } finally {
+      setDeleting(false)
+    }
+  }, [selectedId, loadList])
 
   const handleStatusTransition = useCallback(async (newStatus: string) => {
     if (!editData) return
     const updated = { ...editData, status: newStatus }
     setEditData(updated)
     await api.update('events', editData.id, { status: newStatus })
-    const r = await api.list('events'); setData(r.items as EventItem[])
-  }, [editData])
+    await loadList()
+  }, [editData, loadList])
 
   const transitions: Record<string, string[]> = { scheduled: ['postponed', 'cancelled'], postponed: ['scheduled', 'cancelled'], cancelled: ['scheduled'] }
+  const selected = data.find(d => d.id === selectedId) ?? null
 
   if (!data.length) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading...</div>
 
   return (
-    <div>
+    <>
+      <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Events Calendar Admin</h1>
@@ -74,7 +153,7 @@ function EventsPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data.length} events</span>
-          <button className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New Event</button>
+          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Event</button>
         </div>
       </div>
 
@@ -88,38 +167,35 @@ function EventsPage() {
             {data.map(e => {
               const isSelected = selectedId === e.id
               return (
-                <FragmentRow key={e.id}>
+                <React.Fragment key={e.id}>
                   <tr onClick={() => handleSelect(e.id)} className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${isSelected ? 'bg-[var(--amber-bg)]' : ''}`}>
                     <td className="px-5 py-3"><div className="font-semibold text-[var(--on-surface)]">{e.title}</div><div className="text-[10px] text-[var(--on-surface-variant)]">{e.organizer}</div></td>
                     <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{e.county}</td>
                     <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(e.date).toLocaleDateString()}{e.endDate !== e.date ? ` — ${new Date(e.endDate).toLocaleDateString()}` : ''}</td>
                     <td className="px-5 py-3"><span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: `${typeColors[e.type]}20`, color: typeColors[e.type] }}>{e.type}</span></td>
-                    <td className="px-5 py-3"><Pill status={e.status} /></td>
+                    <td className="px-5 py-3"><StatusBadge status={e.status} /></td>
                     <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" /></td>
                   </tr>
                   {isSelected && editData && (
                     <tr><td colSpan={6} className="border-b p-0">
                       <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
+                          <FormInput label="Organizer" value={editData.organizer} onChange={v => handleField('organizer', v)} />
+                          <FormInput label="County" required value={editData.county} onChange={v => handleField('county', v)} error={errors.county} />
+                          <FormInput label="Venue" value={editData.venue} onChange={v => handleField('venue', v)} />
+                          <FormInput label="Start Date" required value={editData.date} onChange={v => handleField('date', v)} error={errors.date} />
+                          <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} error={errors.endDate} />
+                          <FormSelect label="Type" value={editData.type} options={['cultural', 'sports', 'conservation', 'tourism']} onChange={v => handleField('type', v)} />
+                          <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
 
-                          <EField label="Title" value={editData.title} onChange={v => setEditData({ ...editData, title: v })} className="md:col-span-2" />
-                          <EField label="Organizer" value={editData.organizer} onChange={v => setEditData({ ...editData, organizer: v })} />
-                          <EField label="County" value={editData.county} onChange={v => setEditData({ ...editData, county: v })} />
-                          <EField label="Venue" value={editData.venue} onChange={v => setEditData({ ...editData, venue: v })} />
-                          <EField label="Start Date" value={editData.date} onChange={v => setEditData({ ...editData, date: v })} />
-                          <EField label="End Date" value={editData.endDate} onChange={v => setEditData({ ...editData, endDate: v })} />
-                          <ESelect label="Type" value={editData.type} options={['cultural', 'sports', 'conservation', 'tourism']} onChange={v => setEditData({ ...editData, type: v })} />
-                          <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Description</label><textarea value={editData.description} onChange={e => setEditData({ ...editData, description: e.target.value })} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
-
-                          {/* Status Workflow */}
                           <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-4">
                             <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]"><Clock className="h-3.5 w-3.5" weight="duotone" /> Status Workflow</h3>
                             <div className="mt-3 flex flex-wrap items-center gap-2">
                               {['scheduled', 'postponed', 'cancelled'].map(s => {
-                                const col = statusColors[s]
                                 const isCurrent = editData.status === s
                                 return (
-                                  <span key={s} className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${isCurrent ? 'shadow-sm' : ''}`} style={{ backgroundColor: s === 'cancelled' ? `${col.bg}` : col.bg, color: col.text }}>
+                                  <span key={s} className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${isCurrent ? 'shadow-sm' : ''}`}>
                                     {s} {isCurrent && <span className="ml-1 rounded-full bg-white/40 px-1 text-[10px]">current</span>}
                                     {!isCurrent && <ArrowRight className="h-3 w-3" weight="bold" />}
                                   </span>
@@ -128,11 +204,10 @@ function EventsPage() {
                             </div>
                             <div className="mt-3 flex flex-wrap gap-2">
                               {(transitions[editData.status] ?? []).map(target => {
-                                const col = statusColors[target]
                                 return (
                                   <button key={target} onClick={() => handleStatusTransition(target)}
                                     className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm transition-colors"
-                                    style={{ backgroundColor: col.text }}>
+                                    style={{ backgroundColor: target === 'cancelled' ? 'var(--error)' : target === 'postponed' ? 'var(--amber-deep)' : 'var(--leaf)' }}>
                                     → {target}
                                   </button>
                                 )
@@ -140,20 +215,18 @@ function EventsPage() {
                             </div>
                           </div>
 
-                          {/* Contacts */}
-                          <EField label="Contact Email" value={editData.contactEmail} onChange={v => setEditData({ ...editData, contactEmail: v })} />
-                          <EField label="Contact Phone" value={editData.contactPhone} onChange={v => setEditData({ ...editData, contactPhone: v })} />
+                          <FormInput label="Contact Email" value={editData.contactEmail} onChange={v => handleField('contactEmail', v)} />
+                          <FormInput label="Contact Phone" value={editData.contactPhone} onChange={v => handleField('contactPhone', v)} />
 
-                          {/* Reminders */}
                           <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-4">
                             <label className="flex cursor-pointer items-center gap-2">
-                              <input type="checkbox" checked={editData.reminderEnabled} onChange={e => setEditData({ ...editData, reminderEnabled: e.target.checked })} className="accent-[var(--forest)]" />
+                              <input type="checkbox" checked={editData.reminderEnabled} onChange={e => handleField('reminderEnabled', e.target.checked)} className="accent-[var(--forest)]" />
                               <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Bell className="h-3.5 w-3.5" weight="duotone" /> Enable Reminders</span>
                             </label>
                             {editData.reminderEnabled && (
                               <div className="mt-3 flex items-center gap-3">
                                 <span className="text-xs text-[var(--on-surface-variant)]">Send</span>
-                                <select value={editData.reminderTime} onChange={e => setEditData({ ...editData, reminderTime: e.target.value })} className="rounded-md border border-[var(--outline-muted)] px-3 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]">
+                                <select value={editData.reminderTime} onChange={e => handleField('reminderTime', e.target.value)} className="rounded-md border border-[var(--outline-muted)] px-3 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]">
                                   {['30 minutes before', '1 hour before', '1 day before', '3 days before', '1 week before'].map(t => <option key={t} value={t}>{t}</option>)}
                                 </select>
                               </div>
@@ -161,35 +234,76 @@ function EventsPage() {
                             <p className="mt-2 text-[10px] text-[var(--on-surface-variant)]">§5.14: Device calendar integration support — optional.</p>
                           </div>
 
-                          {/* No Ticket Checkout */}
                           <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--on-surface-variant)]">
                             <span className="flex items-center gap-1 font-semibold text-[var(--error)]"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span> — per spec §5.14 boundary. No ticket purchase, booking, or reservation controls in this form.
                           </div>
-
                         </div>
 
                         <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                          <button onClick={handleSave} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm"><FloppyDisk className="h-4 w-4" weight="duotone" /> Save</button>
-                          <button onClick={() => setSelectedId(null)} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]"><X className="h-4 w-4" weight="duotone" /> Cancel</button>
+                          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                            {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
+                            {panelMode === 'create' ? 'Create Event' : 'Save Changes'}
+                          </button>
+                          {panelMode === 'edit' && (
+                            <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                              <Trash className="h-4 w-4" weight="duotone" /> Delete
+                            </button>
+                          )}
+                          <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]">
+                            <X className="h-4 w-4" weight="duotone" /> Cancel
+                          </button>
                         </div>
                       </div>
                     </td></tr>
                   )}
-                </FragmentRow>
+                </React.Fragment>
               )
             })}
+            {panelMode === 'create' && editData && (
+              <tr key="create-row"><td colSpan={6} className="border-b p-0">
+                <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
+                    <FormInput label="Organizer" value={editData.organizer} onChange={v => handleField('organizer', v)} />
+                    <FormInput label="County" required value={editData.county} onChange={v => handleField('county', v)} error={errors.county} />
+                    <FormInput label="Venue" value={editData.venue} onChange={v => handleField('venue', v)} />
+                    <FormInput label="Start Date" required value={editData.date} onChange={v => handleField('date', v)} error={errors.date} />
+                    <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} error={errors.endDate} />
+                    <FormSelect label="Type" value={editData.type} options={['cultural', 'sports', 'conservation', 'tourism']} onChange={v => handleField('type', v)} />
+                    <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
+                    <FormInput label="Contact Email" value={editData.contactEmail} onChange={v => handleField('contactEmail', v)} />
+                    <FormInput label="Contact Phone" value={editData.contactPhone} onChange={v => handleField('contactPhone', v)} />
+                    <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--on-surface-variant)]">
+                      <span className="flex items-center gap-1 font-semibold text-[var(--error)]"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
+                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                      {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
+                      Create Event
+                    </button>
+                    <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                      <X className="h-4 w-4" weight="duotone" /> Cancel
+                    </button>
+                  </div>
+                </div>
+              </td></tr>
+            )}
             </tbody>
           </table>
           </div>
         </div>
       </div>
-    )
-  }
 
-function EField({ label, value, onChange, className }: { label: string; value?: string; onChange: (v: string) => void; className?: string }) {
-  return <div className={className}><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><input value={value ?? ''} onChange={e => onChange(e.target.value)} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
+      <ConfirmDialog
+        open={showDelete}
+        onOpenChange={setShowDelete}
+        title="Delete Event"
+        description={`Are you sure you want to delete "${selected?.title}"? This cannot be undone.`}
+        onConfirm={handleDelete}
+        loading={deleting}
+      />
+    </>
+  )
 }
-function ESelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
-  return <div><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><select value={value} onChange={e => onChange(e.target.value)} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]">{options.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
-}
-function FragmentRow({ children }: { children: React.ReactNode }) { return <>{children}</> }
+

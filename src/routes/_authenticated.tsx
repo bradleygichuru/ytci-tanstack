@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect, isRedirect } from '@tanstack/react-router'
 import { SidebarProvider } from '../components/ui/sidebar'
 import { AppSidebar } from '../components/shell/Sidebar'
+import { Toaster } from '../components/ui/sonner'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: ({ context, location }) => {
@@ -27,6 +28,7 @@ function AuthenticatedLayout() {
           </main>
         </div>
       </div>
+      <Toaster />
     </SidebarProvider>
   )
 }

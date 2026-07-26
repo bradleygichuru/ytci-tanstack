@@ -1,23 +1,23 @@
 import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { api } from '#/lib/api/client'
+import { toast } from 'sonner'
 import {
-  BookOpen, Video, FileText, FilePdf, CheckCircle, Clock,
-  PencilSimple, FloppyDisk, X, PlusCircle, Sparkle,
+  BookOpen, Video, FileText, FilePdf, CheckCircle,
+  PencilSimple, FloppyDisk, X, Plus, Trash, Sparkle,
 } from '@phosphor-icons/react'
+import { FormInput, FormSelect } from '#/components/shared/FormField'
+import { StatusBadge } from '#/components/shared/StatusBadge'
+import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { courseSchema } from '#/lib/schemas/course.schema'
 
 interface Lesson { id: string; title: string; type: string; duration: number; url: string; hasTranscript: boolean; hasCaption: boolean }
 interface QuizQuestion { id: string; text: string; options: string[]; correctIndex: number }
-interface Course { id: string; title: string; description: string; difficulty: string; status: string; lessons: Lesson[]; lessonCount: number; passThreshold: number; quizQuestions: QuizQuestion[]; certificateEnabled: boolean; enrollmentCount: number; completionCount: number; createdAt: string; updatedAt: string }
+interface Course { id: string; title: string; description: string; category: string; difficulty: string; status: string; lessons: Lesson[]; lessonCount: number; passThreshold: number; quizQuestions: QuizQuestion[]; certificateEnabled: boolean; certificateTemplate: string; enrollmentCount: number; completionCount: number; createdAt: string; updatedAt: string }
 
 const difficultyColors: Record<string, string> = { beginner: 'var(--leaf)', intermediate: 'var(--amber-deep)', advanced: 'var(--error)' }
-
-function StatusPill({ status }: { status: string }) {
-  const s = status === 'published' ? { bg: 'var(--leaf-bg)', text: 'var(--leaf)' } : { bg: 'var(--surface-2)', text: 'var(--on-surface-variant)' }
-  return <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-widest" style={{ backgroundColor: s.bg, color: s.text }}>{status}</span>
-}
 
 function TypeIcon({ type }: { type: string }) {
   if (type === 'video') return <Video className="h-4 w-4 text-[var(--forest)]" weight="duotone" />
@@ -35,42 +35,146 @@ export const Route = createFileRoute('/_authenticated/lms')({
   },
   component: LmsPage })
 
+let nextLessonId = 100
+let nextQId = 100
+
+function emptyCourse(): Course {
+  return { id: '', title: '', description: '', category: '', difficulty: 'beginner', status: 'draft', lessons: [], lessonCount: 0, passThreshold: 70, quizQuestions: [], certificateEnabled: false, certificateTemplate: 'standard', enrollmentCount: 0, completionCount: 0, createdAt: '', updatedAt: '' }
+}
+
+const TABS = [
+  { key: 'lessons', label: 'Lessons' }, { key: 'quiz', label: 'Quiz' },
+  { key: 'certificate', label: 'Certificate' }, { key: 'settings', label: 'Settings' },
+] as const
+
 function LmsPage() {
   const [data, setData] = useState<Course[] | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
   const [editData, setEditData] = useState<Course | null>(null)
   const [activeTab, setActiveTab] = useState('lessons')
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
-  useEffect(() => { api.list('courses').then(r => setData(r.items as Course[])) }, [])
+  const loadList = useCallback(async () => {
+    const r = await api.list('courses')
+    setData(r.items as Course[])
+  }, [])
+
+  useEffect(() => { loadList() }, [loadList])
 
   const selected = data?.find(c => c.id === selectedId) ?? null
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
-    setSelectedId(id); setActiveTab('lessons')
+    setSelectedId(id); setActiveTab('lessons'); setPanelMode('edit')
     const c = data?.find(c => c.id === id)
-    if (c) { setEditData({ ...c }); setSelectedLesson(c.lessons[0]?.id ?? null) }
+    if (c) { setEditData({ ...c, lessons: c.lessons.map(l => ({ ...l })), quizQuestions: c.quizQuestions.map(q => ({ ...q })) }); setSelectedLesson(c.lessons[0]?.id ?? null) }
+    setErrors({})
   }, [selectedId, data])
 
-  const handleSave = useCallback(async () => {
-    if (!selectedId || !editData) return
-    await api.update('courses', selectedId, editData)
-    const r = await api.list('courses')
-    setData(r.items as Course[]); setSelectedId(null)
-  }, [selectedId, editData])
+  const handleNew = useCallback(() => {
+    setSelectedId(null); setPanelMode('create'); setActiveTab('settings')
+    setEditData(emptyCourse()); setSelectedLesson(null); setErrors({})
+  }, [])
 
-  const handleField = (field: string, value: unknown) => setEditData(prev => prev ? { ...prev, [field]: value } : prev)
+  const handleField = (field: string, value: unknown) => {
+    setEditData(prev => prev ? { ...prev, [field]: value } : prev)
+    if (errors[field]) setErrors(prev => { const n = { ...prev }; delete n[field]; return n })
+  }
+
+  const validate = (): boolean => {
+    if (!editData) return false
+    const result = courseSchema.safeParse(editData)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const path = issue.path.join('.')
+        if (!fieldErrors[path]) fieldErrors[path] = issue.message
+      }
+      setErrors(fieldErrors)
+      return false
+    }
+    setErrors({})
+    return true
+  }
+
+  const handleSave = useCallback(async () => {
+    if (!editData) return
+    if (!validate()) return
+    setSaving(true)
+    try {
+      let newId: string | undefined
+      if (panelMode === 'create') {
+        const created = await api.create('courses', editData) as { id: string }
+        newId = created.id
+        toast.success('Course created')
+      } else if (selectedId) {
+        await api.update('courses', selectedId, editData)
+        toast.success('Course saved')
+      }
+      await loadList()
+      if (newId) {
+        setSelectedId(newId)
+      } else {
+        setSelectedId(null); setPanelMode('view')
+      }
+    } catch {
+      toast.error('Failed to save course')
+    } finally {
+      setSaving(false)
+    }
+  }, [editData, selectedId, panelMode, loadList])
+
+  const handleDelete = useCallback(async () => {
+    if (!selectedId) return
+    setDeleting(true)
+    try {
+      await api.remove('courses', selectedId)
+      toast.success('Course deleted')
+      setShowDelete(false); setSelectedId(null); setPanelMode('view')
+      await loadList()
+    } catch {
+      toast.error('Failed to delete course')
+    } finally {
+      setDeleting(false)
+    }
+  }, [selectedId, loadList])
 
   const handleLessonField = (lessonId: string, field: string, value: unknown) => {
     if (!editData) return
     setEditData({ ...editData, lessons: editData.lessons.map(l => l.id === lessonId ? { ...l, [field]: value } : l) })
   }
 
-  const TABS = [
-    { key: 'lessons', label: 'Lessons' }, { key: 'quiz', label: 'Quiz' },
-    { key: 'certificate', label: 'Certificate' }, { key: 'settings', label: 'Settings' },
-  ] as const
+  const handleAddLesson = () => {
+    if (!editData) return
+    const id = `l${nextLessonId++}`
+    const newLesson: Lesson = { id, title: 'New Lesson', type: 'text', duration: 10, url: '', hasTranscript: false, hasCaption: false }
+    setEditData({ ...editData, lessons: [...editData.lessons, newLesson], lessonCount: editData.lessons.length + 1 })
+    setSelectedLesson(id)
+  }
+
+  const handleDeleteLesson = (lessonId: string) => {
+    if (!editData) return
+    const remaining = editData.lessons.filter(l => l.id !== lessonId)
+    setEditData({ ...editData, lessons: remaining, lessonCount: remaining.length })
+    if (selectedLesson === lessonId) setSelectedLesson(remaining[0]?.id ?? null)
+  }
+
+  const handleAddQuestion = () => {
+    if (!editData) return
+    const id = `q${nextQId++}`
+    const newQ: QuizQuestion = { id, text: 'New question?', options: ['Option A', 'Option B', 'Option C', 'Option D'], correctIndex: 0 }
+    setEditData({ ...editData, quizQuestions: [...editData.quizQuestions, newQ] })
+  }
+
+  const handleDeleteQuestion = (qId: string) => {
+    if (!editData) return
+    setEditData({ ...editData, quizQuestions: editData.quizQuestions.filter(q => q.id !== qId) })
+  }
 
   const selectedLessonData = editData?.lessons.find(l => l.id === selectedLesson) ?? null
 
@@ -85,7 +189,7 @@ function LmsPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data.length} courses</span>
-          <button className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New Course</button>
+          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Course</button>
         </div>
       </div>
 
@@ -102,7 +206,7 @@ function LmsPage() {
               const rate = c.enrollmentCount > 0 ? Math.round((c.completionCount / c.enrollmentCount) * 100) : 0
               const isSelected = selectedId === c.id
               return (
-                <FragmentRow key={c.id}>
+                <React.Fragment key={c.id}>
                   <tr onClick={() => handleSelect(c.id)} className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${isSelected ? 'bg-[var(--amber-bg)]' : ''}`}>
                     <td className="px-5 py-3"><span className="font-semibold text-[var(--on-surface)]">{c.title}</span></td>
                     <td className="px-5 py-3"><span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: `${difficultyColors[c.difficulty]}20`, color: difficultyColors[c.difficulty] }}>{c.difficulty}</span></td>
@@ -114,7 +218,7 @@ function LmsPage() {
                         <span className="text-xs text-[var(--on-surface-variant)]">{c.completionCount} ({rate}%)</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3"><StatusPill status={c.status} /></td>
+                    <td className="px-5 py-3"><StatusBadge status={c.status} /></td>
                     <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" /></td>
                   </tr>
                   {isSelected && editData && (
@@ -125,8 +229,6 @@ function LmsPage() {
                             {TABS.map(t => <button key={t.key} onClick={() => setActiveTab(t.key)} className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)]'}`}>{t.label}</button>)}
                           </div>
                           <div className="bg-white px-6 py-5">
-
-                            {/* Lessons tab */}
                             {activeTab === 'lessons' && (
                               <div className="flex flex-col gap-6 md:flex-row">
                                 <div className="w-full shrink-0 md:w-64">
@@ -136,13 +238,16 @@ function LmsPage() {
                                   </div>
                                   <div className="space-y-1">
                                     {editData.lessons.map(l => (
-                                      <button key={l.id} onClick={() => setSelectedLesson(l.id)} className={`flex w-full items-center gap-2 rounded-lg p-2.5 text-left text-xs ${selectedLesson === l.id ? 'bg-[var(--amber-bg)]' : 'hover:bg-[var(--surface-2)]'}`}>
-                                        <TypeIcon type={l.type} />
-                                        <div className="min-w-0 flex-1"><div className="truncate font-semibold text-[var(--on-surface)]">{l.title}</div><div className="text-[10px] text-[var(--on-surface-variant)]">{l.type} · {l.duration} min</div></div>
-                                        {l.hasCaption && <CheckCircle className="h-3 w-3 shrink-0 text-[var(--leaf)]" weight="fill" />}
-                                      </button>
+                                      <div key={l.id} className="flex items-center gap-1">
+                                        <button onClick={() => setSelectedLesson(l.id)} className={`flex flex-1 items-center gap-2 rounded-lg p-2.5 text-left text-xs ${selectedLesson === l.id ? 'bg-[var(--amber-bg)]' : 'hover:bg-[var(--surface-2)]'}`}>
+                                          <TypeIcon type={l.type} />
+                                          <div className="min-w-0 flex-1"><div className="truncate font-semibold text-[var(--on-surface)]">{l.title}</div><div className="text-[10px] text-[var(--on-surface-variant)]">{l.type} · {l.duration} min</div></div>
+                                          {l.hasCaption && <CheckCircle className="h-3 w-3 shrink-0 text-[var(--leaf)]" weight="fill" />}
+                                        </button>
+                                        <button onClick={() => handleDeleteLesson(l.id)} className="rounded p-1 text-[var(--error)] hover:bg-red-50"><Trash className="h-3 w-3" weight="duotone" /></button>
+                                      </div>
                                     ))}
-                                    <button className="flex w-full items-center gap-2 rounded-lg border border-dashed border-[var(--surface-4)] p-2.5 text-xs text-[var(--on-surface-variant)] hover:border-[var(--forest)]"><PlusCircle className="h-4 w-4" weight="duotone" /> Add Lesson</button>
+                                    <button onClick={handleAddLesson} className="flex w-full items-center gap-2 rounded-lg border border-dashed border-[var(--surface-4)] p-2.5 text-xs text-[var(--on-surface-variant)] hover:border-[var(--forest)]"><Plus className="h-4 w-4" weight="duotone" /> Add Lesson</button>
                                   </div>
                                 </div>
                                 <div className="flex-1">
@@ -150,9 +255,9 @@ function LmsPage() {
                                     <div className="space-y-4">
                                       <div className="flex items-center gap-2"><TypeIcon type={selectedLessonData.type} /><input value={selectedLessonData.title} onChange={e => handleLessonField(selectedLessonData.id, 'title', e.target.value)} className="flex-1 rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
                                       <div className="grid grid-cols-2 gap-3">
-                                        <LField label="Type" value={selectedLessonData.type} onChange={v => handleLessonField(selectedLessonData.id, 'type', v)} />
-                                        <LField label="Duration (min)" value={String(selectedLessonData.duration)} onChange={v => handleLessonField(selectedLessonData.id, 'duration', Number(v))} />
-                                        <LField label="URL" value={selectedLessonData.url} onChange={v => handleLessonField(selectedLessonData.id, 'url', v)} />
+                                        <FormSelect label="Type" value={selectedLessonData.type} options={['video', 'text', 'pdf']} onChange={v => handleLessonField(selectedLessonData.id, 'type', v)} />
+                                        <FormInput label="Duration (min)" value={String(selectedLessonData.duration)} onChange={v => handleLessonField(selectedLessonData.id, 'duration', Number(v))} />
+                                        <FormInput label="URL" value={selectedLessonData.url} onChange={v => handleLessonField(selectedLessonData.id, 'url', v)} />
                                         <div className="flex items-center gap-4 pt-6">
                                           <label className="flex items-center gap-1.5 text-xs font-medium text-[var(--on-surface)]"><input type="checkbox" checked={selectedLessonData.hasTranscript} onChange={e => handleLessonField(selectedLessonData.id, 'hasTranscript', e.target.checked)} className="accent-[var(--forest)]" /> Transcript</label>
                                           <label className="flex items-center gap-1.5 text-xs font-medium text-[var(--on-surface)]"><input type="checkbox" checked={selectedLessonData.hasCaption} onChange={e => handleLessonField(selectedLessonData.id, 'hasCaption', e.target.checked)} className="accent-[var(--forest)]" /> Captions</label>
@@ -163,8 +268,6 @@ function LmsPage() {
                                 </div>
                               </div>
                             )}
-
-                            {/* Quiz tab */}
                             {activeTab === 'quiz' && (
                               <div>
                                 <div className="mb-4 flex items-center gap-4">
@@ -175,7 +278,11 @@ function LmsPage() {
                                 <div className="space-y-3">
                                   {editData.quizQuestions.map((q, i) => (
                                     <div key={q.id} className="rounded-lg border border-[var(--surface-4)] p-4">
-                                      <div className="flex items-center gap-2"><span className="text-xs font-bold text-[var(--on-surface-variant)]">Q{i + 1}</span><input value={q.text} onChange={e => { const qs = [...editData.quizQuestions]; qs[i] = { ...qs[i], text: e.target.value }; handleField('quizQuestions', qs) }} className="flex-1 rounded-md border border-[var(--outline-muted)] px-3 py-1.5 text-sm text-[var(--on-surface)]" /></div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold text-[var(--on-surface-variant)]">Q{i + 1}</span>
+                                        <input value={q.text} onChange={e => { const qs = [...editData.quizQuestions]; qs[i] = { ...qs[i], text: e.target.value }; handleField('quizQuestions', qs) }} className="flex-1 rounded-md border border-[var(--outline-muted)] px-3 py-1.5 text-sm text-[var(--on-surface)]" />
+                                        <button onClick={() => handleDeleteQuestion(q.id)} className="rounded p-1 text-[var(--error)] hover:bg-red-50"><Trash className="h-3 w-3" weight="duotone" /></button>
+                                      </div>
                                       <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                                         {q.options.map((o, oi) => (
                                           <label key={oi} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs cursor-pointer ${oi === q.correctIndex ? 'border-[var(--leaf)] bg-[var(--leaf-bg)]' : 'border-[var(--surface-4)]'}`}>
@@ -187,12 +294,10 @@ function LmsPage() {
                                       </div>
                                     </div>
                                   ))}
-                                  <button className="flex items-center gap-1.5 text-xs font-semibold text-[var(--forest)] hover:underline"><PlusCircle className="h-4 w-4" weight="duotone" /> Add Question</button>
+                                  <button onClick={handleAddQuestion} className="flex items-center gap-1.5 text-xs font-semibold text-[var(--forest)] hover:underline"><Plus className="h-4 w-4" weight="duotone" /> Add Question</button>
                                 </div>
                               </div>
                             )}
-
-                            {/* Certificate tab */}
                             {activeTab === 'certificate' && (
                               <div>
                                 <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={editData.certificateEnabled} onChange={e => handleField('certificateEnabled', e.target.checked)} className="accent-[var(--forest)]" /><span className="text-sm font-semibold text-[var(--on-surface)]">Auto-generate certificate on quiz pass</span></label>
@@ -207,48 +312,100 @@ function LmsPage() {
                                 )}
                               </div>
                             )}
-
-                            {/* Settings tab */}
                             {activeTab === 'settings' && (
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <SField label="Title" value={editData.title} onChange={v => handleField('title', v)} className="md:col-span-2" />
-                                <SField label="Description" value={editData.description} onChange={v => handleField('description', v)} className="md:col-span-2" />
-                                <Select label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
-                                <Select label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
-                                <SField label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />
+                                <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
+                                <FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} className="md:col-span-2" />
+                                <FormSelect label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
+                                <FormSelect label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
+                                <FormInput label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />
                               </div>
                             )}
-
                             <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                              <button onClick={handleSave} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm"><FloppyDisk className="h-4 w-4" weight="duotone" /> Save Changes</button>
-                              <button onClick={() => setSelectedId(null)} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]"><X className="h-4 w-4" weight="duotone" /> Cancel</button>
+                              <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                                {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
+                                {panelMode === 'create' ? 'Create Course' : 'Save Changes'}
+                              </button>
+                              {panelMode === 'edit' && (
+                                <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                                  <Trash className="h-4 w-4" weight="duotone" /> Delete
+                                </button>
+                              )}
+                              <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                                <X className="h-4 w-4" weight="duotone" /> Cancel
+                              </button>
                             </div>
-
                           </div>
                         </div>
                       </td>
                     </tr>
                   )}
-                </FragmentRow>
+                </React.Fragment>
               )
             })}
+            {panelMode === 'create' && editData && (
+              <tr key="create-row"><td colSpan={7} className="border-b p-0">
+                <div className="border-t border-[var(--surface-4)]">
+                  <div className="flex gap-1 border-b border-[var(--surface-4)] bg-white px-5 pt-3">
+                    {TABS.map(t => <button key={t.key} onClick={() => setActiveTab(t.key)} className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)]'}`}>{t.label}</button>)}
+                  </div>
+                  <div className="bg-white px-6 py-5">
+                    {activeTab === 'lessons' && (
+                      <div className="flex flex-col gap-6 md:flex-row">
+                        <div className="w-full shrink-0 md:w-64">
+                          <div className="mb-2 flex items-center justify-between">
+                            <span className="text-xs font-bold text-[var(--on-surface)]">Module Lessons</span>
+                            <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px]">0</span>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-[var(--on-surface-variant)] p-2">No lessons yet. Save the course first, then add lessons.</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {activeTab === 'quiz' && (
+                      <div><p className="text-xs text-[var(--on-surface-variant)]">Save the course first, then add quiz questions.</p></div>
+                    )}
+                    {activeTab === 'certificate' && (
+                      <div>
+                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={editData.certificateEnabled} onChange={e => handleField('certificateEnabled', e.target.checked)} className="accent-[var(--forest)]" /><span className="text-sm font-semibold text-[var(--on-surface)]">Auto-generate certificate on quiz pass</span></label>
+                      </div>
+                    )}
+                    {activeTab === 'settings' && (
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
+                        <FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} className="md:col-span-2" />
+                        <FormSelect label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
+                        <FormSelect label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
+                        <FormInput label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />
+                      </div>
+                    )}
+                    <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
+                      <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                        {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
+                        Create Course
+                      </button>
+                      <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                        <X className="h-4 w-4" weight="duotone" /> Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </td></tr>
+            )}
           </tbody>
         </table>
         </div>
       </div>
 
-      <p className="mt-3 text-[10px] text-[var(--on-surface-variant)]">§7.1 Media readiness: lessons with captions/transcripts show a <CheckCircle className="inline h-3 w-3 text-[var(--leaf)]" weight="fill" /> checkmark.</p>
+      <ConfirmDialog
+        open={showDelete}
+        onOpenChange={setShowDelete}
+        title="Delete Course"
+        description={`Are you sure you want to delete "${selected?.title}"? This cannot be undone.`}
+        onConfirm={handleDelete}
+        loading={deleting}
+      />
     </div>
   )
 }
-
-function LField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return <div><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><input value={value} onChange={e => onChange(e.target.value)} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
-}
-function SField({ label, value, onChange, className }: { label: string; value: string; onChange: (v: string) => void; className?: string }) {
-  return <div className={className}><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><input value={value} onChange={e => onChange(e.target.value)} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
-}
-function Select({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
-  return <div><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><select value={value} onChange={e => onChange(e.target.value)} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]">{options.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
-}
-function FragmentRow({ children }: { children: React.ReactNode }) { return <>{children}</> }
