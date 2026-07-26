@@ -12,6 +12,7 @@ import {
   Question,
   ArrowSquareUpRight,
 } from '@phosphor-icons/react'
+import { Link, useLocation } from '@tanstack/react-router'
 import {
   Sidebar,
   SidebarContent,
@@ -29,25 +30,25 @@ const navGroups = [
   {
     label: 'Discovery',
     items: [
-      { icon: ChartBar, label: 'Analytics', path: '/_authenticated/analytics' },
-      { icon: MapTrifold, label: 'CMS', path: '/_authenticated/destinations' },
-      { icon: ImageIcon, label: 'Media Library', path: '/_authenticated/media' },
+      { icon: ChartBar, label: 'Analytics', path: '/analytics' },
+      { icon: MapTrifold, label: 'CMS', path: '/destinations' },
+      { icon: ImageIcon, label: 'Media Library', path: '/media' },
     ],
   },
   {
     label: 'Engagement',
     items: [
-      { icon: BookOpen, label: 'LMS', path: '/_authenticated/lms' },
-      { icon: Leaf, label: 'Conservation', path: '/_authenticated/conservation' },
-      { icon: Calendar, label: 'Events', path: '/_authenticated/events' },
+      { icon: BookOpen, label: 'LMS', path: '/lms' },
+      { icon: Leaf, label: 'Conservation', path: '/conservation' },
+      { icon: Calendar, label: 'Events', path: '/events' },
     ],
   },
   {
     label: 'Platform',
     items: [
-      { icon: Gear, label: 'AI Config', path: '/_authenticated/ai-config' },
-      { icon: Megaphone, label: 'Campaigns', path: '/_authenticated/campaigns' },
-      { icon: Users, label: 'User Management', path: '/_authenticated/users' },
+      { icon: Gear, label: 'AI Config', path: '/ai-config' },
+      { icon: Megaphone, label: 'Campaigns', path: '/campaigns' },
+      { icon: Users, label: 'User Management', path: '/users' },
     ],
   },
 ]
@@ -58,6 +59,8 @@ const pinnedItems = [
 ]
 
 export function AppSidebar() {
+  const location = useLocation()
+
   return (
     <Sidebar
       collapsible="icon"
@@ -84,12 +87,15 @@ export function AppSidebar() {
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
-                      isActive={false}
+                      asChild
+                      isActive={location.pathname === item.path}
                       tooltip={item.label}
                       className="rounded-lg text-white/80 hover:bg-white/5 hover:text-white"
                     >
-                      <item.icon className="h-[18px] w-[18px]" weight="duotone" />
-                      <span className="text-sm font-semibold">{item.label}</span>
+                      <Link to={item.path}>
+                        <item.icon className="h-[18px] w-[18px]" weight="duotone" />
+                        <span className="text-sm font-semibold">{item.label}</span>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
