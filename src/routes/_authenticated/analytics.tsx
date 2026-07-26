@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router'
+import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { api } from '#/lib/api/client'
@@ -30,6 +32,13 @@ interface AnalyticsData {
 }
 
 export const Route = createFileRoute('/_authenticated/analytics')({
+  beforeLoad: ({ context }) => {
+    try {
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'analytics', ['read'])
+    } catch {
+      throw redirect({ to: '/no-access' })
+    }
+  },
   component: AnalyticsPage,
 })
 

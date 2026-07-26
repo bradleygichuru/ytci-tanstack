@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router'
+import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, useCallback } from 'react'
 import { api } from '#/lib/api/client'
@@ -17,7 +19,15 @@ function Pill({ status }: { status: string }) {
   return <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: s.bg, color: s.text }}>{status}</span>
 }
 
-export const Route = createFileRoute('/_authenticated/conservation')({ component: ConservationPage })
+export const Route = createFileRoute('/_authenticated/conservation')({
+  beforeLoad: ({ context }) => {
+    try {
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'conservation', ['read'])
+    } catch {
+      throw redirect({ to: '/no-access' })
+    }
+  },
+  component: ConservationPage })
 
 function ConservationPage() {
   const [acts, setActs] = useState<Act[]>([])

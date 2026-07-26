@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router'
+import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, useCallback } from 'react'
 import { api } from '#/lib/api/client'
@@ -29,7 +31,15 @@ const typeStyles: Record<string, { icon: typeof Image; color: string; label: str
 
 const transitions: Record<string, string[]> = { draft: ['active'], active: ['paused', 'ended'], paused: ['active', 'ended'], ended: ['draft'] }
 
-export const Route = createFileRoute('/_authenticated/campaigns')({ component: CampaignsPage })
+export const Route = createFileRoute('/_authenticated/campaigns')({
+  beforeLoad: ({ context }) => {
+    try {
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'campaigns', ['read'])
+    } catch {
+      throw redirect({ to: '/no-access' })
+    }
+  },
+  component: CampaignsPage })
 
 function CampaignsPage() {
   const [data, setData] = useState<Campaign[]>([])

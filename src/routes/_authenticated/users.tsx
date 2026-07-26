@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router'
+import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, useCallback } from 'react'
 import { api } from '#/lib/api/client'
@@ -23,7 +25,15 @@ function RolePill({ role }: { role: string }) {
 
 const auditActions: Record<string, string> = { consent_granted: '#345a00', consent_revoked: '#ba1a1a', account_suspended: '#ba1a1a', account_unsuspended: '#345a00', data_exported: '#42493e', role_assigned: '#154212', login_noted: '#42493e' }
 
-export const Route = createFileRoute('/_authenticated/users')({ component: UsersPage })
+export const Route = createFileRoute('/_authenticated/users')({
+  beforeLoad: ({ context }) => {
+    try {
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'users', ['read'])
+    } catch {
+      throw redirect({ to: '/no-access' })
+    }
+  },
+  component: UsersPage })
 
 function UsersPage() {
   const [data, setData] = useState<UserItem[]>([])

@@ -1,13 +1,15 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, isRedirect } from '@tanstack/react-router'
 import { SidebarProvider } from '../components/ui/sidebar'
 import { AppSidebar } from '../components/shell/Sidebar'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: ({ context, location }) => {
-    // TODO: wire real session context (T10). For now, stub allows all.
-    // if (!context.user) {
-    //   throw redirect({ to: '/login', search: { redirect: location.href } })
-    // }
+    if (!context.user) {
+      throw redirect({
+        to: '/login',
+        search: { redirect: location.href },
+      })
+    }
   },
   component: AuthenticatedLayout,
 })

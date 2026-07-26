@@ -1,3 +1,5 @@
+import { redirect } from '@tanstack/react-router'
+import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, useCallback } from 'react'
 import { api } from '#/lib/api/client'
@@ -36,6 +38,13 @@ function StatusPill({ status }: { status: string }) {
 const formatDate = (d: string) => new Date(d).toLocaleDateString()
 
 export const Route = createFileRoute('/_authenticated/destinations')({
+  beforeLoad: ({ context }) => {
+    try {
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'destinations', ['read'])
+    } catch {
+      throw redirect({ to: '/no-access' })
+    }
+  },
   component: DestinationsPage,
 })
 
