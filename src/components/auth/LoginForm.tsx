@@ -1,6 +1,7 @@
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { authClient } from '#/lib/auth-client'
+import { useState } from 'react'
 
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email address'),
@@ -12,10 +13,12 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ redirectTo }: LoginFormProps) {
+  const [error, setError] = useState<string | null>(null)
   const form = useForm({
     defaultValues: { email: '', password: '' },
     validators: { onSubmit: loginSchema },
     onSubmit: async ({ value }) => {
+      setError(null)
       try {
         await authClient.signIn.email({
           email: value.email,
@@ -23,6 +26,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
           callbackURL: redirectTo ?? '/',
         })
       } catch (err) {
+        setError('Login failed — check your credentials or account status.')
         console.error('Sign in failed', err)
       }
     },
@@ -81,6 +85,10 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
           </div>
         )}
       </form.Field>
+
+      {error && (
+        <p className="rounded-lg bg-[rgba(186,26,26,0.1)] px-4 py-3 text-sm font-semibold text-[var(--error)]">{error}</p>
+      )}
 
       <button
         type="submit"
