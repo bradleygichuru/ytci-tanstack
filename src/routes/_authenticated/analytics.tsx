@@ -1,33 +1,315 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { api } from '#/lib/api/client'
+import type { ApiErrorResponse } from '#/lib/api/types'
+import {
+  ChartBar, Users, MapPin, ClipboardText, BookOpen,
+  Leaf, Flag, ArrowUpRight, ArrowDownRight, Bell,
+  CloudArrowDown, FileCsv, FilePdf,
+} from '@phosphor-icons/react'
+
+interface AnalyticsData {
+  dau: number; dauChange: number
+  wau: number; wauChange: number
+  mau: number; mauChange: number
+  newRegistrations: number; newRegistrationsChange: number
+  userLocations: { county: string; count: number }[]
+  itinerariesGenerated: number; itinerariesGeneratedChange: number
+  itinerariesSaved: number; itinerariesExported: number; itinerariesShared: number
+  mapInteractions: number; mapInteractionsChange: number
+  destinationDetailViews: number
+  storiesSubmitted: number; storiesSubmittedChange: number; storiesApproved: number; storiesReported: number
+  courseEnrollments: number; courseEnrollmentsChange: number; courseCompletions: number
+  challengeParticipants: number
+  conservationParticipants: number; conservationParticipantsChange: number
+  topDestinations: { name: string; county: string; views: number }[]
+  topCategories: { name: string; count: number }[]
+  contentAwaitingReview: number; contentScheduledUpdate: number
+  systemAlerts: { id: string; title: string; description: string; severity: string; timestamp: string }[]
+  failedIntegrations: { name: string; lastError: string; since: string }[]
+}
 
 export const Route = createFileRoute('/_authenticated/analytics')({
   component: AnalyticsPage,
 })
 
+function fmtNum(n: number): string {
+  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
+  return String(n)
+}
+
+function ChangeChip({ value }: { value: number }) {
+  const positive = value >= 0
+  return (
+    <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+      positive ? 'bg-[rgba(52,90,0,0.2)] text-[#345a00]' : 'bg-[rgba(186,26,26,0.1)] text-[#ba1a1a]'
+    }`}>
+      {positive ? <ArrowUpRight className="h-3 w-3" weight="bold" /> : <ArrowDownRight className="h-3 w-3" weight="bold" />}
+      {Math.abs(value)}%
+    </span>
+  )
+}
+
+function HeroStat({ icon: Icon, label, value, change }: { icon: typeof ChartBar; label: string; value: number; change: number }) {
+  return (
+    <div className="rounded-lg border border-[var(--surface-4)] bg-white p-6" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--leaf-bg)]">
+          <Icon className="h-4 w-4 text-[var(--leaf)]" weight="duotone" />
+        </div>
+        <span className="text-sm font-semibold text-[var(--on-surface-variant)]">{label}</span>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="font-sans text-4xl font-bold text-[var(--on-surface)]">{fmtNum(value)}</span>
+        <ChangeChip value={change} />
+      </div>
+    </div>
+  )
+}
+
+function StatCard({ icon: Icon, label, value, change, bg }: { icon: typeof ChartBar; label: string; value: number; change?: number; bg?: string }) {
+  return (
+    <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <div className="mb-1 flex items-center gap-2">
+        <div className={`flex h-7 w-7 items-center justify-center rounded-full ${bg ?? 'bg-[var(--surface-2)]'}`}>
+          <Icon className="h-3.5 w-3.5 text-[var(--on-surface-variant)]" weight="duotone" />
+        </div>
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--on-surface-variant)]">{label}</span>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="font-sans text-2xl font-bold text-[var(--on-surface)]">{fmtNum(value)}</span>
+        {change != null && <ChangeChip value={change} />}
+      </div>
+    </div>
+  )
+}
+
+function AlertBadge({ severity }: { severity: string }) {
+  const map: Record<string, { bg: string; text: string }> = {
+    critical: { bg: 'rgba(186,26,26,0.1)', text: '#ba1a1a' },
+    warning: { bg: 'var(--amber-bg)', text: '#6c5000' },
+    info: { bg: 'var(--surface-2)', text: 'var(--on-surface-variant)' },
+  }
+  const s = map[severity] ?? map.info
+  return (
+    <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: s.bg, color: s.text }}>
+      {severity}
+    </span>
+  )
+}
+
+function DashboardTab({ data }: { data: AnalyticsData }) {
+  return (
+    <div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <HeroStat icon={ChartBar} label="DAILY ACTIVE USERS" value={data.dau} change={data.dauChange} />
+        <HeroStat icon={Users} label="WEEKLY ACTIVE USERS" value={data.wau} change={data.wauChange} />
+        <HeroStat icon={Users} label="MONTHLY ACTIVE USERS" value={data.mau} change={data.mauChange} />
+      </div>
+
+      <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-3">
+        <StatCard icon={Users} label="New Registrations" value={data.newRegistrations} change={data.newRegistrationsChange} bg="bg-sky-50" />
+        <StatCard icon={ClipboardText} label="Itineraries Generated" value={data.itinerariesGenerated} change={data.itinerariesGeneratedChange} bg="bg-amber-50" />
+        <StatCard icon={MapPin} label="Map Interactions" value={data.mapInteractions} change={data.mapInteractionsChange} bg="bg-emerald-50" />
+        <StatCard icon={ClipboardText} label="Stories Submitted" value={data.storiesSubmitted} change={data.storiesSubmittedChange} bg="bg-rose-50" />
+        <StatCard icon={BookOpen} label="Course Enrollments" value={data.courseEnrollments} change={data.courseEnrollmentsChange} bg="bg-purple-50" />
+        <StatCard icon={Leaf} label="Conservation Participants" value={data.conservationParticipants} change={data.conservationParticipantsChange} bg="bg-lime-50" />
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+        <div className="rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="flex items-center justify-between border-b border-[var(--surface-4)] px-6 py-4">
+            <h2 className="font-sans text-base font-bold text-[var(--on-surface)]">Top Destinations</h2>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--on-surface-variant)]">by views</span>
+          </div>
+          <div className="divide-y divide-[var(--surface-4)]">
+            {data.topDestinations.map((d, i) => (
+              <div key={d.name} className="flex items-center justify-between px-6 py-3">
+                <div className="flex items-center gap-3">
+                  <span className="font-sans text-base font-bold text-[var(--on-surface-variant)]">{i + 1}</span>
+                  <div>
+                    <div className="text-sm font-semibold text-[var(--on-surface)]">{d.name}</div>
+                    <div className="text-xs text-[var(--on-surface-variant)]">{d.county}</div>
+                  </div>
+                </div>
+                <span className="text-sm font-semibold text-[var(--on-surface)]">{fmtNum(d.views)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="flex items-center justify-between border-b border-[var(--surface-4)] px-5 py-4">
+            <h2 className="font-sans text-base font-bold text-[var(--on-surface)]">System Alerts</h2>
+            <Bell className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" />
+          </div>
+          <div className="divide-y divide-[var(--surface-4)] px-5 py-2">
+            {data.systemAlerts.map((a) => (
+              <div key={a.id} className="py-3">
+                <div className="mb-1 flex items-center gap-2">
+                  <AlertBadge severity={a.severity} />
+                  <span className="text-xs text-[var(--on-surface-variant)]">{new Date(a.timestamp).toLocaleDateString()}</span>
+                </div>
+                <div className="text-sm font-semibold text-[var(--on-surface)]">{a.title}</div>
+                <div className="mt-0.5 text-xs text-[var(--on-surface-variant)]">{a.description}</div>
+              </div>
+            ))}
+          </div>
+          {data.failedIntegrations.length > 0 && (
+            <div className="border-t border-[var(--surface-4)] px-5 py-3">
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Failed Integrations</div>
+              {data.failedIntegrations.map((f) => (
+                <div key={f.name} className="mt-1 flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[var(--error)]">{f.name}</span>
+                  <span className="text-[var(--on-surface-variant)]">{f.lastError}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Awaiting Review</div>
+          <div className="flex items-baseline gap-2">
+            <span className="font-sans text-3xl font-bold text-[var(--amber-deep)]">{data.contentAwaitingReview}</span>
+            <span className="text-xs text-[var(--on-surface-variant)]">stories</span>
+          </div>
+          <div className="mt-2 text-xs text-[var(--on-surface-variant)]">+{data.contentScheduledUpdate} scheduled for update</div>
+        </div>
+
+        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Stories Pipeline</div>
+          <div className="mt-1 flex items-center gap-4">
+            <div><span className="font-sans text-xl font-bold text-[var(--on-surface)]">{fmtNum(data.storiesSubmitted)}</span><div className="text-[10px] text-[var(--on-surface-variant)]">submitted</div></div>
+            <div><span className="font-sans text-xl font-bold text-[var(--leaf)]">{fmtNum(data.storiesApproved)}</span><div className="text-[10px] text-[var(--on-surface-variant)]">approved</div></div>
+            <div><span className="font-sans text-xl font-bold text-[var(--error)]">{fmtNum(data.storiesReported)}</span><div className="text-[10px] text-[var(--on-surface-variant)]">reported</div></div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">County Breakdown</div>
+          <div className="space-y-1.5">
+            {data.userLocations.slice(0, 5).map((loc) => (
+              <div key={loc.county} className="flex items-center justify-between text-xs">
+                <span className="font-medium text-[var(--on-surface)]">{loc.county}</span>
+                <span className="font-semibold text-[var(--on-surface-variant)]">{fmtNum(loc.count)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ReportsTab() {
+  return (
+    <div className="rounded-lg border border-[var(--surface-4)] bg-white p-8" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <h2 className="font-sans text-base font-bold text-[var(--on-surface)]">Export Reports</h2>
+      <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Generate CSV or PDF summaries for YTCI, counties, and development partners.</p>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-[var(--on-surface)]">Date Range</label>
+          <div className="flex gap-3">
+            <input type="date" className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)] focus:ring-1 focus:ring-[var(--forest)]" defaultValue="2025-06-01" />
+            <span className="flex items-center text-sm text-[var(--on-surface-variant)]">to</span>
+            <input type="date" className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)] focus:ring-1 focus:ring-[var(--forest)]" defaultValue="2025-07-31" />
+          </div>
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-[var(--on-surface)]">Format</label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 text-sm text-[var(--on-surface)]">
+              <input type="radio" name="format" defaultChecked className="accent-[var(--forest)]" /> <FileCsv className="h-4 w-4 text-[var(--leaf)]" weight="duotone" /> CSV
+            </label>
+            <label className="flex items-center gap-2 text-sm text-[var(--on-surface)]">
+              <input type="radio" name="format" className="accent-[var(--forest)]" /> <FilePdf className="h-4 w-4 text-[var(--error)]" weight="duotone" /> PDF
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <label className="mb-2 block text-sm font-semibold text-[var(--on-surface)]">Sections</label>
+        <div className="flex flex-wrap gap-3">
+          {['User Activity', 'Destinations', 'Itineraries', 'Stories', 'Courses', 'Conservation', 'Alerts'].map((s) => (
+            <label key={s} className="flex items-center gap-2 rounded-full border border-[var(--outline-muted)] px-4 py-2 text-sm text-[var(--on-surface)] hover:border-[var(--forest)]">
+              <input type="checkbox" defaultChecked className="accent-[var(--forest)]" /> {s}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-8 flex gap-3">
+        <button className="flex items-center gap-2 rounded-full bg-[var(--forest)] px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02]">
+          <CloudArrowDown className="h-4 w-4" weight="duotone" /> Export CSV
+        </button>
+        <button className="flex items-center gap-2 rounded-full bg-[var(--amber)] px-6 py-3 text-sm font-bold text-[var(--forest-deep)] shadow-sm transition-colors">
+          <CloudArrowDown className="h-4 w-4" weight="duotone" /> Export PDF
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function AnalyticsPage() {
-  const [data, setData] = useState<{ items: unknown[] } | null>(null)
+  const [data, setData] = useState<AnalyticsData | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'reports'>('dashboard')
 
   useEffect(() => {
-    api.list('analytics').then(setData)
+    api.list('analytics').then((r) => {
+      setData(r.items[0] as AnalyticsData)
+    }).catch((e: ApiErrorResponse) => setError(e.message))
   }, [])
 
   return (
     <div>
-      <h1 className="font-sans text-3xl font-bold tracking-tight text-[#191c1d]">
-        Analytics & Metrics
-      </h1>
-      <p className="mt-1 text-sm text-[#42493e]">
-        Platform activity, content performance, and learning impact metrics.
-      </p>
-
-      <div className="mt-6 rounded-lg border border-[#e7e8e9] bg-white p-6 shadow-sm">
-        <h2 className="font-sans text-base font-semibold text-[#191c1d]">Mock API Status</h2>
-        <p className="mt-1 text-sm text-[#42493e]">
-          {data ? `Connected — ${data.items.length} items loaded` : 'Connecting...'}
-        </p>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">
+            Analytics & Metrics
+          </h1>
+          <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
+            Platform activity, content performance, and learning impact metrics.
+          </p>
+        </div>
+        <div className="flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
+          {(['dashboard', 'reports'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+                activeTab === tab
+                  ? 'bg-white text-[var(--on-surface)] shadow-sm'
+                  : 'text-[var(--on-surface-variant)] hover:text-[var(--on-surface)]'
+              }`}
+            >
+              {tab === 'dashboard' ? 'Dashboard' : 'Reports'}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {error && (
+        <div className="mt-4 rounded-lg border border-[var(--error)] bg-[rgba(186,26,26,0.05)] p-4 text-sm text-[var(--error)]">
+          {error}
+        </div>
+      )}
+
+      {data ? (
+        activeTab === 'dashboard' ? <DashboardTab data={data} /> : <ReportsTab />
+      ) : (
+        !error && (
+          <div className="mt-8 flex items-center justify-center py-20 text-sm text-[var(--on-surface-variant)]">
+            Loading analytics data...
+          </div>
+        )
+      )}
     </div>
   )
 }
