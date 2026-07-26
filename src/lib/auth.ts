@@ -6,6 +6,7 @@ import { expo } from "@better-auth/expo";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
+import * as schema from "#/db/schema/auth";
 
 // ──────────────────────── RBAC ────────────────────────
 
@@ -66,6 +67,7 @@ const db = drizzle(pool)
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
+    schema,
     provider: "pg",
     usePlural: true,
   }),
