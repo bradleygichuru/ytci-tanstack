@@ -1,5 +1,4 @@
-// STUB — convention contract only. Implementation lands in T10 (#11).
-// See docs/authz/pattern.md for the full pattern.
+import { roles } from '#/lib/auth'
 import type { Role } from 'better-auth/plugins/access'
 
 export type ResourceKey =
@@ -12,12 +11,6 @@ interface AuthSession {
   user: { role: string }
 }
 
-let roles: Record<string, Role> = {}
-
-export function setRoles(r: Record<string, Role>) {
-  roles = r
-}
-
 export function requirePermission(
   session: AuthSession | null,
   resource: ResourceKey,
@@ -26,7 +19,8 @@ export function requirePermission(
   if (!session) {
     throw new Error('Unauthorized')
   }
-  const role = roles[session.user.role]
+  const roleMap = roles as Record<string, Role>
+  const role = roleMap[session.user.role]
   if (!role) {
     throw new Error('Forbidden')
   }

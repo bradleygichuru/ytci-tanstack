@@ -13,7 +13,7 @@ export function ForgotForm() {
     validators: { onSubmit: forgotSchema },
     onSubmit: async ({ value }) => {
       try {
-        await authClient.forgetPassword({ email: value.email })
+        await authClient.requestPasswordReset({ email: value.email })
       } catch (err) {
         console.error('Forgot password failed', err)
       }
