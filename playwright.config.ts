@@ -17,10 +17,6 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'bun run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 30000,
-  },
+  // Start the dev server manually before running: `rm -rf node_modules/.vite && bun run dev`
+  // Then run: `bun run test:e2e`
 })

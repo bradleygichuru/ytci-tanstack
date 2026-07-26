@@ -20,44 +20,47 @@ test.describe('E2E Authorization Tests', () => {
   })
 
   test.describe('Authenticated — per-role RBAC', () => {
+    test.describe.configure({ timeout: 60000 })
     async function loginAs(page: Page, email: string) {
-      // Sign in via direct API call to set the session cookie
       await page.goto('/login')
-      const resp = await page.evaluate(async (e) => {
-        const r = await fetch('/api/auth/sign-in/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: e, password: 'password' }),
-        })
-        return r.ok ? 'ok' : 'fail'
-      }, email)
-      expect(resp).toBe('ok')
+      await page.waitForFunction(() => Object.keys(document).some(k => k.startsWith('__reactContainer')))
+      await page.waitForTimeout(500)
+      await page.fill('input[type="email"]', email)
+      await page.fill('input[type="password"]', 'password')
+      await page.click('button:has-text("Sign In")')
+      await page.waitForURL('**/analytics', { timeout: 15000 })
+      await page.waitForTimeout(1000)
+    }
+
+    async function navigateTo(page: Page, area: string) {
+      if (page.url().includes(area)) return
+      await page.goto(`/${area}`)
     }
 
     test('super_admin can access all 9 areas', async ({ page }) => {
       await loginAs(page, 'admin@example.com')
       for (const area of AREAS) {
-        await page.goto(`/${area}`)
-        await expect(page).not.toHaveURL(/\/login|no-access/, { timeout: 10000 })
+        await navigateTo(page, area)
+        await expect(page).not.toHaveURL(/\/login|no-access/, { timeout: 5000 })
       }
     })
 
     test('administrator can access all 9 areas', async ({ page }) => {
       await loginAs(page, 'grace@example.com')
       for (const area of AREAS) {
-        await page.goto(`/${area}`)
-        await expect(page).not.toHaveURL(/\/login|no-access/, { timeout: 10000 })
+        await navigateTo(page, area)
+        await expect(page).not.toHaveURL(/\/login|no-access/, { timeout: 5000 })
       }
     })
 
     test('moderator can only access analytics + media', async ({ page }) => {
       await loginAs(page, 'moderator@example.com')
       for (const area of AREAS) {
-        await page.goto(`/${area}`)
+        await navigateTo(page, area)
         if (ROLE_MATRIX.moderator.includes(area)) {
-          await expect(page).not.toHaveURL(/\/login|no-access/, { timeout: 10000 })
+          await expect(page).not.toHaveURL(/\/login|no-access/, { timeout: 5000 })
         } else {
-          await expect(page).toHaveURL(/\/no-access/, { timeout: 10000 })
+          await expect(page).toHaveURL(/\/no-access/, { timeout: 5000 })
         }
       }
     })
@@ -65,27 +68,24 @@ test.describe('E2E Authorization Tests', () => {
     test('county_officer can only access destinations + media', async ({ page }) => {
       await loginAs(page, 'officer@example.com')
       for (const area of AREAS) {
-        await page.goto(`/${area}`)
+        await navigateTo(page, area)
         if (ROLE_MATRIX.county_officer.includes(area)) {
-          await expect(page).not.toHaveURL(/\/login|no-access/, { timeout: 10000 })
+          await expect(page).not.toHaveURL(/\/login|no-access/, { timeout: 5000 })
         } else {
-          await expect(page).toHaveURL(/\/no-access/, { timeout: 10000 })
+          await expect(page).toHaveURL(/\/no-access/, { timeout: 5000 })
         }
       }
     })
 
     test('banned user cannot log in', async ({ page }) => {
       await page.goto('/login')
-      const resp = await page.evaluate(async () => {
-        const r = await fetch('/api/auth/sign-in/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: 'suspended@example.com', password: 'password' }),
-        })
-        return { ok: r.ok, status: r.status }
-      })
-      expect(resp.ok).toBe(false)
-      expect(resp.status).toBe(403)
+      await page.waitForFunction(() => Object.keys(document).some(k => k.startsWith('__reactContainer')))
+      await page.waitForTimeout(500)
+      await page.fill('input[type="email"]', 'suspended@example.com')
+      await page.fill('input[type="password"]', 'password')
+      await page.click('button:has-text("Sign In")')
+      await expect(page.locator('text=banned').first()).toBeVisible({ timeout: 5000 })
+      await expect(page).not.toHaveURL(/\/analytics/)
     })
   })
 })

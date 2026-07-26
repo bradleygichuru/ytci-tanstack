@@ -1,4 +1,4 @@
-import { roles } from '#/lib/auth'
+import { roles } from '#/lib/rbac'
 import type { Role } from 'better-auth/plugins/access'
 
 export type ResourceKey =

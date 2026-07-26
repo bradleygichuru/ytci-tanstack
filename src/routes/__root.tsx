@@ -11,7 +11,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
-import { auth } from '#/lib/auth'
+import { getSession } from '#/lib/auth.functions'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -22,19 +22,18 @@ const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIte
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   beforeLoad: async () => {
-    // Fetch session server-side via getRequest (SSR-only, guarded from client)
-    if (typeof window === 'undefined') {
-      try {
-        const { getRequest } = await import('@tanstack/start-server-core')
-        const request = getRequest()
-        if (request) {
-          const session = await auth.api.getSession({ headers: request.headers })
-          if (session) {
-            return { user: { id: session.user.id, email: session.user.email, role: (session.user as Record<string, unknown>).role as string ?? 'moderator' } }
-          }
+    try {
+      const session = await getSession()
+      if (session) {
+        return {
+          user: {
+            id: session.user.id,
+            email: session.user.email,
+            role: (session.user as Record<string, unknown>).role as string ?? 'moderator',
+          },
         }
-      } catch { /* ignore */ }
-    }
+      }
+    } catch { /* ignore */ }
     return { user: null }
   },
   head: () => ({
