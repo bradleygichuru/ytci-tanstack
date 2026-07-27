@@ -38,22 +38,21 @@ export function ResetForm() {
       }}
       className="space-y-5"
     >
-      <p className="text-sm leading-relaxed text-[#42493e]">
+      <p className="text-sm leading-relaxed text-muted-foreground">
         Must be at least 8 characters.
       </p>
 
       <form.Field name="password">
         {(field) => (
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#191c1d]">New Password</label>
+            <label className="mb-1.5 block text-sm font-semibold text-foreground">New Password</label>
             <input
               type="password"
               placeholder="••••••••"
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
-              className="w-full rounded-lg border px-4 py-3 text-sm text-[#191c1d] outline-none transition-all placeholder:text-[#42493e] focus:border-[#154212] focus:ring-1 focus:ring-[#154212]"
-              style={{ borderColor: '#c2c9bb' }}
+              className="w-full rounded-lg border border-border px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {field.state.meta.errors && (
               <p className="mt-1 text-xs text-[#ba1a1a]">{field.state.meta.errors.join(', ')}</p>
@@ -65,15 +64,14 @@ export function ResetForm() {
       <form.Field name="confirmPassword">
         {(field) => (
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#191c1d]">Confirm Password</label>
+            <label className="mb-1.5 block text-sm font-semibold text-foreground">Confirm Password</label>
             <input
               type="password"
               placeholder="••••••••"
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
-              className="w-full rounded-lg border px-4 py-3 text-sm text-[#191c1d] outline-none transition-all placeholder:text-[#42493e] focus:border-[#154212] focus:ring-1 focus:ring-[#154212]"
-              style={{ borderColor: '#c2c9bb' }}
+              className="w-full rounded-lg border border-border px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {field.state.meta.errors && (
               <p className="mt-1 text-xs text-[#ba1a1a]">{field.state.meta.errors.join(', ')}</p>
@@ -84,12 +82,12 @@ export function ResetForm() {
 
       <button
         type="submit"
-        className="w-full rounded-full bg-[#154212] py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02]"
+        className="w-full rounded-full bg-primary py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02]"
       >
         Reset Password
       </button>
 
-      <p className="text-center text-xs text-[#42493e]">
+      <p className="text-center text-xs text-muted-foreground">
         <Link to="/login" className="font-semibold text-[#345a00] hover:underline">
           Back to sign in
         </Link>

@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 export function AuthLayout({ title, subtitle, children, nav }: AuthLayoutProps) {
   return (
     <div className="flex min-h-screen">
-      <div className="hidden w-1/2 flex-col items-center justify-center p-8 lg:flex lg:p-12" style={{ backgroundColor: '#154212' }}>
+      <div className="hidden w-1/2 flex-col items-center justify-center p-8 lg:flex lg:p-12" style={{ backgroundColor: 'var(--primary-container)' }}>
         <div className="max-w-sm text-center">
           <div className="mb-6 flex items-center justify-center gap-3">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
@@ -29,7 +29,7 @@ export function AuthLayout({ title, subtitle, children, nav }: AuthLayoutProps) 
             ].map((item) => (
               <div key={item.text} className="flex items-center gap-3 text-left text-sm text-white/80">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10">
-                  <item.icon className="h-4 w-4 text-[#fdc002]" weight="duotone" />
+                  <item.icon className="h-4 w-4" style={{ color: 'var(--secondary-container)' }} weight="duotone" />
                 </div>
                 {item.text}
               </div>
@@ -38,20 +38,20 @@ export function AuthLayout({ title, subtitle, children, nav }: AuthLayoutProps) 
         </div>
       </div>
 
-      <div className="flex w-full flex-col items-center justify-center bg-white px-6 py-8 sm:p-8 lg:w-1/2">
+      <div className="flex w-full flex-col items-center justify-center bg-card px-6 py-8 sm:p-8 lg:w-1/2">
         <div className="w-full max-w-sm">
           <div className="mb-6">
-            <h2 className="text-lg font-bold" style={{ color: '#191c1d' }}>{title}</h2>
-            <p className="mt-1 text-sm" style={{ color: '#42493e' }}>{subtitle}</p>
+            <h2 className="text-lg font-bold text-foreground">{title}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
           </div>
 
           {nav && nav.length > 0 && (
-            <div className="mb-6 flex items-center gap-4 text-xs font-semibold text-[#42493e]">
+            <div className="mb-6 flex items-center gap-4 text-xs font-semibold text-muted-foreground">
               {nav.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className={`pb-1 ${item.active ? 'border-b-2 border-[#154212] text-[#191c1d]' : ''}`}
+                  className={`pb-1 ${item.active ? 'border-b-2 border-primary text-foreground' : ''}`}
                 >
                   {item.label}
                 </a>

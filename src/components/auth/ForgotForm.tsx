@@ -29,22 +29,21 @@ export function ForgotForm() {
       }}
       className="space-y-5"
     >
-      <p className="text-sm leading-relaxed text-[#42493e]">
+      <p className="text-sm leading-relaxed text-muted-foreground">
         Enter the email address associated with your account and we&apos;ll send you a link to reset your password.
       </p>
 
       <form.Field name="email">
         {(field) => (
           <div>
-            <label className="mb-1.5 block text-sm font-semibold text-[#191c1d]">Email</label>
+            <label className="mb-1.5 block text-sm font-semibold text-foreground">Email</label>
             <input
               type="email"
               placeholder="admin@example.com"
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
-              className="w-full rounded-lg border px-4 py-3 text-sm text-[#191c1d] outline-none transition-all placeholder:text-[#42493e] focus:border-[#154212] focus:ring-1 focus:ring-[#154212]"
-              style={{ borderColor: '#c2c9bb' }}
+              className="w-full rounded-lg border border-border px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {field.state.meta.errors && (
               <p className="mt-1 text-xs text-[#ba1a1a]">{field.state.meta.errors.join(', ')}</p>
@@ -55,12 +54,12 @@ export function ForgotForm() {
 
       <button
         type="submit"
-        className="w-full rounded-full bg-[#154212] py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02]"
+        className="w-full rounded-full bg-primary py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary/90"
       >
         Send Reset Link
       </button>
 
-      <p className="text-center text-xs text-[#42493e]">
+      <p className="text-center text-xs text-muted-foreground">
         <Link to="/login" className="font-semibold text-[#345a00] hover:underline">
           Back to sign in
         </Link>

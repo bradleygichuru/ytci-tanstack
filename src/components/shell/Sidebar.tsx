@@ -64,8 +64,6 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r-0"
-      style={{ backgroundColor: 'var(--forest)' }}
     >
       <SidebarHeader className="px-5 py-6">
         <div className="font-sans text-2xl font-bold leading-none text-white">
