@@ -209,8 +209,6 @@ function LmsPage() {
   if (!data) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading courses...</div>
   if (!data.length && panelMode !== 'create') return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">No courses yet. Create one to get started.</div>
 
-  return
-
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
