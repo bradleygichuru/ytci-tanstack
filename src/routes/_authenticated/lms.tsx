@@ -11,6 +11,7 @@ import {
 import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { CursorPagination } from '#/components/shared/CursorPagination'
 import { courseSchema } from '#/lib/schemas/course.schema'
 
 interface Lesson { id: string; title: string; type: string; duration: number; url: string; hasTranscript: boolean; hasCaption: boolean }
@@ -59,11 +60,31 @@ function LmsPage() {
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [cursorHistory, setCursorHistory] = useState<string[]>([])
+  const [hasMore, setHasMore] = useState(false)
 
-  const loadList = useCallback(async () => {
-    const r = await api.courses.list()
+  const loadList = useCallback(async (c?: string | null) => {
+    const r = await api.courses.list(c ? { cursor: c } : undefined)
     setData(r.items)
+    setHasMore(r.hasMore)
+    setCursor(r.nextCursor)
   }, [api])
+
+  const handleNext = useCallback(() => {
+    if (cursor) {
+      setCursorHistory(prev => [...prev, cursor])
+      loadList(cursor)
+    }
+  }, [cursor, loadList])
+
+  const handlePrev = useCallback(() => {
+    const prev = cursorHistory[cursorHistory.length - 1]
+    if (prev === undefined) { setCursorHistory([]); loadList(null); return }
+    const prevCursor = cursorHistory.length > 1 ? cursorHistory[cursorHistory.length - 2] : null
+    setCursorHistory(prev => prev.slice(0, -1))
+    loadList(prevCursor)
+  }, [cursorHistory, loadList])
 
   useEffect(() => { loadList() }, [loadList])
 
@@ -398,6 +419,12 @@ function LmsPage() {
           </tbody>
         </table>
         </div>
+        <CursorPagination
+          nextCursor={cursor}
+          hasMore={hasMore}
+          onNext={handleNext}
+          onPrev={handlePrev}
+        />
       </div>
 
       <ConfirmDialog

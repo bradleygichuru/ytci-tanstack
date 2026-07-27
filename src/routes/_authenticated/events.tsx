@@ -11,6 +11,7 @@ import {
 import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { CursorPagination } from '#/components/shared/CursorPagination'
 import { eventSchema } from '#/lib/schemas/event.schema'
 
 interface EventItem { id: string; title: string; organizer: string; county: string; venue: string; date: string; endDate: string; type: string; status: string; description: string; contactEmail: string; contactPhone: string; reminderEnabled: boolean; reminderTime: string }
@@ -43,11 +44,35 @@ function EventsPage() {
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [cursorHistory, setCursorHistory] = useState<string[]>([])
+  const [hasMore, setHasMore] = useState(false)
 
-  const loadList = useCallback(async () => {
-    const r = await api.events.list()
+  const loadList = useCallback(async (c?: string | null) => {
+    const r = await api.events.list(c ? { cursor: c } : undefined)
     setData(r.items)
+    setHasMore(r.hasMore)
+    setCursor(r.nextCursor)
   }, [api])
+
+  const handleNext = useCallback(() => {
+    if (cursor) {
+      setCursorHistory(prev => [...prev, cursor])
+      loadList(cursor)
+    }
+  }, [cursor, loadList])
+
+  const handlePrev = useCallback(() => {
+    const prev = cursorHistory[cursorHistory.length - 1]
+    if (prev === undefined) {
+      setCursorHistory([])
+      loadList(null)
+      return
+    }
+    const prevCursor = cursorHistory.length > 1 ? cursorHistory[cursorHistory.length - 2] : null
+    setCursorHistory(prev => prev.slice(0, -1))
+    loadList(prevCursor)
+  }, [cursorHistory, loadList])
 
   useEffect(() => { loadList() }, [loadList])
 
@@ -311,6 +336,12 @@ function EventsPage() {
           </table>
           </div>
         </div>
+        <CursorPagination
+          nextCursor={cursor}
+          hasMore={hasMore}
+          onNext={handleNext}
+          onPrev={handlePrev}
+        />
       </div>
 
       <ConfirmDialog

@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import React, { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
+import { MediaUpload } from '#/components/shared/MediaUpload'
 import type { PushAudience, PushHistoryItem } from '#/lib/api/push'
 import {
   Megaphone, GlobeHemisphereWest, Bell, Timer, PencilSimple,
@@ -12,6 +13,7 @@ import {
 import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { CursorPagination } from '#/components/shared/CursorPagination'
 import { campaignSchema } from '#/lib/schemas/campaign.schema'
 
 interface Campaign { id: string; title: string; description: string; type: 'home_banner' | 'featured_destination' | 'push_notification' | 'seasonal'; bannerUrl: string; targetUrl: string; destinationId: string; audience: string; startDate: string; endDate: string; status: string }
@@ -53,11 +55,31 @@ function CampaignsPage() {
   const [sendingPush, setSendingPush] = useState(false)
   const [scheduleTime, setScheduleTime] = useState('')
   const [pushSending, setPushSending] = useState(false)
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [cursorHistory, setCursorHistory] = useState<string[]>([])
+  const [hasMore, setHasMore] = useState(false)
 
-  const loadList = useCallback(async () => {
-    const r = await api.campaigns.list()
+  const loadList = useCallback(async (c?: string | null) => {
+    const r = await api.campaigns.list(c ? { cursor: c } : undefined)
     setData(r.items)
+    setHasMore(r.hasMore)
+    setCursor(r.nextCursor)
   }, [api])
+
+  const handleNext = useCallback(() => {
+    if (cursor) {
+      setCursorHistory(prev => [...prev, cursor])
+      loadList(cursor)
+    }
+  }, [cursor, loadList])
+
+  const handlePrev = useCallback(() => {
+    const prev = cursorHistory[cursorHistory.length - 1]
+    if (prev === undefined) { setCursorHistory([]); loadList(null); return }
+    const prevCursor = cursorHistory.length > 1 ? cursorHistory[cursorHistory.length - 2] : null
+    setCursorHistory(prev => prev.slice(0, -1))
+    loadList(prevCursor)
+  }, [cursorHistory, loadList])
 
   useEffect(() => { loadList() }, [loadList])
 
@@ -242,12 +264,20 @@ function CampaignsPage() {
                           <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                           <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
                           <FormSelect label="Campaign Type" required value={editData.type} options={['home_banner', 'featured_destination', 'push_notification', 'seasonal']} onChange={v => { handleField('type', v); handleField('destinationId', ''); handleField('audience', '') }} error={errors.type} />
-                          <FormInput label="Banner URL" value={editData.bannerUrl} onChange={v => handleField('bannerUrl', v)} />
-                          {editData.bannerUrl && (
-                            <div className="flex items-center justify-center rounded-lg border border-dashed border-[var(--outline-muted)] bg-[var(--surface-2)] p-4">
-                              <img src={editData.bannerUrl} alt="Banner preview" className="max-h-24 rounded object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                            </div>
-                          )}
+                          <div>
+                            <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Banner Image</label>
+                            <MediaUpload
+                              label={editData.bannerUrl ? 'Replace banner' : 'Upload banner'}
+                              onComplete={(result) => {
+                                handleField('bannerUrl', result.objectKey)
+                                toast.success('Banner uploaded')
+                              }}
+                              onError={(msg) => toast.error(msg)}
+                            />
+                            {editData.bannerUrl && (
+                              <p className="mt-1 text-xs text-[var(--leaf)] truncate">{editData.bannerUrl}</p>
+                            )}
+                          </div>
                           <FormInput label="Target URL" value={editData.targetUrl} onChange={v => handleField('targetUrl', v)} />
                           {editData.type === 'featured_destination' && (
                             <FormInput label="Destination ID" required value={editData.destinationId} onChange={v => handleField('destinationId', v)} error={errors.destinationId} />
@@ -384,7 +414,20 @@ function CampaignsPage() {
                     <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                     <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
                     <FormSelect label="Campaign Type" required value={editData.type} options={['home_banner', 'featured_destination', 'push_notification', 'seasonal']} onChange={v => { handleField('type', v); handleField('destinationId', ''); handleField('audience', '') }} error={errors.type} />
-                    <FormInput label="Banner URL" value={editData.bannerUrl} onChange={v => handleField('bannerUrl', v)} />
+                    <div>
+                      <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Banner Image</label>
+                      <MediaUpload
+                        label="Upload banner"
+                        onComplete={(result) => {
+                          handleField('bannerUrl', result.objectKey)
+                          toast.success('Banner uploaded')
+                        }}
+                        onError={(msg) => toast.error(msg)}
+                      />
+                      {editData.bannerUrl && (
+                        <p className="mt-1 text-xs text-[var(--leaf)] truncate">{editData.bannerUrl}</p>
+                      )}
+                    </div>
                     <FormInput label="Target URL" value={editData.targetUrl} onChange={v => handleField('targetUrl', v)} />
                     {editData.type === 'featured_destination' && (
                       <FormInput label="Destination ID" required value={editData.destinationId} onChange={v => handleField('destinationId', v)} error={errors.destinationId} />
@@ -410,6 +453,12 @@ function CampaignsPage() {
             </tbody>
           </table>
         </div>
+        <CursorPagination
+          nextCursor={cursor}
+          hasMore={hasMore}
+          onNext={handleNext}
+          onPrev={handlePrev}
+        />
       </div>
 
       <ConfirmDialog

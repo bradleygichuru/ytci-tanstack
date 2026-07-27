@@ -8,6 +8,7 @@ import { Trash, MapPin, Shield, CheckCircle, XCircle, Eye, User, PencilSimple, F
 import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { CursorPagination } from '#/components/shared/CursorPagination'
 import { conservationActivitySchema } from '#/lib/schemas/conservation.schema'
 
 interface Act { id: string; title: string; organizer: string; location: string; locationPrivacyLevel: string; date: string; impactMetric: string; measurementUnit: string; impactGoal: number; impactActual: number; participantCount: number; status: string; verificationRules: string; badgeAwarded: boolean; badgeName: string }
@@ -39,11 +40,31 @@ function ConservationPage() {
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [cursorHistory, setCursorHistory] = useState<string[]>([])
+  const [hasMore, setHasMore] = useState(false)
 
-  const loadList = useCallback(async () => {
-    const r = await api.conservation.activities.list()
+  const loadList = useCallback(async (c?: string | null) => {
+    const r = await api.conservation.activities.list(c ? { cursor: c } : undefined)
     setActs(r.items)
+    setHasMore(r.hasMore)
+    setCursor(r.nextCursor)
   }, [api])
+
+  const handleNext = useCallback(() => {
+    if (cursor) {
+      setCursorHistory(prev => [...prev, cursor])
+      loadList(cursor)
+    }
+  }, [cursor, loadList])
+
+  const handlePrev = useCallback(() => {
+    const prev = cursorHistory[cursorHistory.length - 1]
+    if (prev === undefined) { setCursorHistory([]); loadList(null); return }
+    const prevCursor = cursorHistory.length > 1 ? cursorHistory[cursorHistory.length - 2] : null
+    setCursorHistory(prev => prev.slice(0, -1))
+    loadList(prevCursor)
+  }, [cursorHistory, loadList])
 
   const loadEvidence = useCallback(async () => {
     const r = await api.conservation.evidence.list()
@@ -196,7 +217,7 @@ function ConservationPage() {
         ))}
       </div>
 
-      {tab === 'activities' && (
+      {tab === 'activities' && (<>
         <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="flex items-center justify-between border-b border-[var(--surface-4)] px-5 py-3">
             <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{acts.length} activities</span>
@@ -327,7 +348,13 @@ function ConservationPage() {
           </table>
           </div>
         </div>
-      )}
+        <CursorPagination
+          nextCursor={cursor}
+          hasMore={hasMore}
+          onNext={handleNext}
+          onPrev={handlePrev}
+        />
+      </>)}
 
       {tab === 'evidence' && (
         <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>

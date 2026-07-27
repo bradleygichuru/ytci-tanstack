@@ -5,6 +5,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
 import { MediaUpload } from '#/components/shared/MediaUpload'
+import { CursorPagination } from '#/components/shared/CursorPagination'
 import {
   MapPin, PencilSimple, MagnifyingGlass,
   CloudArrowDown, X, FloppyDisk, Image as ImageIcon,
@@ -71,13 +72,42 @@ function DestinationsPage() {
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [cursor, setCursor] = useState<string | null>(null)
+  const [cursorHistory, setCursorHistory] = useState<string[]>([])
+  const [hasMore, setHasMore] = useState(false)
+  const [totalDestinations, setTotalDestinations] = useState(0)
 
-  const loadList = useCallback(async () => {
+  const loadList = useCallback(async (c?: string | null) => {
     setLoading(true)
-    const r = await api.destinations.list()
+    const r = await api.destinations.list(c ? { cursor: c } : undefined)
     setData(r.items)
+    setHasMore(r.hasMore)
+    setCursor(r.nextCursor)
+    setTotalDestinations(prev => Math.max(prev, r.items.length))
     setLoading(false)
   }, [api])
+
+  const handleNext = useCallback(() => {
+    if (cursor) {
+      setCursorHistory(prev => [...prev, cursor])
+      loadList(cursor)
+      setSelectedId(null)
+    }
+  }, [cursor, loadList])
+
+  const handlePrev = useCallback(() => {
+    const prev = cursorHistory[cursorHistory.length - 1]
+    if (prev === undefined) {
+      setCursorHistory([])
+      loadList(null)
+      setSelectedId(null)
+      return
+    }
+    const prevCursor = cursorHistory.length > 1 ? cursorHistory[cursorHistory.length - 2] : null
+    setCursorHistory(prev => prev.slice(0, -1))
+    loadList(prevCursor)
+    setSelectedId(null)
+  }, [cursorHistory, loadList])
 
   useEffect(() => { loadList() }, [loadList])
 
@@ -509,6 +539,13 @@ function DestinationsPage() {
             </tbody>
           </table>
           </div>
+          <CursorPagination
+            nextCursor={cursor}
+            hasMore={hasMore}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            loading={loading}
+          />
         </div>
       )}
 
