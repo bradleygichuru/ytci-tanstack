@@ -24,9 +24,9 @@ async function main() {
   const existingEvents = await db.select({ id: events.id }).from(events).limit(1)
   if (existingEvents.length === 0) {
     await db.insert(events).values([
-      { title: 'Cultural Festival', organizer: 'Narok County', county: 'Narok', type: 'cultural', status: 'scheduled' },
-      { title: 'Nairobi Marathon', organizer: 'Athletics Kenya', county: 'Nairobi', type: 'sports', status: 'scheduled' },
-      { title: 'Tree Planting Drive', organizer: 'Green Africa', county: 'Nyeri', type: 'conservation', status: 'postponed' },
+      { title: 'Cultural Festival', organizer: 'Narok County', county: 'Narok', type: 'cultural', status: 'scheduled', eventDate: '2026-08-15' },
+      { title: 'Nairobi Marathon', organizer: 'Athletics Kenya', county: 'Nairobi', type: 'sports', status: 'scheduled', eventDate: '2026-09-20' },
+      { title: 'Tree Planting Drive', organizer: 'Green Africa', county: 'Nyeri', type: 'conservation', status: 'postponed', eventDate: '2026-07-10' },
     ])
     console.log('Created 3 test events')
   } else {
@@ -37,8 +37,8 @@ async function main() {
   const existingCampaigns = await db.select({ id: campaigns.id }).from(campaigns).limit(1)
   if (existingCampaigns.length === 0) {
     await db.insert(campaigns).values([
-      { title: 'Summer Safari Promo', type: 'home_banner', status: 'active' },
-      { title: 'Beach Weekend', type: 'featured_destination', status: 'draft' },
+      { title: 'Summer Safari Promo', type: 'home_banner', status: 'active', startDate: '2026-07-01' },
+      { title: 'Beach Weekend', type: 'featured_destination', status: 'draft', startDate: '2026-08-01' },
     ])
     console.log('Created 2 test campaigns')
   } else {

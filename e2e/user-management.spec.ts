@@ -36,6 +36,20 @@ test.describe('User Management E2E', () => {
     }, { a: action, b: body })
   }
 
+  let graceUserId: string | null = null
+
+  async function getGraceUserId(page: Page): Promise<string> {
+    if (graceUserId) return graceUserId
+    const res = await page.evaluate(async () => {
+      const r = await fetch('/api/admin/users/list?search=grace%40example.com&searchField=email', { credentials: 'same-origin' })
+      if (!r.ok) return null
+      const data = await r.json()
+      return data.users?.[0]?.id ?? null
+    })
+    if (res) graceUserId = res
+    return res ?? ''
+  }
+
   function editPanel(page: Page) {
     return page.locator('table tbody td[colspan]')
   }
@@ -77,15 +91,17 @@ test.describe('User Management E2E', () => {
     })
 
     test.afterEach(async ({ page }) => {
-      // Cleanup: reset grace to known state
       try {
-        await page.evaluate(async () => {
-          await fetch('/api/admin/users/update', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: '1Hv1qBABcU9rQh0VQoZLI2dHyq23ck7m', role: 'administrator', banned: false, consentGrantedAt: null }),
-            credentials: 'same-origin'
-          })
-        })
+        const uid = await getGraceUserId(page)
+        if (uid) {
+          await page.evaluate(async (userId) => {
+            await fetch('/api/admin/users/update', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId, role: 'administrator', banned: false, banReason: null, consentGrantedAt: null }),
+              credentials: 'same-origin',
+            })
+          }, uid)
+        }
       } catch {}
     })
 
@@ -117,28 +133,31 @@ test.describe('User Management E2E', () => {
     })
 
     test('can ban and unban a user', async ({ page }) => {
-      await apiPost(page, 'update', { userId: '1Hv1qBABcU9rQh0VQoZLI2dHyq23ck7m', banned: true, banReason: 'E2E test ban' })
+      const uid = await getGraceUserId(page)
+      await apiPost(page, 'update', { userId: uid, banned: true, banReason: 'E2E test ban' })
       await page.reload()
       await waitForData(page)
       await expect(page.locator('table').getByText('Banned').first()).toBeVisible({ timeout: 5000 })
 
-      await apiPost(page, 'update', { userId: '1Hv1qBABcU9rQh0VQoZLI2dHyq23ck7m', banned: false })
+      await apiPost(page, 'update', { userId: uid, banned: false })
       await page.reload()
       await waitForData(page)
     })
 
     test('can toggle user consent', async ({ page }) => {
-      await apiPost(page, 'update', { userId: '1Hv1qBABcU9rQh0VQoZLI2dHyq23ck7m', consentGrantedAt: new Date().toISOString() })
+      const uid = await getGraceUserId(page)
+      await apiPost(page, 'update', { userId: uid, consentGrantedAt: new Date().toISOString() })
       await page.reload()
       await waitForData(page)
     })
 
     test('can change user role and audit log shows it', async ({ page }) => {
-      await apiPost(page, 'update', { userId: '1Hv1qBABcU9rQh0VQoZLI2dHyq23ck7m', role: 'moderator' })
+      const uid = await getGraceUserId(page)
+      await apiPost(page, 'update', { userId: uid, role: 'moderator' })
       await page.reload()
       await waitForData(page)
 
-      await apiPost(page, 'update', { userId: '1Hv1qBABcU9rQh0VQoZLI2dHyq23ck7m', role: 'administrator' })
+      await apiPost(page, 'update', { userId: uid, role: 'administrator' })
       await page.reload()
       await waitForData(page)
 
