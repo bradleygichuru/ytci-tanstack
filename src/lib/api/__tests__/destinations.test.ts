@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { destinationsApi } from '../destinations'
 
-const config = { baseUrl: 'http://localhost:8080/v1', token: 'test-jwt' }
+const config = { baseUrl: 'http://localhost:8080', token: 'test-jwt' }
 
 function mockFetch(response: unknown) {
   return vi.mocked(fetch).mockResolvedValue({
@@ -21,7 +21,7 @@ describe('destinationsApi', () => {
     const api = destinationsApi(config)
     await api.list()
     expect(mock).toHaveBeenCalledWith(
-      'http://localhost:8080/v1/v1/destinations',
+      'http://localhost:8080/v1/destinations',
       expect.objectContaining({
         method: 'GET',
         headers: expect.objectContaining({ Authorization: 'Bearer test-jwt' }),
@@ -34,7 +34,7 @@ describe('destinationsApi', () => {
     const api = destinationsApi(config)
     await api.list({ cursor: 'abc123', limit: 20 })
     expect(mock).toHaveBeenCalledWith(
-      'http://localhost:8080/v1/v1/destinations?cursor=abc123&limit=20',
+      'http://localhost:8080/v1/destinations?cursor=abc123&limit=20',
       expect.anything(),
     )
   })
@@ -46,7 +46,7 @@ describe('destinationsApi', () => {
     const result = await api.create(body)
     expect(result.id).toBe('dest-1')
     expect(mock).toHaveBeenCalledWith(
-      'http://localhost:8080/v1/v1/destinations',
+      'http://localhost:8080/v1/destinations',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify(body),
@@ -95,7 +95,7 @@ describe('destinationsApi', () => {
 
   it('works without token', async () => {
     const mock = mockFetch({ items: [], nextCursor: null, hasMore: false })
-    const api = destinationsApi({ baseUrl: 'http://localhost:8080/v1', token: undefined })
+    const api = destinationsApi({ baseUrl: 'http://localhost:8080', token: undefined })
     await api.list()
     const headers = mock.mock.calls[0][1] as RequestInit
     expect(headers.headers).not.toHaveProperty('Authorization')

@@ -6,7 +6,7 @@ beforeEach(() => {
 })
 
 describe('apiRequest', () => {
-  const config = { baseUrl: 'http://localhost:8080/v1', token: 'my-jwt' }
+  const config = { baseUrl: 'http://localhost:8080', token: 'my-jwt' }
 
   it('attaches Authorization header when token is present', async () => {
     vi.mocked(fetch).mockResolvedValue({
@@ -16,7 +16,7 @@ describe('apiRequest', () => {
     } as Response)
     await apiRequest(config, '/test')
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8080/v1/test',
+      'http://localhost:8080/test',
       expect.objectContaining({
         headers: expect.objectContaining({ Authorization: 'Bearer my-jwt' }),
       }),
@@ -29,7 +29,7 @@ describe('apiRequest', () => {
       status: 200,
       json: () => Promise.resolve({}),
     } as Response)
-    await apiRequest({ baseUrl: 'http://localhost:8080/v1', token: undefined }, '/test')
+    await apiRequest({ baseUrl: 'http://localhost:8080', token: undefined }, '/test')
     const call = vi.mocked(fetch).mock.calls[0][1] as RequestInit
     const headers = call.headers as Record<string, string>
     expect(headers.Authorization).toBeUndefined()
@@ -78,7 +78,7 @@ describe('apiRequest', () => {
     } as Response)
     await apiRequest(config, '/list', { params: { cursor: 'abc', limit: 20 } })
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:8080/v1/list?cursor=abc&limit=20',
+      'http://localhost:8080/list?cursor=abc&limit=20',
       expect.anything(),
     )
   })

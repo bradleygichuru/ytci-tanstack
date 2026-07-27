@@ -304,6 +304,9 @@ function ConservationPage() {
                   </React.Fragment>
                 )
               })}
+              {acts.length === 0 && panelMode !== 'create' && (
+                <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No activities yet. Create one to get started.</td></tr>
+              )}
               {panelMode === 'create' && editData && (
                 <tr key="create-row"><td colSpan={7} className="border-b p-0">
                   <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
@@ -383,6 +386,9 @@ function ConservationPage() {
                   </td>
                 </tr>
               ))}
+              {evids.length === 0 && (
+                <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No evidence items to review.</td></tr>
+              )}
             </tbody>
           </table>
           </div>

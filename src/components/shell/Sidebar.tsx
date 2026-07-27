@@ -65,7 +65,7 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
       className="border-r-0"
-      style={{ backgroundColor: '#154212' }}
+      style={{ backgroundColor: 'var(--forest)' }}
     >
       <SidebarHeader className="px-5 py-6">
         <div className="font-sans text-2xl font-bold leading-none text-white">
@@ -108,7 +108,7 @@ export function AppSidebar() {
       <SidebarFooter className="mt-auto space-y-2 px-3 pb-5">
         <button
           className="flex w-full items-center justify-center gap-2 rounded-full px-3 py-2.5 text-sm font-bold shadow-sm"
-          style={{ backgroundColor: '#fdc002', color: '#002b02' }}
+          style={{ backgroundColor: 'var(--amber)', color: 'var(--forest-deep)' }}
         >
           <ArrowSquareUpRight className="h-4 w-4" weight="bold" />
           Deploy AI Guardrails

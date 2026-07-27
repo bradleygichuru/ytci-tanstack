@@ -42,6 +42,7 @@ function emptyCampaign(): Campaign {
 function CampaignsPage() {
   const api = useApi()
   const [data, setData] = useState<Campaign[]>([])
+  const [loaded, setLoaded] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
   const [editData, setEditData] = useState<Campaign | null>(null)
@@ -60,10 +61,16 @@ function CampaignsPage() {
   const [hasMore, setHasMore] = useState(false)
 
   const loadList = useCallback(async (c?: string | null) => {
-    const r = await api.campaigns.list(c ? { cursor: c } : undefined)
-    setData(r.items)
-    setHasMore(r.hasMore)
-    setCursor(r.nextCursor)
+    try {
+      const r = await api.campaigns.list(c ? { cursor: c } : undefined)
+      setData(r.items)
+      setHasMore(r.hasMore)
+      setCursor(r.nextCursor)
+    } catch {
+      toast.error('Failed to load campaigns')
+    } finally {
+      setLoaded(true)
+    }
   }, [api])
 
   const handleNext = useCallback(() => {
@@ -215,7 +222,7 @@ function CampaignsPage() {
   const statusTransitions: Record<string, string[]> = { draft: ['active'], active: ['paused', 'ended'], paused: ['active', 'ended'], ended: ['draft'] }
   const selected = data.find(d => d.id === selectedId) ?? null
 
-  if (!data.length) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading...</div>
+  if (!loaded) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading campaigns...</div>
 
   return (
     <div>
@@ -407,6 +414,9 @@ function CampaignsPage() {
                 </React.Fragment>
               )
             })}
+            {data.length === 0 && panelMode !== 'create' && (
+              <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No campaigns found. Create one to get started.</td></tr>
+            )}
             {panelMode === 'create' && editData && (
               <tr key="create-row"><td colSpan={5} className="border-b p-0">
                 <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { eventsApi } from '../events'
 
-const config = { baseUrl: 'http://localhost:8080/v1', token: 'test-jwt' }
+const config = { baseUrl: 'http://localhost:8080', token: 'test-jwt' }
 
 function mockFetch(response: unknown) {
   return vi.mocked(fetch).mockResolvedValue({
