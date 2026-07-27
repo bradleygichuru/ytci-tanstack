@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { loginAs } from './helpers/auth'
 
 const AREAS = ['analytics', 'destinations', 'media', 'lms', 'conservation', 'events', 'ai-config', 'campaigns', 'users']
 
@@ -21,16 +22,6 @@ test.describe('E2E Authorization Tests', () => {
 
   test.describe('Authenticated — per-role RBAC', () => {
     test.describe.configure({ timeout: 60000 })
-    async function loginAs(page: Page, email: string) {
-      await page.goto('/login')
-      await page.waitForFunction(() => Object.keys(document).some(k => k.startsWith('__reactContainer')))
-      await page.waitForTimeout(500)
-      await page.fill('input[type="email"]', email)
-      await page.fill('input[type="password"]', 'password')
-      await page.click('button:has-text("Sign In")')
-      await page.waitForURL('**/analytics', { timeout: 15000 })
-      await page.waitForTimeout(1000)
-    }
 
     async function navigateTo(page: Page, area: string) {
       if (page.url().includes(area)) return

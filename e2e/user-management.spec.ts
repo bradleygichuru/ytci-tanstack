@@ -1,22 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
+import { loginAs, waitForData } from './helpers/auth'
 
 test.describe('User Management E2E', () => {
   test.describe.configure({ timeout: 90000 })
-
-  async function loginAs(page: Page, email: string) {
-    await page.goto('/login')
-    await page.waitForFunction(() => Object.keys(document).some(k => k.startsWith('__reactContainer')))
-    await page.waitForTimeout(500)
-    await page.fill('input[type="email"]', email)
-    await page.fill('input[type="password"]', 'password')
-    await page.click('button:has-text("Sign In")')
-    await page.waitForURL('**/analytics', { timeout: 20000 })
-    await page.waitForTimeout(1000)
-  }
-
-  async function waitForData(page: Page) {
-    await expect(page.locator('text=Loading...')).not.toBeVisible({ timeout: 15000 })
-  }
 
   async function clickFirstRow(page: Page) {
     const firstCell = page.locator('table tbody td:not([colspan])').first()
