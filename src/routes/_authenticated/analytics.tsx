@@ -133,7 +133,7 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
             <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--on-surface-variant)]">by views</span>
           </div>
           <div className="divide-y divide-[var(--surface-4)]">
-            {data.topDestinations.map((d, i) => (
+            {(data.topDestinations ?? []).map((d, i) => (
               <div key={d.name} className="flex items-center justify-between px-6 py-3">
                 <div className="flex items-center gap-3">
                   <span className="font-sans text-base font-bold text-[var(--on-surface-variant)]">{i + 1}</span>
@@ -154,7 +154,7 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
             <Bell className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" />
           </div>
           <div className="divide-y divide-[var(--surface-4)] px-5 py-2">
-            {data.systemAlerts.map((a) => (
+            {(data.systemAlerts ?? []).map((a) => (
               <div key={a.id} className="py-3">
                 <div className="mb-1 flex items-center gap-2">
                   <AlertBadge severity={a.severity} />
@@ -165,10 +165,10 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
               </div>
             ))}
           </div>
-          {data.failedIntegrations.length > 0 && (
+          {(data.failedIntegrations ?? []).length > 0 && (
             <div className="border-t border-[var(--surface-4)] px-5 py-3">
               <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Failed Integrations</div>
-              {data.failedIntegrations.map((f) => (
+              {(data.failedIntegrations ?? []).map((f) => (
                 <div key={f.name} className="mt-1 flex items-center justify-between text-xs">
                   <span className="font-semibold text-[var(--error)]">{f.name}</span>
                   <span className="text-[var(--on-surface-variant)]">{f.lastError}</span>
@@ -201,7 +201,7 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
         <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">County Breakdown</div>
           <div className="space-y-1.5">
-            {data.userLocations.slice(0, 5).map((loc) => (
+            {(data.userLocations ?? []).slice(0, 5).map((loc) => (
               <div key={loc.county} className="flex items-center justify-between text-xs">
                 <span className="font-medium text-[var(--on-surface)]">{loc.county}</span>
                 <span className="font-semibold text-[var(--on-surface-variant)]">{fmtNum(loc.count)}</span>
