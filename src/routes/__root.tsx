@@ -16,6 +16,7 @@ import { getSession } from '#/lib/auth.functions'
 interface MyRouterContext {
   queryClient: QueryClient
   user?: { id: string; email: string; role: string } | null
+  token?: string | null
 }
 
 const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`
@@ -31,10 +32,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
             email: session.user.email,
             role: (session.user as Record<string, unknown>).role as string ?? 'moderator',
           },
+          token: session.session?.token ?? null,
         }
       }
     } catch { /* ignore */ }
-    return { user: null }
+    return { user: null, token: null }
   },
   head: () => ({
     meta: [

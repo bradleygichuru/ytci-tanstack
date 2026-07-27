@@ -2,14 +2,14 @@ import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import React, { useEffect, useState, useCallback } from 'react'
-import { api } from '#/lib/api/client'
 import { toast } from 'sonner'
+import { useApi } from '#/lib/api/use-api'
 import {
   MapPin, PencilSimple, MagnifyingGlass,
   CloudArrowDown, X, FloppyDisk, Image as ImageIcon,
   Wheelchair, Plus, Trash,
 } from '@phosphor-icons/react'
-import type { Destination } from '#/lib/api/mock/destinations'
+import type { Destination } from '#/lib/api/destinations'
 import { destinationSchema } from '#/lib/schemas/destination.schema'
 import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
@@ -58,6 +58,7 @@ function emptyDestination(): Partial<Destination> {
 }
 
 function DestinationsPage() {
+  const api = useApi()
   const [data, setData] = useState<Destination[] | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
@@ -72,10 +73,10 @@ function DestinationsPage() {
 
   const loadList = useCallback(async () => {
     setLoading(true)
-    const r = await api.list('destinations')
-    setData(r.items as Destination[])
+    const r = await api.destinations.list()
+    setData(r.items)
     setLoading(false)
-  }, [])
+  }, [api])
 
   useEffect(() => { loadList() }, [loadList])
 
@@ -128,11 +129,11 @@ function DestinationsPage() {
     try {
       let newId: string | undefined
       if (panelMode === 'create') {
-        const created = await api.create('destinations', editData) as { id: string }
+        const created = await api.destinations.create(editData)
         newId = created.id
         toast.success('Destination created')
       } else if (selectedId) {
-        await api.update('destinations', selectedId, editData)
+        await api.destinations.update(selectedId, editData)
         toast.success('Destination saved')
       }
       await loadList()
@@ -148,13 +149,13 @@ function DestinationsPage() {
     } finally {
       setSaving(false)
     }
-  }, [editData, selectedId, panelMode, loadList])
+  }, [editData, selectedId, panelMode, api, loadList])
 
   const handleDelete = useCallback(async () => {
     if (!selectedId) return
     setDeleting(true)
     try {
-      await api.remove('destinations', selectedId)
+      await api.destinations.remove(selectedId)
       toast.success('Destination deleted')
       setShowDelete(false)
       setSelectedId(null)
@@ -164,7 +165,7 @@ function DestinationsPage() {
     } finally {
       setDeleting(false)
     }
-  }, [selectedId, loadList])
+  }, [selectedId, loadList, api])
 
   const visible = filter
     ? data?.filter(d => d.status === filter || d.category === filter || d.county === filter)

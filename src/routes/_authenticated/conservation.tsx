@@ -2,9 +2,9 @@ import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import React, { useEffect, useState, useCallback } from 'react'
-import { api } from '#/lib/api/client'
 import { toast } from 'sonner'
-import { Tree, Trash, MapPin, Shield, CheckCircle, XCircle, Eye, User, PencilSimple, FloppyDisk, X, Plus } from '@phosphor-icons/react'
+import { useApi } from '#/lib/api/use-api'
+import { Trash, MapPin, Shield, CheckCircle, XCircle, Eye, User, PencilSimple, FloppyDisk, X, Plus } from '@phosphor-icons/react'
 import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
@@ -28,6 +28,7 @@ function emptyAct(): Act {
 }
 
 function ConservationPage() {
+  const api = useApi()
   const [acts, setActs] = useState<Act[]>([])
   const [evids, setEvids] = useState<Evid[]>([])
   const [tab, setTab] = useState<'activities' | 'evidence'>('activities')
@@ -40,28 +41,28 @@ function ConservationPage() {
   const [deleting, setDeleting] = useState(false)
 
   const loadList = useCallback(async () => {
-    const r = await api.list('conservation')
-    setActs(r.items as Act[])
-  }, [])
+    const r = await api.conservation.activities.list()
+    setActs(r.items)
+  }, [api])
 
   const loadEvidence = useCallback(async () => {
-    const r = await api.list('conservation', { cursor: 'evidence' })
-    setEvids(r.items as Evid[])
-  }, [])
+    const r = await api.conservation.evidence.list()
+    setEvids(r.items)
+  }, [api])
 
   useEffect(() => { loadList(); loadEvidence() }, [loadList, loadEvidence])
 
   const handleApprove = useCallback(async (id: string) => {
-    await api.update('conservation', id, { status: 'approved' })
+    await api.conservation.evidence.review(id, 'approve')
     await loadEvidence()
     toast.success('Evidence approved')
-  }, [loadEvidence])
+  }, [api, loadEvidence])
 
   const handleReject = useCallback(async (id: string) => {
-    await api.update('conservation', id, { status: 'rejected', reviewerNote: 'Rejected — insufficient evidence' })
+    await api.conservation.evidence.review(id, 'reject')
     await loadEvidence()
     toast.success('Evidence rejected')
-  }, [loadEvidence])
+  }, [api, loadEvidence])
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
@@ -107,11 +108,11 @@ function ConservationPage() {
     try {
       let newId: string | undefined
       if (panelMode === 'create') {
-        const created = await api.create('conservation', editData) as { id: string }
+        const created = await api.conservation.activities.create(editData as unknown as Record<string, unknown>)
         newId = created.id
         toast.success('Activity created')
       } else if (selectedId) {
-        await api.update('conservation', selectedId, editData)
+        await api.conservation.activities.update(selectedId, editData as unknown as Record<string, unknown>)
         toast.success('Activity saved')
       }
       await loadList()
@@ -127,13 +128,13 @@ function ConservationPage() {
     } finally {
       setSaving(false)
     }
-  }, [editData, selectedId, panelMode, loadList])
+  }, [editData, selectedId, panelMode, api, loadList])
 
   const handleDelete = useCallback(async () => {
     if (!selectedId) return
     setDeleting(true)
     try {
-      await api.remove('conservation', selectedId)
+      await api.conservation.activities.update(selectedId, { status: 'cancelled' })
       toast.success('Activity deleted')
       setShowDelete(false)
       setSelectedId(null)
@@ -144,7 +145,7 @@ function ConservationPage() {
     } finally {
       setDeleting(false)
     }
-  }, [selectedId, loadList])
+  }, [selectedId, loadList, api])
 
   const agg = {
     trees: {

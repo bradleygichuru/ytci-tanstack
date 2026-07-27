@@ -2,17 +2,17 @@ import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import React, { useEffect, useState, useCallback } from 'react'
-import { api } from '#/lib/api/client'
 import { toast } from 'sonner'
+import { useApi } from '#/lib/api/use-api'
+import type { PushAudience, PushHistoryItem } from '#/lib/api/push'
 import {
   Megaphone, GlobeHemisphereWest, Bell, Timer, PencilSimple,
-  FloppyDisk, X, Plus, ArrowRight, Trash, Eye, PaperPlaneTilt, CalendarBlank,
+  FloppyDisk, X, Plus, Trash, PaperPlaneTilt, CalendarBlank,
 } from '@phosphor-icons/react'
 import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { campaignSchema } from '#/lib/schemas/campaign.schema'
-import type { PushAudience, PushHistoryItem } from '#/lib/api/push-types'
 
 interface Campaign { id: string; title: string; description: string; type: 'home_banner' | 'featured_destination' | 'push_notification' | 'seasonal'; bannerUrl: string; targetUrl: string; destinationId: string; audience: string; startDate: string; endDate: string; status: string }
 
@@ -38,6 +38,7 @@ function emptyCampaign(): Campaign {
 }
 
 function CampaignsPage() {
+  const api = useApi()
   const [data, setData] = useState<Campaign[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
@@ -54,9 +55,9 @@ function CampaignsPage() {
   const [pushSending, setPushSending] = useState(false)
 
   const loadList = useCallback(async () => {
-    const r = await api.list('campaigns')
-    setData(r.items as Campaign[])
-  }, [])
+    const r = await api.campaigns.list()
+    setData(r.items)
+  }, [api])
 
   useEffect(() => { loadList() }, [loadList])
 
@@ -104,11 +105,11 @@ function CampaignsPage() {
     try {
       let newId: string | undefined
       if (panelMode === 'create') {
-        const created = await api.create('campaigns', editData) as { id: string }
+        const created = await api.campaigns.create(editData as unknown as Record<string, unknown>)
         newId = created.id
         toast.success('Campaign created')
       } else if (selectedId) {
-        await api.update('campaigns', selectedId, editData)
+        await api.campaigns.update(selectedId, editData as unknown as Record<string, unknown>)
         toast.success('Campaign saved')
       }
       await loadList()
@@ -124,13 +125,13 @@ function CampaignsPage() {
     } finally {
       setSaving(false)
     }
-  }, [editData, selectedId, panelMode, loadList])
+  }, [editData, selectedId, panelMode, api, loadList])
 
   const handleDelete = useCallback(async () => {
     if (!selectedId) return
     setDeleting(true)
     try {
-      await api.remove('campaigns', selectedId)
+      await api.campaigns.remove(selectedId)
       toast.success('Campaign deleted')
       setShowDelete(false)
       setSelectedId(null)
@@ -141,53 +142,53 @@ function CampaignsPage() {
     } finally {
       setDeleting(false)
     }
-  }, [selectedId, loadList])
+  }, [selectedId, loadList, api])
 
   const handlePreviewCount = useCallback(async () => {
     setSendingPush(true)
     try {
-      const result = await api.pushTokenCount(pushAudience)
+      const result = await api.push.tokenCount(pushAudience)
       setPushCount(result.devices)
     } catch {
       toast.error('Failed to estimate reach')
     } finally {
       setSendingPush(false)
     }
-  }, [pushAudience])
+  }, [pushAudience, api])
 
   const handlePushSend = useCallback(async () => {
     if (!selectedId || !editData) return
     setPushSending(true)
     try {
-      await api.pushSend({ campaignId: selectedId, audience: pushAudience, title: editData.title, body: editData.description })
+      await api.push.send({ campaignId: selectedId, audience: pushAudience, title: editData.title, body: editData.description })
       toast.success('Push notification sent')
-      const hist = await api.pushHistory({ campaignId: selectedId })
-      setPushHistory(hist.items as PushHistoryItem[])
+      const hist = await api.push.history({ campaignId: selectedId })
+      setPushHistory(hist.items)
     } catch {
       toast.error('Failed to send push notification')
     } finally {
       setPushSending(false)
     }
-  }, [selectedId, editData, pushAudience])
+  }, [selectedId, editData, pushAudience, api])
 
   const handlePushSchedule = useCallback(async () => {
     if (!selectedId || !editData || !scheduleTime) return
     setPushSending(true)
     try {
-      await api.pushSchedule({ campaignId: selectedId, audience: pushAudience, title: editData.title, body: editData.description, scheduledAt: scheduleTime })
+      await api.push.schedule({ campaignId: selectedId, audience: pushAudience, title: editData.title, body: editData.description, scheduledAt: scheduleTime })
       toast.success('Push notification scheduled')
     } catch {
       toast.error('Failed to schedule push notification')
     } finally {
       setPushSending(false)
     }
-  }, [selectedId, editData, pushAudience, scheduleTime])
+  }, [selectedId, editData, pushAudience, scheduleTime, api])
 
   useEffect(() => {
     if (selectedId) {
-      api.pushHistory({ campaignId: selectedId }).then(r => setPushHistory(r.items as PushHistoryItem[])).catch(() => {})
+      api.push.history({ campaignId: selectedId }).then(r => setPushHistory(r.items)).catch(() => {})
     }
-  }, [selectedId])
+  }, [selectedId, api])
 
   const statusTransitions: Record<string, string[]> = { draft: ['active'], active: ['paused', 'ended'], paused: ['active', 'ended'], ended: ['draft'] }
   const selected = data.find(d => d.id === selectedId) ?? null
@@ -238,8 +239,8 @@ function CampaignsPage() {
                     <tr><td colSpan={5} className="border-b p-0">
                       <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                          <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
-                          <FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} className="md:col-span-2" />
+                          <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
+                          <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
                           <FormSelect label="Campaign Type" required value={editData.type} options={['home_banner', 'featured_destination', 'push_notification', 'seasonal']} onChange={v => { handleField('type', v); handleField('destinationId', ''); handleField('audience', '') }} error={errors.type} />
                           <FormInput label="Banner URL" value={editData.bannerUrl} onChange={v => handleField('bannerUrl', v)} />
                           {editData.bannerUrl && (
@@ -265,15 +266,15 @@ function CampaignsPage() {
                               })}
                             </div>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              {(statusTransitions[editData.status] ?? []).map(target => (
-                                <button key={target} onClick={async () => {
-                                  handleField('status', target)
-                                  await api.update('campaigns', editData.id, { status: target })
-                                  await loadList()
-                                }} className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm bg-[var(--forest)]">
-                                  → {target}
-                                </button>
-                              ))}
+                                {(statusTransitions[editData.status] ?? []).map(target => (
+                                  <button key={target} onClick={async () => {
+                                    handleField('status', target)
+                                    await api.campaigns.update(editData.id, { status: target })
+                                    await loadList()
+                                  }} className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm bg-[var(--forest)]">
+                                    → {target}
+                                  </button>
+                                ))}
                             </div>
                           </div>
                         </div>
@@ -380,8 +381,8 @@ function CampaignsPage() {
               <tr key="create-row"><td colSpan={5} className="border-b p-0">
                 <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
-                    <FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} className="md:col-span-2" />
+                    <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
+                    <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
                     <FormSelect label="Campaign Type" required value={editData.type} options={['home_banner', 'featured_destination', 'push_notification', 'seasonal']} onChange={v => { handleField('type', v); handleField('destinationId', ''); handleField('audience', '') }} error={errors.type} />
                     <FormInput label="Banner URL" value={editData.bannerUrl} onChange={v => handleField('bannerUrl', v)} />
                     <FormInput label="Target URL" value={editData.targetUrl} onChange={v => handleField('targetUrl', v)} />

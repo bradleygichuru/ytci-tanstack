@@ -2,11 +2,11 @@ import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { api } from '#/lib/api/client'
+import { useApi } from '#/lib/api/use-api'
 import type { ApiErrorResponse } from '#/lib/api/types'
 import {
   ChartBar, Users, MapPin, ClipboardText, BookOpen,
-  Leaf, Flag, ArrowUpRight, ArrowDownRight, Bell,
+  Leaf, ArrowUpRight, ArrowDownRight, Bell,
   CloudArrowDown, FileCsv, FilePdf,
 } from '@phosphor-icons/react'
 
@@ -266,15 +266,16 @@ function ReportsTab() {
 }
 
 function AnalyticsPage() {
+  const api = useApi()
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'reports'>('dashboard')
 
   useEffect(() => {
-    api.list('analytics').then((r) => {
-      setData(r.items[0] as AnalyticsData)
+    api.analytics.summary().then((r) => {
+      setData(r as AnalyticsData)
     }).catch((e: ApiErrorResponse) => setError(e.message))
-  }, [])
+  }, [api])
 
   return (
     <div>

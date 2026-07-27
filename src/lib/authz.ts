@@ -3,7 +3,7 @@ import type { Role } from 'better-auth/plugins/access'
 
 export type ResourceKey =
   | 'analytics' | 'destinations' | 'media' | 'lms'
-  | 'conservation' | 'events' | 'aiConfig' | 'campaigns' | 'user'
+  | 'conservation' | 'events' | 'aiConfig' | 'campaigns' | 'user' | 'challenges'
 
 export type Action = 'read' | 'create' | 'edit' | 'delete' | 'publish' | 'assign-role' | 'suspend-user' | 'update' | 'set-role' | 'ban' | 'get' | 'list'
 

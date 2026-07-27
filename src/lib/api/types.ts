@@ -37,25 +37,3 @@ export interface AuditMeta {
   createdBy: string
   updatedBy: string
 }
-
-export type AreaNamespace =
-  | 'analytics'
-  | 'destinations'
-  | 'media'
-  | 'stories'
-  | 'courses'
-  | 'conservation'
-  | 'events'
-  | 'ai-config'
-  | 'campaigns'
-  | 'users'
-
-export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE'
-
-export interface RequestOptions {
-  method?: HttpMethod
-  path: string
-  body?: unknown
-  params?: Record<string, string | number | undefined>
-  headers?: Record<string, string>
-}

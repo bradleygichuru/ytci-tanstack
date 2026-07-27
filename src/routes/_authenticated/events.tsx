@@ -2,10 +2,10 @@ import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import React, { useEffect, useState, useCallback } from 'react'
-import { api } from '#/lib/api/client'
 import { toast } from 'sonner'
+import { useApi } from '#/lib/api/use-api'
 import {
-  CalendarBlank, Clock, Bell, PencilSimple,
+  Clock, Bell, PencilSimple,
   FloppyDisk, X, Plus, ArrowRight, Ticket, Trash,
 } from '@phosphor-icons/react'
 import { FormInput, FormSelect } from '#/components/shared/FormField'
@@ -34,6 +34,7 @@ function emptyEvent(): EventItem {
 }
 
 function EventsPage() {
+  const api = useApi()
   const [data, setData] = useState<EventItem[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
@@ -44,9 +45,9 @@ function EventsPage() {
   const [deleting, setDeleting] = useState(false)
 
   const loadList = useCallback(async () => {
-    const r = await api.list('events')
-    setData(r.items as EventItem[])
-  }, [])
+    const r = await api.events.list()
+    setData(r.items)
+  }, [api])
 
   useEffect(() => { loadList() }, [loadList])
 
@@ -94,11 +95,11 @@ function EventsPage() {
     try {
       let newId: string | undefined
       if (panelMode === 'create') {
-        const created = await api.create('events', editData) as { id: string }
+        const created = await api.events.create(editData as unknown as Record<string, unknown>)
         newId = created.id
         toast.success('Event created')
       } else if (selectedId) {
-        await api.update('events', selectedId, editData)
+        await api.events.update(selectedId, editData as unknown as Record<string, unknown>)
         toast.success('Event saved')
       }
       await loadList()
@@ -114,13 +115,13 @@ function EventsPage() {
     } finally {
       setSaving(false)
     }
-  }, [editData, selectedId, panelMode, loadList])
+  }, [editData, selectedId, panelMode, api, loadList])
 
   const handleDelete = useCallback(async () => {
     if (!selectedId) return
     setDeleting(true)
     try {
-      await api.remove('events', selectedId)
+      await api.events.remove(selectedId)
       toast.success('Event deleted')
       setShowDelete(false)
       setSelectedId(null)
@@ -131,15 +132,15 @@ function EventsPage() {
     } finally {
       setDeleting(false)
     }
-  }, [selectedId, loadList])
+  }, [selectedId, loadList, api])
 
   const handleStatusTransition = useCallback(async (newStatus: string) => {
     if (!editData) return
     const updated = { ...editData, status: newStatus }
     setEditData(updated)
-    await api.update('events', editData.id, { status: newStatus })
+    await api.events.update(editData.id, { status: newStatus })
     await loadList()
-  }, [editData, loadList])
+  }, [editData, loadList, api])
 
   const transitions: Record<string, string[]> = { scheduled: ['postponed', 'cancelled'], postponed: ['scheduled', 'cancelled'], cancelled: ['scheduled'] }
   const selected = data.find(d => d.id === selectedId) ?? null
@@ -183,7 +184,7 @@ function EventsPage() {
                     <tr><td colSpan={6} className="border-b p-0">
                       <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                          <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
+                          <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                           <FormInput label="Organizer" value={editData.organizer} onChange={v => handleField('organizer', v)} />
                           <FormInput label="County" required value={editData.county} onChange={v => handleField('county', v)} error={errors.county} />
                           <FormInput label="Venue" value={editData.venue} onChange={v => handleField('venue', v)} />
@@ -266,7 +267,7 @@ function EventsPage() {
               <tr key="create-row"><td colSpan={6} className="border-b p-0">
                 <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
+                    <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                     <FormInput label="Organizer" value={editData.organizer} onChange={v => handleField('organizer', v)} />
                     <FormInput label="County" required value={editData.county} onChange={v => handleField('county', v)} error={errors.county} />
                     <FormInput label="Venue" value={editData.venue} onChange={v => handleField('venue', v)} />

@@ -2,10 +2,10 @@ import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import React, { useEffect, useState, useCallback } from 'react'
-import { api } from '#/lib/api/client'
 import { toast } from 'sonner'
+import { useApi } from '#/lib/api/use-api'
 import {
-  BookOpen, Video, FileText, FilePdf, CheckCircle,
+  Video, FileText, FilePdf, CheckCircle,
   PencilSimple, FloppyDisk, X, Plus, Trash, Sparkle,
 } from '@phosphor-icons/react'
 import { FormInput, FormSelect } from '#/components/shared/FormField'
@@ -48,6 +48,7 @@ const TABS = [
 ] as const
 
 function LmsPage() {
+  const api = useApi()
   const [data, setData] = useState<Course[] | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
@@ -60,9 +61,9 @@ function LmsPage() {
   const [deleting, setDeleting] = useState(false)
 
   const loadList = useCallback(async () => {
-    const r = await api.list('courses')
-    setData(r.items as Course[])
-  }, [])
+    const r = await api.courses.list()
+    setData(r.items)
+  }, [api])
 
   useEffect(() => { loadList() }, [loadList])
 
@@ -109,11 +110,11 @@ function LmsPage() {
     try {
       let newId: string | undefined
       if (panelMode === 'create') {
-        const created = await api.create('courses', editData) as { id: string }
+        const created = await api.courses.create(editData as unknown as Record<string, unknown>)
         newId = created.id
         toast.success('Course created')
       } else if (selectedId) {
-        await api.update('courses', selectedId, editData)
+        await api.courses.update(selectedId, editData as unknown as Record<string, unknown>)
         toast.success('Course saved')
       }
       await loadList()
@@ -128,13 +129,13 @@ function LmsPage() {
     } finally {
       setSaving(false)
     }
-  }, [editData, selectedId, panelMode, loadList])
+  }, [editData, selectedId, panelMode, api, loadList])
 
   const handleDelete = useCallback(async () => {
     if (!selectedId) return
     setDeleting(true)
     try {
-      await api.remove('courses', selectedId)
+      await api.courses.remove(selectedId)
       toast.success('Course deleted')
       setShowDelete(false); setSelectedId(null); setPanelMode('view')
       await loadList()
@@ -143,7 +144,7 @@ function LmsPage() {
     } finally {
       setDeleting(false)
     }
-  }, [selectedId, loadList])
+  }, [selectedId, loadList, api])
 
   const handleLessonField = (lessonId: string, field: string, value: unknown) => {
     if (!editData) return
@@ -315,8 +316,8 @@ function LmsPage() {
                             )}
                             {activeTab === 'settings' && (
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
-                                <FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} className="md:col-span-2" />
+                          <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
+                          <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
                                 <FormSelect label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
                                 <FormSelect label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
                                 <FormInput label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />
@@ -374,8 +375,8 @@ function LmsPage() {
                     )}
                     {activeTab === 'settings' && (
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} className="md:col-span-2" />
-                        <FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} className="md:col-span-2" />
+                        <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
+                        <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
                         <FormSelect label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
                         <FormSelect label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
                         <FormInput label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />

@@ -18,6 +18,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAiConfigRouteImport } from './routes/_authenticated/ai-config'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
+import { Route as AuthenticatedChallengesRouteImport } from './routes/_authenticated/challenges'
 import { Route as AuthenticatedConservationRouteImport } from './routes/_authenticated/conservation'
 import { Route as AuthenticatedDestinationsRouteImport } from './routes/_authenticated/destinations'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
@@ -69,6 +70,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
 const AuthenticatedCampaignsRoute = AuthenticatedCampaignsRouteImport.update({
   id: '/campaigns',
   path: '/campaigns',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedChallengesRoute = AuthenticatedChallengesRouteImport.update({
+  id: '/challenges',
+  path: '/challenges',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedConservationRoute =
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/ai-config': typeof AuthenticatedAiConfigRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
+  '/challenges': typeof AuthenticatedChallengesRoute
   '/conservation': typeof AuthenticatedConservationRoute
   '/destinations': typeof AuthenticatedDestinationsRoute
   '/events': typeof AuthenticatedEventsRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/ai-config': typeof AuthenticatedAiConfigRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
+  '/challenges': typeof AuthenticatedChallengesRoute
   '/conservation': typeof AuthenticatedConservationRoute
   '/destinations': typeof AuthenticatedDestinationsRoute
   '/events': typeof AuthenticatedEventsRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/ai-config': typeof AuthenticatedAiConfigRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
+  '/_authenticated/challenges': typeof AuthenticatedChallengesRoute
   '/_authenticated/conservation': typeof AuthenticatedConservationRoute
   '/_authenticated/destinations': typeof AuthenticatedDestinationsRoute
   '/_authenticated/events': typeof AuthenticatedEventsRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/ai-config'
     | '/analytics'
     | '/campaigns'
+    | '/challenges'
     | '/conservation'
     | '/destinations'
     | '/events'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/ai-config'
     | '/analytics'
     | '/campaigns'
+    | '/challenges'
     | '/conservation'
     | '/destinations'
     | '/events'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-config'
     | '/_authenticated/analytics'
     | '/_authenticated/campaigns'
+    | '/_authenticated/challenges'
     | '/_authenticated/conservation'
     | '/_authenticated/destinations'
     | '/_authenticated/events'
@@ -304,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCampaignsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/challenges': {
+      id: '/_authenticated/challenges'
+      path: '/challenges'
+      fullPath: '/challenges'
+      preLoaderRoute: typeof AuthenticatedChallengesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/conservation': {
       id: '/_authenticated/conservation'
       path: '/conservation'
@@ -367,6 +386,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAiConfigRoute: typeof AuthenticatedAiConfigRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
+  AuthenticatedChallengesRoute: typeof AuthenticatedChallengesRoute
   AuthenticatedConservationRoute: typeof AuthenticatedConservationRoute
   AuthenticatedDestinationsRoute: typeof AuthenticatedDestinationsRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
@@ -379,6 +399,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAiConfigRoute: AuthenticatedAiConfigRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
+  AuthenticatedChallengesRoute: AuthenticatedChallengesRoute,
   AuthenticatedConservationRoute: AuthenticatedConservationRoute,
   AuthenticatedDestinationsRoute: AuthenticatedDestinationsRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,

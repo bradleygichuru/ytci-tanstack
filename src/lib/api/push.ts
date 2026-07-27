@@ -1,3 +1,7 @@
+import type { ApiConfig } from './client'
+import { apiRequest } from './client'
+import type { Paginated } from './types'
+
 export interface PushAudience {
   type: 'all' | 'county' | 'role' | 'interest'
   value?: string
@@ -16,12 +20,6 @@ export interface PushScheduleRequest extends PushSendRequest {
   scheduledAt: string
 }
 
-export interface PushTicket {
-  id: string
-  status: 'ok' | 'error'
-  message?: string
-}
-
 export interface PushSendResult {
   sendId: string
   campaignId: string
@@ -30,7 +28,6 @@ export interface PushSendResult {
   status: 'pending' | 'sent' | 'delivered' | 'failed' | 'partial'
   scheduledAt?: string
   sentAt: string
-  tickets: PushTicket[]
   tokenCount: number
   deliveredCount: number
   failedCount: number
@@ -59,13 +56,6 @@ export interface PushSendDetail {
   scheduledAt?: string
   title: string
   body: string
-  tokens: PushTokenStatus[]
-}
-
-export interface PushTokenStatus {
-  token: string
-  status: 'sent' | 'delivered' | 'DeviceNotRegistered' | 'MessageTooBig' | 'failed'
-  error?: string
 }
 
 export interface PushTokenCountResult {
@@ -73,6 +63,17 @@ export interface PushTokenCountResult {
   audience: PushAudience
 }
 
-export interface PushReceiptResponse {
-  receipts: Record<string, { status: string; message?: string; details?: Record<string, unknown> }>
+export function pushApi(config: ApiConfig) {
+  return {
+    send: (body: PushSendRequest) =>
+      apiRequest<{ notificationId: string; recipientCount: number }>(config, '/v1/push/send', { method: 'POST', body }),
+    schedule: (body: PushScheduleRequest) =>
+      apiRequest<{ notificationId: string; scheduledAt: string }>(config, '/v1/push/schedule', { method: 'POST', body }),
+    history: (params?: { campaignId?: string; cursor?: string; limit?: number }) =>
+      apiRequest<Paginated<PushHistoryItem>>(config, '/v1/push/history', { params }),
+    detail: (id: string) =>
+      apiRequest<PushSendDetail>(config, `/v1/push/history/${id}`),
+    tokenCount: (audience: PushAudience) =>
+      apiRequest<PushTokenCountResult>(config, '/v1/push/validate-tokens', { method: 'POST', body: audience }),
+  }
 }

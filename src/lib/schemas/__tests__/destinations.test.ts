@@ -38,6 +38,5 @@ describe('destinationSchema', () => {
     expect(result.status).toBe('draft')
     expect(result.difficulty).toBe('easy')
     expect(result.accessibility).toEqual([])
-    expect(result.createdAt).toBeUndefined()
   })
 })

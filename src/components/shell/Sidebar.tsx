@@ -5,9 +5,9 @@ import {
   BookOpen,
   Leaf,
   Calendar,
-  Gear,
   Megaphone,
   Users,
+  Trophy,
   GearSix,
   Question,
   ArrowSquareUpRight,
@@ -46,7 +46,7 @@ const navGroups = [
   {
     label: 'Platform',
     items: [
-      { icon: Gear, label: 'AI Config', path: '/ai-config' },
+      { icon: Trophy, label: 'Challenges', path: '/challenges' },
       { icon: Megaphone, label: 'Campaigns', path: '/campaigns' },
       { icon: Users, label: 'User Management', path: '/users' },
     ],
