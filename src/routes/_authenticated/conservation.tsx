@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import React, { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
+import { useCursorPagination } from '#/lib/api/use-cursor-pagination'
 import { Trash, MapPin, Shield, CheckCircle, XCircle, Eye, User, PencilSimple, FloppyDisk, X, Plus } from '@phosphor-icons/react'
 import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
@@ -40,31 +41,27 @@ function ConservationPage() {
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [cursor, setCursor] = useState<string | null>(null)
-  const [cursorHistory, setCursorHistory] = useState<string[]>([])
-  const [hasMore, setHasMore] = useState(false)
+
+  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
-    const r = await api.conservation.activities.list(c ? { cursor: c } : undefined)
-    setActs(r.items)
-    setHasMore(r.hasMore)
-    setCursor(r.nextCursor)
+    try {
+      const r = await api.conservation.activities.list(c ? { cursor: c } : undefined)
+      setActs(r.items)
+      setHasMore(r.hasMore)
+      setCursor(r.nextCursor)
+    } catch {
+      toast.error('Failed to load activities')
+    }
   }, [api])
 
   const handleNext = useCallback(() => {
-    if (cursor) {
-      setCursorHistory(prev => [...prev, cursor])
-      loadList(cursor)
-    }
-  }, [cursor, loadList])
+    handleNextCursor((c) => loadList(c))
+  }, [handleNextCursor, loadList])
 
   const handlePrev = useCallback(() => {
-    const prev = cursorHistory[cursorHistory.length - 1]
-    if (prev === undefined) { setCursorHistory([]); loadList(null); return }
-    const prevCursor = cursorHistory.length > 1 ? cursorHistory[cursorHistory.length - 2] : null
-    setCursorHistory(prev => prev.slice(0, -1))
-    loadList(prevCursor)
-  }, [cursorHistory, loadList])
+    handlePrevCursor((c) => loadList(c))
+  }, [handlePrevCursor, loadList])
 
   const loadEvidence = useCallback(async () => {
     const r = await api.conservation.evidence.list()

@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import React, { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
+import { useCursorPagination } from '#/lib/api/use-cursor-pagination'
 import {
   Video, FileText, FilePdf, CheckCircle,
   PencilSimple, FloppyDisk, X, Plus, Trash, Sparkle,
@@ -60,9 +61,8 @@ function LmsPage() {
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [cursor, setCursor] = useState<string | null>(null)
-  const [cursorHistory, setCursorHistory] = useState<string[]>([])
-  const [hasMore, setHasMore] = useState(false)
+
+  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
     try {
@@ -77,19 +77,12 @@ function LmsPage() {
   }, [api])
 
   const handleNext = useCallback(() => {
-    if (cursor) {
-      setCursorHistory(prev => [...prev, cursor])
-      loadList(cursor)
-    }
-  }, [cursor, loadList])
+    handleNextCursor((c) => loadList(c))
+  }, [handleNextCursor, loadList])
 
   const handlePrev = useCallback(() => {
-    const prev = cursorHistory[cursorHistory.length - 1]
-    if (prev === undefined) { setCursorHistory([]); loadList(null); return }
-    const prevCursor = cursorHistory.length > 1 ? cursorHistory[cursorHistory.length - 2] : null
-    setCursorHistory(prev => prev.slice(0, -1))
-    loadList(prevCursor)
-  }, [cursorHistory, loadList])
+    handlePrevCursor((c) => loadList(c))
+  }, [handlePrevCursor, loadList])
 
   useEffect(() => { loadList() }, [loadList])
 
