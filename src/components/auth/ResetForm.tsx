@@ -55,7 +55,7 @@ export function ResetForm() {
               className="w-full rounded-lg border border-border px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {field.state.meta.errors && (
-              <p className="mt-1 text-xs text-[#ba1a1a]">{field.state.meta.errors.join(', ')}</p>
+              <p className="mt-1 text-xs text-destructive">{field.state.meta.errors.join(', ')}</p>
             )}
           </div>
         )}
@@ -74,7 +74,7 @@ export function ResetForm() {
               className="w-full rounded-lg border border-border px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {field.state.meta.errors && (
-              <p className="mt-1 text-xs text-[#ba1a1a]">{field.state.meta.errors.join(', ')}</p>
+              <p className="mt-1 text-xs text-destructive">{field.state.meta.errors.join(', ')}</p>
             )}
           </div>
         )}
@@ -82,13 +82,13 @@ export function ResetForm() {
 
       <button
         type="submit"
-        className="w-full rounded-full bg-primary py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02]"
+        className="w-full rounded-full bg-primary py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary/90"
       >
         Reset Password
       </button>
 
       <p className="text-center text-xs text-muted-foreground">
-        <Link to="/login" className="font-semibold text-[#345a00] hover:underline">
+        <Link to="/login" className="font-semibold text-[var(--success-leaf)] hover:underline">
           Back to sign in
         </Link>
       </p>

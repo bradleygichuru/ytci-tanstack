@@ -58,7 +58,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
       <div>
         <div className="mb-1.5 flex items-center justify-between">
           <label className="text-sm font-semibold text-foreground">Password</label>
-          <a href="/forgot-password" className="text-xs font-semibold text-[#345a00] hover:underline">
+          <a href="/forgot-password" className="text-xs font-semibold text-[var(--success-leaf)] hover:underline">
             Forgot password?
           </a>
         </div>
@@ -72,7 +72,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
       </div>
 
       {error && (
-        <p className="rounded-lg bg-[rgba(186,26,26,0.1)] px-4 py-3 text-sm font-semibold text-[var(--error)]">{error}</p>
+        <p className="rounded-lg bg-destructive/10 px-4 py-3 text-sm font-semibold text-[var(--error)]">{error}</p>
       )}
 
       <button
@@ -86,7 +86,7 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
 
       <p className="text-center text-xs text-muted-foreground">
         Don&apos;t have an account?{' '}
-        <a href="#" className="font-semibold text-[#345a00] hover:underline">Contact support</a>
+        <a href="#" className="font-semibold text-[var(--success-leaf)] hover:underline">Contact support</a>
       </p>
     </div>
   )
