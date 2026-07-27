@@ -16,7 +16,9 @@
     "db:setup": "bun run db:generate && bun run db:migrate && bun run db:smoke",
     "bootstrap:admin": "bun --env-file=.env.local run scripts/bootstrap-admin.ts",
     "seed:test-users": "bun --env-file=.env.local run scripts/seed-test-users.ts",
+    "seed:go-data": "bun --env-file=.env.local run scripts/seed-go-test-data.ts",
     "test:e2e": "npx playwright test",
+    "test:e2e:integration": "INTEGRATION_TEST=true npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest"

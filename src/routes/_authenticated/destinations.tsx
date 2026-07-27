@@ -166,6 +166,14 @@ function DestinationsPage() {
       } else if (selectedId) {
         await api.destinations.update(selectedId, editData)
         toast.success('Destination saved')
+        const galleryUrls = editData.gallery ?? []
+        if (editData.heroImageUrl || galleryUrls.length > 0 || editData.videoUrl) {
+          api.destinations.uploadMedia(selectedId, {
+            heroMediaId: editData.heroImageUrl,
+            galleryMediaIds: galleryUrls.length > 0 ? galleryUrls : undefined,
+            videoMediaId: editData.videoUrl,
+          }).catch(() => {})
+        }
       }
       await loadList()
       if (newId) {
@@ -348,7 +356,7 @@ function DestinationsPage() {
                               </div>
                             )}
                             {activeTab === 'media' && (
-                              <div className="space-y-5">
+                              <div className="space-y-6">
                                 <div>
                                   <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Hero Image</h4>
                                   <MediaUpload
@@ -366,6 +374,52 @@ function DestinationsPage() {
                                     <FormInput label="Caption" value={editData.heroCaption ?? ''} onChange={v => handleField('heroCaption', v)} />
                                     <FormInput label="Credit" value={editData.heroCredit ?? ''} onChange={v => handleField('heroCredit', v)} />
                                     <FormInput label="Alt Text" value={editData.heroAlt ?? ''} onChange={v => handleField('heroAlt', v)} />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Gallery Images</h4>
+                                  <MediaUpload
+                                    label="Add gallery image"
+                                    onComplete={(result) => {
+                                      const current = editData.gallery ?? []
+                                      handleField('gallery', [...current, result.objectKey])
+                                      toast.success('Gallery image added')
+                                    }}
+                                    onError={(msg) => toast.error(msg)}
+                                  />
+                                  {editData.gallery && editData.gallery.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                      {editData.gallery.map((url, i) => (
+                                        <span key={i} className="flex items-center gap-1 rounded-full bg-[var(--surface-2)] px-2 py-1 text-[10px] text-[var(--on-surface-variant)]">
+                                          Image {i + 1}
+                                          <button onClick={() => handleField('gallery', editData.gallery?.filter((_, j) => j !== i))}
+                                            className="ml-1 text-[var(--error)] hover:text-red-700">×</button>
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div>
+                                  <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Video</h4>
+                                  <MediaUpload
+                                    label={editData.videoUrl ? 'Replace video' : 'Upload video'}
+                                    onComplete={(result) => {
+                                      handleField('videoUrl', result.objectKey)
+                                      toast.success('Video uploaded')
+                                    }}
+                                    onError={(msg) => toast.error(msg)}
+                                  />
+                                  {editData.videoUrl && (
+                                    <div className="mt-1 flex items-center gap-2">
+                                      <span className="text-xs text-[var(--leaf)] truncate">{editData.videoUrl}</span>
+                                      <button onClick={() => handleField('videoUrl', '')} className="text-[var(--error)] hover:text-red-700 text-xs">×</button>
+                                    </div>
+                                  )}
+                                  <div className="mt-2 grid grid-cols-2 gap-3">
+                                    <FormInput label="Video Caption" value={editData.videoCaption ?? ''} onChange={v => handleField('videoCaption', v)} />
+                                    <FormInput label="Video Credit" value={editData.videoCredit ?? ''} onChange={v => handleField('videoCredit', v)} />
                                   </div>
                                 </div>
                               </div>
@@ -484,7 +538,7 @@ function DestinationsPage() {
                           </div>
                         )}
                         {activeTab === 'media' && (
-                          <div className="space-y-5">
+                          <div className="space-y-6">
                             <div>
                               <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Hero Image</h4>
                               <MediaUpload
@@ -498,6 +552,29 @@ function DestinationsPage() {
                               {editData.heroImageUrl && (
                                 <p className="mt-1 text-xs text-[var(--leaf)] truncate">{editData.heroImageUrl}</p>
                               )}
+                            </div>
+                            <div>
+                              <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Gallery Images</h4>
+                              <MediaUpload
+                                label="Add gallery image"
+                                onComplete={(result) => {
+                                  const current = editData.gallery ?? []
+                                  handleField('gallery', [...current, result.objectKey])
+                                  toast.success('Gallery image added')
+                                }}
+                                onError={(msg) => toast.error(msg)}
+                              />
+                            </div>
+                            <div>
+                              <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Video</h4>
+                              <MediaUpload
+                                label="Upload video"
+                                onComplete={(result) => {
+                                  handleField('videoUrl', result.objectKey)
+                                  toast.success('Video uploaded')
+                                }}
+                                onError={(msg) => toast.error(msg)}
+                              />
                             </div>
                           </div>
                         )}

@@ -275,11 +275,7 @@ function AnalyticsPage() {
     api.analytics.summary().then((r) => {
       setData(r as AnalyticsData)
     }).catch((e: ApiErrorResponse) => {
-      if (e.status === 404) {
-        setError('Analytics endpoint not yet available on the Go backend (route not mounted). Wire GET /v1/analytics/summary in the Go server to view metrics.')
-      } else {
-        setError(e.message)
-      }
+      setError(e.message)
     })
   }, [api])
 

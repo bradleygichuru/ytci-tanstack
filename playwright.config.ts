@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const isIntegration = process.env.INTEGRATION_TEST === 'true'
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
@@ -17,6 +19,24 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  // Start the dev server manually before running: `rm -rf node_modules/.vite && bun run dev`
-  // Then run: `bun run test:e2e`
+  webServer: isIntegration ? [
+    {
+      command: 'bun run dev',
+      port: 3000,
+      reuseExistingServer: !process.env.CI,
+      env: { VITE_MOCK_API: 'false' },
+    },
+    {
+      command: 'cd ../ytci-go && go run ./cmd/server',
+      port: 8080,
+      reuseExistingServer: !process.env.CI,
+      env: {
+        DATABASE_URL: process.env.DATABASE_URL ?? 'postgres://postgres:postgres@localhost:5432/ytci',
+        ADMIN_JWKS_URL: process.env.ADMIN_JWKS_URL ?? 'http://localhost:3000/api/auth/jwks',
+        CORS_ALLOWED_ORIGINS: process.env.CORS_ALLOWED_ORIGINS ?? 'http://localhost:3000',
+        JWT_EXPECTED_AUDIENCE: process.env.JWT_EXPECTED_AUDIENCE ?? 'ytci-api',
+        LOG_LEVEL: 'error',
+      },
+    },
+  ] : undefined,
 })
