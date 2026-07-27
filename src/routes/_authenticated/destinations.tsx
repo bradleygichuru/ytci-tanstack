@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import React, { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
+import { MediaUpload } from '#/components/shared/MediaUpload'
 import {
   MapPin, PencilSimple, MagnifyingGlass,
   CloudArrowDown, X, FloppyDisk, Image as ImageIcon,
@@ -320,9 +321,17 @@ function DestinationsPage() {
                               <div className="space-y-5">
                                 <div>
                                   <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Hero Image</h4>
-                                  <div className="flex h-36 items-center justify-center rounded-lg border border-dashed border-[var(--surface-4)] bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
-                                    <ImageIcon className="h-8 w-8 text-[var(--on-surface-variant)]" weight="duotone" />
-                                  </div>
+                                  <MediaUpload
+                                    label={editData.heroImageUrl ? 'Replace hero image' : 'Upload hero image'}
+                                    onComplete={(result) => {
+                                      handleField('heroImageUrl', result.objectKey)
+                                      toast.success('Hero image uploaded')
+                                    }}
+                                    onError={(msg) => toast.error(msg)}
+                                  />
+                                  {editData.heroImageUrl && (
+                                    <p className="mt-1 text-xs text-[var(--leaf)] truncate">{editData.heroImageUrl}</p>
+                                  )}
                                   <div className="mt-2 grid grid-cols-3 gap-3">
                                     <FormInput label="Caption" value={editData.heroCaption ?? ''} onChange={v => handleField('heroCaption', v)} />
                                     <FormInput label="Credit" value={editData.heroCredit ?? ''} onChange={v => handleField('heroCredit', v)} />
@@ -448,9 +457,17 @@ function DestinationsPage() {
                           <div className="space-y-5">
                             <div>
                               <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Hero Image</h4>
-                              <div className="flex h-36 items-center justify-center rounded-lg border border-dashed border-[var(--surface-4)] bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
-                                <ImageIcon className="h-8 w-8 text-[var(--on-surface-variant)]" weight="duotone" />
-                              </div>
+                              <MediaUpload
+                                label="Upload hero image"
+                                onComplete={(result) => {
+                                  handleField('heroImageUrl', result.objectKey)
+                                  toast.success('Hero image uploaded')
+                                }}
+                                onError={(msg) => toast.error(msg)}
+                              />
+                              {editData.heroImageUrl && (
+                                <p className="mt-1 text-xs text-[var(--leaf)] truncate">{editData.heroImageUrl}</p>
+                              )}
                             </div>
                           </div>
                         )}

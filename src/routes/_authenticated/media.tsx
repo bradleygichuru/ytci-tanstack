@@ -11,6 +11,7 @@ import {
 import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { MediaUpload } from '#/components/shared/MediaUpload'
 import { mediaAssetSchema } from '#/lib/schemas/media.schema'
 import type { StoryItem } from '#/lib/api/stories'
 import type { MediaAsset } from '#/lib/api/media'
@@ -114,17 +115,19 @@ function MediaPage() {
     return true
   }
 
+  const handleUploadComplete = useCallback(() => {
+    toast.success('Asset uploaded')
+    loadAll()
+    setAssetPanelMode('view')
+  }, [loadAll])
+
   const handleSaveAsset = useCallback(async () => {
-    if (!editData) return
+    if (!editData || !selectedAssetId) return
     if (!validateAsset()) return
     setSaving(true)
     try {
-      if (assetPanelMode === 'create') {
-        toast.error('Direct upload not supported — use presign endpoint')
-      } else if (selectedAssetId) {
-        await api.media.updateMetadata(selectedAssetId, editData as { caption?: string; altText?: string; credit?: string })
-        toast.success('Asset saved')
-      }
+      await api.media.updateMetadata(selectedAssetId, editData as { caption?: string; altText?: string; credit?: string })
+      toast.success('Asset saved')
       await loadAll()
       setSelectedAssetId(null)
       setAssetPanelMode('view')
@@ -133,7 +136,7 @@ function MediaPage() {
     } finally {
       setSaving(false)
     }
-  }, [editData, selectedAssetId, assetPanelMode, api, loadAll])
+  }, [editData, selectedAssetId, api, loadAll])
 
   const handleDeleteAsset = useCallback(async () => {
     if (!selectedAssetId) return
@@ -307,23 +310,17 @@ function MediaPage() {
                 )}
               </React.Fragment>
             ))}
-            {assetPanelMode === 'create' && editData && (
+            {assetPanelMode === 'create' && (
               <div className="col-span-2 md:col-span-3 rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-                <h3 className="mb-4 text-sm font-bold text-[var(--on-surface)]">New Media Asset</h3>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <FormInput label="Caption" required value={editData.caption ?? ''} onChange={v => handleField('caption', v)} error={errors.caption} />
-                  <FormInput label="Alt Text" value={editData.altText ?? ''} onChange={v => handleField('altText', v)} />
-                  <FormInput label="Credit" value={editData.credit ?? ''} onChange={v => handleField('credit', v)} />
-                  <FormSelect label="Type" required value={editData.type ?? 'image'} options={['image', 'video', 'pdf', '360', 'audio']} onChange={v => handleField('type', v)} />
-                  <FormInput label="URL" value={editData.url ?? ''} onChange={v => handleField('url', v)} />
-                  <FormSelect label="Rights Status" value={editData.rightsStatus ?? 'cleared'} options={['cleared', 'pending', 'restricted']} onChange={v => handleField('rightsStatus', v)} />
-                </div>
-                <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                  <button onClick={handleSaveAsset} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
-                    {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
-                    Create Asset
-                  </button>
-                  <button onClick={() => { setSelectedAssetId(null); setAssetPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                <h3 className="mb-4 text-sm font-bold text-[var(--on-surface)]">Upload Media Asset</h3>
+                <MediaUpload
+                  label="Choose a file to upload"
+                  onComplete={handleUploadComplete}
+                  onError={(msg) => toast.error(msg)}
+                />
+                <div className="mt-4 flex justify-end">
+                  <button onClick={() => { setAssetPanelMode('view'); setEditData(null) }}
+                    className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
                     <X className="h-4 w-4" weight="duotone" /> Cancel
                   </button>
                 </div>

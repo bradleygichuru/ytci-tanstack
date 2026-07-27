@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
 import {
-  PencilSimple, FloppyDisk, X, Plus, Star,
+  PencilSimple, FloppyDisk, X, Plus, Star, Trash,
 } from '@phosphor-icons/react'
 import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
@@ -92,6 +92,7 @@ function ChallengesPage() {
         newId = created.id
         toast.success('Challenge created')
       } else if (selectedId) {
+        await api.challenges.update(selectedId, editData as unknown as Record<string, unknown>)
         toast.success('Challenge saved')
       }
       await loadList()
@@ -108,6 +109,23 @@ function ChallengesPage() {
       setSaving(false)
     }
   }, [editData, selectedId, panelMode, api, loadList])
+
+  const handleDelete = useCallback(async () => {
+    if (!selectedId) return
+    setDeleting(true)
+    try {
+      await api.challenges.remove(selectedId)
+      toast.success('Challenge deleted')
+      setShowDelete(false)
+      setSelectedId(null)
+      setPanelMode('view')
+      await loadList()
+    } catch {
+      toast.error('Failed to delete challenge')
+    } finally {
+      setDeleting(false)
+    }
+  }, [selectedId, loadList, api])
 
   return (
     <div>
@@ -179,7 +197,15 @@ function ChallengesPage() {
                                     <FormInput label="End Date" value={editData.endDate ?? ''} onChange={v => handleField('endDate', v)} />
                                   </div>
                                   <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                                    <span className="text-xs text-[var(--on-surface-variant)]">Editing challenges is not yet available from the Go backend. Only creation is supported.</span>
+                                    <button onClick={handleSave} disabled={saving}
+                                      className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                                      {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
+                                      Save Changes
+                                    </button>
+                                    <button onClick={() => setShowDelete(true)}
+                                      className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                                      <Trash className="h-4 w-4" weight="duotone" /> Delete
+                                    </button>
                                     <button onClick={() => { setSelectedId(null); setPanelMode('view') }}
                                       className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]">
                                       <X className="h-4 w-4" weight="duotone" /> Cancel
@@ -235,7 +261,7 @@ function ChallengesPage() {
         onOpenChange={setShowDelete}
         title="Delete Challenge"
         description={`Are you sure you want to delete "${selected?.title}"? This cannot be undone.`}
-        onConfirm={() => { setShowDelete(false) }}
+        onConfirm={handleDelete}
       />
     </div>
   )

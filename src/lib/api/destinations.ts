@@ -64,5 +64,7 @@ export function destinationsApi(config: ApiConfig) {
       apiRequest<Destination>(config, `/v1/destinations/${id}`, { method: 'PATCH', body: patch }),
     remove: (id: string) =>
       apiRequest<void>(config, `/v1/destinations/${id}`, { method: 'DELETE' }),
+    uploadMedia: (id: string, body: { heroMediaId?: string; galleryMediaIds?: string[]; videoMediaId?: string }) =>
+      apiRequest<{ status: string }>(config, `/v1/destinations/${id}/media`, { method: 'POST', body }),
   }
 }
