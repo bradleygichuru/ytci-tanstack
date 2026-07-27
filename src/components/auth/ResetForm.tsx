@@ -88,7 +88,7 @@ export function ResetForm() {
       </button>
 
       <p className="text-center text-xs text-muted-foreground">
-        <Link to="/login" className="font-semibold text-[var(--success-leaf)] hover:underline">
+        <Link to="/login" className="font-semibold text-success-leaf hover:underline">
           Back to sign in
         </Link>
       </p>
