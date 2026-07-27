@@ -99,7 +99,7 @@ function LmsPage() {
     if (selectedId === id) { setSelectedId(null); return }
     setSelectedId(id); setActiveTab('lessons'); setPanelMode('edit')
     const c = data?.find(c => c.id === id)
-    if (c) { setEditData({ ...c, lessons: c.lessons.map(l => ({ ...l })), quizQuestions: c.quizQuestions.map(q => ({ ...q })) }); setSelectedLesson(c.lessons[0]?.id ?? null) }
+    if (c) { setEditData({ ...c, lessons: (c.lessons ?? []).map(l => ({ ...l })), quizQuestions: (c.quizQuestions ?? []).map(q => ({ ...q })) }); setSelectedLesson((c.lessons ?? [])[0]?.id ?? null) }
     setErrors({})
   }, [selectedId, data])
 
@@ -207,6 +207,7 @@ function LmsPage() {
   const selectedLessonData = editData?.lessons.find(l => l.id === selectedLesson) ?? null
 
   if (!data) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading courses...</div>
+  if (!data.length && panelMode !== 'create') return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">No courses yet. Create one to get started.</div>
 
   return
 
