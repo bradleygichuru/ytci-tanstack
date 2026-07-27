@@ -25,14 +25,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   beforeLoad: async () => {
     try {
       const session = await getSession()
-      if (session) {
+      if (session && session.user) {
         return {
           user: {
             id: session.user.id,
             email: session.user.email,
-            role: (session.user as Record<string, unknown>).role as string ?? 'moderator',
+            role: session.user.role as string ?? 'moderator',
           },
-          token: session.session?.token ?? null,
+          token: session.token ?? null,
         }
       }
     } catch { /* ignore */ }
