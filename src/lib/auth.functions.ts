@@ -7,15 +7,10 @@ export const getSession = createServerFn({ method: "GET" }).handler(async () => 
   const session = await auth.api.getSession({ headers })
   if (!session) return { user: null, token: null }
 
-  let token: string | null = null
-  try {
-    const baseUrl = process.env.BETTER_AUTH_URL ?? 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/auth/token`, { headers })
-    if (res.ok) {
-      const body = await res.json() as { token?: string }
-      token = body.token ?? null
-    }
-  } catch { /* token fetch best-effort */ }
+  const cookieHeader = headers['cookie'] ?? headers['Cookie'] ?? ''
+  const cookieStr = Array.isArray(cookieHeader) ? cookieHeader[0] : String(cookieHeader)
+  const match = cookieStr.match(/better-auth\.session_token=([^;]+)/)
+  const token = match ? decodeURIComponent(match[1]) : null
 
   return {
     user: {

@@ -79,12 +79,18 @@ function DestinationsPage() {
 
   const loadList = useCallback(async (c?: string | null) => {
     setLoading(true)
-    const r = await api.destinations.list(c ? { cursor: c } : undefined)
-    setData(r.items)
-    setHasMore(r.hasMore)
-    setCursor(r.nextCursor)
-    setTotalDestinations(prev => Math.max(prev, r.items.length))
-    setLoading(false)
+    try {
+      const r = await api.destinations.list(c ? { cursor: c } : undefined)
+      setData(r.items)
+      setHasMore(r.hasMore)
+      setCursor(r.nextCursor)
+      setTotalDestinations(prev => Math.max(prev, r.items.length))
+    } catch {
+      toast.error('Failed to load destinations')
+      if (!data) setData([])
+    } finally {
+      setLoading(false)
+    }
   }, [api])
 
   const handleNext = useCallback(() => {
@@ -206,9 +212,9 @@ function DestinationsPage() {
     }
   }, [selectedId, loadList, api])
 
-  const visible = filter
+  const visible = (filter
     ? data?.filter(d => d.status === filter || d.category === filter || d.county === filter)
-    : data
+    : data) ?? []
 
   const filters = [null, 'published', 'draft', 'archived', 'wildlife', 'beach', 'adventure', 'Narok', 'Kwale', 'Meru']
 
@@ -251,7 +257,7 @@ function DestinationsPage() {
         </div>
       )}
 
-      {visible && (
+      {(visible || panelMode === 'create') && (
         <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">

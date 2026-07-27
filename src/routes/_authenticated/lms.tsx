@@ -65,10 +65,15 @@ function LmsPage() {
   const [hasMore, setHasMore] = useState(false)
 
   const loadList = useCallback(async (c?: string | null) => {
-    const r = await api.courses.list(c ? { cursor: c } : undefined)
-    setData(r.items)
-    setHasMore(r.hasMore)
-    setCursor(r.nextCursor)
+    try {
+      const r = await api.courses.list(c ? { cursor: c } : undefined)
+      setData(r.items)
+      setHasMore(r.hasMore)
+      setCursor(r.nextCursor)
+    } catch {
+      toast.error('Failed to load courses')
+      if (!data) setData([])
+    }
   }, [api])
 
   const handleNext = useCallback(() => {
@@ -201,7 +206,9 @@ function LmsPage() {
 
   const selectedLessonData = editData?.lessons.find(l => l.id === selectedLesson) ?? null
 
-  if (!data) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading...</div>
+  if (!data) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading courses...</div>
+
+  return
 
   return (
     <div>
@@ -211,7 +218,7 @@ function LmsPage() {
           <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Create and manage courses, quizzes, and certifications.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data.length} courses</span>
+          <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data?.length ?? 0} courses</span>
           <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Course</button>
         </div>
       </div>
@@ -225,7 +232,7 @@ function LmsPage() {
             </tr>
           </thead>
           <tbody>
-            {data.map(c => {
+            {(data ?? []).map(c => {
               const rate = c.enrollmentCount > 0 ? Math.round((c.completionCount / c.enrollmentCount) * 100) : 0
               const isSelected = selectedId === c.id
               return (

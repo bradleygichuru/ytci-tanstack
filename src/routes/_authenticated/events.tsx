@@ -49,10 +49,15 @@ function EventsPage() {
   const [hasMore, setHasMore] = useState(false)
 
   const loadList = useCallback(async (c?: string | null) => {
-    const r = await api.events.list(c ? { cursor: c } : undefined)
-    setData(r.items)
-    setHasMore(r.hasMore)
-    setCursor(r.nextCursor)
+    try {
+      const r = await api.events.list(c ? { cursor: c } : undefined)
+      setData(r.items)
+      setHasMore(r.hasMore)
+      setCursor(r.nextCursor)
+    } catch {
+      toast.error('Failed to load events')
+      if (!data.length) setData([])
+    }
   }, [api])
 
   const handleNext = useCallback(() => {
@@ -169,8 +174,6 @@ function EventsPage() {
 
   const transitions: Record<string, string[]> = { scheduled: ['postponed', 'cancelled'], postponed: ['scheduled', 'cancelled'], cancelled: ['scheduled'] }
   const selected = data.find(d => d.id === selectedId) ?? null
-
-  if (!data.length) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading...</div>
 
   return (
     <>
