@@ -9,7 +9,7 @@ export const ac = createAccessControl({
   events: ["read", "create", "edit", "delete", "publish"],
   aiConfig: ["read", "create", "edit", "delete", "publish"],
   campaigns: ["read", "create", "edit", "delete", "publish"],
-  users: ["read", "create", "edit", "delete", "publish", "assign-role", "suspend-user"],
+  user: ["read", "create", "edit", "delete", "publish", "assign-role", "suspend-user", "update", "set-role", "ban", "get", "list"],
 });
 
 export const roles = {
@@ -22,7 +22,7 @@ export const roles = {
     events: ["read", "create", "edit", "delete", "publish"],
     aiConfig: ["read", "create", "edit", "delete", "publish"],
     campaigns: ["read", "create", "edit", "delete", "publish"],
-    users: ["read", "create", "edit", "delete", "publish", "assign-role", "suspend-user"],
+    user: ["read", "create", "edit", "delete", "publish", "assign-role", "suspend-user", "update", "set-role", "ban", "get", "list"],
   }),
   administrator: ac.newRole({
     analytics: ["read", "create", "edit", "delete", "publish"],
@@ -33,7 +33,7 @@ export const roles = {
     events: ["read", "create", "edit", "delete", "publish"],
     aiConfig: ["read", "create", "edit", "delete", "publish"],
     campaigns: ["read", "create", "edit", "delete", "publish"],
-    users: ["read", "create", "edit", "delete", "publish"],
+     user: ["read", "create", "edit", "delete", "publish", "update", "get", "list"],
   }),
   moderator: ac.newRole({
     analytics: ["read"],

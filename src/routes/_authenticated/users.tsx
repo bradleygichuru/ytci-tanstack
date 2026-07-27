@@ -6,10 +6,12 @@ import { authClient } from '#/lib/auth-client'
 import {
   Shield, Prohibit, CheckCircle, PencilSimple,
   FloppyDisk, X, PlusCircle, Copy, MagnifyingGlass,
+  CaretLeft, CaretRight, CaretUp, CaretDown,
 } from '@phosphor-icons/react'
-import { listUsers, createUser, updateUser, listAuditLog } from '#/lib/users.functions'
-import type { UserItem, AuditItem } from '#/lib/users.functions'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '#/components/ui/dialog'
+
+interface UserItem { id: string; email: string; name: string; role: string; banned: boolean; banReason?: string | null; ageRange?: string | null; county?: string | null; languages?: string | null; preferences?: string | null; consentGrantedAt?: string | null; createdAt: string }
+interface AuditItem { id: string; userId: string; userName: string; action: string; details: string | null; performedBy: string; performedByName: string; createdAt: string }
 
 const roleColors: Record<string, { bg: string; text: string }> = {
   super_admin: { bg: '#154212', text: '#ffffff' },
@@ -28,7 +30,7 @@ const auditActions: Record<string, string> = { consent_granted: '#345a00', conse
 export const Route = createFileRoute('/_authenticated/users')({
   beforeLoad: ({ context }) => {
     try {
-      requirePermission({ user: { role: context.user?.role ?? '' } }, 'users', ['read'])
+      requirePermission({ user: { role: context.user?.role ?? '' } }, 'user', ['read'])
     } catch {
       throw redirect({ to: '/no-access' })
     }
@@ -38,6 +40,35 @@ export const Route = createFileRoute('/_authenticated/users')({
 const ROLE_OPTIONS = ['super_admin', 'administrator', 'moderator', 'county_officer'] as const
 type RoleFilter = (typeof ROLE_OPTIONS)[number] | null
 type StatusFilter = 'all' | 'active' | 'banned'
+const PAGE_SIZE = 50
+const API_BASE = '/api/admin/users'
+
+async function apiGet(path: string, params?: Record<string, unknown>): Promise<unknown> {
+  const qs = params ? '?' + new URLSearchParams(Object.entries(params).filter(([_, v]) => v !== undefined).map(([k, v]) => [k, String(v)])).toString() : ''
+  const res = await fetch(`${API_BASE}/${path}${qs}`, { credentials: 'same-origin' })
+  if (!res.ok) { const e = await res.json().catch(() => ({ error: res.statusText })); throw new Error(e.error) }
+  return res.json()
+}
+
+async function apiPost(path: string, body: Record<string, unknown>): Promise<unknown> {
+  const res = await fetch(`${API_BASE}/${path}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body), credentials: 'same-origin',
+  })
+  if (!res.ok) { const e = await res.json().catch(() => ({ error: res.statusText })); throw new Error(e.error) }
+  return res.json()
+}
+
+interface Filters { search: string; role: RoleFilter; status: StatusFilter; sortBy?: string; sortDirection?: string; page: number }
+
+const columnHeaders: { key: string; label: string; sortable: boolean }[] = [
+  { key: 'name', label: 'Name', sortable: true },
+  { key: 'email', label: 'Email', sortable: true },
+  { key: 'role', label: 'Role', sortable: true },
+  { key: 'county', label: 'County', sortable: true },
+  { key: 'banned', label: 'Status', sortable: false },
+  { key: 'createdAt', label: 'Created', sortable: true },
+]
 
 function UsersPage() {
   const { data: session } = authClient.useSession()
@@ -54,66 +85,72 @@ function UsersPage() {
   const [createConsent, setCreateConsent] = useState(false)
   const [createResult, setCreateResult] = useState<{ email: string; password: string } | null>(null)
   const [createLoading, setCreateLoading] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>(null)
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const searchRef = useRef('')
-  const roleFilterRef = useRef<RoleFilter>(null)
-  const statusFilterRef = useRef<StatusFilter>('all')
 
-  const loadData = useCallback(async (opts?: { search?: string; role?: RoleFilter; status?: StatusFilter }) => {
-    const s = opts?.search ?? searchRef.current
-    const r = opts?.role ?? roleFilterRef.current
-    const st = opts?.status ?? statusFilterRef.current
+  const filtersRef = useRef<Filters>({ search: '', role: null, status: 'all', page: 1 })
+  const [filters, setFilters] = useState<Filters>({ search: '', role: null, status: 'all', page: 1 })
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  const loadData = useCallback(async (f: Filters) => {
     const params: Record<string, unknown> = {}
-    if (s) {
-      params.searchValue = s
-      params.searchField = s.includes('@') ? 'email' : 'name'
+    if (f.search) {
+      params.search = f.search
+      params.searchField = f.search.includes('@') ? 'email' : 'name'
     }
-    if (r) { params.filterField = 'role'; params.filterValue = r; params.filterOperator = 'eq' }
-    if (st === 'active') { params.filterField = 'banned'; params.filterValue = 'false'; params.filterOperator = 'eq' }
-    if (st === 'banned') { params.filterField = 'banned'; params.filterValue = 'true'; params.filterOperator = 'eq' }
+    if (f.role) params.role = f.role
+    if (f.status === 'active') params.banned = 'false'
+    if (f.status === 'banned') params.banned = 'true'
+    params.limit = PAGE_SIZE
+    params.offset = (f.page - 1) * PAGE_SIZE
+    if (f.sortBy) { params.sortBy = f.sortBy; params.sortDirection = f.sortDirection ?? 'asc' }
     setLoading(true)
     try {
-      const res = await listUsers({ data: params })
+      const res = await apiGet('list', params) as { users: UserItem[]; total: number }
       setData(res.users)
       setTotal(res.total)
-      const ra = await listAuditLog({ data: {} })
+      const ra = await apiGet('audit', { limit: 50 }) as { items: AuditItem[] }
       setAudit(ra.items)
+    } catch (err) {
+      console.error('Failed to load users:', err)
+      setData([])
+      setTotal(0)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  const loadDataRef = useRef(loadData)
-  loadDataRef.current = loadData
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   useEffect(() => {
-    loadData()
+    loadData(filtersRef.current)
     return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
   }, [])
 
+  const updateFilters = useCallback((patch: Partial<Filters>) => {
+    const next = { ...filtersRef.current, ...patch }
+    if (patch.search !== undefined && patch.page === undefined) {
+      next.page = 1
+    }
+    filtersRef.current = next
+    setFilters(next)
+    loadData(next)
+  }, [loadData])
+
   const handleSearchChange = useCallback((val: string) => {
-    searchRef.current = val
-    setSearchValue(val)
+    filtersRef.current.search = val
+    setFilters(f => ({ ...f, search: val, page: 1 }))
     if (searchTimer.current) clearTimeout(searchTimer.current)
-    searchTimer.current = setTimeout(() => loadDataRef.current({ search: val }), 300)
-  }, [])
-
-  const handleRoleFilter = useCallback((role: RoleFilter) => {
-    roleFilterRef.current = role
-    setRoleFilter(role)
-    loadData({ role })
+    searchTimer.current = setTimeout(() => {
+      loadData(filtersRef.current)
+    }, 300)
   }, [loadData])
 
-  const handleStatusFilter = useCallback((status: StatusFilter) => {
-    statusFilterRef.current = status
-    setStatusFilter(status)
-    loadData({ status })
-  }, [loadData])
+  const handleSort = useCallback((key: string) => {
+    const current = filtersRef.current
+    const dir = current.sortBy === key && current.sortDirection === 'asc' ? 'desc' : 'asc'
+    updateFilters({ sortBy: key, sortDirection: dir, page: 1 })
+  }, [updateFilters])
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
@@ -122,7 +159,7 @@ function UsersPage() {
 
   const handleSave = useCallback(async () => {
     if (!selectedId || !editData) return
-    const patch: Record<string, unknown> = {}
+    const patch: Record<string, unknown> = { userId: selectedId }
     const orig = data.find(u => u.id === selectedId)
     if (!orig) return
     if (editData.name !== orig.name) patch.name = editData.name
@@ -133,9 +170,9 @@ function UsersPage() {
     if (editData.languages !== orig.languages) patch.languages = editData.languages
     if (editData.preferences !== orig.preferences) patch.preferences = editData.preferences
     if (editData.consentGrantedAt !== orig.consentGrantedAt) patch.consentGrantedAt = editData.consentGrantedAt
-    if (Object.keys(patch).length === 0) return
-    await updateUser({ data: { userId: selectedId, ...patch } })
-    await loadData()
+    if (Object.keys(patch).length <= 1) return
+    await apiPost('update', patch)
+    await loadData(filtersRef.current)
     setSelectedId(null)
   }, [selectedId, editData, data, loadData])
 
@@ -143,9 +180,15 @@ function UsersPage() {
     if (!createForm.name || !createForm.email || !createConsent) return
     setCreateLoading(true)
     try {
-      const result = await createUser({ data: { ...createForm } })
+      const payload: Record<string, unknown> = { name: createForm.name, email: createForm.email, role: createForm.role }
+      for (const k of ['ageRange', 'county', 'languages', 'preferences'] as const) {
+        if (createForm[k]) payload[k] = createForm[k]
+      }
+      const result = await apiPost('create', payload) as { user: UserItem; tempPassword: string }
       setCreateResult({ email: createForm.email, password: result.tempPassword })
-      await loadData()
+      await loadData(filtersRef.current)
+    } catch (err) {
+      console.error('Create user failed:', err)
     } finally {
       setCreateLoading(false)
     }
@@ -158,19 +201,12 @@ function UsersPage() {
     setCreateResult(null)
   }, [])
 
-  const counts = { total: data.length, banned: data.filter(u => u.banned).length, active: data.filter(u => !u.banned).length }
-  const roleCounts = {
-    super_admin: data.filter(u => u.role === 'super_admin').length,
-    administrator: data.filter(u => u.role === 'administrator').length,
-    moderator: data.filter(u => u.role === 'moderator').length,
-    county_officer: data.filter(u => u.role === 'county_officer').length,
-  }
+  const counts = { banned: data.filter(u => u.banned).length, active: data.filter(u => !u.banned).length }
 
-  const statusFilters: { key: StatusFilter; label: string }[] = [
-    { key: 'all', label: 'All' },
-    { key: 'active', label: 'Active' },
-    { key: 'banned', label: 'Banned' },
-  ]
+  const sortIcon = (key: string) => {
+    if (filters.sortBy !== key) return null
+    return filters.sortDirection === 'asc' ? <CaretUp className="ml-0.5 h-3 w-3" weight="fill" /> : <CaretDown className="ml-0.5 h-3 w-3" weight="fill" />
+  }
 
   return (
     <div>
@@ -196,8 +232,8 @@ function UsersPage() {
         <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Roles</div>
           <div className="mt-1 space-y-0.5 text-xs text-[var(--on-surface-variant)]">
-            {Object.entries(roleCounts).map(([role, count]) => (
-              <div key={role} className="flex items-center gap-1">{count} <RolePill role={role} /></div>
+            {ROLE_OPTIONS.map(role => (
+              <div key={role} className="flex items-center gap-1">{data.filter(u => u.role === role).length} <RolePill role={role} /></div>
             ))}
           </div>
         </div>
@@ -221,23 +257,23 @@ function UsersPage() {
               <MagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--on-surface-variant)]" weight="duotone" />
               <input
                 placeholder="Search by name or email..."
-                value={searchValue}
+                value={filters.search}
                 onChange={e => handleSearchChange(e.target.value)}
                 className="h-9 w-60 rounded-md border border-[var(--outline-muted)] bg-white pl-9 text-sm text-[var(--on-surface)] placeholder:text-[var(--on-surface-variant)] focus:border-[var(--forest)] focus:ring-1 focus:ring-[var(--forest)]" />
             </div>
 
-            {statusFilters.map(f => (
-              <button key={f.key} onClick={() => handleStatusFilter(f.key)}
-                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${statusFilter === f.key ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
-                {f.label}
+            {(['all', 'active', 'banned'] as StatusFilter[]).map(st => (
+              <button key={st} onClick={() => updateFilters({ status: st, page: 1 })}
+                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${filters.status === st ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
+                {st === 'all' ? 'All' : st.charAt(0).toUpperCase() + st.slice(1)}
               </button>
             ))}
 
             <div className="h-5 w-px bg-[var(--surface-4)]" />
 
             {([null, ...ROLE_OPTIONS] as const).map(r => (
-              <button key={r ?? 'all'} onClick={() => handleRoleFilter(r)}
-                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${roleFilter === r ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
+              <button key={r ?? 'all'} onClick={() => updateFilters({ role: r, page: 1 })}
+                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${filters.role === r ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
                 {r ? r.replace(/_/g, ' ') : 'All Roles'}
               </button>
             ))}
@@ -251,13 +287,19 @@ function UsersPage() {
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
             <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
-              <th className="px-5 py-3">Name</th><th className="px-5 py-3">Email</th><th className="px-5 py-3">Role</th><th className="px-5 py-3">County</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Created</th><th className="w-12 px-5 py-3" />
+              {columnHeaders.map(col => (
+                <th key={col.key} className={`px-5 py-3 ${col.sortable ? 'cursor-pointer select-none hover:text-[var(--on-surface)]' : ''}`}
+                  onClick={() => col.sortable && handleSort(col.key)}>
+                  <span className="inline-flex items-center">{col.label}{sortIcon(col.key)}</span>
+                </th>
+              ))}
+              <th className="w-12 px-5 py-3" />
             </tr></thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">Loading...</td></tr>
+                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">Loading...</td></tr>
               ) : data.length === 0 ? (
-                <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No users match the current filters.</td></tr>
+                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No users match the current filters.</td></tr>
               ) : (
                 data.map(u => {
                   const isSelected = selectedId === u.id
@@ -340,6 +382,36 @@ function UsersPage() {
             </tbody>
           </table>
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-[var(--surface-4)] px-5 py-3">
+              <span className="text-xs text-[var(--on-surface-variant)]">Showing {Math.min((filters.page - 1) * PAGE_SIZE + 1, total)}–{Math.min(filters.page * PAGE_SIZE, total)} of {total}</span>
+              <div className="flex items-center gap-2">
+                <button onClick={() => updateFilters({ page: Math.max(1, filters.page - 1) })}
+                  disabled={filters.page <= 1}
+                  className="flex items-center gap-1 rounded-md border border-[var(--surface-4)] px-3 py-1.5 text-xs font-semibold text-[var(--on-surface)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-2)]">
+                  <CaretLeft className="h-3.5 w-3.5" weight="bold" /> Prev
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  const start = Math.max(1, Math.min(filters.page - 2, totalPages - 4))
+                  const p = start + i
+                  if (p > totalPages) return null
+                  return (
+                    <button key={p} onClick={() => updateFilters({ page: p })}
+                      className={`h-7 min-w-7 rounded-md text-xs font-bold ${filters.page === p ? 'bg-[var(--forest)] text-white' : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]'}`}>
+                      {p}
+                    </button>
+                  )
+                })}
+                <button onClick={() => updateFilters({ page: Math.min(totalPages, filters.page + 1) })}
+                  disabled={filters.page >= totalPages}
+                  className="flex items-center gap-1 rounded-md border border-[var(--surface-4)] px-3 py-1.5 text-xs font-semibold text-[var(--on-surface)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-2)]">
+                  Next <CaretRight className="h-3.5 w-3.5" weight="bold" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

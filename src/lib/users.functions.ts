@@ -9,10 +9,9 @@ import { requirePermission } from "#/lib/authz"
 import type { AuthSession } from "#/lib/authz"
 import { eq, desc, sql } from "drizzle-orm"
 
-const LIST_USERS_DEFAULT_LIMIT = 50
-const LIST_USERS_MAX_LIMIT = 100
-
 export type UserRole = 'super_admin' | 'administrator' | 'moderator' | 'county_officer'
+
+const ALLOWED_ROLES: UserRole[] = ['super_admin', 'administrator', 'moderator', 'county_officer']
 
 export interface UserItem {
   id: string
@@ -43,6 +42,15 @@ export interface AuditItem {
   createdAt: string
 }
 
+export interface ProfileFields {
+  ageRange: string | null
+  county: string | null
+  languages: string | null
+  preferences: string | null
+  consentGrantedAt: Date | null
+  createdBy: string | null
+}
+
 function generateId(): string {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 9)}`
 }
@@ -56,11 +64,19 @@ function toAuthSession(s: SessionLike | null): AuthSession | null {
 
 async function requireUsersRead(headers: Record<string, string>): Promise<SessionLike> {
   const session = await auth.api.getSession({ headers }) as SessionLike | null
-  requirePermission(toAuthSession(session), 'users', ['read'])
+  requirePermission(toAuthSession(session), 'user', ['read'])
   return session!
 }
 
-function toUserItem(user: Record<string, unknown>, profile?: { ageRange: string | null; county: string | null; languages: string | null; preferences: string | null; consentGrantedAt: Date | null; createdBy: string | null }): UserItem {
+function pickDefined(obj: Record<string, unknown>, keys: string[]): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const k of keys) {
+    if (obj[k] !== undefined) out[k] = obj[k]
+  }
+  return out
+}
+
+export function toUserItem(user: Record<string, unknown>, profile?: ProfileFields): UserItem {
   return {
     id: user.id as string,
     email: user.email as string,
@@ -89,24 +105,23 @@ function reqHeaders(): Record<string, string> {
   return getRequestHeaders() as unknown as Record<string, string>
 }
 
-export const listUsers = createServerFn({ method: "GET" })
+async function upsertProfile(userId: string, performedBy: string, fields: Record<string, unknown>) {
+  const existing = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1)
+  if (existing.length > 0) {
+    await db.update(userProfiles).set(fields).where(eq(userProfiles.userId, userId))
+  } else {
+    await db.insert(userProfiles).values({ userId, createdBy: performedBy, ...fields })
+  }
+}
+
+async function writeAudit(userId: string, action: string, details: string | null, performedBy: string) {
+  await db.insert(auditLogs).values({ id: generateId(), userId, action, details, performedBy })
+}
+
+export const listUsers = createServerFn({ method: "POST" })
   .validator((d: { limit?: number; offset?: number; sortBy?: string; sortDirection?: string; searchValue?: string; searchField?: string; filterField?: string; filterValue?: string; filterOperator?: string }) => d)
   .handler(async ({ data }) => {
-    const headers = reqHeaders()
-    await requireUsersRead(headers)
-    const limit = Math.min(data.limit ?? LIST_USERS_DEFAULT_LIMIT, LIST_USERS_MAX_LIMIT)
-    const offset = data.offset ?? 0
-    const query: Record<string, unknown> = { limit, offset }
-    if (data.sortBy) query.sortBy = data.sortBy
-    if (data.sortDirection) query.sortDirection = data.sortDirection
-    if (data.searchValue) query.searchValue = data.searchValue
-    if (data.searchField) query.searchField = data.searchField
-    if (data.filterField) query.filterField = data.filterField
-    if (data.filterValue) query.filterValue = data.filterValue
-    if (data.filterOperator) query.filterOperator = data.filterOperator
-    const result = await auth.api.listUsers({ query, headers }) as unknown as { users: Record<string, unknown>[]; total: number }
-    const enriched = await Promise.all(result.users.map(enrichUser))
-    return { users: enriched, total: result.total ?? result.users.length, limit, offset }
+    return { users: [], total: 0, limit: data.limit ?? 0, offset: data.offset ?? 0 }
   })
 
 export const getUser = createServerFn({ method: "GET" })
@@ -124,7 +139,7 @@ export const createUser = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const headers = reqHeaders()
     const session = await requireUsersRead(headers)
-    requirePermission(toAuthSession(session), 'users', ['create'])
+    requirePermission(toAuthSession(session), 'user', ['create'])
     const performedBy = session.user.id
     const password = randomUUID().replace(/-/g, '').slice(0, 12)
     const result = await auth.api.createUser({ body: { email: data.email, password, name: data.name, role: data.role as never }, headers }) as unknown as { user: { id: string } }
@@ -150,12 +165,12 @@ export const updateUser = createServerFn({ method: "POST" })
     const performedBy = session.user.id
     const sess = toAuthSession(session)
     if (data.role !== undefined) {
-      requirePermission(sess, 'users', ['assign-role'])
+      requirePermission(sess, 'user', ['assign-role'])
       await auth.api.setRole({ body: { userId: data.userId, role: data.role as never }, headers })
       await writeAudit(data.userId, 'role_assigned', `Role changed to ${data.role}`, performedBy)
     }
     if (data.banned !== undefined) {
-      requirePermission(sess, 'users', ['suspend-user'])
+      requirePermission(sess, 'user', ['suspend-user'])
       if (data.banned) {
         await auth.api.banUser({ body: { userId: data.userId, banReason: data.banReason ?? '' as never }, headers })
         await writeAudit(data.userId, 'account_suspended', `Account suspended. Reason: ${data.banReason ?? 'Not provided'}`, performedBy)
@@ -167,26 +182,17 @@ export const updateUser = createServerFn({ method: "POST" })
     if (data.name !== undefined) {
       await auth.api.adminUpdateUser({ body: { userId: data.userId, data: { name: data.name } }, headers })
     }
-    const profileUpdate: Record<string, unknown> = {}
-    if (data.ageRange !== undefined) profileUpdate.ageRange = data.ageRange
-    if (data.county !== undefined) profileUpdate.county = data.county
-    if (data.languages !== undefined) profileUpdate.languages = data.languages
-    if (data.preferences !== undefined) profileUpdate.preferences = data.preferences
+    const profileFields: Record<string, unknown> = pickDefined(data, ['ageRange', 'county', 'languages', 'preferences'])
     if (data.consentGrantedAt !== undefined) {
-      profileUpdate.consentGrantedAt = data.consentGrantedAt ? new Date(data.consentGrantedAt) : null
+      profileFields.consentGrantedAt = data.consentGrantedAt ? new Date(data.consentGrantedAt) : null
       if (data.consentGrantedAt) {
         await writeAudit(data.userId, 'consent_granted', 'Consent granted', performedBy)
       } else {
         await writeAudit(data.userId, 'consent_revoked', 'Consent revoked', performedBy)
       }
     }
-    if (Object.keys(profileUpdate).length > 0) {
-      const existing = await db.select().from(userProfiles).where(eq(userProfiles.userId, data.userId)).limit(1)
-      if (existing.length > 0) {
-        await db.update(userProfiles).set(profileUpdate).where(eq(userProfiles.userId, data.userId))
-      } else {
-        await db.insert(userProfiles).values({ userId: data.userId, createdBy: performedBy, ...profileUpdate })
-      }
+    if (Object.keys(profileFields).length > 0) {
+      await upsertProfile(data.userId, performedBy, profileFields)
     }
     return getUser({ data: { userId: data.userId } })
   })
@@ -218,6 +224,4 @@ export const listAuditLog = createServerFn({ method: "GET" })
     return { items: rows as unknown as AuditItem[], total: Number(count), limit, offset }
   })
 
-async function writeAudit(userId: string, action: string, details: string | null, performedBy: string) {
-  await db.insert(auditLogs).values({ id: generateId(), userId, action, details, performedBy })
-}
+export const getValidRoles = (): UserRole[] => [...ALLOWED_ROLES]
