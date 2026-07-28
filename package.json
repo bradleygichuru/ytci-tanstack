@@ -18,8 +18,8 @@
     "seed:test-users": "bun --env-file=.env.local run scripts/seed-test-users.ts",
     "seed:go-data": "bun --env-file=.env.local run scripts/seed-go-test-data.ts",
     "test:e2e": "bunx playwright test e2e/auth.spec.ts e2e/user-management.spec.ts e2e/crud-ui.spec.ts",
-    "test:e2e:integration": "INTEGRATION_TEST=true bunx playwright test e2e/crud-integration.spec.ts",
-    "test:e2e:all": "bunx playwright test e2e/auth.spec.ts e2e/user-management.spec.ts e2e/crud-ui.spec.ts e2e/crud-integration.spec.ts",
+    "test:e2e:integration": "INTEGRATION_TEST=true bunx playwright test e2e/crud-integration.spec.ts e2e/comments-moderation.spec.ts",
+    "test:e2e:all": "bunx playwright test e2e/auth.spec.ts e2e/user-management.spec.ts e2e/crud-ui.spec.ts e2e/crud-integration.spec.ts e2e/comments-moderation.spec.ts",
     "test:e2e:ui": "bunx playwright test --ui",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest"

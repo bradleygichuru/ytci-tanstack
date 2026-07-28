@@ -1,5 +1,8 @@
 import { db } from '../src/db'
-import { destinations, events, campaigns, courses, conservationActivities, challenges } from '../src/db/schema/business'
+import { eq } from 'drizzle-orm'
+import { users } from '../src/db/schema/auth'
+import { userProfiles } from '../src/db/schema/admin'
+import { destinations, events, campaigns, courses, conservationActivities, challenges, stories, storyComments, commentInteractions } from '../src/db/schema/business'
 
 const DATABASE_URL = process.env.DATABASE_URL
 if (!DATABASE_URL) { console.error('FATAL: DATABASE_URL is not set'); process.exit(2) }
@@ -79,6 +82,71 @@ async function main() {
     console.log('Created 2 test challenges')
   } else {
     console.log('Challenges already seeded, skipping')
+  }
+
+  // Comments (for e2e moderation testing)
+  const existingComments = await db.select({ id: storyComments.id }).from(storyComments).limit(1)
+  if (existingComments.length === 0) {
+    const [adminUser] = await db.select({ id: users.id }).from(users).where(eq(users.email, 'admin@example.com')).limit(1)
+    if (!adminUser) {
+      console.log('SKIP comments — admin user not found (run seed-test-users.ts first)')
+    } else {
+      const [dest] = await db.select({ id: destinations.id }).from(destinations).where(eq(destinations.slug, 'maasai-mara')).limit(1)
+      if (!dest) {
+        console.log('SKIP comments — destination not found (destinations not seeded yet)')
+      } else {
+        // Ensure admin has a display name
+        await db.insert(userProfiles).values({
+          userId: adminUser.id,
+          createdBy: adminUser.id,
+          displayName: 'Admin User',
+        }).onConflictDoNothing()
+
+        // Create a test story
+        const [story] = await db.insert(stories).values({
+          creatorId: adminUser.id,
+          destinationId: dest.id,
+          caption: 'A Wonderful Day at Maasai Mara',
+          status: 'approved',
+        }).returning({ id: stories.id })
+
+        // Published top-level comment
+        const [comment1] = await db.insert(storyComments).values({
+          storyId: story.id,
+          authorId: adminUser.id,
+          body: 'What a wonderful destination!',
+          status: 'published',
+        }).returning({ id: storyComments.id })
+
+        // Deleted top-level comment
+        await db.insert(storyComments).values({
+          storyId: story.id,
+          authorId: adminUser.id,
+          body: '[deleted]',
+          status: 'deleted',
+        })
+
+        // Reply to first comment
+        await db.insert(storyComments).values({
+          storyId: story.id,
+          authorId: adminUser.id,
+          parentId: comment1.id,
+          body: 'Thank you! We loved it there.',
+          status: 'published',
+        })
+
+        // Like on the first comment
+        await db.insert(commentInteractions).values({
+          userId: adminUser.id,
+          commentId: comment1.id,
+          interactionType: 'like',
+        })
+
+        console.log('Created 1 test story, 3 comments, 1 like')
+      }
+    }
+  } else {
+    console.log('Comments already seeded, skipping')
   }
 
   console.log('Done!')
