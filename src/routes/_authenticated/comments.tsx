@@ -57,7 +57,7 @@ function CommentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-sans text-2xl font-bold">Comments</h1>
+        <h1 className="font-sans text-2xl font-bold text-foreground">Comments</h1>
       </div>
 
       <div className="flex items-center gap-2">
@@ -88,7 +88,7 @@ function CommentsPage() {
                   <span>·</span>
                   <StatusBadge status={c.status} />
                 </div>
-                <p className="text-sm leading-relaxed line-clamp-2">{c.body}</p>
+                <p className="text-sm leading-relaxed line-clamp-2 text-foreground">{c.body}</p>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span>Story: {c.storyCaption || 'N/A'}</span>
                   <span>·</span>
