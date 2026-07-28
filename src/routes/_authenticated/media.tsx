@@ -15,6 +15,7 @@ import { MediaUpload } from '#/components/shared/MediaUpload'
 import { mediaAssetSchema } from '#/lib/schemas/media.schema'
 import type { StoryItem } from '#/lib/api/stories'
 import type { MediaAsset } from '#/lib/api/media'
+import { safeItems } from '#/lib/api/helpers'
 
 interface ModItem extends StoryItem {
   reports: { reason: string; reporter: string; date: string }[]
@@ -68,8 +69,8 @@ function MediaPage() {
       api.stories.moderationList(),
       api.media.list(),
     ])
-    setMod(mr.items as ModItem[])
-    setAssets(lr.items as AssetItem[])
+    setMod(safeItems(mr) as ModItem[])
+    setAssets(safeItems(lr) as AssetItem[])
   }, [api])
 
   useEffect(() => { loadAll() }, [loadAll])
@@ -234,7 +235,7 @@ function MediaPage() {
                     </div>
                     <p className="mt-1 line-clamp-2 text-sm text-foreground">{item.caption}</p>
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {item.tags.map(t => <span key={t} className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">{t}</span>)}
+                      {(item.tags ?? []).map(t => <span key={t} className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">{t}</span>)}
                       <span className="text-[10px] text-muted-foreground">• {item.location}</span>
                     </div>
                     <div className="mt-3 flex items-center gap-3">
