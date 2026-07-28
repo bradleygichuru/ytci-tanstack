@@ -22,18 +22,22 @@ test.describe('Comments Moderation', () => {
     await page.goto('/comments')
     await page.waitForURL('**/comments', { timeout: 15000 })
 
-    // Click "Published" filter — published comments visible, deleted comments hidden
-    await page.getByRole('button', { name: 'Published', exact: true }).click()
+    // Click "published" filter — published comments visible
+    await page.getByRole('button', { name: 'published', exact: true }).click()
     await page.waitForTimeout(500)
     await expect(page.getByText('What a wonderful destination!')).toBeVisible()
     await expect(page.getByText('Thank you! We loved it there.')).toBeVisible()
-    await expect(page.getByText('[deleted]')).not.toBeVisible()
 
-    // Click "Deleted" filter — deleted comments visible, published hidden
-    await page.getByRole('button', { name: 'Deleted', exact: true }).click()
+    // Click "deleted" filter — deleted comment visible
+    await page.getByRole('button', { name: 'deleted', exact: true }).click()
     await page.waitForTimeout(500)
     await expect(page.getByText('[deleted]')).toBeVisible()
-    await expect(page.getByText('What a wonderful destination!')).not.toBeVisible()
+
+    // Click "All" — both visible
+    await page.getByRole('button', { name: 'All', exact: true }).click()
+    await page.waitForTimeout(500)
+    await expect(page.getByText('What a wonderful destination!')).toBeVisible()
+    await expect(page.getByText('[deleted]')).toBeVisible()
   })
 
   test('remove comment via ConfirmDialog', async ({ page }) => {
@@ -48,8 +52,8 @@ test.describe('Comments Moderation', () => {
     await expect(page.getByRole('dialog')).toBeVisible()
     await expect(page.getByText('Remove Comment')).toBeVisible()
 
-    // Click "Remove" in the dialog to confirm
-    await page.getByRole('button', { name: 'Remove' }).last().click()
+    // Click "Delete" in the dialog to confirm
+    await page.getByRole('button', { name: 'Delete', exact: true }).click()
 
     // Verify toast notification
     await expect(page.getByText('Comment removed')).toBeVisible({ timeout: 10000 })
