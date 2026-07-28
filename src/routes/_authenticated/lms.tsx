@@ -248,7 +248,7 @@ function LmsPage() {
                       <td colSpan={7} className="border-b p-0">
                         <div className="border-t border-border">
                           <div className="flex gap-1 border-b border-border bg-card px-5 pt-3">
-                            {TABS.map(t => <button key={t.key} onClick={() => setActiveTab(t.key)} className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-foreground' : 'text-muted-foreground'}`}>{t.label}</button>)}
+                            {TABS.map(t => <button key={t.key} onClick={() => setActiveTab(t.key)} className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground'}`}>{t.label}</button>)}
                           </div>
                           <div className="bg-card px-6 py-5">
                             {activeTab === 'lessons' && (
@@ -369,7 +369,7 @@ function LmsPage() {
               <tr key="create-row"><td colSpan={7} className="border-b p-0">
                 <div className="border-t border-border">
                   <div className="flex gap-1 border-b border-border bg-card px-5 pt-3">
-                    {TABS.map(t => <button key={t.key} onClick={() => setActiveTab(t.key)} className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-foreground' : 'text-muted-foreground'}`}>{t.label}</button>)}
+                    {TABS.map(t => <button key={t.key} onClick={() => setActiveTab(t.key)} className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground'}`}>{t.label}</button>)}
                   </div>
                   <div className="bg-card px-6 py-5">
                     {activeTab === 'lessons' && (

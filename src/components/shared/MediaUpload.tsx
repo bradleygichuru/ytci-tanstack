@@ -172,7 +172,7 @@ export function MediaUpload({ label = 'Upload File', allowedTypes = ALLOWED_TYPE
         {sd ? (
           <div className="flex flex-col items-center gap-2">
             {sd.icon}
-            <span className="text-sm font-semibold text-[var(--on-surface)]">{sd.text}</span>
+            <span className="text-sm font-semibold text-foreground">{sd.text}</span>
             {state === 'uploading' && (
               <div className="mt-1 h-2 w-full max-w-xs overflow-hidden rounded-full bg-[var(--surface-3)]">
                 <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
@@ -188,7 +188,7 @@ export function MediaUpload({ label = 'Upload File', allowedTypes = ALLOWED_TYPE
         ) : (
           <div className="flex flex-col items-center gap-2">
             <CloudArrowUp className="h-8 w-8 text-[var(--on-surface-variant)]" weight="duotone" />
-            <span className="text-sm font-semibold text-[var(--on-surface)]">{label}</span>
+            <span className="text-sm font-semibold text-foreground">{label}</span>
             <span className="text-xs text-[var(--on-surface-variant)]">or drag & drop — max {file?.type === 'video/mp4' ? '100 MB' : '10 MB'}</span>
           </div>
         )}

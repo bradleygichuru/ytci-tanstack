@@ -84,7 +84,7 @@ export function FormSelect({ label, description, error, required, value, onChang
         onChange={e => onChange(e.target.value)}
         aria-invalid={!!error || undefined}
         data-invalid={!!error || undefined}
-        className="flex h-9 w-full rounded-lg border border-input bg-card px-3 py-1 text-sm text-[var(--on-surface)] shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive"
+        className="flex h-9 w-full rounded-lg border border-input bg-card px-3 py-1 text-sm text-foreground shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive"
       >
         <option value="">Select...</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}

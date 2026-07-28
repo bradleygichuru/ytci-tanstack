@@ -231,7 +231,7 @@ function DestinationsPage() {
           <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm">
             <Plus className="h-4 w-4" weight="duotone" /> New Destination
           </button>
-          <button className="flex items-center gap-1.5 rounded-full border border-[var(--forest)] px-4 py-2 text-xs font-bold text-primary">
+          <button className="flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-bold text-primary">
             <CloudArrowDown className="h-4 w-4" weight="duotone" /> Bulk Import
           </button>
         </div>
@@ -239,7 +239,7 @@ function DestinationsPage() {
 
       {loading && !data && (
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--forest)] border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
       )}
 
@@ -273,7 +273,7 @@ function DestinationsPage() {
                           <div className="flex gap-1 border-b border-border bg-card px-5 pt-3">
                             {TABS.map(t => (
                               <button key={t.key} onClick={() => setActiveTab(t.key)}
-                                className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                                className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                                 {t.label}
                               </button>
                             ))}
@@ -460,7 +460,7 @@ function DestinationsPage() {
                       <div className="flex gap-1 border-b border-border bg-card px-5 pt-3">
                         {TABS.map(t => (
                           <button key={t.key} onClick={() => setActiveTab(t.key)}
-                            className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                            className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                             {t.label}
                           </button>
                         ))}

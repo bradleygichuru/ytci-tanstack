@@ -66,10 +66,10 @@ export function AppSidebar() {
       collapsible="icon"
     >
       <SidebarHeader className="px-5 py-6 bg-sidebar">
-        <div className="font-sans text-2xl font-bold leading-none text-white">
+        <div className="font-sans text-2xl font-bold leading-none text-sidebar-foreground">
           Eco-Explorer
         </div>
-        <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-white/60">
+        <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-sidebar-foreground/60">
           Admin Portal
         </p>
       </SidebarHeader>
@@ -88,7 +88,7 @@ export function AppSidebar() {
                       asChild
                       isActive={location.pathname === item.path}
                       tooltip={item.label}
-                      className="rounded-lg text-sidebar-foreground/80 hover:bg-white/5 hover:text-sidebar-foreground"
+                      className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                     >
                       <Link to={item.path}>
                         <item.icon className="h-[18px] w-[18px]" weight="duotone" />
@@ -114,7 +114,7 @@ export function AppSidebar() {
         <SidebarMenu>
           {pinnedItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton className="rounded-lg text-sidebar-foreground/80 hover:bg-white/5 hover:text-sidebar-foreground">
+              <SidebarMenuButton className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground">
                 <item.icon className="h-[18px] w-[18px]" weight="duotone" />
                 <span className="text-sm font-semibold">{item.label}</span>
               </SidebarMenuButton>
