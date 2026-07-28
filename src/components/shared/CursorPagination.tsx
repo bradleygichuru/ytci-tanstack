@@ -15,7 +15,7 @@ export function CursorPagination({ nextCursor, hasMore, onNext, onPrev, loading,
 
   return (
     <div className="flex items-center justify-between border-t border-border px-5 py-3">
-      <span className="text-xs text-[var(--on-surface-variant)]">
+      <span className="text-xs text-muted-foreground">
         {total !== undefined ? `${total} total` : ''}
       </span>
       <div className="flex items-center gap-2">
@@ -31,7 +31,7 @@ export function CursorPagination({ nextCursor, hasMore, onNext, onPrev, loading,
           disabled={atEnd || loading}
           className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-muted"
         >
-          {loading ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-[var(--forest)] border-t-transparent" /> : 'Next'}
+          {loading ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" /> : 'Next'}
           <CaretRight className="h-3.5 w-3.5" weight="bold" />
         </button>
       </div>
