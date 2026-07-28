@@ -208,30 +208,30 @@ function DestinationsPage() {
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Destination CMS</h1>
-          <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Manage location profiles, pricing guides, GIS data, and rich media.</p>
+          <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">Destination CMS</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Manage location profiles, pricing guides, GIS data, and rich media.</p>
         </div>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative">
-          <MagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--on-surface-variant)]" weight="duotone" />
-          <input placeholder="Search destinations..." className="h-9 w-56 rounded-md border border-[var(--outline-muted)] bg-white pl-9 text-sm text-[var(--on-surface)] placeholder:text-[var(--on-surface-variant)] focus:border-[var(--forest)] focus:ring-1 focus:ring-[var(--forest)]" />
+          <MagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" weight="duotone" />
+          <input placeholder="Search destinations..." className="h-9 w-56 rounded-md border border-border bg-card pl-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
         <div className="flex flex-wrap gap-1.5">
           {filters.map(f => (
             <button key={f ?? 'all'} onClick={() => setFilter(f)}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${filter === f ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${filter === f ? 'bg-primary text-white' : 'border border-border bg-card text-muted-foreground hover:border-[var(--outline)]'}`}>
               {f ?? 'All'}
             </button>
           ))}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{visible?.length ?? 0} destinations</span>
-          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm">
+          <span className="text-xs font-semibold text-muted-foreground">{visible?.length ?? 0} destinations</span>
+          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm">
             <Plus className="h-4 w-4" weight="duotone" /> New Destination
           </button>
-          <button className="flex items-center gap-1.5 rounded-full border border-[var(--forest)] px-4 py-2 text-xs font-bold text-[var(--forest)]">
+          <button className="flex items-center gap-1.5 rounded-full border border-[var(--forest)] px-4 py-2 text-xs font-bold text-primary">
             <CloudArrowDown className="h-4 w-4" weight="duotone" /> Bulk Import
           </button>
         </div>
@@ -244,11 +244,11 @@ function DestinationsPage() {
       )}
 
       {(visible || panelMode === 'create') && (
-        <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+        <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
             <thead>
-              <tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
+              <tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                 <th className="px-5 py-3">Name</th><th className="px-5 py-3">County</th><th className="px-5 py-3">Category</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Updated</th><th className="w-24 px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -257,28 +257,28 @@ function DestinationsPage() {
                 <React.Fragment key={d.id}>
                   <tr onClick={() => handleSelect(d.id)}
                     className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${selectedId === d.id ? 'bg-[var(--amber-bg)]' : ''}`}>
-                    <td className="px-5 py-3"><span className="font-semibold text-[var(--on-surface)]">{d.name}</span></td>
-                    <td className="px-5 py-3 text-[var(--on-surface-variant)]">{d.county}</td>
-                    <td className="px-5 py-3"><span className="rounded-full bg-[var(--leaf-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--leaf)]">{d.category}</span></td>
+                    <td className="px-5 py-3"><span className="font-semibold text-foreground">{d.name}</span></td>
+                    <td className="px-5 py-3 text-muted-foreground">{d.county}</td>
+                    <td className="px-5 py-3"><span className="rounded-full bg-[var(--leaf-bg)] px-2 py-0.5 text-[10px] font-semibold text-success-leaf">{d.category}</span></td>
                     <td className="px-5 py-3"><StatusBadge status={d.status} /></td>
-                    <td className="px-5 py-3 text-[var(--on-surface-variant)]">{formatDate(d.updatedAt)}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{formatDate(d.updatedAt)}</td>
                     <td className="px-5 py-3 text-right">
-                      <button className="rounded p-1 text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]"><PencilSimple className="h-4 w-4" weight="duotone" /></button>
+                      <button className="rounded p-1 text-muted-foreground hover:bg-[var(--surface-2)]"><PencilSimple className="h-4 w-4" weight="duotone" /></button>
                     </td>
                   </tr>
                   {selectedId === d.id && editData && (
                     <tr key={`${d.id}-detail`}>
                       <td colSpan={6} className="border-b bg-[var(--surface-2)] p-0">
-                        <div className="border-t border-[var(--surface-4)]">
-                          <div className="flex gap-1 border-b border-[var(--surface-4)] bg-white px-5 pt-3">
+                        <div className="border-t border-border">
+                          <div className="flex gap-1 border-b border-border bg-card px-5 pt-3">
                             {TABS.map(t => (
                               <button key={t.key} onClick={() => setActiveTab(t.key)}
-                                className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)] hover:text-[var(--on-surface)]'}`}>
+                                className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                                 {t.label}
                               </button>
                             ))}
                           </div>
-                          <div className="bg-white px-6 py-5">
+                          <div className="bg-card px-6 py-5">
                             {activeTab === 'identity' && (
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <FormInput label="Name" required value={editData.name ?? ''} onChange={v => handleField('name', v)} error={errors.name} />
@@ -296,10 +296,10 @@ function DestinationsPage() {
                                 <FormInput label="Map Label" value={editData.mapLabel ?? ''} onChange={v => handleField('mapLabel', v)} />
                                 <FormInput label="Access Route" value={editData.accessRoute ?? ''} onChange={v => handleField('accessRoute', v)} />
                                 <FormInput label="Distance Reference" value={editData.distanceReference ?? ''} onChange={v => handleField('distanceReference', v)} />
-                                <div className="md:col-span-2 flex h-48 items-center justify-center rounded-lg border border-dashed border-[var(--surface-4)] bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
+                                <div className="md:col-span-2 flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
                                   <div className="text-center">
-                                    <MapPin className="mx-auto h-8 w-8 text-[var(--on-surface-variant)]" weight="duotone" />
-                                    <p className="mt-2 text-xs text-[var(--on-surface-variant)]">County boundary map + cluster markers (Leaflet/Mapbox — pending)</p>
+                                    <MapPin className="mx-auto h-8 w-8 text-muted-foreground" weight="duotone" />
+                                    <p className="mt-2 text-xs text-muted-foreground">County boundary map + cluster markers (Leaflet/Mapbox — pending)</p>
                                   </div>
                                 </div>
                               </div>
@@ -329,10 +329,10 @@ function DestinationsPage() {
                                 <FormInput label="Facilities" value={editData.facilities ?? ''} onChange={v => handleField('facilities', v)} />
                                 <FormInput label="Safety Notes" value={editData.safetyNotes ?? ''} onChange={v => handleField('safetyNotes', v)} />
                                 <div className="md:col-span-2">
-                                  <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Accessibility Tags</label>
+                                  <label className="mb-1 block text-xs font-semibold text-foreground">Accessibility Tags</label>
                                   <div className="flex flex-wrap gap-2">
                                     {['wheelchair-accessible-lodges', 'guided-tours', 'wheelchair-accessible-hotels', 'beach-wheelchair', 'guide-required'].map(tag => (
-                                      <label key={tag} className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium cursor-pointer ${(editData.accessibility ?? []).includes(tag) ? 'bg-[var(--leaf-bg)] text-[var(--leaf)] border-[var(--leaf)]' : 'border-[var(--surface-4)] text-[var(--on-surface-variant)]'}`}>
+                                      <label key={tag} className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium cursor-pointer ${(editData.accessibility ?? []).includes(tag) ? 'bg-[var(--leaf-bg)] text-success-leaf border-[var(--leaf)]' : 'border-border text-muted-foreground'}`}>
                                         <input type="checkbox" checked={(editData.accessibility ?? []).includes(tag)} onChange={() => {
                                           const current = editData.accessibility ?? []
                                           handleField('accessibility', current.includes(tag) ? current.filter(t => t !== tag) : [...current, tag])
@@ -342,15 +342,15 @@ function DestinationsPage() {
                                     ))}
                                   </div>
                                 </div>
-                                <div className="md:col-span-2 mt-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--on-surface-variant)]">
-                                  <span className="font-semibold text-[var(--forest)]">No Book Now / Checkout</span> — per spec §5.5 and §13 boundary.
+                                <div className="md:col-span-2 mt-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-muted-foreground">
+                                  <span className="font-semibold text-primary">No Book Now / Checkout</span> — per spec §5.5 and §13 boundary.
                                 </div>
                               </div>
                             )}
                             {activeTab === 'media' && (
                               <div className="space-y-6">
                                 <div>
-                                  <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Hero Image</h4>
+                                  <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Hero Image</h4>
                                   <MediaUpload
                                     label={editData.heroImageUrl ? 'Replace hero image' : 'Upload hero image'}
                                     onComplete={(result) => {
@@ -360,7 +360,7 @@ function DestinationsPage() {
                                     onError={(msg) => toast.error(msg)}
                                   />
                                   {editData.heroImageUrl && (
-                                    <p className="mt-1 text-xs text-[var(--leaf)] truncate">{editData.heroImageUrl}</p>
+                                    <p className="mt-1 text-xs text-success-leaf truncate">{editData.heroImageUrl}</p>
                                   )}
                                   <div className="mt-2 grid grid-cols-3 gap-3">
                                     <FormInput label="Caption" value={editData.heroCaption ?? ''} onChange={v => handleField('heroCaption', v)} />
@@ -370,7 +370,7 @@ function DestinationsPage() {
                                 </div>
 
                                 <div>
-                                  <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Gallery Images</h4>
+                                  <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Gallery Images</h4>
                                   <MediaUpload
                                     label="Add gallery image"
                                     onComplete={(result) => {
@@ -383,10 +383,10 @@ function DestinationsPage() {
                                   {editData.gallery && editData.gallery.length > 0 && (
                                     <div className="mt-2 flex flex-wrap gap-2">
                                       {editData.gallery.map((url, i) => (
-                                        <span key={i} className="flex items-center gap-1 rounded-full bg-[var(--surface-2)] px-2 py-1 text-[10px] text-[var(--on-surface-variant)]">
+                                        <span key={i} className="flex items-center gap-1 rounded-full bg-[var(--surface-2)] px-2 py-1 text-[10px] text-muted-foreground">
                                           Image {i + 1}
                                           <button onClick={() => handleField('gallery', editData.gallery?.filter((_, j) => j !== i))}
-                                            className="ml-1 text-[var(--error)] hover:text-red-700">×</button>
+                                            className="ml-1 text-destructive hover:text-red-700">×</button>
                                         </span>
                                       ))}
                                     </div>
@@ -394,7 +394,7 @@ function DestinationsPage() {
                                 </div>
 
                                 <div>
-                                  <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Video</h4>
+                                  <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Video</h4>
                                   <MediaUpload
                                     label={editData.videoUrl ? 'Replace video' : 'Upload video'}
                                     onComplete={(result) => {
@@ -405,8 +405,8 @@ function DestinationsPage() {
                                   />
                                   {editData.videoUrl && (
                                     <div className="mt-1 flex items-center gap-2">
-                                      <span className="text-xs text-[var(--leaf)] truncate">{editData.videoUrl}</span>
-                                      <button onClick={() => handleField('videoUrl', '')} className="text-[var(--error)] hover:text-red-700 text-xs">×</button>
+                                      <span className="text-xs text-success-leaf truncate">{editData.videoUrl}</span>
+                                      <button onClick={() => handleField('videoUrl', '')} className="text-destructive hover:text-red-700 text-xs">×</button>
                                     </div>
                                   )}
                                   <div className="mt-2 grid grid-cols-2 gap-3">
@@ -433,15 +433,15 @@ function DestinationsPage() {
                                 <FormInput label="Next Review Date" value={editData.reviewDate ?? ''} onChange={v => handleField('reviewDate', v)} />
                               </div>
                             )}
-                            <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                              <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                            <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                              <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                                 {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                                 Save Changes
                               </button>
-                              <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                              <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-card px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
                                 <Trash className="h-4 w-4" weight="duotone" /> Delete
                               </button>
-                              <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]">
+                              <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-2)]">
                                 <X className="h-4 w-4" weight="duotone" /> Cancel
                               </button>
                             </div>
@@ -456,16 +456,16 @@ function DestinationsPage() {
               {panelMode === 'create' && !selectedId && editData && (
                 <tr key="create-row">
                   <td colSpan={6} className="border-b bg-[var(--surface-2)] p-0">
-                    <div className="border-t border-[var(--surface-4)]">
-                      <div className="flex gap-1 border-b border-[var(--surface-4)] bg-white px-5 pt-3">
+                    <div className="border-t border-border">
+                      <div className="flex gap-1 border-b border-border bg-card px-5 pt-3">
                         {TABS.map(t => (
                           <button key={t.key} onClick={() => setActiveTab(t.key)}
-                            className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)] hover:text-[var(--on-surface)]'}`}>
+                            className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-[var(--forest)] text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                             {t.label}
                           </button>
                         ))}
                       </div>
-                      <div className="bg-white px-6 py-5">
+                      <div className="bg-card px-6 py-5">
                         {/* same form content as above */}
                         {activeTab === 'identity' && (
                           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -511,10 +511,10 @@ function DestinationsPage() {
                             <FormInput label="Facilities" value={editData.facilities ?? ''} onChange={v => handleField('facilities', v)} />
                             <FormInput label="Safety Notes" value={editData.safetyNotes ?? ''} onChange={v => handleField('safetyNotes', v)} />
                             <div className="md:col-span-2">
-                              <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Accessibility Tags</label>
+                              <label className="mb-1 block text-xs font-semibold text-foreground">Accessibility Tags</label>
                               <div className="flex flex-wrap gap-2">
                                 {['wheelchair-accessible-lodges', 'guided-tours', 'wheelchair-accessible-hotels', 'beach-wheelchair', 'guide-required'].map(tag => (
-                                  <label key={tag} className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium cursor-pointer ${(editData.accessibility ?? []).includes(tag) ? 'bg-[var(--leaf-bg)] text-[var(--leaf)] border-[var(--leaf)]' : 'border-[var(--surface-4)] text-[var(--on-surface-variant)]'}`}>
+                                  <label key={tag} className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium cursor-pointer ${(editData.accessibility ?? []).includes(tag) ? 'bg-[var(--leaf-bg)] text-success-leaf border-[var(--leaf)]' : 'border-border text-muted-foreground'}`}>
                                     <input type="checkbox" checked={(editData.accessibility ?? []).includes(tag)} onChange={() => {
                                       const current = editData.accessibility ?? []
                                       handleField('accessibility', current.includes(tag) ? current.filter(t => t !== tag) : [...current, tag])
@@ -524,15 +524,15 @@ function DestinationsPage() {
                                 ))}
                               </div>
                             </div>
-                            <div className="md:col-span-2 mt-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--on-surface-variant)]">
-                              <span className="font-semibold text-[var(--forest)]">No Book Now / Checkout</span> — per spec §5.5 and §13 boundary.
+                            <div className="md:col-span-2 mt-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-muted-foreground">
+                              <span className="font-semibold text-primary">No Book Now / Checkout</span> — per spec §5.5 and §13 boundary.
                             </div>
                           </div>
                         )}
                         {activeTab === 'media' && (
                           <div className="space-y-6">
                             <div>
-                              <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Hero Image</h4>
+                              <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Hero Image</h4>
                               <MediaUpload
                                 label="Upload hero image"
                                 onComplete={(result) => {
@@ -542,11 +542,11 @@ function DestinationsPage() {
                                 onError={(msg) => toast.error(msg)}
                               />
                               {editData.heroImageUrl && (
-                                <p className="mt-1 text-xs text-[var(--leaf)] truncate">{editData.heroImageUrl}</p>
+                                <p className="mt-1 text-xs text-success-leaf truncate">{editData.heroImageUrl}</p>
                               )}
                             </div>
                             <div>
-                              <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Gallery Images</h4>
+                              <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Gallery Images</h4>
                               <MediaUpload
                                 label="Add gallery image"
                                 onComplete={(result) => {
@@ -558,7 +558,7 @@ function DestinationsPage() {
                               />
                             </div>
                             <div>
-                              <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Video</h4>
+                              <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Video</h4>
                               <MediaUpload
                                 label="Upload video"
                                 onComplete={(result) => {
@@ -587,12 +587,12 @@ function DestinationsPage() {
                             <FormInput label="Next Review Date" value={editData.reviewDate ?? ''} onChange={v => handleField('reviewDate', v)} />
                           </div>
                         )}
-                        <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                        <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                             {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                             Create Destination
                           </button>
-                          <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]">
+                          <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-2)]">
                             <X className="h-4 w-4" weight="duotone" /> Cancel
                           </button>
                         </div>
@@ -603,7 +603,7 @@ function DestinationsPage() {
                 </tr>
               )}
               {visible.length === 0 && !panelMode && (
-                <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No destinations match the selected filter.</td></tr>
+                <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">No destinations match the selected filter.</td></tr>
               )}
             </tbody>
           </table>

@@ -131,22 +131,22 @@ function ChallengesPage() {
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Challenges</h1>
-          <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Create and manage time-bound challenges for mobile users.</p>
+          <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">Challenges</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Create and manage time-bound challenges for mobile users.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data.length} challenges</span>
-          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm">
+          <span className="text-xs font-semibold text-muted-foreground">{data.length} challenges</span>
+          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm">
             <Plus className="h-4 w-4" weight="duotone" /> New Challenge
           </button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
             <thead>
-              <tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
+              <tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                 <th className="px-5 py-3">Title</th>
                 <th className="px-5 py-3">Badge</th>
                 <th className="px-5 py-3">Dates</th>
@@ -165,8 +165,8 @@ function ChallengesPage() {
                           <tr onClick={() => handleSelect(c.id)}
                             className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${isSelected ? 'bg-[var(--amber-bg)]' : ''}`}>
                             <td className="px-5 py-3">
-                              <span className="font-semibold text-[var(--on-surface)]">{c.title}</span>
-                              {c.description && <div className="text-[10px] text-[var(--on-surface-variant)]">{c.description}</div>}
+                              <span className="font-semibold text-foreground">{c.title}</span>
+                              {c.description && <div className="text-[10px] text-muted-foreground">{c.description}</div>}
                             </td>
                             <td className="px-5 py-3">
                               {c.badgeName ? (
@@ -174,20 +174,20 @@ function ChallengesPage() {
                                   <Star className="h-3 w-3" weight="duotone" /> {c.badgeName}
                                 </span>
                               ) : (
-                                <span className="text-xs text-[var(--on-surface-variant)]">—</span>
+                                <span className="text-xs text-muted-foreground">—</span>
                               )}
                             </td>
-                            <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">
+                            <td className="px-5 py-3 text-xs text-muted-foreground">
                               {c.startDate ? new Date(c.startDate).toLocaleDateString() : '—'}
                               {c.endDate ? ` → ${new Date(c.endDate).toLocaleDateString()}` : ''}
                             </td>
                             <td className="px-5 py-3"><StatusBadge status={c.status} /></td>
-                            <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" /></td>
+                            <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-muted-foreground" weight="duotone" /></td>
                           </tr>
                           {isSelected && editData && (
                             <tr key={`${c.id}-detail`}>
                               <td colSpan={5} className="border-b bg-[var(--surface-2)] p-0">
-                                <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                                <div className="border-t border-border bg-card px-6 py-5">
                                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                                     <div className="md:col-span-2"><FormInput label="Description" value={editData.description ?? ''} onChange={v => handleField('description', v)} /></div>
@@ -196,18 +196,18 @@ function ChallengesPage() {
                                     <FormInput label="Start Date" value={editData.startDate ?? ''} onChange={v => handleField('startDate', v)} />
                                     <FormInput label="End Date" value={editData.endDate ?? ''} onChange={v => handleField('endDate', v)} />
                                   </div>
-                                  <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
+                                  <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
                                     <button onClick={handleSave} disabled={saving}
-                                      className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                                      className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                                       {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                                       Save Changes
                                     </button>
                                     <button onClick={() => setShowDelete(true)}
-                                      className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                                      className="flex items-center gap-1.5 rounded-full border border-red-300 bg-card px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
                                       <Trash className="h-4 w-4" weight="duotone" /> Delete
                                     </button>
                                     <button onClick={() => { setSelectedId(null); setPanelMode('view') }}
-                                      className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]">
+                                      className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-2)]">
                                       <X className="h-4 w-4" weight="duotone" /> Cancel
                                     </button>
                                   </div>
@@ -224,7 +224,7 @@ function ChallengesPage() {
               {panelMode === 'create' && editData && (
                 <tr key="create-row">
                   <td colSpan={5} className="border-b bg-[var(--surface-2)] p-0">
-                    <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                    <div className="border-t border-border bg-card px-6 py-5">
                                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                                         <div className="md:col-span-2"><FormInput label="Description" value={editData.description ?? ''} onChange={v => handleField('description', v)} /></div>
@@ -233,14 +233,14 @@ function ChallengesPage() {
                         <FormInput label="Start Date" value={editData.startDate ?? ''} onChange={v => handleField('startDate', v)} />
                         <FormInput label="End Date" value={editData.endDate ?? ''} onChange={v => handleField('endDate', v)} />
                       </div>
-                      <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
+                      <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
                         <button onClick={handleSave} disabled={saving}
-                          className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                          className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                           {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                           Create Challenge
                         </button>
                         <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }}
-                          className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                          className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
                           <X className="h-4 w-4" weight="duotone" /> Cancel
                         </button>
                       </div>
@@ -249,7 +249,7 @@ function ChallengesPage() {
                 </tr>
               )}
               {data.length === 0 && panelMode !== 'create' && (
-                <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No challenges yet. Create one to get started.</td></tr>
+                <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-muted-foreground">No challenges yet. Create one to get started.</td></tr>
               )}
             </tbody>
           </table>

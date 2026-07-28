@@ -62,15 +62,15 @@ function ChangeChip({ value }: { value: number }) {
 
 function HeroStat({ icon: Icon, label, value, change }: { icon: typeof ChartBar; label: string; value: number; change: number }) {
   return (
-    <div className="rounded-lg border border-[var(--surface-4)] bg-white p-6" style={{ boxShadow: 'var(--card-shadow)' }}>
+    <div className="rounded-lg border border-border bg-card p-6" style={{ boxShadow: 'var(--card-shadow)' }}>
       <div className="mb-2 flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--leaf-bg)]">
-          <Icon className="h-4 w-4 text-[var(--leaf)]" weight="duotone" />
+          <Icon className="h-4 w-4 text-success-leaf" weight="duotone" />
         </div>
-        <span className="text-sm font-semibold text-[var(--on-surface-variant)]">{label}</span>
+        <span className="text-sm font-semibold text-muted-foreground">{label}</span>
       </div>
       <div className="flex items-baseline gap-2">
-          <span className="font-sans text-3xl font-bold text-[var(--on-surface)] md:text-4xl">{fmtNum(value)}</span>
+          <span className="font-sans text-3xl font-bold text-foreground md:text-4xl">{fmtNum(value)}</span>
         <ChangeChip value={change} />
       </div>
     </div>
@@ -79,15 +79,15 @@ function HeroStat({ icon: Icon, label, value, change }: { icon: typeof ChartBar;
 
 function StatCard({ icon: Icon, label, value, change, bg }: { icon: typeof ChartBar; label: string; value: number; change?: number; bg?: string }) {
   return (
-    <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+    <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
       <div className="mb-1 flex items-center gap-2">
         <div className={`flex h-7 w-7 items-center justify-center rounded-full ${bg ?? 'bg-[var(--surface-2)]'}`}>
-          <Icon className="h-3.5 w-3.5 text-[var(--on-surface-variant)]" weight="duotone" />
+          <Icon className="h-3.5 w-3.5 text-muted-foreground" weight="duotone" />
         </div>
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--on-surface-variant)]">{label}</span>
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</span>
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="font-sans text-2xl font-bold text-[var(--on-surface)]">{fmtNum(value)}</span>
+        <span className="font-sans text-2xl font-bold text-foreground">{fmtNum(value)}</span>
         {change != null && <ChangeChip value={change} />}
       </div>
     </div>
@@ -127,51 +127,51 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
-        <div className="rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="flex items-center justify-between border-b border-[var(--surface-4)] px-6 py-4">
-            <h2 className="font-sans text-base font-bold text-[var(--on-surface)]">Top Destinations</h2>
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--on-surface-variant)]">by views</span>
+        <div className="rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+            <h2 className="font-sans text-base font-bold text-foreground">Top Destinations</h2>
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">by views</span>
           </div>
-          <div className="divide-y divide-[var(--surface-4)]">
+          <div className="divide-y divide-border">
             {(data.topDestinations ?? []).map((d, i) => (
               <div key={d.name} className="flex items-center justify-between px-6 py-3">
                 <div className="flex items-center gap-3">
-                  <span className="font-sans text-base font-bold text-[var(--on-surface-variant)]">{i + 1}</span>
+                  <span className="font-sans text-base font-bold text-muted-foreground">{i + 1}</span>
                   <div>
-                    <div className="text-sm font-semibold text-[var(--on-surface)]">{d.name}</div>
-                    <div className="text-xs text-[var(--on-surface-variant)]">{d.county}</div>
+                    <div className="text-sm font-semibold text-foreground">{d.name}</div>
+                    <div className="text-xs text-muted-foreground">{d.county}</div>
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-[var(--on-surface)]">{fmtNum(d.views)}</span>
+                <span className="text-sm font-semibold text-foreground">{fmtNum(d.views)}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="flex items-center justify-between border-b border-[var(--surface-4)] px-5 py-4">
-            <h2 className="font-sans text-base font-bold text-[var(--on-surface)]">System Alerts</h2>
-            <Bell className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" />
+        <div className="rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <h2 className="font-sans text-base font-bold text-foreground">System Alerts</h2>
+            <Bell className="h-4 w-4 text-muted-foreground" weight="duotone" />
           </div>
-          <div className="divide-y divide-[var(--surface-4)] px-5 py-2">
+          <div className="divide-y divide-border px-5 py-2">
             {(data.systemAlerts ?? []).map((a) => (
               <div key={a.id} className="py-3">
                 <div className="mb-1 flex items-center gap-2">
                   <AlertBadge severity={a.severity} />
-                  <span className="text-xs text-[var(--on-surface-variant)]">{new Date(a.timestamp).toLocaleDateString()}</span>
+                  <span className="text-xs text-muted-foreground">{new Date(a.timestamp).toLocaleDateString()}</span>
                 </div>
-                <div className="text-sm font-semibold text-[var(--on-surface)]">{a.title}</div>
-                <div className="mt-0.5 text-xs text-[var(--on-surface-variant)]">{a.description}</div>
+                <div className="text-sm font-semibold text-foreground">{a.title}</div>
+                <div className="mt-0.5 text-xs text-muted-foreground">{a.description}</div>
               </div>
             ))}
           </div>
           {(data.failedIntegrations ?? []).length > 0 && (
-            <div className="border-t border-[var(--surface-4)] px-5 py-3">
-              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Failed Integrations</div>
+            <div className="border-t border-border px-5 py-3">
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Failed Integrations</div>
               {(data.failedIntegrations ?? []).map((f) => (
                 <div key={f.name} className="mt-1 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-[var(--error)]">{f.name}</span>
-                  <span className="text-[var(--on-surface-variant)]">{f.lastError}</span>
+                  <span className="font-semibold text-destructive">{f.name}</span>
+                  <span className="text-muted-foreground">{f.lastError}</span>
                 </div>
               ))}
             </div>
@@ -180,31 +180,31 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Awaiting Review</div>
+        <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Awaiting Review</div>
           <div className="flex items-baseline gap-2">
             <span className="font-sans text-3xl font-bold text-[var(--amber-deep)]">{data.contentAwaitingReview}</span>
-            <span className="text-xs text-[var(--on-surface-variant)]">stories</span>
+            <span className="text-xs text-muted-foreground">stories</span>
           </div>
-          <div className="mt-2 text-xs text-[var(--on-surface-variant)]">+{data.contentScheduledUpdate} scheduled for update</div>
+          <div className="mt-2 text-xs text-muted-foreground">+{data.contentScheduledUpdate} scheduled for update</div>
         </div>
 
-        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Stories Pipeline</div>
+        <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Stories Pipeline</div>
           <div className="mt-1 flex items-center gap-4">
-            <div><span className="font-sans text-xl font-bold text-[var(--on-surface)]">{fmtNum(data.storiesSubmitted)}</span><div className="text-[10px] text-[var(--on-surface-variant)]">submitted</div></div>
-            <div><span className="font-sans text-xl font-bold text-[var(--leaf)]">{fmtNum(data.storiesApproved)}</span><div className="text-[10px] text-[var(--on-surface-variant)]">approved</div></div>
-            <div><span className="font-sans text-xl font-bold text-[var(--error)]">{fmtNum(data.storiesReported)}</span><div className="text-[10px] text-[var(--on-surface-variant)]">reported</div></div>
+            <div><span className="font-sans text-xl font-bold text-foreground">{fmtNum(data.storiesSubmitted)}</span><div className="text-[10px] text-muted-foreground">submitted</div></div>
+            <div><span className="font-sans text-xl font-bold text-success-leaf">{fmtNum(data.storiesApproved)}</span><div className="text-[10px] text-muted-foreground">approved</div></div>
+            <div><span className="font-sans text-xl font-bold text-destructive">{fmtNum(data.storiesReported)}</span><div className="text-[10px] text-muted-foreground">reported</div></div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">County Breakdown</div>
+        <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">County Breakdown</div>
           <div className="space-y-1.5">
             {(data.userLocations ?? []).slice(0, 5).map((loc) => (
               <div key={loc.county} className="flex items-center justify-between text-xs">
-                <span className="font-medium text-[var(--on-surface)]">{loc.county}</span>
-                <span className="font-semibold text-[var(--on-surface-variant)]">{fmtNum(loc.count)}</span>
+                <span className="font-medium text-foreground">{loc.county}</span>
+                <span className="font-semibold text-muted-foreground">{fmtNum(loc.count)}</span>
               </div>
             ))}
           </div>
@@ -216,45 +216,45 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
 
 function ReportsTab() {
   return (
-    <div className="rounded-lg border border-[var(--surface-4)] bg-white p-8" style={{ boxShadow: 'var(--card-shadow)' }}>
-      <h2 className="font-sans text-base font-bold text-[var(--on-surface)]">Export Reports</h2>
-      <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Generate CSV or PDF summaries for YTCI, counties, and development partners.</p>
+    <div className="rounded-lg border border-border bg-card p-8" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <h2 className="font-sans text-base font-bold text-foreground">Export Reports</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Generate CSV or PDF summaries for YTCI, counties, and development partners.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-[var(--on-surface)]">Date Range</label>
+          <label className="mb-1.5 block text-sm font-semibold text-foreground">Date Range</label>
           <div className="flex gap-3">
-            <input type="date" className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)] focus:ring-1 focus:ring-[var(--forest)]" defaultValue="2025-06-01" />
-            <span className="flex items-center text-sm text-[var(--on-surface-variant)]">to</span>
-            <input type="date" className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)] focus:ring-1 focus:ring-[var(--forest)]" defaultValue="2025-07-31" />
+            <input type="date" className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary" defaultValue="2025-06-01" />
+            <span className="flex items-center text-sm text-muted-foreground">to</span>
+            <input type="date" className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary" defaultValue="2025-07-31" />
           </div>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-[var(--on-surface)]">Format</label>
+          <label className="mb-1.5 block text-sm font-semibold text-foreground">Format</label>
           <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm text-[var(--on-surface)]">
-              <input type="radio" name="format" defaultChecked className="accent-[var(--forest)]" /> <FileCsv className="h-4 w-4 text-[var(--leaf)]" weight="duotone" /> CSV
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <input type="radio" name="format" defaultChecked className="accent-primary" /> <FileCsv className="h-4 w-4 text-success-leaf" weight="duotone" /> CSV
             </label>
-            <label className="flex items-center gap-2 text-sm text-[var(--on-surface)]">
-              <input type="radio" name="format" className="accent-[var(--forest)]" /> <FilePdf className="h-4 w-4 text-[var(--error)]" weight="duotone" /> PDF
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <input type="radio" name="format" className="accent-primary" /> <FilePdf className="h-4 w-4 text-destructive" weight="duotone" /> PDF
             </label>
           </div>
         </div>
       </div>
 
       <div className="mt-5">
-        <label className="mb-2 block text-sm font-semibold text-[var(--on-surface)]">Sections</label>
+        <label className="mb-2 block text-sm font-semibold text-foreground">Sections</label>
         <div className="flex flex-wrap gap-3">
           {['User Activity', 'Destinations', 'Itineraries', 'Stories', 'Courses', 'Conservation', 'Alerts'].map((s) => (
-            <label key={s} className="flex items-center gap-2 rounded-full border border-[var(--outline-muted)] px-4 py-2 text-sm text-[var(--on-surface)] hover:border-[var(--forest)]">
-              <input type="checkbox" defaultChecked className="accent-[var(--forest)]" /> {s}
+            <label key={s} className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-foreground hover:border-primary">
+              <input type="checkbox" defaultChecked className="accent-primary" /> {s}
             </label>
           ))}
         </div>
       </div>
 
       <div className="mt-8 flex gap-3">
-        <button className="flex items-center gap-2 rounded-full bg-[var(--forest)] px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02]">
+        <button className="flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02]">
           <CloudArrowDown className="h-4 w-4" weight="duotone" /> Export CSV
         </button>
         <button className="flex items-center gap-2 rounded-full bg-[var(--amber)] px-6 py-3 text-sm font-bold text-[var(--forest-deep)] shadow-sm transition-colors">
@@ -283,10 +283,10 @@ function AnalyticsPage() {
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">
+          <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">
             Analytics & Metrics
           </h1>
-          <p className="mt-1 text-sm text-[var(--on-surface-variant)]">
+          <p className="mt-1 text-sm text-muted-foreground">
             Platform activity, content performance, and learning impact metrics.
           </p>
         </div>
@@ -297,8 +297,8 @@ function AnalyticsPage() {
               onClick={() => setActiveTab(tab)}
               className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                 activeTab === tab
-                  ? 'bg-white text-[var(--on-surface)] shadow-sm'
-                  : 'text-[var(--on-surface-variant)] hover:text-[var(--on-surface)]'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {tab === 'dashboard' ? 'Dashboard' : 'Reports'}
@@ -308,7 +308,7 @@ function AnalyticsPage() {
       </div>
 
       {error && (
-        <div className="mt-4 rounded-lg border border-[var(--error)] bg-[rgba(186,26,26,0.05)] p-4 text-sm text-[var(--error)]">
+        <div className="mt-4 rounded-lg border border-[var(--error)] bg-[rgba(186,26,26,0.05)] p-4 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -317,7 +317,7 @@ function AnalyticsPage() {
         activeTab === 'dashboard' ? <DashboardTab data={data} /> : <ReportsTab />
       ) : (
         !error && (
-          <div className="mt-8 flex items-center justify-center py-20 text-sm text-[var(--on-surface-variant)]">
+          <div className="mt-8 flex items-center justify-center py-20 text-sm text-muted-foreground">
             Loading analytics data...
           </div>
         )

@@ -190,14 +190,14 @@ function MediaPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">UGC Moderation & Media Library</h1>
-        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Review user-generated travel journals, manage media assets, and monitor optimization logs.</p>
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">UGC Moderation & Media Library</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Review user-generated travel journals, manage media assets, and monitor optimization logs.</p>
       </div>
 
       <div className="mb-6 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold ${tab === t.key ? 'bg-white text-[var(--on-surface)] shadow-sm' : 'text-[var(--on-surface-variant)] hover:text-[var(--on-surface)]'}`}>
+            className={`flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold ${tab === t.key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
             {t.label} <span className="rounded-full bg-[var(--surface-3)] px-1.5 py-0.5 text-[10px]">{t.count}</span>
           </button>
         ))}
@@ -207,11 +207,11 @@ function MediaPage() {
       {tab === 'queue' && (
         <div>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-sans text-base font-bold text-[var(--on-surface)]">Moderation Queue</h2>
+            <h2 className="font-sans text-base font-bold text-foreground">Moderation Queue</h2>
             <div className="flex flex-wrap items-center gap-1">
               {[null, 'pending', 'approved', 'rejected'].map(f => (
                 <button key={f ?? 'all'} onClick={() => setModFilter(f)}
-                  className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${modFilter === f ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
+                  className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${modFilter === f ? 'bg-primary text-white' : 'border border-border bg-card text-muted-foreground hover:border-[var(--outline)]'}`}>
                   {f ?? 'All'}
                 </button>
               ))}
@@ -219,7 +219,7 @@ function MediaPage() {
           </div>
           <div className="space-y-4">
             {visibleMod.map(item => (
-              <div key={item.id} className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+              <div key={item.id} className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
                 <div className="flex gap-4 p-4">
                   <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--forest)] to-[var(--forest-leaf)] text-white/40">
                     {item.mediaType === 'video' ? <Video className="h-8 w-8" weight="duotone" /> : <ImageIcon className="h-8 w-8" weight="duotone" />}
@@ -227,23 +227,23 @@ function MediaPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="text-xs font-bold uppercase tracking-widest text-[var(--forest)]">{item.creatorHandle}</span>
-                        <span className="ml-2 text-[10px] text-[var(--on-surface-variant)]">{fmtTime(item.submittedAt)}</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-primary">{item.creatorHandle}</span>
+                        <span className="ml-2 text-[10px] text-muted-foreground">{fmtTime(item.submittedAt)}</span>
                       </div>
                       <StatusBadge status={item.status} />
                     </div>
-                    <p className="mt-1 line-clamp-2 text-sm text-[var(--on-surface)]">{item.caption}</p>
+                    <p className="mt-1 line-clamp-2 text-sm text-foreground">{item.caption}</p>
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {item.tags.map(t => <span key={t} className="rounded-full border border-[var(--surface-4)] px-2 py-0.5 text-[10px] text-[var(--on-surface-variant)]">{t}</span>)}
-                      <span className="text-[10px] text-[var(--on-surface-variant)]">• {item.location}</span>
+                      {item.tags.map(t => <span key={t} className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">{t}</span>)}
+                      <span className="text-[10px] text-muted-foreground">• {item.location}</span>
                     </div>
                     <div className="mt-3 flex items-center gap-3">
                       <button onClick={() => handleApprove(item.id)} className="flex items-center gap-1 rounded-full bg-[var(--leaf)] px-4 py-1.5 text-xs font-bold text-white"><CheckCircle className="h-3.5 w-3.5" weight="fill" /> Approve</button>
-                      <button onClick={() => handleReject(item.id)} className="flex items-center gap-1 rounded-full bg-[var(--error)] px-4 py-1.5 text-xs font-bold text-white"><XCircle className="h-3.5 w-3.5" weight="fill" /> Reject</button>
-                      <button onClick={() => setFlagModal(item.id)} className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold ${item.reports.length > 0 ? 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]' : 'border-[var(--surface-4)] text-[var(--on-surface-variant)]'}`}>
+                      <button onClick={() => handleReject(item.id)} className="flex items-center gap-1 rounded-full bg-destructive px-4 py-1.5 text-xs font-bold text-white"><XCircle className="h-3.5 w-3.5" weight="fill" /> Reject</button>
+                      <button onClick={() => setFlagModal(item.id)} className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold ${item.reports.length > 0 ? 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]' : 'border-border text-muted-foreground'}`}>
                         <Flag className="h-3.5 w-3.5" weight="duotone" /> {item.reports.length > 0 ? `${item.reports.length} report${item.reports.length > 1 ? 's' : ''}` : 'Flag'}
                       </button>
-                      <button onClick={() => handleRemoveStory(item.id)} className="flex items-center gap-1 rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50"><Trash className="h-3.5 w-3.5" weight="duotone" /> Remove</button>
+                      <button onClick={() => handleRemoveStory(item.id)} className="flex items-center gap-1 rounded-full border border-red-200 bg-card px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50"><Trash className="h-3.5 w-3.5" weight="duotone" /> Remove</button>
                     </div>
                     {!item.exifStripped && <div className="mt-2 text-[10px] text-[var(--amber-deep)]">⚠ EXIF data present — manual review required</div>}
                   </div>
@@ -260,32 +260,32 @@ function MediaPage() {
           <div className="mb-4 flex flex-wrap items-center gap-3">
             {['All', 'image', 'video', 'pdf', '360'].map((f) => {
               const count = f === 'All' ? assets.length : assets.filter(a => a.type === f).length
-              return <span key={f} className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--on-surface-variant)]">{f === 'All' ? 'All' : f} ({count})</span>
+              return <span key={f} className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-muted-foreground">{f === 'All' ? 'All' : f} ({count})</span>
             })}
-            <span className="ml-auto rounded-full bg-[var(--leaf-bg)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--leaf)]">Cloudflare R2</span>
-            <button onClick={handleNewAsset} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> Upload Asset</button>
+            <span className="ml-auto rounded-full bg-[var(--leaf-bg)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-success-leaf">Cloudflare R2</span>
+            <button onClick={handleNewAsset} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> Upload Asset</button>
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             {assets.map(a => (
               <React.Fragment key={a.id}>
-                <div onClick={() => handleSelectAsset(a.id)} className={`overflow-hidden rounded-lg border bg-white cursor-pointer ${selectedAssetId === a.id ? 'border-[var(--forest)] ring-2 ring-[var(--forest)]' : 'border-[var(--surface-4)]'}`} style={{ boxShadow: 'var(--card-shadow)' }}>
+                <div onClick={() => handleSelectAsset(a.id)} className={`overflow-hidden rounded-lg border bg-card cursor-pointer ${selectedAssetId === a.id ? 'border-[var(--forest)] ring-2 ring-[var(--forest)]' : 'border-border'}`} style={{ boxShadow: 'var(--card-shadow)' }}>
                   <div className="flex h-32 items-center justify-center bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
-                    {a.type === 'image' ? <ImageIcon className="h-8 w-8 text-[var(--on-surface-variant)]" weight="duotone" />
-                      : a.type === 'video' ? <Video className="h-8 w-8 text-[var(--on-surface-variant)]" weight="duotone" />
-                      : <FilePdf className="h-8 w-8 text-[var(--on-surface-variant)]" weight="duotone" />}
+                    {a.type === 'image' ? <ImageIcon className="h-8 w-8 text-muted-foreground" weight="duotone" />
+                      : a.type === 'video' ? <Video className="h-8 w-8 text-muted-foreground" weight="duotone" />
+                      : <FilePdf className="h-8 w-8 text-muted-foreground" weight="duotone" />}
                   </div>
                   <div className="p-3">
-                    <div className="truncate text-sm font-semibold text-[var(--on-surface)]">{a.caption}</div>
-                    <div className="text-[10px] text-[var(--on-surface-variant)]">{a.credit}</div>
+                    <div className="truncate text-sm font-semibold text-foreground">{a.caption}</div>
+                    <div className="text-[10px] text-muted-foreground">{a.credit}</div>
                     <div className="mt-1 flex items-center gap-2">
-                      <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[var(--on-surface-variant)]">{a.type}</span>
+                      <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-muted-foreground">{a.type}</span>
                       <StatusBadge status={a.rightsStatus ?? 'cleared'} label={a.rightsStatus ?? 'cleared'} />
                     </div>
                   </div>
                 </div>
                 {selectedAssetId === a.id && assetPanelMode === 'edit' && editData && (
-                  <div className="col-span-2 md:col-span-3 rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-                    <h3 className="mb-4 text-sm font-bold text-[var(--on-surface)]">Editing: {editData.caption}</h3>
+                  <div className="col-span-2 md:col-span-3 rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+                    <h3 className="mb-4 text-sm font-bold text-foreground">Editing: {editData.caption}</h3>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <FormInput label="Caption" value={editData.caption ?? ''} onChange={v => handleField('caption', v)} error={errors.caption} />
                       <FormInput label="Alt Text" value={editData.altText ?? ''} onChange={v => handleField('altText', v)} />
@@ -294,15 +294,15 @@ function MediaPage() {
                       <FormInput label="URL" value={editData.url ?? ''} onChange={v => handleField('url', v)} />
                       <FormSelect label="Rights Status" value={editData.rightsStatus ?? 'cleared'} options={['cleared', 'pending', 'restricted']} onChange={v => handleField('rightsStatus', v)} />
                     </div>
-                    <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                      <button onClick={handleSaveAsset} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                    <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                      <button onClick={handleSaveAsset} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                         {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                         Save Changes
                       </button>
-                      <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                      <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-card px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
                         <Trash className="h-4 w-4" weight="duotone" /> Delete
                       </button>
-                      <button onClick={() => { setSelectedAssetId(null); setAssetPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                      <button onClick={() => { setSelectedAssetId(null); setAssetPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
                         <X className="h-4 w-4" weight="duotone" /> Cancel
                       </button>
                     </div>
@@ -311,8 +311,8 @@ function MediaPage() {
               </React.Fragment>
             ))}
             {assetPanelMode === 'create' && (
-              <div className="col-span-2 md:col-span-3 rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-                <h3 className="mb-4 text-sm font-bold text-[var(--on-surface)]">Upload Media Asset</h3>
+              <div className="col-span-2 md:col-span-3 rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+                <h3 className="mb-4 text-sm font-bold text-foreground">Upload Media Asset</h3>
                 <MediaUpload
                   label="Choose a file to upload"
                   onComplete={handleUploadComplete}
@@ -320,7 +320,7 @@ function MediaPage() {
                 />
                 <div className="mt-4 flex justify-end">
                   <button onClick={() => { setAssetPanelMode('view'); setEditData(null) }}
-                    className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                    className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
                     <X className="h-4 w-4" weight="duotone" /> Cancel
                   </button>
                 </div>
@@ -333,13 +333,13 @@ function MediaPage() {
       {/* Flag dialog */}
       {flagModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-lg border border-[var(--surface-4)] bg-white p-6" style={{ boxShadow: '0px 8px 24px rgba(0,0,0,0.12)' }}>
-            <h3 className="text-sm font-bold text-[var(--on-surface)]">Flag Story</h3>
-            <p className="mt-1 text-xs text-[var(--on-surface-variant)]">Provide a reason for flagging this story for review.</p>
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-6" style={{ boxShadow: '0px 8px 24px rgba(0,0,0,0.12)' }}>
+            <h3 className="text-sm font-bold text-foreground">Flag Story</h3>
+            <p className="mt-1 text-xs text-muted-foreground">Provide a reason for flagging this story for review.</p>
             <FormTextarea label="Reason" value={flagReason} onChange={setFlagReason} placeholder="e.g. Inappropriate content, copyright violation" />
             <div className="mt-4 flex items-center justify-end gap-2">
-              <button onClick={() => { setFlagModal(null); setFlagReason('') }} className="rounded-full border border-[var(--surface-4)] px-4 py-1.5 text-xs font-bold text-[var(--on-surface-variant)]">Cancel</button>
-              <button onClick={() => handleFlag(flagModal)} disabled={!flagReason} className="rounded-full bg-[var(--amber)] px-4 py-1.5 text-xs font-bold text-[var(--forest)] shadow-sm disabled:opacity-50">Submit Flag</button>
+              <button onClick={() => { setFlagModal(null); setFlagReason('') }} className="rounded-full border border-border px-4 py-1.5 text-xs font-bold text-muted-foreground">Cancel</button>
+              <button onClick={() => handleFlag(flagModal)} disabled={!flagReason} className="rounded-full bg-[var(--amber)] px-4 py-1.5 text-xs font-bold text-primary shadow-sm disabled:opacity-50">Submit Flag</button>
             </div>
           </div>
         </div>

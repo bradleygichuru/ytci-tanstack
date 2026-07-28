@@ -211,27 +211,27 @@ function UsersPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">User Management & Security</h1>
-        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">RBAC permissions, user accounts, and compliance consent auditing.</p>
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">User Management & Security</h1>
+        <p className="mt-1 text-sm text-muted-foreground">RBAC permissions, user accounts, and compliance consent auditing.</p>
       </div>
 
       {/* Security Health */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Total Users</div>
-          <div className="mt-1 font-sans text-3xl font-bold text-[var(--on-surface)]">{total}</div>
+        <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Total Users</div>
+          <div className="mt-1 font-sans text-3xl font-bold text-foreground">{total}</div>
         </div>
-        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Active Directory</div>
-          <div className="mt-1 font-sans text-3xl font-bold text-[var(--leaf)]">{counts.active}</div>
+        <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Active Directory</div>
+          <div className="mt-1 font-sans text-3xl font-bold text-success-leaf">{counts.active}</div>
         </div>
-        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Banned</div>
-          <div className="mt-1 font-sans text-3xl font-bold text-[var(--error)]">{counts.banned}</div>
+        <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Banned</div>
+          <div className="mt-1 font-sans text-3xl font-bold text-destructive">{counts.banned}</div>
         </div>
-        <div className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Roles</div>
-          <div className="mt-1 space-y-0.5 text-xs text-[var(--on-surface-variant)]">
+        <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Roles</div>
+          <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
             {ROLE_OPTIONS.map(role => (
               <div key={role} className="flex items-center gap-1">{data.filter(u => u.role === role).length} <RolePill role={role} /></div>
             ))}
@@ -242,7 +242,7 @@ function UsersPage() {
       {/* Tabs */}
       <div className="mb-6 mt-6 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
         {(['users', 'audit'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 text-sm font-semibold ${tab === t ? 'bg-white text-[var(--on-surface)] shadow-sm' : 'text-[var(--on-surface-variant)]'}`}>
+          <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 text-sm font-semibold ${tab === t ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>
             {t === 'users' ? 'Users' : 'Consent Audit'} <span className="ml-1 rounded-full bg-[var(--surface-3)] px-1.5 py-0.5 text-[10px]">{t === 'users' ? total : audit.length}</span>
           </button>
         ))}
@@ -250,21 +250,21 @@ function UsersPage() {
 
       {/* Users tab */}
       {tab === 'users' && (
-        <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+        <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center gap-3 border-b border-[var(--surface-4)] px-5 py-3">
+          <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-3">
             <div className="relative">
-              <MagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--on-surface-variant)]" weight="duotone" />
+              <MagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" weight="duotone" />
               <input
                 placeholder="Search by name or email..."
                 value={filters.search}
                 onChange={e => handleSearchChange(e.target.value)}
-                className="h-9 w-60 rounded-md border border-[var(--outline-muted)] bg-white pl-9 text-sm text-[var(--on-surface)] placeholder:text-[var(--on-surface-variant)] focus:border-[var(--forest)] focus:ring-1 focus:ring-[var(--forest)]" />
+                className="h-9 w-60 rounded-md border border-border bg-card pl-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary" />
             </div>
 
             {(['all', 'active', 'banned'] as StatusFilter[]).map(st => (
               <button key={st} onClick={() => updateFilters({ status: st, page: 1 })}
-                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${filters.status === st ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
+                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${filters.status === st ? 'bg-primary text-white' : 'border border-border bg-card text-muted-foreground hover:border-[var(--outline)]'}`}>
                 {st === 'all' ? 'All' : st.charAt(0).toUpperCase() + st.slice(1)}
               </button>
             ))}
@@ -273,22 +273,22 @@ function UsersPage() {
 
             {([null, ...ROLE_OPTIONS] as const).map(r => (
               <button key={r ?? 'all'} onClick={() => updateFilters({ role: r, page: 1 })}
-                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${filters.role === r ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] bg-white text-[var(--on-surface-variant)] hover:border-[var(--outline)]'}`}>
+                className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${filters.role === r ? 'bg-primary text-white' : 'border border-border bg-card text-muted-foreground hover:border-[var(--outline)]'}`}>
                 {r ? r.replace(/_/g, ' ') : 'All Roles'}
               </button>
             ))}
 
             <div className="ml-auto flex items-center gap-3">
-              <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{total} users</span>
-              <button onClick={() => { setCreateOpen(true); setCreateResult(null) }} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New User</button>
+              <span className="text-xs font-semibold text-muted-foreground">{total} users</span>
+              <button onClick={() => { setCreateOpen(true); setCreateResult(null) }} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"><PlusCircle className="h-4 w-4" weight="duotone" /> New User</button>
             </div>
           </div>
 
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
-            <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
+            <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               {columnHeaders.map(col => (
-                <th key={col.key} className={`px-5 py-3 ${col.sortable ? 'cursor-pointer select-none hover:text-[var(--on-surface)]' : ''}`}
+                <th key={col.key} className={`px-5 py-3 ${col.sortable ? 'cursor-pointer select-none hover:text-foreground' : ''}`}
                   onClick={() => col.sortable && handleSort(col.key)}>
                   <span className="inline-flex items-center">{col.label}{sortIcon(col.key)}</span>
                 </th>
@@ -297,36 +297,36 @@ function UsersPage() {
             </tr></thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">Loading...</td></tr>
+                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-muted-foreground">Loading...</td></tr>
               ) : data.length === 0 ? (
-                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No users match the current filters.</td></tr>
+                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-muted-foreground">No users match the current filters.</td></tr>
               ) : (
                 data.map(u => {
                   const isSelected = selectedId === u.id
                   return (
                     <FragmentRow key={u.id}>
                       <tr onClick={() => handleSelect(u.id)} className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${isSelected ? 'bg-[var(--amber-bg)]' : ''}`}>
-                        <td className="px-5 py-3"><span className="font-semibold text-[var(--on-surface)]">{u.name}</span></td>
-                        <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{u.email}</td>
+                        <td className="px-5 py-3"><span className="font-semibold text-foreground">{u.name}</span></td>
+                        <td className="px-5 py-3 text-xs text-muted-foreground">{u.email}</td>
                         <td className="px-5 py-3"><RolePill role={u.role} /></td>
-                        <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{u.county}</td>
-                        <td className="px-5 py-3">{u.banned ? <span className="flex items-center gap-1 text-xs font-semibold text-[var(--error)]"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Banned</span> : <span className="flex items-center gap-1 text-xs font-semibold text-[var(--leaf)]"><CheckCircle className="h-3.5 w-3.5" weight="fill" /> Active</span>}</td>
-                        <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(u.createdAt).toLocaleDateString()}</td>
-                        <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" /></td>
+                        <td className="px-5 py-3 text-xs text-muted-foreground">{u.county}</td>
+                        <td className="px-5 py-3">{u.banned ? <span className="flex items-center gap-1 text-xs font-semibold text-destructive"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Banned</span> : <span className="flex items-center gap-1 text-xs font-semibold text-success-leaf"><CheckCircle className="h-3.5 w-3.5" weight="fill" /> Active</span>}</td>
+                        <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(u.createdAt).toLocaleDateString()}</td>
+                        <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-muted-foreground" weight="duotone" /></td>
                       </tr>
                       {isSelected && editData && (
                         <tr><td colSpan={7} className="border-b p-0">
-                          <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                          <div className="border-t border-border bg-card px-6 py-5">
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                               <UField label="Name" value={editData.name} onChange={v => setEditData({ ...editData, name: v })} />
                               <UStaticField label="Email" value={editData.email} />
                               <div>
-                                <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Role</label>
+                                <label className="mb-1 block text-xs font-semibold text-foreground">Role</label>
                                 <select value={editData.role} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, role: e.target.value })}
-                                  className={`w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm ${isSuperAdmin ? 'text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)]'} focus:border-[var(--forest)] disabled:cursor-not-allowed`}>
+                                  className={`w-full rounded-md border border-border px-3 py-2 text-sm ${isSuperAdmin ? 'text-foreground' : 'text-muted-foreground'} focus:border-primary disabled:cursor-not-allowed`}>
                                   {ROLE_OPTIONS.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
                                 </select>
-                                {!isSuperAdmin && <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Only super-admin can change roles (#5)</p>}
+                                {!isSuperAdmin && <p className="mt-1 text-[10px] text-muted-foreground">Only super-admin can change roles (#5)</p>}
                               </div>
                               <UField label="Age Range" value={editData.ageRange ?? ''} onChange={v => setEditData({ ...editData, ageRange: v })} />
                               <UField label="County" value={editData.county ?? ''} onChange={v => setEditData({ ...editData, county: v })} />
@@ -334,43 +334,43 @@ function UsersPage() {
                               <UField label="Preferences" value={editData.preferences ?? ''} onChange={v => setEditData({ ...editData, preferences: v })} />
 
                               {/* Suspension */}
-                              <div className="rounded-lg border border-[var(--surface-4)] p-4 md:col-span-2">
+                              <div className="rounded-lg border border-border p-4 md:col-span-2">
                                 <label className="flex cursor-pointer items-center gap-2">
                                   <input type="checkbox" checked={editData.banned} disabled={!isSuperAdmin} onChange={e => setEditData({ ...editData, banned: e.target.checked, banReason: e.target.checked ? '' : null })}
                                     className="accent-[var(--error)] disabled:cursor-not-allowed" />
-                                  <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Suspend account</span>
+                                  <span className="flex items-center gap-1 text-xs font-semibold text-foreground"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Suspend account</span>
                                 </label>
                                 {editData.banned && (
                                   <input value={editData.banReason ?? ''} onChange={e => setEditData({ ...editData, banReason: e.target.value })}
                                     placeholder="Reason for suspension..."
-                                    className="mt-2 w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" />
+                                    className="mt-2 w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" />
                                 )}
-                                {!isSuperAdmin && <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Only super-admin can suspend users (#5)</p>}
+                                {!isSuperAdmin && <p className="mt-1 text-[10px] text-muted-foreground">Only super-admin can suspend users (#5)</p>}
                               </div>
 
                               {/* Consent toggle */}
-                              <div className="rounded-lg border border-[var(--surface-4)] p-4 md:col-span-2">
+                              <div className="rounded-lg border border-border p-4 md:col-span-2">
                                 <div className="flex items-center justify-between">
                                   <div>
-                                    <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Shield className="h-3.5 w-3.5" weight="duotone" /> Consent {editData.consentGrantedAt ? 'granted' : 'not granted'}</span>
-                                    {editData.consentGrantedAt && <p className="mt-0.5 text-[10px] text-[var(--on-surface-variant)]">Granted at {new Date(editData.consentGrantedAt).toLocaleDateString()}</p>}
+                                    <span className="flex items-center gap-1 text-xs font-semibold text-foreground"><Shield className="h-3.5 w-3.5" weight="duotone" /> Consent {editData.consentGrantedAt ? 'granted' : 'not granted'}</span>
+                                    {editData.consentGrantedAt && <p className="mt-0.5 text-[10px] text-muted-foreground">Granted at {new Date(editData.consentGrantedAt).toLocaleDateString()}</p>}
                                   </div>
                                   {isSuperAdmin ? (
                                     editData.consentGrantedAt ? (
                                       <button onClick={() => setEditData({ ...editData, consentGrantedAt: null })}
-                                        className="rounded-md border border-[var(--error)] px-3 py-1.5 text-[11px] font-bold text-[var(--error)]">Revoke Consent</button>
+                                        className="rounded-md border border-[var(--error)] px-3 py-1.5 text-[11px] font-bold text-destructive">Revoke Consent</button>
                                     ) : (
                                       <button onClick={() => setEditData({ ...editData, consentGrantedAt: new Date().toISOString() })}
-                                        className="rounded-md border border-[var(--leaf)] px-3 py-1.5 text-[11px] font-bold text-[var(--leaf)]">Grant Consent</button>
+                                        className="rounded-md border border-[var(--leaf)] px-3 py-1.5 text-[11px] font-bold text-success-leaf">Grant Consent</button>
                                     )
-                                  ) : <p className="text-[10px] text-[var(--on-surface-variant)]">Only super-admin can manage consent</p>}
+                                  ) : <p className="text-[10px] text-muted-foreground">Only super-admin can manage consent</p>}
                                 </div>
                               </div>
                             </div>
 
-                            <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                              <button onClick={handleSave} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm"><FloppyDisk className="h-4 w-4" weight="duotone" /> Save</button>
-                              <button onClick={() => setSelectedId(null)} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]"><X className="h-4 w-4" weight="duotone" /> Cancel</button>
+                            <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                              <button onClick={handleSave} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm"><FloppyDisk className="h-4 w-4" weight="duotone" /> Save</button>
+                              <button onClick={() => setSelectedId(null)} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground"><X className="h-4 w-4" weight="duotone" /> Cancel</button>
                             </div>
                           </div>
                         </td></tr>
@@ -385,12 +385,12 @@ function UsersPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-[var(--surface-4)] px-5 py-3">
-              <span className="text-xs text-[var(--on-surface-variant)]">Showing {Math.min((filters.page - 1) * PAGE_SIZE + 1, total)}–{Math.min(filters.page * PAGE_SIZE, total)} of {total}</span>
+            <div className="flex items-center justify-between border-t border-border px-5 py-3">
+              <span className="text-xs text-muted-foreground">Showing {Math.min((filters.page - 1) * PAGE_SIZE + 1, total)}–{Math.min(filters.page * PAGE_SIZE, total)} of {total}</span>
               <div className="flex items-center gap-2">
                 <button onClick={() => updateFilters({ page: Math.max(1, filters.page - 1) })}
                   disabled={filters.page <= 1}
-                  className="flex items-center gap-1 rounded-md border border-[var(--surface-4)] px-3 py-1.5 text-xs font-semibold text-[var(--on-surface)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-2)]">
+                  className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-2)]">
                   <CaretLeft className="h-3.5 w-3.5" weight="bold" /> Prev
                 </button>
                 {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -399,14 +399,14 @@ function UsersPage() {
                   if (p > totalPages) return null
                   return (
                     <button key={p} onClick={() => updateFilters({ page: p })}
-                      className={`h-7 min-w-7 rounded-md text-xs font-bold ${filters.page === p ? 'bg-[var(--forest)] text-white' : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]'}`}>
+                      className={`h-7 min-w-7 rounded-md text-xs font-bold ${filters.page === p ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-[var(--surface-2)]'}`}>
                       {p}
                     </button>
                   )
                 })}
                 <button onClick={() => updateFilters({ page: Math.min(totalPages, filters.page + 1) })}
                   disabled={filters.page >= totalPages}
-                  className="flex items-center gap-1 rounded-md border border-[var(--surface-4)] px-3 py-1.5 text-xs font-semibold text-[var(--on-surface)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-2)]">
+                  className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--surface-2)]">
                   Next <CaretRight className="h-3.5 w-3.5" weight="bold" />
                 </button>
               </div>
@@ -417,19 +417,19 @@ function UsersPage() {
 
       {/* Consent Audit tab */}
       {tab === 'audit' && (
-        <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+        <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[600px] text-sm">
-            <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
+            <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               <th className="px-5 py-3">User</th><th className="px-5 py-3">Action</th><th className="px-5 py-3">Details</th><th className="px-5 py-3">Timestamp</th>
             </tr></thead>
             <tbody>
               {audit.map(a => (
                 <tr key={a.id} className="border-b hover:bg-[var(--surface-2)]">
-                  <td className="px-5 py-3 text-sm font-semibold text-[var(--on-surface)]">{a.userName}</td>
+                  <td className="px-5 py-3 text-sm font-semibold text-foreground">{a.userName}</td>
                   <td className="px-5 py-3"><span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: `${(auditActions[a.action] ?? '#42493e')}20`, color: auditActions[a.action] ?? '#42493e' }}>{a.action.replace(/_/g, ' ')}</span></td>
-                  <td className="max-w-sm truncate px-5 py-3 text-xs text-[var(--on-surface-variant)]">{a.details}</td>
-                  <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(a.createdAt as string).toLocaleString()}</td>
+                  <td className="max-w-sm truncate px-5 py-3 text-xs text-muted-foreground">{a.details}</td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(a.createdAt as string).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -451,21 +451,21 @@ function UsersPage() {
           {createResult ? (
             <div className="space-y-4">
               <div className="rounded-lg border border-[var(--leaf)] bg-green-50 p-4">
-                <p className="text-sm font-semibold text-[var(--leaf)]">User created: {createResult.email}</p>
+                <p className="text-sm font-semibold text-success-leaf">User created: {createResult.email}</p>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Temporary password</label>
-                <div className="flex items-center gap-2 rounded-md border border-[var(--surface-4)] bg-[var(--surface-2)] px-3 py-2 font-mono text-sm">
+                <label className="mb-1 block text-xs font-semibold text-foreground">Temporary password</label>
+                <div className="flex items-center gap-2 rounded-md border border-border bg-[var(--surface-2)] px-3 py-2 font-mono text-sm">
                   <span className="flex-1">{createResult.password}</span>
                   <button onClick={() => navigator.clipboard.writeText(createResult.password)}
-                    className="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-bold text-[var(--forest)] hover:bg-[var(--surface-3)]">
+                    className="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-bold text-primary hover:bg-[var(--surface-3)]">
                     <Copy className="h-3.5 w-3.5" weight="duotone" /> Copy
                   </button>
                 </div>
-                <p className="mt-1 text-[10px] text-[var(--on-surface-variant)]">Share this securely. It will not be shown again.</p>
+                <p className="mt-1 text-[10px] text-muted-foreground">Share this securely. It will not be shown again.</p>
               </div>
               <div className="flex justify-end">
-                <button onClick={resetCreate} className="rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm">Done</button>
+                <button onClick={resetCreate} className="rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm">Done</button>
               </div>
             </div>
           ) : (
@@ -473,9 +473,9 @@ function UsersPage() {
               <UField label="Name" value={createForm.name} onChange={v => setCreateForm(f => ({ ...f, name: v }))} />
               <UField label="Email" value={createForm.email} onChange={v => setCreateForm(f => ({ ...f, email: v }))} />
               <div>
-                <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Role</label>
+                <label className="mb-1 block text-xs font-semibold text-foreground">Role</label>
                 <select value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value }))}
-                  className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]">
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary">
                   {ROLE_OPTIONS.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
                 </select>
               </div>
@@ -483,14 +483,14 @@ function UsersPage() {
               <UField label="County" value={createForm.county} onChange={v => setCreateForm(f => ({ ...f, county: v }))} />
               <UField label="Languages" value={createForm.languages} onChange={v => setCreateForm(f => ({ ...f, languages: v }))} />
               <UField label="Preferences" value={createForm.preferences} onChange={v => setCreateForm(f => ({ ...f, preferences: v }))} />
-              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[var(--surface-4)] p-3">
-                <input type="checkbox" checked={createConsent} onChange={e => setCreateConsent(e.target.checked)} className="accent-[var(--forest)]" />
-                <span className="text-xs text-[var(--on-surface)]">I attest that user consent has been obtained (GDPR / Kenya DPA)</span>
+              <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border p-3">
+                <input type="checkbox" checked={createConsent} onChange={e => setCreateConsent(e.target.checked)} className="accent-primary" />
+                <span className="text-xs text-foreground">I attest that user consent has been obtained (GDPR / Kenya DPA)</span>
               </label>
               <div className="flex justify-end gap-3">
-                <button onClick={resetCreate} className="rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">Cancel</button>
+                <button onClick={resetCreate} className="rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">Cancel</button>
                 <button onClick={handleCreate} disabled={!createForm.name || !createForm.email || !createConsent || createLoading}
-                  className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                  className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                   <PlusCircle className="h-4 w-4" weight="duotone" /> {createLoading ? 'Creating...' : 'Create User'}
                 </button>
               </div>
@@ -503,9 +503,9 @@ function UsersPage() {
 }
 
 function UField({ label, value, onChange }: { label: string; value?: string; onChange: (v: string) => void }) {
-  return <div><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><input value={value ?? ''} onChange={e => onChange(e.target.value)} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
+  return <div><label className="mb-1 block text-xs font-semibold text-foreground">{label}</label><input value={value ?? ''} onChange={e => onChange(e.target.value)} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>
 }
 function UStaticField({ label, value }: { label: string; value?: string }) {
-  return <div><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">{label}</label><div className="w-full rounded-md border border-[var(--surface-4)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--on-surface-variant)]">{value}</div></div>
+  return <div><label className="mb-1 block text-xs font-semibold text-foreground">{label}</label><div className="w-full rounded-md border border-border bg-[var(--surface-2)] px-3 py-2 text-sm text-muted-foreground">{value}</div></div>
 }
 function FragmentRow({ children }: { children: React.ReactNode }) { return <>{children}</> }

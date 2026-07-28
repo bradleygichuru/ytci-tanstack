@@ -7,19 +7,19 @@ const statusColorMap: Record<string, string> = {
   active: 'bg-[var(--leaf-bg)] text-[var(--leaf)] border-[var(--leaf)]',
   paused: 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]',
   ended: 'bg-[var(--surface-dim)] text-[var(--on-surface-variant)] border-[var(--outline-muted)]',
-  scheduled: 'bg-[var(--forest)]/10 text-[var(--forest)] border-[var(--forest)]',
+  scheduled: 'bg-primary/10 text-primary border-[var(--forest)]',
   postponed: 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]',
-  cancelled: 'bg-red-50 text-[var(--error)] border-[var(--error)]',
+  cancelled: 'bg-red-50 text-destructive border-[var(--error)]',
   completed: 'bg-[var(--leaf-bg)] text-[var(--leaf)] border-[var(--leaf)]',
   pending: 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]',
   verified: 'bg-[var(--leaf-bg)] text-[var(--leaf)] border-[var(--leaf)]',
   unverified: 'bg-[var(--surface-dim)] text-[var(--on-surface-variant)] border-[var(--outline-muted)]',
   sent: 'bg-blue-50 text-blue-700 border-blue-300',
   delivered: 'bg-[var(--leaf-bg)] text-[var(--leaf)] border-[var(--leaf)]',
-  failed: 'bg-red-50 text-[var(--error)] border-[var(--error)]',
+  failed: 'bg-red-50 text-destructive border-[var(--error)]',
   partial: 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]',
   approved: 'bg-[var(--leaf-bg)] text-[var(--leaf)] border-[var(--leaf)]',
-  rejected: 'bg-red-50 text-[var(--error)] border-[var(--error)]',
+  rejected: 'bg-red-50 text-destructive border-[var(--error)]',
 }
 
 export function StatusBadge({ status, label }: { status: string; label?: string }) {

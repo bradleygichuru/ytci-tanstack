@@ -65,7 +65,7 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
     >
-      <SidebarHeader className="px-5 py-6">
+      <SidebarHeader className="px-5 py-6 bg-sidebar">
         <div className="font-sans text-2xl font-bold leading-none text-white">
           Eco-Explorer
         </div>
@@ -77,7 +77,7 @@ export function AppSidebar() {
       <SidebarContent className="px-3 pt-4">
         {navGroups.map((group, gi) => (
           <SidebarGroup key={gi} className="mb-4">
-            <SidebarGroupLabel className="px-2 text-[10px] font-semibold uppercase tracking-widest text-white/50">
+            <SidebarGroupLabel className="px-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/50">
               {group.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -88,7 +88,7 @@ export function AppSidebar() {
                       asChild
                       isActive={location.pathname === item.path}
                       tooltip={item.label}
-                      className="rounded-lg text-white/80 hover:bg-white/5 hover:text-white"
+                      className="rounded-lg text-sidebar-foreground/80 hover:bg-white/5 hover:text-sidebar-foreground"
                     >
                       <Link to={item.path}>
                         <item.icon className="h-[18px] w-[18px]" weight="duotone" />
@@ -103,7 +103,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="mt-auto space-y-2 px-3 pb-5">
+      <SidebarFooter className="mt-auto space-y-2 px-3 pb-5 bg-sidebar">
         <button
           className="flex w-full items-center justify-center gap-2 rounded-full px-3 py-2.5 text-sm font-bold shadow-sm"
           style={{ backgroundColor: 'var(--amber)', color: 'var(--forest-deep)' }}
@@ -114,7 +114,7 @@ export function AppSidebar() {
         <SidebarMenu>
           {pinnedItems.map((item) => (
             <SidebarMenuItem key={item.label}>
-              <SidebarMenuButton className="rounded-lg text-white/80 hover:bg-white/5 hover:text-white">
+              <SidebarMenuButton className="rounded-lg text-sidebar-foreground/80 hover:bg-white/5 hover:text-sidebar-foreground">
                 <item.icon className="h-[18px] w-[18px]" weight="duotone" />
                 <span className="text-sm font-semibold">{item.label}</span>
               </SidebarMenuButton>

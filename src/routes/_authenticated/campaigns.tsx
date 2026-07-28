@@ -215,25 +215,25 @@ function CampaignsPage() {
   const statusTransitions: Record<string, string[]> = { draft: ['active'], active: ['paused', 'ended'], paused: ['active', 'ended'], ended: ['draft'] }
   const selected = data.find(d => d.id === selectedId) ?? null
 
-  if (!loaded) return <div className="mt-8 text-center text-sm text-[var(--on-surface-variant)]">Loading campaigns...</div>
+  if (!loaded) return <div className="mt-8 text-center text-sm text-muted-foreground">Loading campaigns...</div>
 
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Campaigns</h1>
-          <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Home banners, featured destinations, push notifications, and seasonal campaigns.</p>
+          <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">Campaigns</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Home banners, featured destinations, push notifications, and seasonal campaigns.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data.length} campaigns</span>
-          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Campaign</button>
+          <span className="text-xs font-semibold text-muted-foreground">{data.length} campaigns</span>
+          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Campaign</button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
         <div className="overflow-x-auto">
         <table className="w-full min-w-[700px] text-sm">
-          <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
+          <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
             <th className="px-5 py-3">Campaign</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Dates</th><th className="px-5 py-3">Status</th><th className="w-12 px-5 py-3" />
           </tr></thead>
           <tbody>
@@ -245,27 +245,27 @@ function CampaignsPage() {
                 <React.Fragment key={c.id}>
                   <tr onClick={() => handleSelect(c.id)} className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${isSelected ? 'bg-[var(--amber-bg)]' : ''}`}>
                     <td className="px-5 py-3">
-                      <div className="font-semibold text-[var(--on-surface)]">{c.title}</div>
-                      <div className="text-[10px] text-[var(--on-surface-variant)]">{c.description}</div>
+                      <div className="font-semibold text-foreground">{c.title}</div>
+                      <div className="text-[10px] text-muted-foreground">{c.description}</div>
                     </td>
                     <td className="px-5 py-3">
                       <span className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: `${meta?.color}20`, color: meta?.color }}>
                         <Icon className="h-3 w-3" weight="duotone" /> {meta?.label ?? c.type}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{c.startDate ? new Date(c.startDate).toLocaleDateString() : '—'} — {c.endDate ? new Date(c.endDate).toLocaleDateString() : '—'}</td>
+                    <td className="px-5 py-3 text-xs text-muted-foreground">{c.startDate ? new Date(c.startDate).toLocaleDateString() : '—'} — {c.endDate ? new Date(c.endDate).toLocaleDateString() : '—'}</td>
                     <td className="px-5 py-3"><StatusBadge status={c.status} /></td>
-                    <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" /></td>
+                    <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-muted-foreground" weight="duotone" /></td>
                   </tr>
                   {isSelected && editData && (
                     <tr><td colSpan={5} className="border-b p-0">
-                      <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                      <div className="border-t border-border bg-card px-6 py-5">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                           <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
                           <FormSelect label="Campaign Type" required value={editData.type} options={['home_banner', 'featured_destination', 'push_notification', 'seasonal']} onChange={v => { handleField('type', v); handleField('destinationId', ''); handleField('audience', '') }} error={errors.type} />
                           <div>
-                            <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Banner Image</label>
+                            <label className="mb-1 block text-xs font-semibold text-foreground">Banner Image</label>
                             <MediaUpload
                               label={editData.bannerUrl ? 'Replace banner' : 'Upload banner'}
                               onComplete={(result) => {
@@ -275,7 +275,7 @@ function CampaignsPage() {
                               onError={(msg) => toast.error(msg)}
                             />
                             {editData.bannerUrl && (
-                              <p className="mt-1 text-xs text-[var(--leaf)] truncate">{editData.bannerUrl}</p>
+                              <p className="mt-1 text-xs text-success-leaf truncate">{editData.bannerUrl}</p>
                             )}
                           </div>
                           <FormInput label="Target URL" value={editData.targetUrl} onChange={v => handleField('targetUrl', v)} />
@@ -288,7 +288,7 @@ function CampaignsPage() {
                           <FormInput label="Start Date" value={editData.startDate} onChange={v => handleField('startDate', v)} />
                           <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} />
 
-                          <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-4">
+                          <div className="col-span-2 rounded-lg border border-border p-4">
                             <div className="flex flex-wrap items-center gap-2">
                               {['draft', 'active', 'paused', 'ended'].map(s => {
                                 const isCurrent = editData.status === s
@@ -301,7 +301,7 @@ function CampaignsPage() {
                                     handleField('status', target)
                                     await api.campaigns.update(editData.id, { status: target })
                                     await loadList()
-                                  }} className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm bg-[var(--forest)]">
+                                  }} className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm bg-primary">
                                     → {target}
                                   </button>
                                 ))}
@@ -311,17 +311,17 @@ function CampaignsPage() {
 
                         {/* Push notification send UI — only for push_notification type on saved campaigns */}
                         {editData.type === 'push_notification' && selectedId && (
-                          <div className="col-span-2 mt-4 rounded-lg border border-[var(--surface-4)] p-4">
-                            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)] mb-3">
+                          <div className="col-span-2 mt-4 rounded-lg border border-border p-4">
+                            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
                               <Bell className="h-3.5 w-3.5" weight="duotone" /> Push Notification Send
                             </h3>
 
                             {/* Audience selector */}
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-4 mb-3">
                               <div>
-                                <label htmlFor="push-target" className="mb-1 block text-[10px] font-semibold text-[var(--on-surface-variant)]">Target</label>
+                                <label htmlFor="push-target" className="mb-1 block text-[10px] font-semibold text-muted-foreground">Target</label>
                                 <select id="push-target" value={pushAudience.type} onChange={e => { setPushAudience({ type: e.target.value as PushAudience['type'] }); setPushCount(null) }}
-                                  className="w-full rounded-md border border-[var(--outline-muted)] px-2 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]">
+                                  className="w-full rounded-md border border-border px-2 py-1.5 text-xs text-foreground focus:border-primary">
                                   <option value="all">All Users</option>
                                   <option value="county">By County</option>
                                   <option value="role">By Role</option>
@@ -330,21 +330,21 @@ function CampaignsPage() {
                               </div>
                               {pushAudience.type !== 'all' && (
                                 <div>
-                                  <label htmlFor="push-value" className="mb-1 block text-[10px] font-semibold text-[var(--on-surface-variant)]">Value</label>
+                                  <label htmlFor="push-value" className="mb-1 block text-[10px] font-semibold text-muted-foreground">Value</label>
                                   <input id="push-value" value={pushAudience.value ?? ''} onChange={e => { setPushAudience({ ...pushAudience, value: e.target.value }); setPushCount(null) }}
                                     placeholder={pushAudience.type === 'county' ? 'e.g. Kwale' : pushAudience.type === 'role' ? 'e.g. administrator' : 'e.g. wildlife'}
-                                    className="w-full rounded-md border border-[var(--outline-muted)] px-2 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]" />
+                                    className="w-full rounded-md border border-border px-2 py-1.5 text-xs text-foreground focus:border-primary" />
                                 </div>
                               )}
                               <div className="flex items-end">
                                 <button onClick={handlePreviewCount} disabled={sendingPush}
-                                  className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-[var(--on-surface)] hover:bg-[var(--surface-3)] disabled:opacity-50">
+                                  className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-[var(--surface-3)] disabled:opacity-50">
                                   {sendingPush ? 'Counting...' : 'Preview Count'}
                                 </button>
                               </div>
                               {pushCount !== null && (
                                 <div className="flex items-end">
-                                  <span className="text-sm font-bold text-[var(--forest)]">{pushCount.toLocaleString()} devices</span>
+                                  <span className="text-sm font-bold text-primary">{pushCount.toLocaleString()} devices</span>
                                 </div>
                               )}
                             </div>
@@ -352,16 +352,16 @@ function CampaignsPage() {
                             {/* Send controls */}
                             <div className="flex flex-wrap items-center gap-2">
                               <button onClick={handlePushSend} disabled={pushSending || (pushAudience.type !== 'all' && !pushAudience.value)}
-                                className="flex items-center gap-1 rounded-full bg-[var(--forest)] px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                                className="flex items-center gap-1 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                                 {pushSending ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <PaperPlaneTilt className="h-3.5 w-3.5" weight="duotone" />}
                                 Send Now
                               </button>
                               <div className="flex items-center gap-1">
-                                <span className="text-[10px] text-[var(--on-surface-variant)]">or schedule:</span>
+                                <span className="text-[10px] text-muted-foreground">or schedule:</span>
                                 <input id="push-schedule" type="datetime-local" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)}
-                                  className="rounded-md border border-[var(--outline-muted)] px-2 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]" />
+                                  className="rounded-md border border-border px-2 py-1.5 text-xs text-foreground focus:border-primary" />
                                 <button onClick={handlePushSchedule} disabled={pushSending || !scheduleTime || (pushAudience.type !== 'all' && !pushAudience.value)}
-                                  className="rounded-full bg-[var(--amber)] px-3 py-1.5 text-xs font-bold text-[var(--forest)] shadow-sm disabled:opacity-50">
+                                  className="rounded-full bg-[var(--amber)] px-3 py-1.5 text-xs font-bold text-primary shadow-sm disabled:opacity-50">
                                   <CalendarBlank className="inline h-3 w-3" weight="duotone" /> Schedule
                                 </button>
                               </div>
@@ -370,15 +370,15 @@ function CampaignsPage() {
                             {/* Delivery history */}
                             {pushHistory.length > 0 && (
                               <div className="mt-3">
-                                <h4 className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">Send History</h4>
+                                <h4 className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Send History</h4>
                                 <div className="space-y-1">
                                   {pushHistory.map(h => (
                                     <div key={h.sendId} className="flex items-center justify-between rounded-md bg-[var(--surface-2)] px-3 py-2">
                                       <div className="flex items-center gap-2">
-                                        <span className="text-xs text-[var(--on-surface-variant)]">{new Date(h.sentAt).toLocaleString()}</span>
+                                        <span className="text-xs text-muted-foreground">{new Date(h.sentAt).toLocaleString()}</span>
                                         <StatusBadge status={h.status} label={`${h.status}`} />
                                       </div>
-                                      <span className="text-[10px] text-[var(--on-surface-variant)]">{h.deliveredCount}/{h.tokenCount} delivered</span>
+                                      <span className="text-[10px] text-muted-foreground">{h.deliveredCount}/{h.tokenCount} delivered</span>
                                     </div>
                                   ))}
                                 </div>
@@ -387,17 +387,17 @@ function CampaignsPage() {
                           </div>
                         )}
 
-                        <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                        <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                             {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                             {panelMode === 'create' ? 'Create Campaign' : 'Save Changes'}
                           </button>
                           {panelMode === 'edit' && (
-                            <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                            <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-card px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
                               <Trash className="h-4 w-4" weight="duotone" /> Delete
                             </button>
                           )}
-                          <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]">
+                          <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-2)]">
                             <X className="h-4 w-4" weight="duotone" /> Cancel
                           </button>
                         </div>
@@ -408,17 +408,17 @@ function CampaignsPage() {
               )
             })}
             {data.length === 0 && panelMode !== 'create' && (
-              <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No campaigns found. Create one to get started.</td></tr>
+              <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-muted-foreground">No campaigns found. Create one to get started.</td></tr>
             )}
             {panelMode === 'create' && editData && (
               <tr key="create-row"><td colSpan={5} className="border-b p-0">
-                <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                <div className="border-t border-border bg-card px-6 py-5">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                     <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
                     <FormSelect label="Campaign Type" required value={editData.type} options={['home_banner', 'featured_destination', 'push_notification', 'seasonal']} onChange={v => { handleField('type', v); handleField('destinationId', ''); handleField('audience', '') }} error={errors.type} />
                     <div>
-                      <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Banner Image</label>
+                      <label className="mb-1 block text-xs font-semibold text-foreground">Banner Image</label>
                       <MediaUpload
                         label="Upload banner"
                         onComplete={(result) => {
@@ -428,7 +428,7 @@ function CampaignsPage() {
                         onError={(msg) => toast.error(msg)}
                       />
                       {editData.bannerUrl && (
-                        <p className="mt-1 text-xs text-[var(--leaf)] truncate">{editData.bannerUrl}</p>
+                        <p className="mt-1 text-xs text-success-leaf truncate">{editData.bannerUrl}</p>
                       )}
                     </div>
                     <FormInput label="Target URL" value={editData.targetUrl} onChange={v => handleField('targetUrl', v)} />
@@ -441,12 +441,12 @@ function CampaignsPage() {
                     <FormInput label="Start Date" value={editData.startDate} onChange={v => handleField('startDate', v)} />
                     <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} />
                   </div>
-                  <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                  <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                       {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                       Create Campaign
                     </button>
-                    <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                    <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
                       <X className="h-4 w-4" weight="duotone" /> Cancel
                     </button>
                   </div>

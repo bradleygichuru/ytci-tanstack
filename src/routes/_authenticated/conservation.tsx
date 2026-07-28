@@ -187,17 +187,17 @@ function ConservationPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Conservation Tracker Administration</h1>
-        <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Create activity sign-ups, review evidence, and track participation.</p>
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">Conservation Tracker Administration</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Create activity sign-ups, review evidence, and track participation.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {Object.entries(agg).map(([key, s]) => (
-          <div key={key} className="rounded-lg border border-[var(--surface-4)] bg-white p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
-            <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">{s.label}</div>
+          <div key={key} className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{s.label}</div>
             <div className="mt-1 flex items-baseline gap-1">
-              <span className="font-sans text-3xl font-bold text-[var(--forest)]">{s.value.toLocaleString()}</span>
-              <span className="text-xs text-[var(--on-surface-variant)]">/ {s.target.toLocaleString()}</span>
+              <span className="font-sans text-3xl font-bold text-primary">{s.value.toLocaleString()}</span>
+              <span className="text-xs text-muted-foreground">/ {s.target.toLocaleString()}</span>
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--surface-2)]">
               <div className="h-full rounded-full bg-gradient-to-r from-[var(--leaf)] to-[var(--forest)]" style={{ width: `${Math.min((s.value / s.target) * 100, 100)}%` }} />
@@ -208,21 +208,21 @@ function ConservationPage() {
 
       <div className="mb-6 mt-4 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
         {(['activities', 'evidence'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 text-sm font-semibold ${tab === t ? 'bg-white text-[var(--on-surface)] shadow-sm' : 'text-[var(--on-surface-variant)]'}`}>
+          <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 text-sm font-semibold ${tab === t ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>
             {t === 'activities' ? 'Activities' : 'Evidence Review'} <span className="ml-1 rounded-full bg-[var(--surface-3)] px-1.5 py-0.5 text-[10px]">{t === 'activities' ? acts.length : evids.length}</span>
           </button>
         ))}
       </div>
 
       {tab === 'activities' && (<>
-        <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
-          <div className="flex items-center justify-between border-b border-[var(--surface-4)] px-5 py-3">
-            <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{acts.length} activities</span>
-            <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Activity</button>
+        <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
+          <div className="flex items-center justify-between border-b border-border px-5 py-3">
+            <span className="text-xs font-semibold text-muted-foreground">{acts.length} activities</span>
+            <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Activity</button>
           </div>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
-            <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
+            <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               <th className="px-5 py-3">Name</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Date</th><th className="px-5 py-3">Participants</th><th className="px-5 py-3">Impact</th><th className="px-5 py-3">Status</th><th className="w-12 px-5 py-3" />
             </tr></thead>
             <tbody>
@@ -234,44 +234,44 @@ function ConservationPage() {
                     <tr onClick={() => handleSelect(a.id)}
                       className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${isSelected ? 'bg-[var(--amber-bg)]' : ''}`}>
                       <td className="px-5 py-3">
-                        <div className="font-semibold text-[var(--on-surface)]">{a.title}</div>
-                        <div className="text-[10px] text-[var(--on-surface-variant)]">{a.organizer}</div>
+                        <div className="font-semibold text-foreground">{a.title}</div>
+                        <div className="text-[10px] text-muted-foreground">{a.organizer}</div>
                       </td>
                       <td className="px-5 py-3">
                         {a.locationPrivacyLevel === 'sensitive'
                           ? <span className="flex items-center gap-1 text-xs text-[var(--amber-deep)]"><Shield className="h-3 w-3" weight="duotone" /> Location restricted</span>
-                          : <span className="flex items-center gap-1 text-xs text-[var(--on-surface)]"><MapPin className="h-3 w-3" weight="duotone" /> {a.location}</span>}
+                          : <span className="flex items-center gap-1 text-xs text-foreground"><MapPin className="h-3 w-3" weight="duotone" /> {a.location}</span>}
                       </td>
-                      <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(a.date).toLocaleDateString()}</td>
-                      <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{a.participantCount}</td>
+                      <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(a.date).toLocaleDateString()}</td>
+                      <td className="px-5 py-3 text-xs text-muted-foreground">{a.participantCount}</td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-[var(--forest)]">{a.impactActual}</span>
-                          <span className="text-xs text-[var(--on-surface-variant)]">/ {a.impactGoal}</span>
+                          <span className="text-xs font-semibold text-primary">{a.impactActual}</span>
+                          <span className="text-xs text-muted-foreground">/ {a.impactGoal}</span>
                         </div>
                         <div className="mt-1 h-1.5 w-24 overflow-hidden rounded-full bg-[var(--surface-2)]"><div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: pct > 80 ? 'var(--leaf)' : pct > 40 ? 'var(--amber)' : 'var(--on-surface-variant)' }} /></div>
                       </td>
                       <td className="px-5 py-3"><StatusBadge status={a.status} /></td>
-                      <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" /></td>
+                      <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-muted-foreground" weight="duotone" /></td>
                     </tr>
                     {isSelected && editData && (
                       <tr><td colSpan={7} className="border-b p-0">
-                        <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                        <div className="border-t border-border bg-card px-6 py-5">
                           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} />
                             <FormInput label="Organizer" required value={editData.organizer} onChange={v => handleField('organizer', v)} error={errors.organizer} />
                             <FormInput label="Location" value={editData.locationPrivacyLevel === 'sensitive' ? '[RESTRICTED]' : editData.location} onChange={() => {}} />
                             <div>
-                              <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Privacy Level</label>
+                              <label className="mb-1 block text-xs font-semibold text-foreground">Privacy Level</label>
                               <div className="flex items-center gap-2">
                                 {['public', 'sensitive'].map(p => (
-                                  <label key={p} className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${editData.locationPrivacyLevel === p ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] text-[var(--on-surface-variant)]'}`}>
+                                  <label key={p} className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${editData.locationPrivacyLevel === p ? 'bg-primary text-white' : 'border border-border text-muted-foreground'}`}>
                                     <input type="radio" name="privacy" checked={editData.locationPrivacyLevel === p} onChange={() => handleField('locationPrivacyLevel', p)} className="sr-only" />
                                     {p === 'sensitive' ? <Shield className="h-3 w-3" weight="duotone" /> : ''} {p}
                                   </label>
                                 ))}
                               </div>
-                              {editData.locationPrivacyLevel === 'sensitive' && <p className="mt-1 text-[10px] text-[var(--error)]">⚠ Do not display sensitive wildlife locations (§5.15)</p>}
+                              {editData.locationPrivacyLevel === 'sensitive' && <p className="mt-1 text-[10px] text-destructive">⚠ Do not display sensitive wildlife locations (§5.15)</p>}
                             </div>
                             <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
                       <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} />
@@ -279,19 +279,19 @@ function ConservationPage() {
                             <FormInput label="Goal Count" value={String(editData.impactGoal)} onChange={v => handleField('impactGoal', Number(v))} />
                             <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
                             <FormInput label="Badge Name" value={editData.badgeName} onChange={v => handleField('badgeName', v)} />
-                            <div className="sm:col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Verification Rules</label><textarea value={editData.verificationRules} onChange={e => handleField('verificationRules', e.target.value)} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
+                            <div className="sm:col-span-2"><label className="mb-1 block text-xs font-semibold text-foreground">Verification Rules</label><textarea value={editData.verificationRules} onChange={e => handleField('verificationRules', e.target.value)} rows={3} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>
                           </div>
-                          <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                            <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                          <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                            <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                               {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                               {panelMode === 'create' ? 'Create Activity' : 'Save Changes'}
                             </button>
                             {panelMode === 'edit' && (
-                              <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                              <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-card px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
                                 <Trash className="h-4 w-4" weight="duotone" /> Delete
                               </button>
                             )}
-                            <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                            <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
                               <X className="h-4 w-4" weight="duotone" /> Cancel
                             </button>
                           </div>
@@ -302,28 +302,28 @@ function ConservationPage() {
                 )
               })}
               {acts.length === 0 && panelMode !== 'create' && (
-                <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No activities yet. Create one to get started.</td></tr>
+                <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-muted-foreground">No activities yet. Create one to get started.</td></tr>
               )}
               {panelMode === 'create' && editData && (
                 <tr key="create-row"><td colSpan={7} className="border-b p-0">
-                  <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                  <div className="border-t border-border bg-card px-6 py-5">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} />
                       <FormInput label="Organizer" required value={editData.organizer} onChange={v => handleField('organizer', v)} error={errors.organizer} />
                       {editData.locationPrivacyLevel === 'sensitive'
-                        ? <div><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Location</label><div className="flex items-center gap-1 rounded-md border border-[var(--outline-muted)] bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--amber-deep)]"><Shield className="h-3 w-3" weight="duotone" /> Location restricted for wildlife protection</div><input type="hidden" value={editData.location} /></div>
+                        ? <div><label className="mb-1 block text-xs font-semibold text-foreground">Location</label><div className="flex items-center gap-1 rounded-md border border-border bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--amber-deep)]"><Shield className="h-3 w-3" weight="duotone" /> Location restricted for wildlife protection</div><input type="hidden" value={editData.location} /></div>
                         : <FormInput label="Location" value={editData.location} onChange={v => handleField('location', v)} />}
                       <div>
-                        <label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Privacy Level</label>
+                        <label className="mb-1 block text-xs font-semibold text-foreground">Privacy Level</label>
                         <div className="flex items-center gap-2">
                           {['public', 'sensitive'].map(p => (
-                            <label key={p} className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${editData.locationPrivacyLevel === p ? 'bg-[var(--forest)] text-white' : 'border border-[var(--surface-4)] text-[var(--on-surface-variant)]'}`}>
+                            <label key={p} className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${editData.locationPrivacyLevel === p ? 'bg-primary text-white' : 'border border-border text-muted-foreground'}`}>
                               <input type="radio" name="privacy-c" checked={editData.locationPrivacyLevel === p} onChange={() => handleField('locationPrivacyLevel', p)} className="sr-only" />
                               {p === 'sensitive' ? <Shield className="h-3 w-3" weight="duotone" /> : ''} {p}
                             </label>
                           ))}
                         </div>
-                        {editData.locationPrivacyLevel === 'sensitive' && <p className="mt-1 text-[10px] text-[var(--error)]">⚠ Do not display sensitive wildlife locations (§5.15)</p>}
+                        {editData.locationPrivacyLevel === 'sensitive' && <p className="mt-1 text-[10px] text-destructive">⚠ Do not display sensitive wildlife locations (§5.15)</p>}
                       </div>
                       <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
                       <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} />
@@ -332,12 +332,12 @@ function ConservationPage() {
                       <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
                       <FormInput label="Badge Name" value={editData.badgeName} onChange={v => handleField('badgeName', v)} />
                     </div>
-                    <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                      <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                    <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                      <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                         {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                         Create Activity
                       </button>
-                      <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                      <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
                         <X className="h-4 w-4" weight="duotone" /> Cancel
                       </button>
                     </div>
@@ -357,34 +357,34 @@ function ConservationPage() {
       </>)}
 
       {tab === 'evidence' && (
-        <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+        <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
-            <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
+            <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               <th className="px-5 py-3">Activity</th><th className="px-5 py-3">User</th><th className="px-5 py-3">Description</th><th className="px-5 py-3">Submitted</th><th className="px-5 py-3">Status</th><th className="w-28 px-5 py-3 text-right">Actions</th>
             </tr></thead>
             <tbody>
               {evids.map(e => (
                 <tr key={e.id} className="border-b hover:bg-[var(--surface-2)]">
-                  <td className="px-5 py-3 text-sm font-semibold text-[var(--on-surface)]">{e.activityTitle}</td>
-                  <td className="px-5 py-3"><span className="flex items-center gap-1 text-xs text-[var(--on-surface-variant)]"><User className="h-3 w-3" weight="duotone" /> {e.userName}</span></td>
-                  <td className="max-w-xs truncate px-5 py-3 text-xs text-[var(--on-surface-variant)]">{e.description}</td>
-                  <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(e.submittedAt).toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-sm font-semibold text-foreground">{e.activityTitle}</td>
+                  <td className="px-5 py-3"><span className="flex items-center gap-1 text-xs text-muted-foreground"><User className="h-3 w-3" weight="duotone" /> {e.userName}</span></td>
+                  <td className="max-w-xs truncate px-5 py-3 text-xs text-muted-foreground">{e.description}</td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(e.submittedAt).toLocaleDateString()}</td>
                   <td className="px-5 py-3"><StatusBadge status={e.status} /></td>
                   <td className="px-5 py-3 text-right">
                     {e.status === 'pending' && (
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => handleApprove(e.id)} className="rounded-full bg-[var(--leaf)] p-1.5 text-white"><CheckCircle className="h-4 w-4" weight="fill" /></button>
-                        <button onClick={() => handleReject(e.id)} className="rounded-full bg-[var(--error)] p-1.5 text-white"><XCircle className="h-4 w-4" weight="fill" /></button>
-                        <button className="rounded-full border border-[var(--surface-4)] p-1.5 text-[var(--on-surface-variant)]"><Eye className="h-4 w-4" weight="duotone" /></button>
+                        <button onClick={() => handleReject(e.id)} className="rounded-full bg-destructive p-1.5 text-white"><XCircle className="h-4 w-4" weight="fill" /></button>
+                        <button className="rounded-full border border-border p-1.5 text-muted-foreground"><Eye className="h-4 w-4" weight="duotone" /></button>
                       </div>
                     )}
-                    {e.status !== 'pending' && <span className="text-[10px] text-[var(--on-surface-variant)]">{e.reviewerNote?.substring(0, 40)}</span>}
+                    {e.status !== 'pending' && <span className="text-[10px] text-muted-foreground">{e.reviewerNote?.substring(0, 40)}</span>}
                   </td>
                 </tr>
               ))}
               {evids.length === 0 && (
-                <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No evidence items to review.</td></tr>
+                <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">No evidence items to review.</td></tr>
               )}
             </tbody>
           </table>

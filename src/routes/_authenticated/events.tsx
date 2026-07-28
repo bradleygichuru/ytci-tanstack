@@ -169,19 +169,19 @@ function EventsPage() {
       <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-sans text-3xl font-bold tracking-tight text-[var(--on-surface)]">Events Calendar Admin</h1>
-          <p className="mt-1 text-sm text-[var(--on-surface-variant)]">Publish and manage event entries. Scheduled, postponed, cancelled status transitions.</p>
+          <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">Events Calendar Admin</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Publish and manage event entries. Scheduled, postponed, cancelled status transitions.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-[var(--on-surface-variant)]">{data.length} events</span>
-          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Event</button>
+          <span className="text-xs font-semibold text-muted-foreground">{data.length} events</span>
+          <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Event</button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-[var(--surface-4)] bg-white" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
         <div className="overflow-x-auto">
         <table className="w-full min-w-[700px] text-sm">
-          <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-[var(--on-surface-variant)]">
+          <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
             <th className="px-5 py-3">Event</th><th className="px-5 py-3">County</th><th className="px-5 py-3">Date</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Status</th><th className="w-12 px-5 py-3" />
           </tr></thead>
           <tbody>
@@ -190,16 +190,16 @@ function EventsPage() {
               return (
                 <React.Fragment key={e.id}>
                   <tr onClick={() => handleSelect(e.id)} className={`cursor-pointer border-b hover:bg-[var(--surface-2)] ${isSelected ? 'bg-[var(--amber-bg)]' : ''}`}>
-                    <td className="px-5 py-3"><div className="font-semibold text-[var(--on-surface)]">{e.title}</div><div className="text-[10px] text-[var(--on-surface-variant)]">{e.organizer}</div></td>
-                    <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{e.county}</td>
-                    <td className="px-5 py-3 text-xs text-[var(--on-surface-variant)]">{new Date(e.date).toLocaleDateString()}{e.endDate !== e.date ? ` — ${new Date(e.endDate).toLocaleDateString()}` : ''}</td>
+                    <td className="px-5 py-3"><div className="font-semibold text-foreground">{e.title}</div><div className="text-[10px] text-muted-foreground">{e.organizer}</div></td>
+                    <td className="px-5 py-3 text-xs text-muted-foreground">{e.county}</td>
+                    <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(e.date).toLocaleDateString()}{e.endDate !== e.date ? ` — ${new Date(e.endDate).toLocaleDateString()}` : ''}</td>
                     <td className="px-5 py-3"><span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: `${typeColors[e.type]}20`, color: typeColors[e.type] }}>{e.type}</span></td>
                     <td className="px-5 py-3"><StatusBadge status={e.status} /></td>
-                    <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-[var(--on-surface-variant)]" weight="duotone" /></td>
+                    <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-muted-foreground" weight="duotone" /></td>
                   </tr>
                   {isSelected && editData && (
                     <tr><td colSpan={6} className="border-b p-0">
-                      <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                      <div className="border-t border-border bg-card px-6 py-5">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                           <FormInput label="Organizer" value={editData.organizer} onChange={v => handleField('organizer', v)} />
@@ -208,16 +208,16 @@ function EventsPage() {
                           <FormInput label="Start Date" required value={editData.date} onChange={v => handleField('date', v)} error={errors.date} />
                           <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} error={errors.endDate} />
                           <FormSelect label="Type" value={editData.type} options={['cultural', 'sports', 'conservation', 'tourism']} onChange={v => handleField('type', v)} />
-                          <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
+                          <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-foreground">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>
 
-                          <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-4">
-                            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--on-surface-variant)]"><Clock className="h-3.5 w-3.5" weight="duotone" /> Status Workflow</h3>
+                          <div className="col-span-2 rounded-lg border border-border p-4">
+                            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground"><Clock className="h-3.5 w-3.5" weight="duotone" /> Status Workflow</h3>
                             <div className="mt-3 flex flex-wrap items-center gap-2">
                               {['scheduled', 'postponed', 'cancelled'].map(s => {
                                 const isCurrent = editData.status === s
                                 return (
                                   <span key={s} className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${isCurrent ? 'shadow-sm' : ''}`}>
-                                    {s} {isCurrent && <span className="ml-1 rounded-full bg-white/40 px-1 text-[10px]">current</span>}
+                                    {s} {isCurrent && <span className="ml-1 rounded-full bg-card/40 px-1 text-[10px]">current</span>}
                                     {!isCurrent && <ArrowRight className="h-3 w-3" weight="bold" />}
                                   </span>
                                 )
@@ -239,38 +239,38 @@ function EventsPage() {
                           <FormInput label="Contact Email" value={editData.contactEmail} onChange={v => handleField('contactEmail', v)} />
                           <FormInput label="Contact Phone" value={editData.contactPhone} onChange={v => handleField('contactPhone', v)} />
 
-                          <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-4">
+                          <div className="col-span-2 rounded-lg border border-border p-4">
                             <label className="flex cursor-pointer items-center gap-2">
-                              <input type="checkbox" checked={editData.reminderEnabled} onChange={e => handleField('reminderEnabled', e.target.checked)} className="accent-[var(--forest)]" />
-                              <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Bell className="h-3.5 w-3.5" weight="duotone" /> Enable Reminders</span>
+                              <input type="checkbox" checked={editData.reminderEnabled} onChange={e => handleField('reminderEnabled', e.target.checked)} className="accent-primary" />
+                              <span className="flex items-center gap-1 text-xs font-semibold text-foreground"><Bell className="h-3.5 w-3.5" weight="duotone" /> Enable Reminders</span>
                             </label>
                             {editData.reminderEnabled && (
                               <div className="mt-3 flex items-center gap-3">
-                                <span className="text-xs text-[var(--on-surface-variant)]">Send</span>
-                                <select value={editData.reminderTime} onChange={e => handleField('reminderTime', e.target.value)} className="rounded-md border border-[var(--outline-muted)] px-3 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]">
+                                <span className="text-xs text-muted-foreground">Send</span>
+                                <select value={editData.reminderTime} onChange={e => handleField('reminderTime', e.target.value)} className="rounded-md border border-border px-3 py-1.5 text-xs text-foreground focus:border-primary">
                                   {['30 minutes before', '1 hour before', '1 day before', '3 days before', '1 week before'].map(t => <option key={t} value={t}>{t}</option>)}
                                 </select>
                               </div>
                             )}
-                            <p className="mt-2 text-[10px] text-[var(--on-surface-variant)]">§5.14: Device calendar integration support — optional.</p>
+                            <p className="mt-2 text-[10px] text-muted-foreground">§5.14: Device calendar integration support — optional.</p>
                           </div>
 
-                          <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--on-surface-variant)]">
-                            <span className="flex items-center gap-1 font-semibold text-[var(--error)]"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span> — per spec §5.14 boundary. No ticket purchase, booking, or reservation controls in this form.
+                          <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1 font-semibold text-destructive"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span> — per spec §5.14 boundary. No ticket purchase, booking, or reservation controls in this form.
                           </div>
                         </div>
 
-                        <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                        <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                             {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                             {panelMode === 'create' ? 'Create Event' : 'Save Changes'}
                           </button>
                           {panelMode === 'edit' && (
-                            <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                            <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-card px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
                               <Trash className="h-4 w-4" weight="duotone" /> Delete
                             </button>
                           )}
-                          <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)] hover:bg-[var(--surface-2)]">
+                          <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-2)]">
                             <X className="h-4 w-4" weight="duotone" /> Cancel
                           </button>
                         </div>
@@ -281,11 +281,11 @@ function EventsPage() {
               )
             })}
             {data.length === 0 && panelMode !== 'create' && (
-              <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-[var(--on-surface-variant)]">No events found. Create one to get started.</td></tr>
+              <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">No events found. Create one to get started.</td></tr>
             )}
             {panelMode === 'create' && editData && (
               <tr key="create-row"><td colSpan={6} className="border-b p-0">
-                <div className="border-t border-[var(--surface-4)] bg-white px-6 py-5">
+                <div className="border-t border-border bg-card px-6 py-5">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
                     <FormInput label="Organizer" value={editData.organizer} onChange={v => handleField('organizer', v)} />
@@ -294,33 +294,33 @@ function EventsPage() {
                     <FormInput label="Start Date" required value={editData.date} onChange={v => handleField('date', v)} error={errors.date} />
                     <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} error={errors.endDate} />
                     <FormSelect label="Type" value={editData.type} options={['cultural', 'sports', 'conservation', 'tourism']} onChange={v => handleField('type', v)} />
-                    <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-[var(--on-surface)]">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-[var(--outline-muted)] px-3 py-2 text-sm text-[var(--on-surface)] focus:border-[var(--forest)]" /></div>
+                    <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-foreground">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>
                     <FormInput label="Contact Email" value={editData.contactEmail} onChange={v => handleField('contactEmail', v)} />
                     <FormInput label="Contact Phone" value={editData.contactPhone} onChange={v => handleField('contactPhone', v)} />
-                    <div className="col-span-2 rounded-lg border border-[var(--surface-4)] p-4">
+                    <div className="col-span-2 rounded-lg border border-border p-4">
                       <label className="flex cursor-pointer items-center gap-2">
-                        <input type="checkbox" checked={editData.reminderEnabled} onChange={e => handleField('reminderEnabled', e.target.checked)} className="accent-[var(--forest)]" />
-                        <span className="flex items-center gap-1 text-xs font-semibold text-[var(--on-surface)]"><Bell className="h-3.5 w-3.5" weight="duotone" /> Enable Reminders</span>
+                        <input type="checkbox" checked={editData.reminderEnabled} onChange={e => handleField('reminderEnabled', e.target.checked)} className="accent-primary" />
+                        <span className="flex items-center gap-1 text-xs font-semibold text-foreground"><Bell className="h-3.5 w-3.5" weight="duotone" /> Enable Reminders</span>
                       </label>
                       {editData.reminderEnabled && (
                         <div className="mt-3 flex items-center gap-3">
-                          <span className="text-xs text-[var(--on-surface-variant)]">Send</span>
-                          <select value={editData.reminderTime} onChange={e => handleField('reminderTime', e.target.value)} className="rounded-md border border-[var(--outline-muted)] px-3 py-1.5 text-xs text-[var(--on-surface)] focus:border-[var(--forest)]">
+                          <span className="text-xs text-muted-foreground">Send</span>
+                          <select value={editData.reminderTime} onChange={e => handleField('reminderTime', e.target.value)} className="rounded-md border border-border px-3 py-1.5 text-xs text-foreground focus:border-primary">
                             {['30 minutes before', '1 hour before', '1 day before', '3 days before', '1 week before'].map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
                         </div>
                       )}
                     </div>
-                    <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-[var(--on-surface-variant)]">
-                      <span className="flex items-center gap-1 font-semibold text-[var(--error)]"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span> — per spec §5.14 boundary. No ticket purchase, booking, or reservation controls in this form.
+                    <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1 font-semibold text-destructive"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span> — per spec §5.14 boundary. No ticket purchase, booking, or reservation controls in this form.
                     </div>
                   </div>
-                  <div className="mt-5 flex items-center gap-3 border-t border-[var(--surface-4)] pt-4">
-                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-[var(--forest)] px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                  <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                       {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                       Create Event
                     </button>
-                    <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-[var(--surface-4)] px-5 py-2 text-xs font-bold text-[var(--on-surface-variant)]">
+                    <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
                       <X className="h-4 w-4" weight="duotone" /> Cancel
                     </button>
                   </div>

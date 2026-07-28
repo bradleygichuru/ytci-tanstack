@@ -138,7 +138,7 @@ export function MediaUpload({ label = 'Upload File', allowedTypes = ALLOWED_TYPE
       case 'done':
         return { icon: <CheckCircle className="h-5 w-5 text-[var(--leaf)]" weight="fill" />, text: 'Upload complete' }
       case 'error':
-        return { icon: <XCircle className="h-5 w-5 text-[var(--error)]" weight="fill" />, text: errorMsg ?? 'Upload failed' }
+        return { icon: <XCircle className="h-5 w-5 text-destructive" weight="fill" />, text: errorMsg ?? 'Upload failed' }
       default:
         return null
     }
@@ -175,12 +175,12 @@ export function MediaUpload({ label = 'Upload File', allowedTypes = ALLOWED_TYPE
             <span className="text-sm font-semibold text-[var(--on-surface)]">{sd.text}</span>
             {state === 'uploading' && (
               <div className="mt-1 h-2 w-full max-w-xs overflow-hidden rounded-full bg-[var(--surface-3)]">
-                <div className="h-full rounded-full bg-[var(--forest)] transition-all" style={{ width: `${progress}%` }} />
+                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
               </div>
             )}
             {state === 'idle' && file && <span className="text-xs text-[var(--on-surface-variant)]">{file.name} ({fmtSize(file.size)})</span>}
             {(state === 'error' || state === 'done') && (
-              <button onClick={(e) => { e.stopPropagation(); reset() }} className="mt-1 text-xs font-semibold text-[var(--forest)] hover:underline">
+              <button onClick={(e) => { e.stopPropagation(); reset() }} className="mt-1 text-xs font-semibold text-primary hover:underline">
                 {state === 'done' ? 'Upload another' : 'Try again'}
               </button>
             )}
