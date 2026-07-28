@@ -10,7 +10,6 @@ import {
   Trophy,
   GearSix,
   Question,
-  ArrowSquareUpRight,
 } from '@phosphor-icons/react'
 import { Link, useLocation } from '@tanstack/react-router'
 import {
@@ -90,7 +89,7 @@ export function AppSidebar() {
                       tooltip={item.label}
                       className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                     >
-                      <Link to={item.path}>
+                      <Link to={item.path} style={{ color: 'var(--sidebar-foreground)' }}>
                         <item.icon className="h-[18px] w-[18px]" weight="duotone" />
                         <span className="text-sm font-semibold">{item.label}</span>
                       </Link>
@@ -104,13 +103,6 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="mt-auto space-y-2 px-3 pb-5 bg-sidebar">
-        <button
-          className="flex w-full items-center justify-center gap-2 rounded-full px-3 py-2.5 text-sm font-bold shadow-sm"
-          style={{ backgroundColor: 'var(--amber)', color: 'var(--forest-deep)' }}
-        >
-          <ArrowSquareUpRight className="h-4 w-4" weight="bold" />
-          Deploy AI Guardrails
-        </button>
         <SidebarMenu>
           {pinnedItems.map((item) => (
             <SidebarMenuItem key={item.label}>
