@@ -241,8 +241,8 @@ function MediaPage() {
                     <div className="mt-3 flex items-center gap-3">
                       <button onClick={() => handleApprove(item.id)} className="flex items-center gap-1 rounded-full bg-[var(--leaf)] px-4 py-1.5 text-xs font-bold text-white"><CheckCircle className="h-3.5 w-3.5" weight="fill" /> Approve</button>
                       <button onClick={() => handleReject(item.id)} className="flex items-center gap-1 rounded-full bg-destructive px-4 py-1.5 text-xs font-bold text-white"><XCircle className="h-3.5 w-3.5" weight="fill" /> Reject</button>
-                      <button onClick={() => setFlagModal(item.id)} className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold ${item.reports.length > 0 ? 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]' : 'border-border text-muted-foreground'}`}>
-                        <Flag className="h-3.5 w-3.5" weight="duotone" /> {item.reports.length > 0 ? `${item.reports.length} report${item.reports.length > 1 ? 's' : ''}` : 'Flag'}
+                      <button onClick={() => setFlagModal(item.id)} className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold ${(item.reports ?? []).length > 0 ? 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]' : 'border-border text-muted-foreground'}`}>
+                        <Flag className="h-3.5 w-3.5" weight="duotone" /> {(item.reports ?? []).length > 0 ? `${(item.reports ?? []).length} report${(item.reports ?? []).length > 1 ? 's' : ''}` : 'Flag'}
                       </button>
                       <button onClick={() => handleRemoveStory(item.id)} className="flex items-center gap-1 rounded-full border border-red-200 bg-card px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50"><Trash className="h-3.5 w-3.5" weight="duotone" /> Remove</button>
                     </div>
