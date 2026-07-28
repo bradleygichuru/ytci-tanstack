@@ -7,6 +7,8 @@ export interface MediaAsset {
   objectKey: string
   type: string
   status: string
+  url?: string | null
+  thumbnailUrl?: string | null
   caption?: string | null
   altText?: string | null
   credit?: string | null

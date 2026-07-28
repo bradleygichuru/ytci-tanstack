@@ -222,8 +222,10 @@ function MediaPage() {
             {visibleMod.map(item => (
               <div key={item.id} className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
                 <div className="flex gap-4 p-4">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--forest)] to-[var(--forest-leaf)] text-white/40">
-                    {item.mediaType === 'video' ? <Video className="h-8 w-8" weight="duotone" /> : <ImageIcon className="h-8 w-8" weight="duotone" />}
+                  <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-[var(--forest)] to-[var(--forest-leaf)] text-white/40">
+                    {item.thumbUrl
+                      ? <img src={item.thumbUrl} alt={item.caption} className="h-full w-full object-cover" onError={e => { (e.target as HTMLImageElement).hidden = true }} />
+                      : item.mediaType === 'video' ? <Video className="h-8 w-8" weight="duotone" /> : <ImageIcon className="h-8 w-8" weight="duotone" />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
@@ -270,8 +272,10 @@ function MediaPage() {
             {assets.map(a => (
               <React.Fragment key={a.id}>
                 <div onClick={() => handleSelectAsset(a.id)} className={`overflow-hidden rounded-lg border bg-card cursor-pointer ${selectedAssetId === a.id ? 'border-[var(--forest)] ring-2 ring-[var(--forest)]' : 'border-border'}`} style={{ boxShadow: 'var(--card-shadow)' }}>
-                  <div className="flex h-32 items-center justify-center bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
-                    {a.type === 'image' ? <ImageIcon className="h-8 w-8 text-muted-foreground" weight="duotone" />
+                  <div className="flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
+                    {(a.thumbnailUrl ?? a.url)
+                      ? <img src={a.thumbnailUrl ?? a.url} alt={a.caption ?? ''} className="h-full w-full object-cover" onError={e => { (e.target as HTMLImageElement).hidden = true }} />
+                      : a.type === 'image' ? <ImageIcon className="h-8 w-8 text-muted-foreground" weight="duotone" />
                       : a.type === 'video' ? <Video className="h-8 w-8 text-muted-foreground" weight="duotone" />
                       : <FilePdf className="h-8 w-8 text-muted-foreground" weight="duotone" />}
                   </div>
