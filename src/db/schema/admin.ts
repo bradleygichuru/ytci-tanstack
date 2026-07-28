@@ -4,6 +4,7 @@ import { users } from "./auth";
 
 export const userProfiles = pgTable("user_profiles", {
   userId: text("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  displayName: text("display_name"),
   ageRange: text("age_range"),
   county: text("county"),
   languages: text("languages"),

@@ -19,6 +19,7 @@ import { Route as AuthenticatedAiConfigRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
 import { Route as AuthenticatedChallengesRouteImport } from './routes/_authenticated/challenges'
+import { Route as AuthenticatedCommentsRouteImport } from './routes/_authenticated/comments'
 import { Route as AuthenticatedConservationRouteImport } from './routes/_authenticated/conservation'
 import { Route as AuthenticatedDestinationsRouteImport } from './routes/_authenticated/destinations'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
@@ -77,6 +78,11 @@ const AuthenticatedChallengesRoute = AuthenticatedChallengesRouteImport.update({
   path: '/challenges',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCommentsRoute = AuthenticatedCommentsRouteImport.update({
+  id: '/comments',
+  path: '/comments',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedConservationRoute =
   AuthenticatedConservationRouteImport.update({
     id: '/conservation',
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/challenges': typeof AuthenticatedChallengesRoute
+  '/comments': typeof AuthenticatedCommentsRoute
   '/conservation': typeof AuthenticatedConservationRoute
   '/destinations': typeof AuthenticatedDestinationsRoute
   '/events': typeof AuthenticatedEventsRoute
@@ -149,6 +156,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/challenges': typeof AuthenticatedChallengesRoute
+  '/comments': typeof AuthenticatedCommentsRoute
   '/conservation': typeof AuthenticatedConservationRoute
   '/destinations': typeof AuthenticatedDestinationsRoute
   '/events': typeof AuthenticatedEventsRoute
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
   '/_authenticated/challenges': typeof AuthenticatedChallengesRoute
+  '/_authenticated/comments': typeof AuthenticatedCommentsRoute
   '/_authenticated/conservation': typeof AuthenticatedConservationRoute
   '/_authenticated/destinations': typeof AuthenticatedDestinationsRoute
   '/_authenticated/events': typeof AuthenticatedEventsRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/campaigns'
     | '/challenges'
+    | '/comments'
     | '/conservation'
     | '/destinations'
     | '/events'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/campaigns'
     | '/challenges'
+    | '/comments'
     | '/conservation'
     | '/destinations'
     | '/events'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/_authenticated/analytics'
     | '/_authenticated/campaigns'
     | '/_authenticated/challenges'
+    | '/_authenticated/comments'
     | '/_authenticated/conservation'
     | '/_authenticated/destinations'
     | '/_authenticated/events'
@@ -323,6 +335,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChallengesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/comments': {
+      id: '/_authenticated/comments'
+      path: '/comments'
+      fullPath: '/comments'
+      preLoaderRoute: typeof AuthenticatedCommentsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/conservation': {
       id: '/_authenticated/conservation'
       path: '/conservation'
@@ -387,6 +406,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
   AuthenticatedChallengesRoute: typeof AuthenticatedChallengesRoute
+  AuthenticatedCommentsRoute: typeof AuthenticatedCommentsRoute
   AuthenticatedConservationRoute: typeof AuthenticatedConservationRoute
   AuthenticatedDestinationsRoute: typeof AuthenticatedDestinationsRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
@@ -400,6 +420,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
   AuthenticatedChallengesRoute: AuthenticatedChallengesRoute,
+  AuthenticatedCommentsRoute: AuthenticatedCommentsRoute,
   AuthenticatedConservationRoute: AuthenticatedConservationRoute,
   AuthenticatedDestinationsRoute: AuthenticatedDestinationsRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,

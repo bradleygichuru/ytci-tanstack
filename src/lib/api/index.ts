@@ -10,6 +10,7 @@ import { pushApi } from './push'
 import { challengesApi } from './challenges'
 import { analyticsApi } from './analytics'
 import { usersApi } from './users'
+import { commentsApi } from './comments'
 
 export type { ApiConfig } from './client'
 
@@ -26,6 +27,7 @@ export function createApiClient(config: ApiConfig) {
     challenges: challengesApi(config),
     analytics: analyticsApi(config),
     users: usersApi(config),
+    comments: commentsApi(config),
   }
 }
 

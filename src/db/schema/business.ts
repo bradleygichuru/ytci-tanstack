@@ -370,6 +370,35 @@ export const storyReports = pgTable("story_reports", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// ── Story Comments ──
+export const storyComments = pgTable("story_comments", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  storyId: uuid("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
+  authorId: text("author_id").notNull().references(() => users.id),
+  parentId: uuid("parent_id").references(() => storyComments.id, { onDelete: "cascade" }),
+  body: text("body").notNull(),
+  status: text("status", { enum: ["published", "deleted"] }).default("published").notNull(),
+  likeCount: integer("like_count").default(0),
+  moderationNote: text("moderation_note"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+}, (table) => [
+  index("story_comments_story_idx").on(table.storyId),
+  index("story_comments_parent_idx").on(table.parentId),
+]);
+
+// ── Comment Interactions ──
+export const commentInteractions = pgTable("comment_interactions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  commentId: uuid("comment_id").notNull().references(() => storyComments.id, { onDelete: "cascade" }),
+  interactionType: text("interaction_type", { enum: ["like"] }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("comment_interactions_user_comment_type_idx").on(table.userId, table.commentId, table.interactionType),
+  index("comment_interactions_comment_idx").on(table.commentId),
+]);
+
 // ── Event Saves ──
 export const eventSaves = pgTable("event_saves", {
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),

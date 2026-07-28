@@ -10,6 +10,7 @@ import {
   Trophy,
   GearSix,
   Question,
+  ChatDots,
 } from '@phosphor-icons/react'
 import { Link, useLocation } from '@tanstack/react-router'
 import {
@@ -46,6 +47,7 @@ const navGroups = [
     label: 'Platform',
     items: [
       { icon: Trophy, label: 'Challenges', path: '/challenges' },
+      { icon: ChatDots, label: 'Comments', path: '/comments' },
       { icon: Megaphone, label: 'Campaigns', path: '/campaigns' },
       { icon: Users, label: 'User Management', path: '/users' },
     ],
