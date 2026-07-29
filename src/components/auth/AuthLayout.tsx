@@ -19,7 +19,7 @@ export function AuthLayout({ title, subtitle, children, nav }: AuthLayoutProps) 
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold tracking-tight text-white">Eco-Explorer</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white">YTC Explorer</h1>
           <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.25em] text-white/60">Admin Portal</p>
 
           <div className="mt-10 space-y-4">

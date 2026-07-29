@@ -42,7 +42,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'YTCI Explorer Admin' },
+      { title: 'YTC Explorer' },
     ],
     links: [{ rel: 'stylesheet', href: appCss }],
   }),

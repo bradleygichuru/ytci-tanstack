@@ -392,7 +392,7 @@ function ConservationPage() {
               <th className="px-5 py-3">Activity</th><th className="px-5 py-3">User</th><th className="px-5 py-3">Description</th><th className="px-5 py-3">Submitted</th><th className="px-5 py-3">Status</th><th className="w-28 px-5 py-3 text-right">Actions</th>
             </tr></thead>
             <tbody>
-              {evids.map(e => (
+              {(evids ?? []).map(e => (
                 <tr key={e.id} className="border-b hover:bg-[var(--surface-2)]">
                   <td className="px-5 py-3 text-sm font-semibold text-foreground">{e.activityTitle}</td>
                   <td className="px-5 py-3"><span className="flex items-center gap-1 text-xs text-muted-foreground"><User className="h-3 w-3" weight="duotone" /> {e.userName}</span></td>

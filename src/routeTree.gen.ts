@@ -25,6 +25,7 @@ import { Route as AuthenticatedDestinationsRouteImport } from './routes/_authent
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedLmsRouteImport } from './routes/_authenticated/lms'
 import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAdminUsersSplatRouteImport } from './routes/api/admin/users/$'
@@ -110,6 +111,11 @@ const AuthenticatedMediaRoute = AuthenticatedMediaRouteImport.update({
   path: '/media',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof AuthenticatedEventsRoute
   '/lms': typeof AuthenticatedLmsRoute
   '/media': typeof AuthenticatedMediaRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/events': typeof AuthenticatedEventsRoute
   '/lms': typeof AuthenticatedLmsRoute
   '/media': typeof AuthenticatedMediaRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
@@ -184,6 +192,7 @@ export interface FileRoutesById {
   '/_authenticated/events': typeof AuthenticatedEventsRoute
   '/_authenticated/lms': typeof AuthenticatedLmsRoute
   '/_authenticated/media': typeof AuthenticatedMediaRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/lms'
     | '/media'
+    | '/settings'
     | '/users'
     | '/api/auth/$'
     | '/api/admin/users/$'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/lms'
     | '/media'
+    | '/settings'
     | '/users'
     | '/api/auth/$'
     | '/api/admin/users/$'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/_authenticated/events'
     | '/_authenticated/lms'
     | '/_authenticated/media'
+    | '/_authenticated/settings'
     | '/_authenticated/users'
     | '/api/auth/$'
     | '/api/admin/users/$'
@@ -377,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMediaRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/users': {
       id: '/_authenticated/users'
       path: '/users'
@@ -412,6 +431,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
   AuthenticatedLmsRoute: typeof AuthenticatedLmsRoute
   AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
 }
 
@@ -426,6 +446,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,
   AuthenticatedLmsRoute: AuthenticatedLmsRoute,
   AuthenticatedMediaRoute: AuthenticatedMediaRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
 }
 

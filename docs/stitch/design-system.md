@@ -1,6 +1,6 @@
-# Eco-Explorer Command Design System
+# YTC Explorer Command Design System
 
-Sourced from Stitch project **YTCI Explorer Command Centre** (`projects/17181829470439098105`). CSS variable tokens live in `src/styles.css`.
+Sourced from Stitch project **YTC Explorer Command Centre** (`projects/17181829470439098105`). CSS variable tokens live in `src/styles.css`.
 
 ## Color tokens
 
