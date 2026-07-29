@@ -1,5 +1,5 @@
-import { relations } from "drizzle-orm";
-import { pgTable, uuid, text, timestamp, boolean, integer, jsonb, date, index, uniqueIndex, primaryKey, customType } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
+import { pgTable, uuid, text, timestamp, boolean, integer, bigint, jsonb, date, index, uniqueIndex, primaryKey, customType } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
 const geometry = customType<{ data: string }>({
@@ -39,7 +39,7 @@ export const destinations = pgTable("destinations", {
   verificationStatus: text("verification_status"),
   lastUpdated: timestamp("last_updated"),
   reviewDate: timestamp("review_date"),
-  createdBy: text("created_by").references(() => users.id),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 }, (table) => [
@@ -64,7 +64,7 @@ export const events = pgTable("events", {
   imageUrl: text("image_url"),
   reminderEnabled: boolean("reminder_enabled").default(false),
   reminderMinutes: integer("reminder_minutes"),
-  createdBy: text("created_by").references(() => users.id),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 }, (table) => [
@@ -74,13 +74,13 @@ export const events = pgTable("events", {
 // ── Stories ──
 export const stories = pgTable("stories", {
   id: uuid("id").defaultRandom().primaryKey(),
-  creatorId: text("creator_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  creatorId: text("creator_id").references(() => users.id, { onDelete: "set null" }),
   destinationId: uuid("destination_id").references(() => destinations.id, { onDelete: "set null" }),
   caption: text("caption"),
   journal: text("journal"),
   tags: text("tags"),
   status: text("status", { enum: ["draft", "pending", "approved", "rejected"] }).default("draft").notNull(),
-  moderatedBy: text("moderated_by").references(() => users.id),
+  moderatedBy: text("moderated_by").references(() => users.id, { onDelete: "set null" }),
   moderationNote: text("moderation_note"),
   moderatedAt: timestamp("moderated_at"),
   likeCount: integer("like_count").default(0),
@@ -109,8 +109,8 @@ export const storyInteractions = pgTable("story_interactions", {
 // ── Media Assets ──
 export const mediaAssets = pgTable("media_assets", {
   id: uuid("id").defaultRandom().primaryKey(),
-  entityType: text("entity_type", { enum: ["destination", "story", "event", "course", "conservation_activity", "user"] }).notNull(),
-  entityId: text("entity_id").notNull(),
+  entityType: text("entity_type", { enum: ["destination", "story", "event", "course", "conservation_activity", "user"] }),
+  entityId: text("entity_id"),
   objectKey: text("object_key").notNull(),
   thumbnailKey: text("thumbnail_key"),
   type: text("type", { enum: ["image", "video", "audio", "pdf", "360"] }).notNull(),
@@ -123,15 +123,25 @@ export const mediaAssets = pgTable("media_assets", {
   originalName: text("original_name"),
   displayOrder: integer("display_order").default(0),
   status: text("status", { enum: ["uploading", "processing", "ready", "failed", "pending_review", "removed"] }).default("uploading").notNull(),
-  moderatedBy: text("moderated_by").references(() => users.id),
+  moderatedBy: text("moderated_by").references(() => users.id, { onDelete: "set null" }),
   moderationNote: text("moderation_note"),
   moderatedAt: timestamp("moderated_at"),
-  uploadedBy: text("uploaded_by").references(() => users.id),
+  uploadedBy: text("uploaded_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 }, (table) => [
   index("media_entity_type_id_idx").on(table.entityType, table.entityId),
 ]);
+
+// ── Pending Media Uploads (pre-upload intent for presigned URL flow) ──
+export const pendingMediaUploads = pgTable("pending_media_uploads", {
+  objectKey: text("object_key").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  contentType: text("content_type").notNull(),
+  fileSize: bigint("file_size", { mode: "number" }).notNull(),
+  expiresAt: timestamp("expires_at").default(sql`now() + interval '5 minutes'`).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 // ── Courses ──
 export const courses = pgTable("courses", {
@@ -142,7 +152,7 @@ export const courses = pgTable("courses", {
   status: text("status", { enum: ["draft", "published"] }).default("draft").notNull(),
   imageUrl: text("image_url"),
   passThreshold: integer("pass_threshold").default(70),
-  createdBy: text("created_by").references(() => users.id),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
@@ -172,7 +182,7 @@ export const quizzes = pgTable("quizzes", {
 
 export const courseEnrollments = pgTable("course_enrollments", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
   courseId: uuid("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),
   completedLessonIds: jsonb("completed_lesson_ids").default("[]"),
   quizAttempts: jsonb("quiz_attempts").default("{}"),
@@ -194,19 +204,19 @@ export const challenges = pgTable("challenges", {
   startDate: date("start_date"),
   endDate: date("end_date"),
   status: text("status", { enum: ["draft", "active", "ended"] }).default("draft").notNull(),
-  createdBy: text("created_by").references(() => users.id),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
 
 export const challengeProgress = pgTable("challenge_progress", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
   challengeId: uuid("challenge_id").notNull().references(() => challenges.id, { onDelete: "cascade" }),
   status: text("status", { enum: ["joined", "in_progress", "submitted", "approved", "rejected"] }).default("joined").notNull(),
   progress: jsonb("progress").default("{}"),
   evidence: jsonb("evidence"),
-  moderatedBy: text("moderated_by").references(() => users.id),
+  moderatedBy: text("moderated_by").references(() => users.id, { onDelete: "set null" }),
   moderationNote: text("moderation_note"),
   badgeAwardedAt: timestamp("badge_awarded_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -228,7 +238,7 @@ export const conservationActivities = pgTable("conservation_activities", {
   participantLimit: integer("participant_limit"),
   currentParticipants: integer("current_participants").default(0),
   status: text("status", { enum: ["open", "full", "completed", "cancelled"] }).default("open").notNull(),
-  createdBy: text("created_by").references(() => users.id),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 }, (table) => [
@@ -237,12 +247,12 @@ export const conservationActivities = pgTable("conservation_activities", {
 
 export const conservationEvidence = pgTable("conservation_evidence", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
   activityId: uuid("activity_id").notNull().references(() => conservationActivities.id, { onDelete: "cascade" }),
   description: text("description"),
   mediaIds: text("media_ids"),
   status: text("status", { enum: ["pending", "approved", "rejected"] }).default("pending").notNull(),
-  moderatedBy: text("moderated_by").references(() => users.id),
+  moderatedBy: text("moderated_by").references(() => users.id, { onDelete: "set null" }),
   moderationNote: text("moderation_note"),
   moderatedAt: timestamp("moderated_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -260,7 +270,7 @@ export const campaigns = pgTable("campaigns", {
   targetUrl: text("target_url"),
   destinationId: uuid("destination_id").references(() => destinations.id, { onDelete: "set null" }),
   audience: text("audience"),
-  createdBy: text("created_by").references(() => users.id),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
@@ -291,14 +301,14 @@ export const pushNotifications = pgTable("push_notifications", {
   sentAt: timestamp("sent_at"),
   recipientCount: integer("recipient_count"),
   status: text("status", { enum: ["draft", "scheduled", "sending", "sent", "failed"] }).default("draft").notNull(),
-  sentBy: text("sent_by").references(() => users.id),
+  sentBy: text("sent_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // ── Itineraries ──
 export const itineraries = pgTable("itineraries", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
   title: text("title").notNull(),
   inputs: jsonb("inputs").notNull(),
   totalBudget: text("total_budget"),
@@ -347,7 +357,7 @@ export const appOpens = pgTable("app_opens", {
 // ── Report Jobs ──
 export const reportJobs = pgTable("report_jobs", {
   id: uuid("id").defaultRandom().primaryKey(),
-  requestedBy: text("requested_by").notNull().references(() => users.id),
+  requestedBy: text("requested_by").references(() => users.id, { onDelete: "set null" }),
   format: text("format", { enum: ["csv", "pdf"] }).notNull(),
   dateFrom: date("date_from").notNull(),
   dateTo: date("date_to").notNull(),
@@ -363,7 +373,7 @@ export const reportJobs = pgTable("report_jobs", {
 export const storyReports = pgTable("story_reports", {
   id: uuid("id").defaultRandom().primaryKey(),
   storyId: uuid("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
-  reportedBy: text("reported_by").notNull().references(() => users.id),
+  reportedBy: text("reported_by").references(() => users.id, { onDelete: "set null" }),
   reason: text("reason").notNull(),
   details: text("details"),
   reviewed: boolean("reviewed").default(false),
@@ -374,7 +384,7 @@ export const storyReports = pgTable("story_reports", {
 export const storyComments = pgTable("story_comments", {
   id: uuid("id").defaultRandom().primaryKey(),
   storyId: uuid("story_id").notNull().references(() => stories.id, { onDelete: "cascade" }),
-  authorId: text("author_id").notNull().references(() => users.id),
+  authorId: text("author_id").references(() => users.id, { onDelete: "set null" }),
   parentId: uuid("parent_id").references(() => storyComments.id, { onDelete: "cascade" }),
   body: text("body").notNull(),
   status: text("status", { enum: ["published", "deleted"] }).default("published").notNull(),
