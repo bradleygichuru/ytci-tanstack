@@ -10,6 +10,7 @@ import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormFie
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { CursorPagination } from '#/components/shared/CursorPagination'
+import { ConservationActivitiesSkeleton, EvidenceSkeleton } from '#/components/skeletons/conservation-skeleton'
 import { conservationActivitySchema } from '#/lib/schemas/conservation.schema'
 
 interface Act { id: string; title: string; organizer: string; location: string; locationPrivacyLevel: string; date: string; impactMetric: string; measurementUnit: string; impactGoal: number; impactActual: number; participantCount: number; status: string; verificationRules: string; badgeAwarded: boolean; badgeName: string }
@@ -31,8 +32,9 @@ function emptyAct(): Act {
 
 function ConservationPage() {
   const api = useApi()
-  const [acts, setActs] = useState<Act[]>([])
-  const [evids, setEvids] = useState<Evid[]>([])
+  const [acts, setActs] = useState<Act[] | null>(null)
+  const [evids, setEvids] = useState<Evid[] | null>(null)
+  const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'activities' | 'evidence'>('activities')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
@@ -45,6 +47,7 @@ function ConservationPage() {
   const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
+    setLoading(true)
     try {
       const r = await api.conservation.activities.list(c ? { cursor: c } : undefined)
       setActs(r.items)
@@ -52,6 +55,8 @@ function ConservationPage() {
       setCursor(r.nextCursor)
     } catch {
       toast.error('Failed to load activities')
+    } finally {
+      setLoading(false)
     }
   }, [api])
 
@@ -64,11 +69,32 @@ function ConservationPage() {
   }, [handlePrevCursor, loadList])
 
   const loadEvidence = useCallback(async () => {
-    const r = await api.conservation.evidence.list()
-    setEvids(r.items)
+    try {
+      const r = await api.conservation.evidence.list()
+      setEvids(r.items)
+    } catch {
+      toast.error('Failed to load evidence')
+    }
   }, [api])
 
-  useEffect(() => { loadList(); loadEvidence() }, [loadList, loadEvidence])
+  useEffect(() => {
+    setLoading(true)
+    Promise.all([
+      api.conservation.activities.list(),
+      api.conservation.evidence.list(),
+    ]).then(([ar, er]) => {
+      setActs(ar.items)
+      setHasMore(ar.hasMore)
+      setCursor(ar.nextCursor)
+      setEvids(er.items)
+    }).catch(() => {
+      toast.error('Failed to load conservation data')
+      setActs([])
+      setEvids([])
+    }).finally(() => {
+      setLoading(false)
+    })
+  }, [api])
 
   const handleApprove = useCallback(async (id: string) => {
     await api.conservation.evidence.review(id, 'approve')
@@ -86,7 +112,7 @@ function ConservationPage() {
     if (selectedId === id) { setSelectedId(null); return }
     setSelectedId(id)
     setPanelMode('edit')
-    const a = acts.find(a => a.id === id)
+    const a = acts?.find(a => a.id === id)
     if (a) setEditData({ ...a })
     setErrors({})
   }, [selectedId, acts])
@@ -165,24 +191,25 @@ function ConservationPage() {
     }
   }, [selectedId, loadList, api])
 
+  const actsArr = acts ?? []
   const agg = {
     trees: {
-      value: acts.reduce((sum, a) => sum + (a.impactMetric === 'trees planted' ? a.impactActual : 0), 0),
-      target: Math.max(10000, acts.length * 1000),
+      value: actsArr.reduce((sum, a) => sum + (a.impactMetric === 'trees planted' ? a.impactActual : 0), 0),
+      target: Math.max(10000, actsArr.length * 1000),
       label: 'Trees Planted',
     },
     cleanups: {
-      value: acts.reduce((sum, a) => sum + (a.impactMetric === 'kg waste collected' ? a.impactActual : 0), 0),
-      target: Math.max(500, acts.length * 200),
+      value: actsArr.reduce((sum, a) => sum + (a.impactMetric === 'kg waste collected' ? a.impactActual : 0), 0),
+      target: Math.max(500, actsArr.length * 200),
       label: 'Cleanups',
     },
     wildlife: {
-      value: acts.reduce((sum, a) => sum + (a.impactMetric === 'corridor observations' ? a.impactActual : 0), 0),
-      target: Math.max(3000, acts.length * 500),
+      value: actsArr.reduce((sum, a) => sum + (a.impactMetric === 'corridor observations' ? a.impactActual : 0), 0),
+      target: Math.max(3000, actsArr.length * 500),
       label: 'Wildlife Surveyed',
     },
   }
-  const selected = acts.find(d => d.id === selectedId) ?? null
+  const selected = acts?.find(d => d.id === selectedId) ?? null
 
   return (
     <div>
@@ -209,15 +236,15 @@ function ConservationPage() {
       <div className="mb-6 mt-4 flex gap-1 rounded-lg bg-[var(--surface-2)] p-1">
         {(['activities', 'evidence'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 text-sm font-semibold ${tab === t ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>
-            {t === 'activities' ? 'Activities' : 'Evidence Review'} <span className="ml-1 rounded-full bg-[var(--surface-3)] px-1.5 py-0.5 text-[10px]">{t === 'activities' ? acts.length : evids.length}</span>
+            {t === 'activities' ? 'Activities' : 'Evidence Review'} <span className="ml-1 rounded-full bg-[var(--surface-3)] px-1.5 py-0.5 text-[10px]">{t === 'activities' ? acts?.length ?? 0 : evids?.length ?? 0}</span>
           </button>
         ))}
       </div>
 
-      {tab === 'activities' && (<>
+      {tab === 'activities' && (loading ? <ConservationActivitiesSkeleton /> : <>
         <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="flex items-center justify-between border-b border-border px-5 py-3">
-            <span className="text-xs font-semibold text-muted-foreground">{acts.length} activities</span>
+            <span className="text-xs font-semibold text-muted-foreground">{acts?.length ?? 0} activities</span>
             <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Activity</button>
           </div>
           <div className="overflow-x-auto">
@@ -226,7 +253,7 @@ function ConservationPage() {
               <th className="px-5 py-3">Name</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Date</th><th className="px-5 py-3">Participants</th><th className="px-5 py-3">Impact</th><th className="px-5 py-3">Status</th><th className="w-12 px-5 py-3" />
             </tr></thead>
             <tbody>
-              {acts.map(a => {
+              {(acts ?? []).map(a => {
                 const isSelected = selectedId === a.id
                 const pct = a.impactGoal > 0 ? Math.min((a.impactActual / a.impactGoal) * 100, 100) : 0
                 return (
@@ -301,7 +328,7 @@ function ConservationPage() {
                   </React.Fragment>
                 )
               })}
-              {acts.length === 0 && panelMode !== 'create' && (
+              {acts?.length === 0 && panelMode !== 'create' && (
                 <tr><td colSpan={7} className="px-5 py-12 text-center text-sm text-muted-foreground">No activities yet. Create one to get started.</td></tr>
               )}
               {panelMode === 'create' && editData && (
@@ -353,10 +380,11 @@ function ConservationPage() {
           hasMore={hasMore}
           onNext={handleNext}
           onPrev={handlePrev}
+          loading={loading}
         />
       </>)}
 
-      {tab === 'evidence' && (
+      {tab === 'evidence' && (loading ? <EvidenceSkeleton /> : 
         <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
@@ -383,7 +411,7 @@ function ConservationPage() {
                   </td>
                 </tr>
               ))}
-              {evids.length === 0 && (
+              {evids && evids.length === 0 && (
                 <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">No evidence items to review.</td></tr>
               )}
             </tbody>

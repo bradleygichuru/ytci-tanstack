@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { useApi } from '#/lib/api/use-api'
 import type { ApiErrorResponse } from '#/lib/api/types'
+import { AnalyticsSkeleton } from '#/components/skeletons/analytics-skeleton'
 import {
   ChartBar, Users, MapPin, ClipboardText, BookOpen,
   Leaf, ArrowUpRight, ArrowDownRight, Bell,
@@ -268,14 +269,18 @@ function ReportsTab() {
 function AnalyticsPage() {
   const api = useApi()
   const [data, setData] = useState<AnalyticsData | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'reports'>('dashboard')
 
   useEffect(() => {
+    setLoading(true)
     api.analytics.summary().then((r) => {
       setData(r as AnalyticsData)
     }).catch((e: ApiErrorResponse) => {
       setError(e.message)
+    }).finally(() => {
+      setLoading(false)
     })
   }, [api])
 
@@ -313,15 +318,9 @@ function AnalyticsPage() {
         </div>
       )}
 
-      {data ? (
+      {loading ? <AnalyticsSkeleton /> : data ? (
         activeTab === 'dashboard' ? <DashboardTab data={data} /> : <ReportsTab />
-      ) : (
-        !error && (
-          <div className="mt-8 flex items-center justify-center py-20 text-sm text-muted-foreground">
-            Loading analytics data...
-          </div>
-        )
-      )}
+      ) : !error && null}
     </div>
   )
 }

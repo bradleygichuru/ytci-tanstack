@@ -10,6 +10,7 @@ import {
 import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { ChallengesSkeleton } from '#/components/skeletons/challenges-skeleton'
 
 interface Challenge {
   id: string
@@ -39,7 +40,8 @@ function emptyChallenge(): Challenge {
 
 function ChallengesPage() {
   const api = useApi()
-  const [data, setData] = useState<Challenge[]>([])
+  const [data, setData] = useState<Challenge[] | null>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
   const [editData, setEditData] = useState<Challenge | null>(null)
@@ -49,23 +51,27 @@ function ChallengesPage() {
   const [deleting, setDeleting] = useState(false)
 
   const loadList = useCallback(async () => {
+    setLoading(true)
     try {
       const r = await api.challenges.list()
       setData(r.items)
     } catch {
       toast.error('Failed to load challenges')
+      setData(current => current === null ? [] : current)
+    } finally {
+      setLoading(false)
     }
   }, [api])
 
   useEffect(() => { loadList() }, [loadList])
 
-  const selected = data.find(d => d.id === selectedId) ?? null
+  const selected = data?.find(d => d.id === selectedId) ?? null
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
     setSelectedId(id)
     setPanelMode('edit')
-    const c = data.find(d => d.id === id)
+    const c = data?.find(d => d.id === id)
     if (c) setEditData({ ...c })
     setErrors({})
   }, [selectedId, data])
@@ -127,6 +133,8 @@ function ChallengesPage() {
     }
   }, [selectedId, loadList, api])
 
+  if (loading) return <ChallengesSkeleton />
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -135,7 +143,7 @@ function ChallengesPage() {
           <p className="mt-1 text-sm text-muted-foreground">Create and manage time-bound challenges for mobile users.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground">{data.length} challenges</span>
+          <span className="text-xs font-semibold text-muted-foreground">{data?.length ?? 0} challenges</span>
           <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm">
             <Plus className="h-4 w-4" weight="duotone" /> New Challenge
           </button>
@@ -155,7 +163,7 @@ function ChallengesPage() {
               </tr>
             </thead>
             <tbody>
-              {data.map(c => {
+              {(data ?? []).map(c => {
                 const isSelected = selectedId === c.id
                 return (
                   <tr key={c.id}>
@@ -248,7 +256,7 @@ function ChallengesPage() {
                   </td>
                 </tr>
               )}
-              {data.length === 0 && panelMode !== 'create' && (
+              {data?.length === 0 && panelMode !== 'create' && (
                 <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-muted-foreground">No challenges yet. Create one to get started.</td></tr>
               )}
             </tbody>

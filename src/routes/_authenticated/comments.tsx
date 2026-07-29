@@ -7,6 +7,7 @@ import { useApi } from '#/lib/api/use-api'
 import { Trash } from '@phosphor-icons/react'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { CommentsSkeleton } from '#/components/skeletons/comments-skeleton'
 import type { CommentItem } from '#/lib/api/comments'
 
 export const Route = createFileRoute('/_authenticated/comments')({
@@ -22,23 +23,32 @@ export const Route = createFileRoute('/_authenticated/comments')({
 
 function CommentsPage() {
   const api = useApi()
-  const [comments, setComments] = useState<CommentItem[]>([])
+  const [comments, setComments] = useState<CommentItem[] | null>(null)
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string | null>(null)
   const [showDelete, setShowDelete] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [hasMore, setHasMore] = useState(false)
 
   const loadAll = useCallback(async () => {
-    const res = await api.comments.moderationList({ limit: 50 })
-    setComments(res.items)
-    setHasMore(res.hasMore)
+    setLoading(true)
+    try {
+      const res = await api.comments.moderationList({ limit: 50 })
+      setComments(res.items)
+      setHasMore(res.hasMore)
+    } catch {
+      toast.error('Failed to load comments')
+      setComments([])
+    } finally {
+      setLoading(false)
+    }
   }, [api])
 
   useEffect(() => { loadAll() }, [loadAll])
 
   const visible = filter
-    ? comments.filter(c => c.status === filter)
-    : comments
+    ? (comments ?? []).filter(c => c.status === filter)
+    : (comments ?? [])
 
   const handleRemove = useCallback(async (commentId: string) => {
     setDeleting(true)
@@ -53,6 +63,8 @@ function CommentsPage() {
       setShowDelete(null)
     }
   }, [api])
+
+  if (loading) return <CommentsSkeleton />
 
   return (
     <div className="space-y-6">

@@ -15,6 +15,7 @@ import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { CursorPagination } from '#/components/shared/CursorPagination'
+import { CampaignsSkeleton } from '#/components/skeletons/campaigns-skeleton'
 import { campaignSchema } from '#/lib/schemas/campaign.schema'
 
 interface Campaign { id: string; title: string; description: string; type: 'home_banner' | 'featured_destination' | 'push_notification' | 'seasonal'; bannerUrl: string; targetUrl: string; destinationId: string; audience: string; startDate: string; endDate: string; status: string }
@@ -42,8 +43,8 @@ function emptyCampaign(): Campaign {
 
 function CampaignsPage() {
   const api = useApi()
-  const [data, setData] = useState<Campaign[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const [data, setData] = useState<Campaign[] | null>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
   const [editData, setEditData] = useState<Campaign | null>(null)
@@ -61,6 +62,7 @@ function CampaignsPage() {
   const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
+    setLoading(true)
     try {
       const r = await api.campaigns.list(c ? { cursor: c } : undefined)
       setData(r.items)
@@ -68,8 +70,9 @@ function CampaignsPage() {
       setCursor(r.nextCursor)
     } catch {
       toast.error('Failed to load campaigns')
+      setData(current => current === null ? [] : current)
     } finally {
-      setLoaded(true)
+      setLoading(false)
     }
   }, [api])
 
@@ -87,7 +90,7 @@ function CampaignsPage() {
     if (selectedId === id) { setSelectedId(null); return }
     setSelectedId(id)
     setPanelMode('edit')
-    const c = data.find(c => c.id === id)
+    const c = data?.find(c => c.id === id)
     if (c) setEditData({ ...c })
     setErrors({})
   }, [selectedId, data])
@@ -213,9 +216,9 @@ function CampaignsPage() {
   }, [selectedId, api])
 
   const statusTransitions: Record<string, string[]> = { draft: ['active'], active: ['paused', 'ended'], paused: ['active', 'ended'], ended: ['draft'] }
-  const selected = data.find(d => d.id === selectedId) ?? null
+  const selected = data?.find(d => d.id === selectedId) ?? null
 
-  if (!loaded) return <div className="mt-8 text-center text-sm text-muted-foreground">Loading campaigns...</div>
+  if (loading) return <CampaignsSkeleton />
 
   return (
     <div>
@@ -225,7 +228,7 @@ function CampaignsPage() {
           <p className="mt-1 text-sm text-muted-foreground">Home banners, featured destinations, push notifications, and seasonal campaigns.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground">{data.length} campaigns</span>
+          <span className="text-xs font-semibold text-muted-foreground">{data?.length ?? 0} campaigns</span>
           <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Campaign</button>
         </div>
       </div>
@@ -237,7 +240,7 @@ function CampaignsPage() {
             <th className="px-5 py-3">Campaign</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Dates</th><th className="px-5 py-3">Status</th><th className="w-12 px-5 py-3" />
           </tr></thead>
           <tbody>
-            {data.map(c => {
+            {(data ?? []).map(c => {
               const meta = typeMeta[c.type]
               const Icon = meta?.icon ?? Megaphone
               const isSelected = selectedId === c.id
@@ -407,7 +410,7 @@ function CampaignsPage() {
                 </React.Fragment>
               )
             })}
-            {data.length === 0 && panelMode !== 'create' && (
+            {data?.length === 0 && panelMode !== 'create' && (
               <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-muted-foreground">No campaigns found. Create one to get started.</td></tr>
             )}
             {panelMode === 'create' && editData && (
@@ -461,6 +464,7 @@ function CampaignsPage() {
           hasMore={hasMore}
           onNext={handleNext}
           onPrev={handlePrev}
+          loading={loading}
         />
       </div>
 

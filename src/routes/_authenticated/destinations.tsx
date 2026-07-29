@@ -7,6 +7,7 @@ import { useApi } from '#/lib/api/use-api'
 import { useCursorPagination } from '#/lib/api/use-cursor-pagination'
 import { MediaUpload } from '#/components/shared/MediaUpload'
 import { CursorPagination } from '#/components/shared/CursorPagination'
+import { DestinationsSkeleton } from '#/components/skeletons/destinations-skeleton'
 import {
   MapPin, PencilSimple, MagnifyingGlass,
   CloudArrowDown, X, FloppyDisk, Image as ImageIcon,
@@ -237,13 +238,9 @@ function DestinationsPage() {
         </div>
       </div>
 
-      {loading && !data && (
-        <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        </div>
-      )}
+      {loading && <DestinationsSkeleton />}
 
-      {(visible || panelMode === 'create') && (
+      {!loading && (visible || panelMode === 'create') && (
         <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">

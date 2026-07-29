@@ -16,6 +16,7 @@ import { mediaAssetSchema } from '#/lib/schemas/media.schema'
 import type { StoryItem } from '#/lib/api/stories'
 import type { MediaAsset } from '#/lib/api/media'
 import { safeItems } from '#/lib/api/helpers'
+import { MediaSkeleton } from '#/components/skeletons/media-skeleton'
 
 interface ModItem extends StoryItem {
   reports: { reason: string; reporter: string; date: string }[]
@@ -50,8 +51,9 @@ function emptyAsset(): Partial<AssetItem> {
 
 function MediaPage() {
   const api = useApi()
-  const [mod, setMod] = useState<ModItem[]>([])
-  const [assets, setAssets] = useState<AssetItem[]>([])
+  const [mod, setMod] = useState<ModItem[] | null>(null)
+  const [assets, setAssets] = useState<AssetItem[] | null>(null)
+  const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'queue' | 'library'>('queue')
   const [modFilter, setModFilter] = useState<string | null>(null)
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null)
@@ -65,25 +67,34 @@ function MediaPage() {
   const [flagReason, setFlagReason] = useState('')
 
   const loadAll = useCallback(async () => {
-    const [mr, lr] = await Promise.all([
-      api.stories.moderationList(),
-      api.media.list(),
-    ])
-    setMod(safeItems(mr) as ModItem[])
-    setAssets(safeItems(lr) as AssetItem[])
+    setLoading(true)
+    try {
+      const [mr, lr] = await Promise.all([
+        api.stories.moderationList(),
+        api.media.list(),
+      ])
+      setMod(safeItems(mr) as ModItem[])
+      setAssets(safeItems(lr) as AssetItem[])
+    } catch {
+      toast.error('Failed to load media')
+      setMod([])
+      setAssets([])
+    } finally {
+      setLoading(false)
+    }
   }, [api])
 
   useEffect(() => { loadAll() }, [loadAll])
 
   const visibleMod = modFilter
-    ? mod.filter(m => m.status === modFilter)
-    : mod
+    ? (mod ?? []).filter(m => m.status === modFilter)
+    : (mod ?? [])
 
   const handleSelectAsset = useCallback((id: string) => {
     if (selectedAssetId === id) { setSelectedAssetId(null); return }
     setSelectedAssetId(id)
     setAssetPanelMode('edit')
-    const a = assets.find(a => a.id === id)
+    const a = assets?.find(a => a.id === id)
     if (a) setEditData({ ...a })
     setErrors({})
   }, [selectedAssetId, assets])
@@ -184,9 +195,11 @@ function MediaPage() {
   }, [api, loadAll])
 
   const TABS = [
-    { key: 'queue' as const, label: 'Queue', count: mod.filter(m => m.status === 'pending').length },
-    { key: 'library' as const, label: 'Media Library', count: assets.length },
+    { key: 'queue' as const, label: 'Queue', count: (mod ?? []).filter(m => m.status === 'pending').length },
+    { key: 'library' as const, label: 'Media Library', count: assets?.length ?? 0 },
   ]
+
+  if (loading) return <MediaSkeleton />
 
   return (
     <div>
@@ -262,14 +275,14 @@ function MediaPage() {
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             {['All', 'image', 'video', 'pdf', '360'].map((f) => {
-              const count = f === 'All' ? assets.length : assets.filter(a => a.type === f).length
+              const count = f === 'All' ? (assets?.length ?? 0) : (assets ?? []).filter(a => a.type === f).length
               return <span key={f} className="rounded-full bg-[var(--surface-2)] px-3 py-1.5 text-xs font-semibold text-muted-foreground">{f === 'All' ? 'All' : f} ({count})</span>
             })}
             <span className="ml-auto rounded-full bg-[var(--leaf-bg)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-success-leaf">Cloudflare R2</span>
             <button onClick={handleNewAsset} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> Upload Asset</button>
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {assets.map(a => (
+            {(assets ?? []).map(a => (
               <React.Fragment key={a.id}>
                 <div onClick={() => handleSelectAsset(a.id)} className={`overflow-hidden rounded-lg border bg-card cursor-pointer ${selectedAssetId === a.id ? 'border-[var(--forest)] ring-2 ring-[var(--forest)]' : 'border-border'}`} style={{ boxShadow: 'var(--card-shadow)' }}>
                   <div className="flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">

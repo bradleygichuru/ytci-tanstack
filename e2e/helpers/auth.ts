@@ -16,5 +16,5 @@ export async function loginAsAdmin(page: Page) {
 }
 
 export async function waitForData(page: Page) {
-  await expect(page.locator('text=Loading...')).not.toBeVisible({ timeout: 15000 })
+  await expect(page.locator('[data-slot="skeleton"]')).not.toBeVisible({ timeout: 15000 })
 }

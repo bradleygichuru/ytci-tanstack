@@ -9,6 +9,7 @@ import {
   CaretLeft, CaretRight, CaretUp, CaretDown,
 } from '@phosphor-icons/react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '#/components/ui/dialog'
+import { UsersSkeleton, AuditSkeleton } from '#/components/skeletons/users-skeleton'
 
 interface UserItem { id: string; email: string; name: string; role: string; banned: boolean; banReason?: string | null; ageRange?: string | null; county?: string | null; languages?: string | null; preferences?: string | null; consentGrantedAt?: string | null; createdAt: string }
 interface AuditItem { id: string; userId: string; userName: string; action: string; details: string | null; performedBy: string; performedByName: string; createdAt: string }
@@ -250,6 +251,7 @@ function UsersPage() {
 
       {/* Users tab */}
       {tab === 'users' && (
+        loading ? <UsersSkeleton /> :
         <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           {/* Toolbar */}
           <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-3">
@@ -296,9 +298,7 @@ function UsersPage() {
               <th className="w-12 px-5 py-3" />
             </tr></thead>
             <tbody>
-              {loading ? (
-                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-muted-foreground">Loading...</td></tr>
-              ) : data.length === 0 ? (
+              {data.length === 0 ? (
                 <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-muted-foreground">No users match the current filters.</td></tr>
               ) : (
                 data.map(u => {
@@ -416,7 +416,7 @@ function UsersPage() {
       )}
 
       {/* Consent Audit tab */}
-      {tab === 'audit' && (
+      {tab === 'audit' && (loading ? <AuditSkeleton /> :
         <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="overflow-x-auto">
           <table className="w-full min-w-[600px] text-sm">

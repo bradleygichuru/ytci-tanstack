@@ -13,6 +13,7 @@ import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { CursorPagination } from '#/components/shared/CursorPagination'
+import { EventsSkeleton } from '#/components/skeletons/events-skeleton'
 import { eventSchema } from '#/lib/schemas/event.schema'
 
 interface EventItem { id: string; title: string; organizer: string; county: string; venue: string; date: string; endDate: string; type: string; status: string; description: string; contactEmail: string; contactPhone: string; reminderEnabled: boolean; reminderTime: string }
@@ -37,7 +38,8 @@ function emptyEvent(): EventItem {
 
 function EventsPage() {
   const api = useApi()
-  const [data, setData] = useState<EventItem[]>([])
+  const [data, setData] = useState<EventItem[] | null>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
   const [editData, setEditData] = useState<EventItem | null>(null)
@@ -49,6 +51,7 @@ function EventsPage() {
   const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
+    setLoading(true)
     try {
       const r = await api.events.list(c ? { cursor: c } : undefined)
       setData(r.items)
@@ -56,7 +59,9 @@ function EventsPage() {
       setCursor(r.nextCursor)
     } catch {
       toast.error('Failed to load events')
-      if (!data.length) setData([])
+      setData(current => current === null ? [] : current)
+    } finally {
+      setLoading(false)
     }
   }, [api])
 
@@ -74,7 +79,7 @@ function EventsPage() {
     if (selectedId === id) { setSelectedId(null); return }
     setSelectedId(id)
     setPanelMode('edit')
-    const e = data.find(e => e.id === id)
+    const e = data?.find(e => e.id === id)
     if (e) setEditData({ ...e })
     setErrors({})
   }, [selectedId, data])
@@ -162,7 +167,9 @@ function EventsPage() {
   }, [editData, loadList, api])
 
   const transitions: Record<string, string[]> = { scheduled: ['postponed', 'cancelled'], postponed: ['scheduled', 'cancelled'], cancelled: ['scheduled'] }
-  const selected = data.find(d => d.id === selectedId) ?? null
+  const selected = data?.find(d => d.id === selectedId) ?? null
+
+  if (loading) return <EventsSkeleton />
 
   return (
     <>
@@ -173,7 +180,7 @@ function EventsPage() {
           <p className="mt-1 text-sm text-muted-foreground">Publish and manage event entries. Scheduled, postponed, cancelled status transitions.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground">{data.length} events</span>
+          <span className="text-xs font-semibold text-muted-foreground">{data?.length ?? 0} events</span>
           <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"><Plus className="h-4 w-4" weight="duotone" /> New Event</button>
         </div>
       </div>
@@ -185,7 +192,7 @@ function EventsPage() {
             <th className="px-5 py-3">Event</th><th className="px-5 py-3">County</th><th className="px-5 py-3">Date</th><th className="px-5 py-3">Type</th><th className="px-5 py-3">Status</th><th className="w-12 px-5 py-3" />
           </tr></thead>
           <tbody>
-            {data.map(e => {
+            {(data ?? []).map(e => {
               const isSelected = selectedId === e.id
               return (
                 <React.Fragment key={e.id}>
@@ -280,7 +287,7 @@ function EventsPage() {
                 </React.Fragment>
               )
             })}
-            {data.length === 0 && panelMode !== 'create' && (
+            {data?.length === 0 && panelMode !== 'create' && (
               <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">No events found. Create one to get started.</td></tr>
             )}
             {panelMode === 'create' && editData && (
@@ -336,6 +343,7 @@ function EventsPage() {
           hasMore={hasMore}
           onNext={handleNext}
           onPrev={handlePrev}
+          loading={loading}
         />
       </div>
 

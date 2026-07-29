@@ -13,6 +13,7 @@ import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { CursorPagination } from '#/components/shared/CursorPagination'
+import { LmsSkeleton } from '#/components/skeletons/lms-skeleton'
 import { courseSchema } from '#/lib/schemas/course.schema'
 
 interface Lesson { id: string; title: string; type: string; duration: number; url: string; hasTranscript: boolean; hasCaption: boolean }
@@ -52,6 +53,7 @@ const TABS = [
 function LmsPage() {
   const api = useApi()
   const [data, setData] = useState<Course[] | null>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [panelMode, setPanelMode] = useState<'view' | 'edit' | 'create'>('view')
   const [editData, setEditData] = useState<Course | null>(null)
@@ -65,6 +67,7 @@ function LmsPage() {
   const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
+    setLoading(true)
     try {
       const r = await api.courses.list(c ? { cursor: c } : undefined)
       setData(r.items)
@@ -72,7 +75,9 @@ function LmsPage() {
       setCursor(r.nextCursor)
     } catch {
       toast.error('Failed to load courses')
-      if (!data) setData([])
+      setData(current => current === null ? [] : current)
+    } finally {
+      setLoading(false)
     }
   }, [api])
 
@@ -199,8 +204,8 @@ function LmsPage() {
 
   const selectedLessonData = editData?.lessons.find(l => l.id === selectedLesson) ?? null
 
-  if (!data) return <div className="mt-8 text-center text-sm text-muted-foreground">Loading courses...</div>
-  if (!data.length && panelMode !== 'create') return <div className="mt-8 text-center text-sm text-muted-foreground">No courses yet. Create one to get started.</div>
+  if (loading) return <LmsSkeleton />
+  if (!data?.length && panelMode !== 'create') return <div className="mt-8 text-center text-sm text-muted-foreground">No courses yet. Create one to get started.</div>
 
   return (
     <div>
@@ -423,6 +428,7 @@ function LmsPage() {
           hasMore={hasMore}
           onNext={handleNext}
           onPrev={handlePrev}
+          loading={loading}
         />
       </div>
 
