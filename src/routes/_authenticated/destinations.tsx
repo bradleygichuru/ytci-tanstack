@@ -1,7 +1,7 @@
 import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
 import { useCursorPagination } from '#/lib/api/use-cursor-pagination'
@@ -75,6 +75,33 @@ function DestinationsPage() {
   const [deleting, setDeleting] = useState(false)
   const [loading, setLoading] = useState(false)
   const [totalDestinations, setTotalDestinations] = useState(0)
+  const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({})
+  const [mediaIds, setMediaIds] = useState<Record<string, string>>({})
+  const mediaUrlCache = useRef<Record<string, string>>({})
+
+  const loadMediaUrl = useCallback(async (objectKey: string) => {
+    if (!objectKey) return null
+    if (mediaUrlCache.current[objectKey]) return mediaUrlCache.current[objectKey]
+    try {
+      const resp = await api.media.getUrl(objectKey)
+      if (resp?.url) {
+        mediaUrlCache.current[objectKey] = resp.url
+        setMediaUrls(prev => ({ ...prev, [objectKey]: resp.url! }))
+        return resp.url
+      }
+    } catch {}
+    return null
+  }, [api])
+
+  useEffect(() => {
+    if (!editData) return
+    const keys = [editData.heroImageUrl, editData.videoUrl, ...(editData.gallery ?? [])].filter(Boolean) as string[]
+    for (const key of keys) {
+      if (!mediaUrlCache.current[key]) {
+        loadMediaUrl(key)
+      }
+    }
+  }, [editData?.heroImageUrl, editData?.videoUrl, editData?.gallery])
 
   const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
 
@@ -155,17 +182,39 @@ function DestinationsPage() {
       if (panelMode === 'create') {
         const created = await api.destinations.create(editData)
         newId = created.id
+        const galleryUrls = editData.gallery ?? []
+        const heroMid = editData.heroImageUrl ? (mediaIds[editData.heroImageUrl] || editData.heroImageUrl) : undefined
+        const videoMid = editData.videoUrl ? (mediaIds[editData.videoUrl] || editData.videoUrl) : undefined
+        const galleryMids = galleryUrls.map(u => mediaIds[u] || u)
+        if (heroMid || galleryMids.length > 0 || videoMid) {
+          try {
+            await api.destinations.uploadMedia(newId, {
+              heroMediaId: heroMid,
+              galleryMediaIds: galleryMids.length > 0 ? galleryMids : undefined,
+              videoMediaId: videoMid,
+            })
+          } catch {
+            toast.warning('Destination created but media linking failed')
+          }
+        }
         toast.success('Destination created')
       } else if (selectedId) {
         await api.destinations.update(selectedId, editData)
         toast.success('Destination saved')
         const galleryUrls = editData.gallery ?? []
-        if (editData.heroImageUrl || galleryUrls.length > 0 || editData.videoUrl) {
-          api.destinations.uploadMedia(selectedId, {
-            heroMediaId: editData.heroImageUrl,
-            galleryMediaIds: galleryUrls.length > 0 ? galleryUrls : undefined,
-            videoMediaId: editData.videoUrl,
-          }).catch(() => {})
+        const heroMid = editData.heroImageUrl ? (mediaIds[editData.heroImageUrl] || editData.heroImageUrl) : undefined
+        const videoMid = editData.videoUrl ? (mediaIds[editData.videoUrl] || editData.videoUrl) : undefined
+        const galleryMids = galleryUrls.map(u => mediaIds[u] || u)
+        if (heroMid || galleryMids.length > 0 || videoMid) {
+          try {
+            await api.destinations.uploadMedia(selectedId, {
+              heroMediaId: heroMid,
+              galleryMediaIds: galleryMids.length > 0 ? galleryMids : undefined,
+              videoMediaId: videoMid,
+            })
+          } catch {
+            toast.warning('Destination saved but media linking failed')
+          }
         }
       }
       await loadList()
@@ -352,10 +401,20 @@ function DestinationsPage() {
                                     label={editData.heroImageUrl ? 'Replace hero image' : 'Upload hero image'}
                                     onComplete={(result) => {
                                       handleField('heroImageUrl', result.objectKey)
+                                      if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))
+                                      if (result.url) {
+                                        mediaUrlCache.current[result.objectKey] = result.url
+                                        setMediaUrls(prev => ({ ...prev, [result.objectKey]: result.url! }))
+                                      }
                                       toast.success('Hero image uploaded')
                                     }}
                                     onError={(msg) => toast.error(msg)}
                                   />
+                                  {editData.heroImageUrl && mediaUrls[editData.heroImageUrl] && (
+                                    <div className="mt-2 overflow-hidden rounded-lg border border-border">
+                                      <img src={mediaUrls[editData.heroImageUrl]} alt={editData.heroAlt ?? ''} className="h-40 w-full object-cover" />
+                                    </div>
+                                  )}
                                   {editData.heroImageUrl && (
                                     <p className="mt-1 text-xs text-success-leaf truncate">{editData.heroImageUrl}</p>
                                   )}
@@ -373,18 +432,32 @@ function DestinationsPage() {
                                     onComplete={(result) => {
                                       const current = editData.gallery ?? []
                                       handleField('gallery', [...current, result.objectKey])
+                                      if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))
+                                      if (result.url) {
+                                        mediaUrlCache.current[result.objectKey] = result.url
+                                        setMediaUrls(prev => ({ ...prev, [result.objectKey]: result.url! }))
+                                      }
                                       toast.success('Gallery image added')
                                     }}
                                     onError={(msg) => toast.error(msg)}
                                   />
                                   {editData.gallery && editData.gallery.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap gap-2">
+                                    <div className="mt-2 grid grid-cols-3 gap-3">
                                       {editData.gallery.map((url, i) => (
-                                        <span key={i} className="flex items-center gap-1 rounded-full bg-[var(--surface-2)] px-2 py-1 text-[10px] text-muted-foreground">
-                                          Image {i + 1}
-                                          <button onClick={() => handleField('gallery', editData.gallery?.filter((_, j) => j !== i))}
-                                            className="ml-1 text-destructive hover:text-red-700">×</button>
-                                        </span>
+                                        <div key={i} className="overflow-hidden rounded-lg border border-border bg-card">
+                                          {mediaUrls[url] ? (
+                                            <img src={mediaUrls[url]} alt="" className="h-24 w-full object-cover" />
+                                          ) : (
+                                            <div className="flex h-24 items-center justify-center bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
+                                              <ImageIcon className="h-6 w-6 text-muted-foreground" weight="duotone" />
+                                            </div>
+                                          )}
+                                          <div className="flex items-center justify-between px-2 py-1">
+                                            <span className="text-[10px] text-muted-foreground">Image {i + 1}</span>
+                                            <button onClick={() => handleField('gallery', editData.gallery?.filter((_, j) => j !== i))}
+                                              className="text-destructive hover:text-red-700 text-xs">×</button>
+                                          </div>
+                                        </div>
                                       ))}
                                     </div>
                                   )}
@@ -396,12 +469,22 @@ function DestinationsPage() {
                                     label={editData.videoUrl ? 'Replace video' : 'Upload video'}
                                     onComplete={(result) => {
                                       handleField('videoUrl', result.objectKey)
+                                      if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))
+                                      if (result.thumbnailUrl) {
+                                        mediaUrlCache.current[result.objectKey] = result.thumbnailUrl
+                                        setMediaUrls(prev => ({ ...prev, [result.objectKey]: result.thumbnailUrl! }))
+                                      }
                                       toast.success('Video uploaded')
                                     }}
                                     onError={(msg) => toast.error(msg)}
                                   />
                                   {editData.videoUrl && (
-                                    <div className="mt-1 flex items-center gap-2">
+                                    <div className="mt-2 flex items-center gap-2">
+                                      {mediaUrls[editData.videoUrl] ? (
+                                        <div className="h-16 w-24 overflow-hidden rounded-lg border border-border">
+                                          <img src={mediaUrls[editData.videoUrl]} alt="" className="h-full w-full object-cover" />
+                                        </div>
+                                      ) : null}
                                       <span className="text-xs text-success-leaf truncate">{editData.videoUrl}</span>
                                       <button onClick={() => handleField('videoUrl', '')} className="text-destructive hover:text-red-700 text-xs">×</button>
                                     </div>
@@ -534,10 +617,20 @@ function DestinationsPage() {
                                 label="Upload hero image"
                                 onComplete={(result) => {
                                   handleField('heroImageUrl', result.objectKey)
+                                  if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))
+                                  if (result.url) {
+                                    mediaUrlCache.current[result.objectKey] = result.url
+                                    setMediaUrls(prev => ({ ...prev, [result.objectKey]: result.url! }))
+                                  }
                                   toast.success('Hero image uploaded')
                                 }}
                                 onError={(msg) => toast.error(msg)}
                               />
+                              {editData.heroImageUrl && mediaUrls[editData.heroImageUrl] && (
+                                <div className="mt-2 overflow-hidden rounded-lg border border-border">
+                                  <img src={mediaUrls[editData.heroImageUrl]} alt={editData.heroAlt ?? ''} className="h-40 w-full object-cover" />
+                                </div>
+                              )}
                               {editData.heroImageUrl && (
                                 <p className="mt-1 text-xs text-success-leaf truncate">{editData.heroImageUrl}</p>
                               )}
@@ -549,10 +642,35 @@ function DestinationsPage() {
                                 onComplete={(result) => {
                                   const current = editData.gallery ?? []
                                   handleField('gallery', [...current, result.objectKey])
+                                  if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))
+                                  if (result.url) {
+                                    mediaUrlCache.current[result.objectKey] = result.url
+                                    setMediaUrls(prev => ({ ...prev, [result.objectKey]: result.url! }))
+                                  }
                                   toast.success('Gallery image added')
                                 }}
                                 onError={(msg) => toast.error(msg)}
                               />
+                              {editData.gallery && editData.gallery.length > 0 && (
+                                <div className="mt-2 grid grid-cols-3 gap-3">
+                                  {editData.gallery.map((url, i) => (
+                                    <div key={i} className="overflow-hidden rounded-lg border border-border bg-card">
+                                      {mediaUrls[url] ? (
+                                        <img src={mediaUrls[url]} alt="" className="h-24 w-full object-cover" />
+                                      ) : (
+                                        <div className="flex h-24 items-center justify-center bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
+                                          <ImageIcon className="h-6 w-6 text-muted-foreground" weight="duotone" />
+                                        </div>
+                                      )}
+                                      <div className="flex items-center justify-between px-2 py-1">
+                                        <span className="text-[10px] text-muted-foreground">Image {i + 1}</span>
+                                        <button onClick={() => handleField('gallery', editData.gallery?.filter((_, j) => j !== i))}
+                                          className="text-destructive hover:text-red-700 text-xs">×</button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                             <div>
                               <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Video</h4>
@@ -560,10 +678,26 @@ function DestinationsPage() {
                                 label="Upload video"
                                 onComplete={(result) => {
                                   handleField('videoUrl', result.objectKey)
+                                  if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))
+                                  if (result.thumbnailUrl) {
+                                    mediaUrlCache.current[result.objectKey] = result.thumbnailUrl
+                                    setMediaUrls(prev => ({ ...prev, [result.objectKey]: result.thumbnailUrl! }))
+                                  }
                                   toast.success('Video uploaded')
                                 }}
                                 onError={(msg) => toast.error(msg)}
                               />
+                              {editData.videoUrl && (
+                                <div className="mt-2 flex items-center gap-2">
+                                  {mediaUrls[editData.videoUrl] ? (
+                                    <div className="h-16 w-24 overflow-hidden rounded-lg border border-border">
+                                      <img src={mediaUrls[editData.videoUrl]} alt="" className="h-full w-full object-cover" />
+                                    </div>
+                                  ) : null}
+                                  <span className="text-xs text-success-leaf truncate">{editData.videoUrl}</span>
+                                  <button onClick={() => handleField('videoUrl', '')} className="text-destructive hover:text-red-700 text-xs">×</button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}

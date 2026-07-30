@@ -28,6 +28,8 @@ export interface PresignResponse {
 export interface CompleteResponse {
   id: string
   status: string
+  url?: string | null
+  thumbnailUrl?: string | null
 }
 
 export function mediaApi(config: ApiConfig) {
@@ -48,5 +50,7 @@ export function mediaApi(config: ApiConfig) {
       apiRequest<{ status: string }>(config, `/v1/media/${id}`, { method: 'PATCH', body: patch }),
     remove: (id: string) =>
       apiRequest<{ status: string }>(config, `/v1/media/${id}`, { method: 'DELETE' }),
+    getUrl: (objectKey: string) =>
+      apiRequest<{ url: string; expiresAt: string }>(config, `/v1/media/${objectKey}/url`),
   }
 }

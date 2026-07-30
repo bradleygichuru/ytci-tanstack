@@ -12,6 +12,8 @@ export interface MediaUploadResult {
   id: string
   objectKey: string
   status: string
+  url?: string | null
+  thumbnailUrl?: string | null
 }
 
 interface MediaUploadProps {
@@ -105,8 +107,9 @@ export function MediaUpload({ label = 'Upload File', allowedTypes = ALLOWED_TYPE
     try {
       const completeResp = await api.media.complete(presignResp.objectKey, metadata)
       setState('done')
-      setResult({ id: completeResp.id, objectKey: presignResp.objectKey, status: completeResp.status })
-      onComplete({ id: completeResp.id, objectKey: presignResp.objectKey, status: completeResp.status })
+      const uploadResult: MediaUploadResult = { id: completeResp.id, objectKey: presignResp.objectKey, status: completeResp.status, url: completeResp.url, thumbnailUrl: completeResp.thumbnailUrl }
+      setResult(uploadResult)
+      onComplete(uploadResult)
     } catch {
       setState('error')
       setErrorMsg('Failed to finalize upload')
