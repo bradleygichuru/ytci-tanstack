@@ -148,6 +148,15 @@ function DestinationsPage() {
       if (typeof copy.accessibility === 'string') {
         copy.accessibility = (copy.accessibility as string).split(',').map(s => s.trim()).filter(Boolean)
       }
+      if (Array.isArray(copy.media)) {
+        const mediaArr = copy.media as Array<Record<string, unknown>>
+        const video = mediaArr.find(m => m.type === 'video')
+        const images = mediaArr.filter(m => m.type === 'image')
+        copy.heroImageUrl = images[0]?.objectKey ?? ''
+        copy.gallery = images.slice(1).map(m => m.objectKey as string).filter(Boolean)
+        copy.videoUrl = video?.objectKey as string ?? ''
+        delete copy.media
+      }
       setEditData(copy as Partial<Destination>)
     } else {
       setEditData(null)
@@ -195,6 +204,8 @@ function DestinationsPage() {
       if (Array.isArray(body.accessibility)) {
         body.accessibility = body.accessibility.join(',')
       }
+      const mediaKeys = ['heroImageUrl','heroCaption','heroCredit','heroAlt','gallery','videoUrl','videoCaption','videoCredit','media']
+      for (const k of mediaKeys) delete body[k]
       let newId: string | undefined
       if (panelMode === 'create') {
         const created = await api.destinations.create(body)
