@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { pgTable, uuid, text, timestamp, boolean, integer, bigint, jsonb, date, index, uniqueIndex, primaryKey, customType } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, boolean, integer, bigint, numeric, jsonb, date, index, uniqueIndex, primaryKey, customType } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
 const geometry = customType<{ data: string }>({
@@ -64,11 +64,36 @@ export const events = pgTable("events", {
   imageUrl: text("image_url"),
   reminderEnabled: boolean("reminder_enabled").default(false),
   reminderMinutes: integer("reminder_minutes"),
+  startTime: text("start_time"),
+  endTime: text("end_time"),
+  entryFee: text("entry_fee"),
+  locationLat: numeric("location_lat", { precision: 10, scale: 8 }),
+  locationLng: numeric("location_lng", { precision: 11, scale: 8 }),
+  organizerAvatarUrl: text("organizer_avatar_url"),
   createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 }, (table) => [
   index("events_county_type_status_date_idx").on(table.county, table.type, table.status, table.eventDate),
+]);
+
+export const eventHighlights = pgTable("event_highlights", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  eventId: uuid("event_id").notNull().references(() => events.id, { onDelete: "cascade" }),
+  label: text("label").notNull(),
+  icon: text("icon"),
+  displayOrder: integer("display_order").default(0),
+});
+
+export const eventAttendees = pgTable("event_attendees", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  eventId: uuid("event_id").notNull().references(() => events.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  status: text("status", { enum: ["joined", "interested", "waitlist", "cancelled"] }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("event_attendees_user_event_status_idx").on(table.userId, table.eventId, table.status),
+  index("event_attendees_event_idx").on(table.eventId),
 ]);
 
 // ── Stories ──
@@ -327,6 +352,9 @@ export const itineraryStops = pgTable("itinerary_stops", {
   displayOrder: integer("display_order").notNull(),
   title: text("title"),
   description: text("description"),
+  startTime: text("start_time"),
+  category: text("category"),
+  imageUrl: text("image_url"),
   estimatedDuration: text("estimated_duration"),
   estimatedCost: text("estimated_cost"),
   travelFrom: text("travel_from"),
