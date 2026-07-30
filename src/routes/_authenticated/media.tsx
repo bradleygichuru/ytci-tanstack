@@ -1,7 +1,7 @@
 import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
 import {
@@ -17,6 +17,7 @@ import type { StoryItem } from '#/lib/api/stories'
 import type { MediaAsset } from '#/lib/api/media'
 import { safeItems } from '#/lib/api/helpers'
 import { MediaSkeleton } from '#/components/skeletons/media-skeleton'
+import { useModerationAction } from '#/lib/hooks/use-moderation-action'
 
 interface ModItem extends StoryItem {
   reports: { reason: string; reporter: string; date: string }[]
@@ -25,8 +26,6 @@ interface ModItem extends StoryItem {
   contentWarning?: string
 }
 interface AssetItem extends MediaAsset {
-  url?: string
-  thumbnailUrl?: string
   rightsStatus?: string
   tags?: string[]
   uploadedBy?: string
@@ -51,6 +50,7 @@ function emptyAsset(): Partial<AssetItem> {
 
 function MediaPage() {
   const api = useApi()
+  const { execute: moderateAction, pendingIds, revertedCardId } = useModerationAction()
   const [mod, setMod] = useState<ModItem[] | null>(null)
   const [assets, setAssets] = useState<AssetItem[] | null>(null)
   const [loading, setLoading] = useState(true)
@@ -65,6 +65,10 @@ function MediaPage() {
   const [deleting, setDeleting] = useState(false)
   const [flagModal, setFlagModal] = useState<string | null>(null)
   const [flagReason, setFlagReason] = useState('')
+  const [submittingFlag, setSubmittingFlag] = useState(false)
+  const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, string>>({})
+  const modRef = useRef(mod)
+  modRef.current = mod
 
   const loadAll = useCallback(async () => {
     setLoading(true)
@@ -87,7 +91,7 @@ function MediaPage() {
   useEffect(() => { loadAll() }, [loadAll])
 
   const visibleMod = modFilter
-    ? (mod ?? []).filter(m => m.status === modFilter)
+    ? (mod ?? []).filter(m => (optimisticStatuses[m.id] ?? m.status) === modFilter)
     : (mod ?? [])
 
   const handleSelectAsset = useCallback((id: string) => {
@@ -167,32 +171,49 @@ function MediaPage() {
     }
   }, [selectedAssetId, api, loadAll])
 
-  const handleApprove = useCallback(async (id: string) => {
-    await api.stories.moderate(id, 'approve', '')
-    toast.success('Story approved')
-    await loadAll()
-  }, [api, loadAll])
+  const isPending = (id: string) => !!pendingIds[id]
 
-  const handleReject = useCallback(async (id: string) => {
-    await api.stories.moderate(id, 'reject', 'Rejected by moderator')
-    toast.success('Story rejected')
-    await loadAll()
-  }, [api, loadAll])
+  const handleApprove = (id: string) => {
+    moderateAction(id, {
+      apiCall: () => api.stories.moderate(id, 'approve', ''),
+      onOptimistic: () => setOptimisticStatuses(prev => ({ ...prev, [id]: 'approved' })),
+      onRollback: () => setOptimisticStatuses(prev => { const n = { ...prev }; delete n[id]; return n }),
+      successMsg: 'Story approved',
+    })
+  }
 
-  const handleFlag = useCallback(async (id: string) => {
-    if (!flagReason) return
-    await api.stories.report(id, flagReason, 'Reported by admin')
-    toast.success('Story flagged')
-    setFlagModal(null)
-    setFlagReason('')
-    await loadAll()
-  }, [flagReason, api, loadAll])
+  const handleReject = (id: string) => {
+    moderateAction(id, {
+      apiCall: () => api.stories.moderate(id, 'reject', 'Rejected by moderator'),
+      onOptimistic: () => setOptimisticStatuses(prev => ({ ...prev, [id]: 'rejected' })),
+      onRollback: () => setOptimisticStatuses(prev => { const n = { ...prev }; delete n[id]; return n }),
+      successMsg: 'Story rejected',
+    })
+  }
 
-  const handleRemoveStory = useCallback(async (id: string) => {
-    await api.stories.moderate(id, 'reject', 'Removed by admin')
-    toast.success('Story removed')
-    await loadAll()
-  }, [api, loadAll])
+  const handleFlag = async (id: string, reason: string) => {
+    setSubmittingFlag(true)
+    try {
+      await api.stories.report(id, reason, 'Reported by admin')
+      toast.success('Story flagged')
+      setFlagModal(null)
+      setFlagReason('')
+    } catch (err) {
+      const msg = typeof err === 'object' && err && 'message' in err ? (err as Error).message : 'Failed to flag story'
+      toast.error(msg)
+    } finally {
+      setSubmittingFlag(false)
+    }
+  }
+
+  const handleRemoveStory = (id: string) => {
+    moderateAction(id, {
+      apiCall: () => api.stories.moderate(id, 'reject', 'Removed by admin'),
+      onOptimistic: () => setOptimisticStatuses(prev => ({ ...prev, [id]: 'removed' })),
+      onRollback: () => setOptimisticStatuses(prev => { const n = { ...prev }; delete n[id]; return n }),
+      successMsg: 'Story removed',
+    })
+  }
 
   const TABS = [
     { key: 'queue' as const, label: 'Queue', count: (mod ?? []).filter(m => m.status === 'pending').length },
@@ -232,8 +253,12 @@ function MediaPage() {
             </div>
           </div>
           <div className="space-y-4">
-            {visibleMod.map(item => (
-              <div key={item.id} className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
+            {visibleMod.map(item => {
+              const currentStatus = optimisticStatuses[item.id] ?? item.status
+              const isItemPending = isPending(item.id)
+              const isReverted = revertedCardId === item.id
+              return (
+              <div key={item.id} className={`overflow-hidden rounded-lg border bg-card transition-all duration-300 ${isReverted ? 'animate-pulse border-destructive bg-destructive/5' : 'border-border'}`} style={{ boxShadow: 'var(--card-shadow)' }}>
                 <div className="flex gap-4 p-4">
                   <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-[var(--forest)] to-[var(--forest-leaf)] text-white/40">
                     {item.thumbUrl
@@ -246,7 +271,7 @@ function MediaPage() {
                         <span className="text-xs font-bold uppercase tracking-widest text-primary">{item.creatorHandle}</span>
                         <span className="ml-2 text-[10px] text-muted-foreground">{fmtTime(item.submittedAt)}</span>
                       </div>
-                      <StatusBadge status={item.status} />
+                      <StatusBadge status={currentStatus} />
                     </div>
                     <p className="mt-1 line-clamp-2 text-sm text-foreground">{item.caption}</p>
                     <div className="mt-2 flex flex-wrap gap-1">
@@ -254,18 +279,31 @@ function MediaPage() {
                       <span className="text-[10px] text-muted-foreground">• {item.location}</span>
                     </div>
                     <div className="mt-3 flex items-center gap-3">
-                      <button onClick={() => handleApprove(item.id)} className="flex items-center gap-1 rounded-full bg-[var(--leaf)] px-4 py-1.5 text-xs font-bold text-white"><CheckCircle className="h-3.5 w-3.5" weight="fill" /> Approve</button>
-                      <button onClick={() => handleReject(item.id)} className="flex items-center gap-1 rounded-full bg-destructive px-4 py-1.5 text-xs font-bold text-white"><XCircle className="h-3.5 w-3.5" weight="fill" /> Reject</button>
-                      <button onClick={() => setFlagModal(item.id)} className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold ${(item.reports ?? []).length > 0 ? 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]' : 'border-border text-muted-foreground'}`}>
-                        <Flag className="h-3.5 w-3.5" weight="duotone" /> {(item.reports ?? []).length > 0 ? `${(item.reports ?? []).length} report${(item.reports ?? []).length > 1 ? 's' : ''}` : 'Flag'}
-                      </button>
-                      <button onClick={() => handleRemoveStory(item.id)} className="flex items-center gap-1 rounded-full border border-red-200 bg-card px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50"><Trash className="h-3.5 w-3.5" weight="duotone" /> Remove</button>
+                      {currentStatus === 'pending' && (
+                        <>
+                          <button onClick={() => handleApprove(item.id)} disabled={isItemPending}
+                            className="flex items-center gap-1 rounded-full bg-[var(--leaf)] px-4 py-1.5 text-xs font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                            {isItemPending ? <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <CheckCircle className="h-3.5 w-3.5" weight="fill" />} Approve</button>
+                          <button onClick={() => handleReject(item.id)} disabled={isItemPending}
+                            className="flex items-center gap-1 rounded-full bg-destructive px-4 py-1.5 text-xs font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                            {isItemPending ? <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <XCircle className="h-3.5 w-3.5" weight="fill" />} Reject</button>
+                          <button onClick={() => setFlagModal(item.id)}
+                            className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold ${(item.reports ?? []).length > 0 ? 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]' : 'border-border text-muted-foreground'}`}>
+                            <Flag className="h-3.5 w-3.5" weight="duotone" /> {(item.reports ?? []).length > 0 ? `${(item.reports ?? []).length} report${(item.reports ?? []).length > 1 ? 's' : ''}` : 'Flag'}
+                          </button>
+                        </>
+                      )}
+                      {currentStatus !== 'pending' && currentStatus !== 'removed' && (
+                        <button onClick={() => handleRemoveStory(item.id)} disabled={isItemPending}
+                          className="flex items-center gap-1 rounded-full border border-red-200 bg-card px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                          {isItemPending ? <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-500 border-t-transparent" /> : <Trash className="h-3.5 w-3.5" weight="duotone" />} Remove</button>
+                      )}
                     </div>
                     {!item.exifStripped && <div className="mt-2 text-[10px] text-[var(--amber-deep)]">⚠ EXIF data present — manual review required</div>}
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       )}
@@ -285,13 +323,7 @@ function MediaPage() {
             {(assets ?? []).map(a => (
               <React.Fragment key={a.id}>
                 <div onClick={() => handleSelectAsset(a.id)} className={`overflow-hidden rounded-lg border bg-card cursor-pointer ${selectedAssetId === a.id ? 'border-[var(--forest)] ring-2 ring-[var(--forest)]' : 'border-border'}`} style={{ boxShadow: 'var(--card-shadow)' }}>
-                  <div className="flex h-32 items-center justify-center overflow-hidden bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
-                    {(a.thumbnailUrl ?? a.url)
-                      ? <img src={a.thumbnailUrl ?? a.url} alt={a.caption ?? ''} className="h-full w-full object-cover" onError={e => { (e.target as HTMLImageElement).hidden = true }} />
-                      : a.type === 'image' ? <ImageIcon className="h-8 w-8 text-muted-foreground" weight="duotone" />
-                      : a.type === 'video' ? <Video className="h-8 w-8 text-muted-foreground" weight="duotone" />
-                      : <FilePdf className="h-8 w-8 text-muted-foreground" weight="duotone" />}
-                  </div>
+                  <AssetThumbnail asset={a} />
                   <div className="p-3">
                     <div className="truncate text-sm font-semibold text-foreground">{a.caption}</div>
                     <div className="text-[10px] text-muted-foreground">{a.credit}</div>
@@ -350,14 +382,16 @@ function MediaPage() {
 
       {/* Flag dialog */}
       {flagModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-lg border border-border bg-card p-6" style={{ boxShadow: '0px 8px 24px rgba(0,0,0,0.12)' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={submittingFlag ? undefined : () => { setFlagModal(null); setFlagReason('') }}>
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-6" style={{ boxShadow: '0px 8px 24px rgba(0,0,0,0.12)' }} onClick={e => e.stopPropagation()}>
             <h3 className="text-sm font-bold text-foreground">Flag Story</h3>
             <p className="mt-1 text-xs text-muted-foreground">Provide a reason for flagging this story for review.</p>
             <FormTextarea label="Reason" value={flagReason} onChange={setFlagReason} placeholder="e.g. Inappropriate content, copyright violation" />
             <div className="mt-4 flex items-center justify-end gap-2">
-              <button onClick={() => { setFlagModal(null); setFlagReason('') }} className="rounded-full border border-border px-4 py-1.5 text-xs font-bold text-muted-foreground">Cancel</button>
-              <button onClick={() => handleFlag(flagModal)} disabled={!flagReason} className="rounded-full bg-[var(--amber)] px-4 py-1.5 text-xs font-bold text-primary shadow-sm disabled:opacity-50">Submit Flag</button>
+              <button onClick={() => { if (!submittingFlag) { setFlagModal(null); setFlagReason('') } }} className="rounded-full border border-border px-4 py-1.5 text-xs font-bold text-muted-foreground disabled:opacity-50" disabled={submittingFlag}>Cancel</button>
+              <button onClick={() => handleFlag(flagModal, flagReason)} disabled={!flagReason || submittingFlag} className="rounded-full bg-[var(--amber)] px-4 py-1.5 text-xs font-bold text-primary shadow-sm disabled:opacity-50">
+                {submittingFlag ? <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" /> : null} Submit Flag
+              </button>
             </div>
           </div>
         </div>
@@ -374,3 +408,38 @@ function MediaPage() {
     </div>
   )
 }
+
+function AssetThumbnail({ asset }: { asset: AssetItem }) {
+  const [imgLoaded, setImgLoaded] = useState(false)
+  const [imgError, setImgError] = useState(false)
+  const src = asset.thumbnailUrl ?? asset.url
+
+  if (!src || imgError) {
+    return (
+      <div className="flex h-32 items-center justify-center bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
+        {asset.type === 'image' ? <ImageIcon className="h-8 w-8 text-muted-foreground" weight="duotone" />
+        : asset.type === 'video' ? <Video className="h-8 w-8 text-muted-foreground" weight="duotone" />
+        : <FilePdf className="h-8 w-8 text-muted-foreground" weight="duotone" />}
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative h-32 bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]">
+      {!imgLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+        </div>
+      )}
+      <img
+        src={src}
+        alt={asset.caption ?? ''}
+        className={`h-full w-full object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => setImgLoaded(true)}
+        onError={() => { setImgError(true); setImgLoaded(true) }}
+      />
+    </div>
+  )
+}
+
+export default MediaPage

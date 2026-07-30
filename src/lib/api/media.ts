@@ -2,11 +2,14 @@ import type { ApiConfig } from './client'
 import { apiRequest } from './client'
 import type { Paginated, PaginationParams } from './types'
 
+export type MediaType = 'image' | 'video' | 'audio' | 'pdf' | '360'
+export type MediaStatus = 'uploading' | 'processing' | 'ready' | 'failed'
+
 export interface MediaAsset {
   id: string
   objectKey: string
-  type: string
-  status: string
+  type: MediaType
+  status: MediaStatus
   url?: string | null
   thumbnailUrl?: string | null
   caption?: string | null

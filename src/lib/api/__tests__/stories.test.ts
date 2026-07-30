@@ -40,10 +40,10 @@ describe('storiesApi', () => {
   it('report sends POST with reason', async () => {
     mockFetch(null)
     const api = storiesApi(config)
-    await api.report('st-1', 'Inappropriate')
+    await api.report('st-1', 'Inappropriate', 'Spam content')
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining('/v1/stories/st-1/report'),
-      expect.objectContaining({ method: 'POST', body: JSON.stringify({ reason: 'Inappropriate', details: undefined }) }),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ reason: 'Inappropriate', comment: 'Spam content' }) }),
     )
   })
 })

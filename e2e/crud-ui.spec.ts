@@ -87,6 +87,7 @@ test.describe('UI Structure Tests', () => {
   })
 
   test('challenges page renders — create form opens', async ({ page }) => {
+    await page.route('**/v1/challenges/evidence', (route) => route.fulfill({ json: paginated([]) }))
     await page.route('**/v1/challenges', (route) => route.fulfill({ json: paginated([]) }))
     await loginAsAdmin(page)
     await page.goto('/challenges')
@@ -96,14 +97,90 @@ test.describe('UI Structure Tests', () => {
     await expect(page.getByRole('button', { name: /Create Challenge/ })).toBeVisible()
   })
 
-  test('media queue — stories show approve/reject/flag buttons', async ({ page }) => {
-    await page.route('**/v1/stories/moderation', (route) => route.fulfill({ json: paginated([makeItem('st-1', { creatorHandle: 'testuser', caption: 'Nice photo', mediaType: 'image', location: 'Nairobi', tags: [], status: 'pending', likeCount: 0, saveCount: 0, submittedAt: new Date().toISOString() })]) }))
+  test('challenges page — validation errors shown on empty submit', async ({ page }) => {
+    await page.route('**/v1/challenges/evidence', (route) => route.fulfill({ json: paginated([]) }))
+    await page.route('**/v1/challenges', (route) => route.fulfill({ json: paginated([]) }))
+    await loginAsAdmin(page)
+    await page.goto('/challenges')
+    await page.getByRole('button', { name: /New Challenge/ }).click()
+    await page.waitForTimeout(500)
+    await page.getByRole('button', { name: /Create Challenge/ }).click()
+    await page.waitForTimeout(300)
+    await expect(page.getByText('Title is required')).toBeVisible()
+    await expect(page.getByText('Badge name is required')).toBeVisible()
+    await expect(page.getByText('Description is required')).toBeVisible()
+  })
+
+  test('challenges page — evidence tab renders', async ({ page }) => {
+    await page.route('**/v1/challenges/evidence', (route) => route.fulfill({ json: paginated([]) }))
+    await page.route('**/v1/challenges', (route) => route.fulfill({ json: paginated([]) }))
+    await loginAsAdmin(page)
+    await page.goto('/challenges')
+    await page.getByRole('button', { name: /Evidence Review/ }).click()
+    await page.waitForTimeout(300)
+    await expect(page.getByText('No evidence items to review')).toBeVisible()
+  })
+
+  test('media queue — approve story works with toast', async ({ page }) => {
+    const storyId = 'st-1'
+    await page.route('**/v1/stories/moderation', (route) => route.fulfill({ json: paginated([makeItem(storyId, { creatorHandle: 'testuser', caption: 'Nice photo', mediaType: 'image', location: 'Nairobi', tags: [], status: 'pending', likeCount: 0, saveCount: 0, submittedAt: new Date().toISOString() })]) }))
     await page.route('**/v1/media', (route) => route.fulfill({ json: paginated([]) }))
+    await page.route('**/v1/stories/' + storyId + '/moderation', (route) => route.fulfill({ json: { id: storyId, status: 'approved', moderatedBy: 'admin@example.com', moderatedAt: new Date().toISOString() } }))
     await loginAsAdmin(page)
     await page.goto('/media')
-    await expect(page.getByRole('button', { name: /Approve/ })).toBeVisible()
-    await expect(page.getByRole('button', { name: /Reject/ })).toBeVisible()
-    await expect(page.getByRole('button', { name: /Flag/ })).toBeVisible()
+    await page.waitForURL('**/media', { timeout: 15000 })
+    await expect(page.getByText('UGC Moderation & Media Library')).toBeVisible({ timeout: 10000 })
+    const approveBtn = page.getByRole('button', { name: /Approve/ })
+    await expect(approveBtn).toBeVisible({ timeout: 10000 })
+    await approveBtn.click()
+    await expect(page.getByText('Story approved')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('media queue — reject story works with toast', async ({ page }) => {
+    const storyId = 'st-2'
+    await page.route('**/v1/stories/moderation', (route) => route.fulfill({ json: paginated([makeItem(storyId, { creatorHandle: 'testuser', caption: 'Bad photo', mediaType: 'image', location: 'Nairobi', tags: [], status: 'pending', likeCount: 0, saveCount: 0, submittedAt: new Date().toISOString() })]) }))
+    await page.route('**/v1/media', (route) => route.fulfill({ json: paginated([]) }))
+    await page.route('**/v1/stories/' + storyId + '/moderation', (route) => route.fulfill({ json: { id: storyId, status: 'rejected', moderatedBy: 'admin@example.com', moderatedAt: new Date().toISOString() } }))
+    await loginAsAdmin(page)
+    await page.goto('/media')
+    await page.waitForURL('**/media', { timeout: 15000 })
+    await expect(page.getByText('UGC Moderation & Media Library')).toBeVisible({ timeout: 10000 })
+    const rejectBtn = page.getByRole('button', { name: /Reject/ })
+    await expect(rejectBtn).toBeVisible({ timeout: 10000 })
+    await rejectBtn.click()
+    await expect(page.getByText('Story rejected')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('media queue — flag story opens dialog, submits, closes after success', async ({ page }) => {
+    const storyId = 'st-3'
+    await page.route('**/v1/stories/moderation', (route) => route.fulfill({ json: paginated([makeItem(storyId, { creatorHandle: 'testuser', caption: 'Suspect photo', mediaType: 'image', location: 'Nairobi', tags: [], status: 'pending', likeCount: 0, saveCount: 0, submittedAt: new Date().toISOString() })]) }))
+    await page.route('**/v1/media', (route) => route.fulfill({ json: paginated([]) }))
+    await page.route('**/v1/stories/' + storyId + '/report', (route) => route.fulfill({ status: 201, json: null }))
+    await loginAsAdmin(page)
+    await page.goto('/media')
+    await page.waitForURL('**/media', { timeout: 15000 })
+    await expect(page.getByText('UGC Moderation & Media Library')).toBeVisible({ timeout: 10000 })
+    await page.getByRole('button', { name: /Flag/ }).click()
+    await expect(page.getByText('Flag Story')).toBeVisible()
+    await page.fill('textarea', 'Inappropriate content')
+    await page.getByRole('button', { name: /Submit Flag/ }).click()
+    await expect(page.getByText('Story flagged')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Flag Story')).not.toBeVisible({ timeout: 5000 })
+  })
+
+  test('media queue — remove story works for approved items', async ({ page }) => {
+    const storyId = 'st-4'
+    await page.route('**/v1/stories/moderation', (route) => route.fulfill({ json: paginated([makeItem(storyId, { creatorHandle: 'testuser', caption: 'Old photo', mediaType: 'image', location: 'Nairobi', tags: [], status: 'approved', likeCount: 0, saveCount: 0, submittedAt: new Date().toISOString() })]) }))
+    await page.route('**/v1/media', (route) => route.fulfill({ json: paginated([]) }))
+    await page.route('**/v1/stories/' + storyId + '/moderation', (route) => route.fulfill({ json: { id: storyId, status: 'rejected', moderatedBy: 'admin@example.com', moderatedAt: new Date().toISOString() } }))
+    await loginAsAdmin(page)
+    await page.goto('/media')
+    await page.waitForURL('**/media', { timeout: 15000 })
+    await expect(page.getByText('UGC Moderation & Media Library')).toBeVisible({ timeout: 10000 })
+    const removeBtn = page.getByRole('button', { name: /Remove/ })
+    await expect(removeBtn).toBeVisible({ timeout: 10000 })
+    await removeBtn.click()
+    await expect(page.getByText('Story removed')).toBeVisible({ timeout: 10000 })
   })
 
   test('media upload area renders', async ({ page }) => {

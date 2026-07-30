@@ -17,6 +17,13 @@ export interface StoryItem {
   submittedAt: string
 }
 
+export interface ModerationResponse {
+  id: string
+  status: string
+  moderatedBy: string | null
+  moderatedAt: string
+}
+
 export function storiesApi(config: ApiConfig) {
   return {
     list: (params?: PaginationParams) =>
@@ -24,8 +31,8 @@ export function storiesApi(config: ApiConfig) {
     moderationList: (params?: PaginationParams & { status?: string }) =>
       apiRequest<Paginated<StoryItem>>(config, '/v1/stories/moderation', { params }),
     moderate: (id: string, action: 'approve' | 'reject', reason: string) =>
-      apiRequest<StoryItem>(config, `/v1/stories/${id}/moderation`, { method: 'POST', body: { action, reason } }),
-    report: (id: string, reason: string, details?: string) =>
-      apiRequest<void>(config, `/v1/stories/${id}/report`, { method: 'POST', body: { reason, details } }),
+      apiRequest<ModerationResponse>(config, `/v1/stories/${id}/moderation`, { method: 'POST', body: { action, reason } }),
+    report: (id: string, reason: string, comment?: string) =>
+      apiRequest<void>(config, `/v1/stories/${id}/report`, { method: 'POST', body: { reason, comment } }),
   }
 }
