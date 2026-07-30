@@ -1,17 +1,18 @@
 import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
 import { useCursorPagination } from '#/lib/api/use-cursor-pagination'
 import { MediaUpload } from '#/components/shared/MediaUpload'
+import type { MediaUploadResult } from '#/components/shared/MediaUpload'
 import type { PushAudience, PushHistoryItem } from '#/lib/api/push'
 import {
   Megaphone, GlobeHemisphereWest, Bell, Timer, PencilSimple,
   FloppyDisk, X, Plus, Trash, PaperPlaneTilt, CalendarBlank,
 } from '@phosphor-icons/react'
-import { FormInput, FormSelect } from '#/components/shared/FormField'
+import { FormInput, FormSelect, FormDatePicker } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { CursorPagination } from '#/components/shared/CursorPagination'
@@ -59,6 +60,10 @@ function CampaignsPage() {
   const [scheduleTime, setScheduleTime] = useState('')
   const [pushSending, setPushSending] = useState(false)
 
+  const [destinations, setDestinations] = useState<{ id: string; name: string }[]>([])
+  const mediaUrlCache = useRef<Record<string, string>>({})
+  const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({})
+
   const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
@@ -85,6 +90,34 @@ function CampaignsPage() {
   }, [handlePrevCursor, loadList])
 
   useEffect(() => { loadList() }, [loadList])
+
+  const loadMediaUrl = useCallback(async (objectKey: string) => {
+    if (mediaUrlCache.current[objectKey]) return
+    try {
+      const resp = await api.media.getUrl(objectKey)
+      mediaUrlCache.current[objectKey] = resp.url
+      setMediaUrls(prev => ({ ...prev, [objectKey]: resp.url }))
+    } catch { /* ignore */ }
+  }, [api])
+
+  useEffect(() => {
+    api.destinations.list({ limit: 200 }).then(r => {
+      setDestinations(r.items.filter(d => d.status === 'published').map(d => ({ id: d.id, name: d.name })))
+    }).catch(() => {})
+  }, [api])
+
+  useEffect(() => {
+    if (editData?.bannerUrl) loadMediaUrl(editData.bannerUrl)
+  }, [editData?.bannerUrl, loadMediaUrl])
+
+  const handleBannerComplete = useCallback((result: MediaUploadResult) => {
+    handleField('bannerUrl', result.objectKey)
+    if (result.url) {
+      mediaUrlCache.current[result.objectKey] = result.url
+      setMediaUrls(prev => ({ ...prev, [result.objectKey]: result.url! }))
+    }
+    toast.success('Banner uploaded')
+  }, [])
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
@@ -271,25 +304,27 @@ function CampaignsPage() {
                             <label className="mb-1 block text-xs font-semibold text-foreground">Banner Image</label>
                             <MediaUpload
                               label={editData.bannerUrl ? 'Replace banner' : 'Upload banner'}
-                              onComplete={(result) => {
-                                handleField('bannerUrl', result.objectKey)
-                                toast.success('Banner uploaded')
-                              }}
+                              onComplete={handleBannerComplete}
                               onError={(msg) => toast.error(msg)}
                             />
+                            {editData.bannerUrl && mediaUrls[editData.bannerUrl] && (
+                              <div className="mt-2 overflow-hidden rounded-lg border border-border">
+                                <img src={mediaUrls[editData.bannerUrl]} alt="" className="h-40 w-full object-cover" />
+                              </div>
+                            )}
                             {editData.bannerUrl && (
-                              <p className="mt-1 text-xs text-success-leaf truncate">{editData.bannerUrl}</p>
+                              <p className="mt-1 truncate text-xs text-muted-foreground">{editData.bannerUrl}</p>
                             )}
                           </div>
                           <FormInput label="Target URL" value={editData.targetUrl} onChange={v => handleField('targetUrl', v)} />
                           {editData.type === 'featured_destination' && (
-                            <FormInput label="Destination ID" required value={editData.destinationId} onChange={v => handleField('destinationId', v)} error={errors.destinationId} />
+                            <FormSelect label="Destination" required value={editData.destinationId} options={destinations.map(d => ({ value: d.id, label: d.name }))} onChange={v => handleField('destinationId', v)} error={errors.destinationId} />
                           )}
                           {editData.type === 'push_notification' && (
                             <FormInput label="Audience" required value={editData.audience} onChange={v => handleField('audience', v)} error={errors.audience} description="Target audience for push notification (e.g. all, county, role, interest)" />
                           )}
-                          <FormInput label="Start Date" value={editData.startDate} onChange={v => handleField('startDate', v)} />
-                          <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} />
+                          <FormDatePicker label="Start Date" value={editData.startDate} onChange={v => handleField('startDate', v)} error={errors.startDate} />
+                          <FormDatePicker label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} error={errors.endDate} />
 
                           <div className="col-span-2 rounded-lg border border-border p-4">
                             <div className="flex flex-wrap items-center gap-2">
@@ -424,25 +459,27 @@ function CampaignsPage() {
                       <label className="mb-1 block text-xs font-semibold text-foreground">Banner Image</label>
                       <MediaUpload
                         label="Upload banner"
-                        onComplete={(result) => {
-                          handleField('bannerUrl', result.objectKey)
-                          toast.success('Banner uploaded')
-                        }}
+                        onComplete={handleBannerComplete}
                         onError={(msg) => toast.error(msg)}
                       />
+                      {editData.bannerUrl && mediaUrls[editData.bannerUrl] && (
+                        <div className="mt-2 overflow-hidden rounded-lg border border-border">
+                          <img src={mediaUrls[editData.bannerUrl]} alt="" className="h-40 w-full object-cover" />
+                        </div>
+                      )}
                       {editData.bannerUrl && (
-                        <p className="mt-1 text-xs text-success-leaf truncate">{editData.bannerUrl}</p>
+                        <p className="mt-1 truncate text-xs text-muted-foreground">{editData.bannerUrl}</p>
                       )}
                     </div>
                     <FormInput label="Target URL" value={editData.targetUrl} onChange={v => handleField('targetUrl', v)} />
                     {editData.type === 'featured_destination' && (
-                      <FormInput label="Destination ID" required value={editData.destinationId} onChange={v => handleField('destinationId', v)} error={errors.destinationId} />
+                      <FormSelect label="Destination" required value={editData.destinationId} options={destinations.map(d => ({ value: d.id, label: d.name }))} onChange={v => handleField('destinationId', v)} error={errors.destinationId} />
                     )}
                     {editData.type === 'push_notification' && (
                       <FormInput label="Audience" required value={editData.audience} onChange={v => handleField('audience', v)} error={errors.audience} description="Target audience for push notification" />
                     )}
-                    <FormInput label="Start Date" value={editData.startDate} onChange={v => handleField('startDate', v)} />
-                    <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} />
+                    <FormDatePicker label="Start Date" value={editData.startDate} onChange={v => handleField('startDate', v)} error={errors.startDate} />
+                    <FormDatePicker label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} error={errors.endDate} />
                   </div>
                   <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
                     <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
