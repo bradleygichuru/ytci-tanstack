@@ -1,7 +1,7 @@
 import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
 import { useCursorPagination } from '#/lib/api/use-cursor-pagination'
@@ -9,14 +9,17 @@ import {
   Clock, Bell, PencilSimple,
   FloppyDisk, X, Plus, ArrowRight, Ticket, Trash,
 } from '@phosphor-icons/react'
-import { FormInput, FormSelect } from '#/components/shared/FormField'
+import { FormInput, FormSelect, FormDatePicker } from '#/components/shared/FormField'
+import { MediaUpload } from '#/components/shared/MediaUpload'
+import type { MediaUploadResult } from '#/components/shared/MediaUpload'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { CursorPagination } from '#/components/shared/CursorPagination'
 import { EventsSkeleton } from '#/components/skeletons/events-skeleton'
 import { eventSchema } from '#/lib/schemas/event.schema'
+import { REMINDER_OPTIONS, minutesToLabel, labelToMinutes } from '#/lib/api/events'
 
-interface EventItem { id: string; title: string; organizer: string; county: string; venue: string; date: string; endDate: string; type: string; status: string; description: string; contactEmail: string; contactPhone: string; reminderEnabled: boolean; reminderTime: string }
+interface EventItem { id: string; title: string; organizer: string; county: string; venue: string; date: string; endDate: string; type: string; status: string; description: string; contactEmail: string; contactPhone: string; imageUrl: string; imageUrlKey: string; reminderEnabled: boolean; reminderMinutes: number | null }
 
 const typeColors: Record<string, string> = { cultural: '#785a00', sports: '#2d5a27', conservation: '#345a00', tourism: '#154212' }
 
@@ -33,7 +36,7 @@ export const Route = createFileRoute('/_authenticated/events')({
   component: EventsPage })
 
 function emptyEvent(): EventItem {
-  return { id: '', title: '', organizer: '', county: '', venue: '', date: '', endDate: '', type: '', status: 'scheduled', description: '', contactEmail: '', contactPhone: '', reminderEnabled: false, reminderTime: '' }
+  return { id: '', title: '', organizer: '', county: '', venue: '', date: '', endDate: '', type: '', status: 'scheduled', description: '', contactEmail: '', contactPhone: '', imageUrl: '', imageUrlKey: '', reminderEnabled: false, reminderMinutes: null }
 }
 
 function EventsPage() {
@@ -47,6 +50,10 @@ function EventsPage() {
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const mediaUrlCache = useRef<Record<string, string>>({})
+  const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({})
+  const mediaIds = useRef<Record<string, string>>({})
 
   const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
 
@@ -65,6 +72,17 @@ function EventsPage() {
     }
   }, [api])
 
+  const loadMediaUrl = useCallback(async (objectKey: string) => {
+    if (mediaUrlCache.current[objectKey]) return
+    try {
+      const resp = await api.media.getUrl(objectKey)
+      mediaUrlCache.current[objectKey] = resp.url
+      setMediaUrls(prev => ({ ...prev, [objectKey]: resp.url }))
+    } catch {
+      /* ignore */
+    }
+  }, [api])
+
   const handleNext = useCallback(() => {
     handleNextCursor((c) => loadList(c))
   }, [handleNextCursor, loadList])
@@ -74,6 +92,12 @@ function EventsPage() {
   }, [handlePrevCursor, loadList])
 
   useEffect(() => { loadList() }, [loadList])
+
+  useEffect(() => {
+    if (editData?.imageUrlKey) {
+      loadMediaUrl(editData.imageUrlKey)
+    }
+  }, [editData?.imageUrlKey, loadMediaUrl])
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
@@ -113,19 +137,30 @@ function EventsPage() {
   }
 
   const handleSave = useCallback(async () => {
-    if (!editData) return
-    if (!validate()) return
+    if (!editData || !validate()) return
     setSaving(true)
     try {
+      const body: Record<string, unknown> = {
+        ...editData,
+      }
+
       let newId: string | undefined
+      let savedEvent: EventItem | undefined
+
       if (panelMode === 'create') {
-        const created = await api.events.create(editData as unknown as Record<string, unknown>)
+        const created = await api.events.create(body)
         newId = created.id
         toast.success('Event created')
       } else if (selectedId) {
-        await api.events.update(selectedId, editData as unknown as Record<string, unknown>)
+        savedEvent = await api.events.update(selectedId, body)
         toast.success('Event saved')
       }
+
+      const heroMid = editData.imageUrl ? (mediaIds.current[editData.imageUrl] || undefined) : undefined
+      if (heroMid && (newId || selectedId)) {
+        await api.events.uploadMedia(newId || selectedId!, { heroMediaId: heroMid })
+      }
+
       await loadList()
       if (newId) {
         setPanelMode('edit')
@@ -162,14 +197,104 @@ function EventsPage() {
     if (!editData) return
     const updated = { ...editData, status: newStatus }
     setEditData(updated)
-    await api.events.update(editData.id, { status: newStatus })
+    await api.events.updateStatus(editData.id, newStatus)
     await loadList()
   }, [editData, loadList, api])
+
+  const handleMediaComplete = useCallback((result: MediaUploadResult) => {
+    handleField('imageUrlKey', result.objectKey)
+    if (result.id) mediaIds.current[result.objectKey] = result.id
+    if (result.url) {
+      mediaUrlCache.current[result.objectKey] = result.url
+      setMediaUrls(prev => ({ ...prev, [result.objectKey]: result.url! }))
+    }
+    toast.success('Hero image uploaded')
+  }, [])
+
+  const reminderLabel = editData ? minutesToLabel(editData.reminderMinutes) : ''
 
   const transitions: Record<string, string[]> = { scheduled: ['postponed', 'cancelled'], postponed: ['scheduled', 'cancelled'], cancelled: ['scheduled'] }
   const selected = data?.find(d => d.id === selectedId) ?? null
 
   if (loading) return <EventsSkeleton />
+
+  function EventFormFields() {
+    if (!editData) return null
+    return (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
+        <FormInput label="Organizer" value={editData.organizer} onChange={v => handleField('organizer', v)} />
+        <FormInput label="County" required value={editData.county} onChange={v => handleField('county', v)} error={errors.county} />
+        <FormInput label="Venue" value={editData.venue} onChange={v => handleField('venue', v)} />
+        <FormDatePicker label="Start Date" required value={editData.date} onChange={v => handleField('date', v)} error={errors.date} />
+        <FormDatePicker label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} error={errors.endDate} />
+        <FormSelect label="Type" value={editData.type} options={['cultural', 'sports', 'conservation', 'tourism']} onChange={v => handleField('type', v)} />
+        <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-foreground">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>
+
+        <div className="md:col-span-2 rounded-lg border border-border p-4">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">Hero Image</h3>
+          <MediaUpload label="Upload hero image" onComplete={handleMediaComplete} onError={(msg) => toast.error(msg)} />
+          {editData.imageUrlKey && mediaUrls[editData.imageUrlKey] && (
+            <div className="mt-2 overflow-hidden rounded-lg border border-border">
+              <img src={mediaUrls[editData.imageUrlKey]} alt="" className="h-40 w-full object-cover" />
+            </div>
+          )}
+          {editData.imageUrlKey && (
+            <p className="mt-1 truncate text-xs text-muted-foreground">{editData.imageUrlKey}</p>
+          )}
+        </div>
+
+        {panelMode === 'edit' && (
+          <div className="col-span-2 rounded-lg border border-border p-4">
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground"><Clock className="h-3.5 w-3.5" weight="duotone" /> Status Workflow</h3>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {['scheduled', 'postponed', 'cancelled'].map(s => {
+                const isCurrent = editData.status === s
+                return (
+                  <span key={s} className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${isCurrent ? 'shadow-sm' : ''}`}>
+                    {s} {isCurrent && <span className="ml-1 rounded-full bg-card/40 px-1 text-[10px]">current</span>}
+                    {!isCurrent && <ArrowRight className="h-3 w-3" weight="bold" />}
+                  </span>
+                )
+              })}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(transitions[editData.status] ?? []).map(target => (
+                <button key={target} onClick={() => handleStatusTransition(target)}
+                  className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm transition-colors"
+                  style={{ backgroundColor: statusColors[target] ?? 'var(--forest)' }}>
+                  → {target}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <FormInput label="Contact Email" value={editData.contactEmail} onChange={v => handleField('contactEmail', v)} />
+        <FormInput label="Contact Phone" value={editData.contactPhone} onChange={v => handleField('contactPhone', v)} />
+
+        <div className="col-span-2 rounded-lg border border-border p-4">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input type="checkbox" checked={editData.reminderEnabled} onChange={e => handleField('reminderEnabled', e.target.checked)} className="accent-primary" />
+            <span className="flex items-center gap-1 text-xs font-semibold text-foreground"><Bell className="h-3.5 w-3.5" weight="duotone" /> Enable Reminders</span>
+          </label>
+          {editData.reminderEnabled && (
+            <div className="mt-3 flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">Send</span>
+              <select value={reminderLabel} onChange={e => handleField('reminderMinutes', labelToMinutes(e.target.value))} className="rounded-md border border-border px-3 py-1.5 text-xs text-foreground focus:border-primary">
+                {REMINDER_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+          )}
+          <p className="mt-2 text-[10px] text-muted-foreground">§5.14: Device calendar integration support — optional.</p>
+        </div>
+
+        <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1 font-semibold text-destructive"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span> — per spec §5.14 boundary. No ticket purchase, booking, or reservation controls in this form.
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -207,76 +332,15 @@ function EventsPage() {
                   {isSelected && editData && (
                     <tr><td colSpan={6} className="border-b p-0">
                       <div className="border-t border-border bg-card px-6 py-5">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                          <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
-                          <FormInput label="Organizer" value={editData.organizer} onChange={v => handleField('organizer', v)} />
-                          <FormInput label="County" required value={editData.county} onChange={v => handleField('county', v)} error={errors.county} />
-                          <FormInput label="Venue" value={editData.venue} onChange={v => handleField('venue', v)} />
-                          <FormInput label="Start Date" required value={editData.date} onChange={v => handleField('date', v)} error={errors.date} />
-                          <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} error={errors.endDate} />
-                          <FormSelect label="Type" value={editData.type} options={['cultural', 'sports', 'conservation', 'tourism']} onChange={v => handleField('type', v)} />
-                          <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-foreground">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>
-
-                          <div className="col-span-2 rounded-lg border border-border p-4">
-                            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground"><Clock className="h-3.5 w-3.5" weight="duotone" /> Status Workflow</h3>
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                              {['scheduled', 'postponed', 'cancelled'].map(s => {
-                                const isCurrent = editData.status === s
-                                return (
-                                  <span key={s} className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${isCurrent ? 'shadow-sm' : ''}`}>
-                                    {s} {isCurrent && <span className="ml-1 rounded-full bg-card/40 px-1 text-[10px]">current</span>}
-                                    {!isCurrent && <ArrowRight className="h-3 w-3" weight="bold" />}
-                                  </span>
-                                )
-                              })}
-                            </div>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {(transitions[editData.status] ?? []).map(target => {
-                                return (
-                                  <button key={target} onClick={() => handleStatusTransition(target)}
-                                    className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm transition-colors"
-                                    style={{ backgroundColor: statusColors[target] ?? 'var(--forest)' }}>
-                                    → {target}
-                                  </button>
-                                )
-                              })}
-                            </div>
-                          </div>
-
-                          <FormInput label="Contact Email" value={editData.contactEmail} onChange={v => handleField('contactEmail', v)} />
-                          <FormInput label="Contact Phone" value={editData.contactPhone} onChange={v => handleField('contactPhone', v)} />
-
-                          <div className="col-span-2 rounded-lg border border-border p-4">
-                            <label className="flex cursor-pointer items-center gap-2">
-                              <input type="checkbox" checked={editData.reminderEnabled} onChange={e => handleField('reminderEnabled', e.target.checked)} className="accent-primary" />
-                              <span className="flex items-center gap-1 text-xs font-semibold text-foreground"><Bell className="h-3.5 w-3.5" weight="duotone" /> Enable Reminders</span>
-                            </label>
-                            {editData.reminderEnabled && (
-                              <div className="mt-3 flex items-center gap-3">
-                                <span className="text-xs text-muted-foreground">Send</span>
-                                <select value={editData.reminderTime} onChange={e => handleField('reminderTime', e.target.value)} className="rounded-md border border-border px-3 py-1.5 text-xs text-foreground focus:border-primary">
-                                  {['30 minutes before', '1 hour before', '1 day before', '3 days before', '1 week before'].map(t => <option key={t} value={t}>{t}</option>)}
-                                </select>
-                              </div>
-                            )}
-                            <p className="mt-2 text-[10px] text-muted-foreground">§5.14: Device calendar integration support — optional.</p>
-                          </div>
-
-                          <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1 font-semibold text-destructive"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span> — per spec §5.14 boundary. No ticket purchase, booking, or reservation controls in this form.
-                          </div>
-                        </div>
-
+                        <EventFormFields />
                         <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
                           <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                             {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
-                            {panelMode === 'create' ? 'Create Event' : 'Save Changes'}
+                            Save Changes
                           </button>
-                          {panelMode === 'edit' && (
-                            <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-card px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
-                              <Trash className="h-4 w-4" weight="duotone" /> Delete
-                            </button>
-                          )}
+                          <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-card px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+                            <Trash className="h-4 w-4" weight="duotone" /> Delete
+                          </button>
                           <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground hover:bg-[var(--surface-2)]">
                             <X className="h-4 w-4" weight="duotone" /> Cancel
                           </button>
@@ -293,35 +357,7 @@ function EventsPage() {
             {panelMode === 'create' && editData && (
               <tr key="create-row"><td colSpan={6} className="border-b p-0">
                 <div className="border-t border-border bg-card px-6 py-5">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
-                    <FormInput label="Organizer" value={editData.organizer} onChange={v => handleField('organizer', v)} />
-                    <FormInput label="County" required value={editData.county} onChange={v => handleField('county', v)} error={errors.county} />
-                    <FormInput label="Venue" value={editData.venue} onChange={v => handleField('venue', v)} />
-                    <FormInput label="Start Date" required value={editData.date} onChange={v => handleField('date', v)} error={errors.date} />
-                    <FormInput label="End Date" value={editData.endDate} onChange={v => handleField('endDate', v)} error={errors.endDate} />
-                    <FormSelect label="Type" value={editData.type} options={['cultural', 'sports', 'conservation', 'tourism']} onChange={v => handleField('type', v)} />
-                    <div className="md:col-span-2"><label className="mb-1 block text-xs font-semibold text-foreground">Description</label><textarea value={editData.description} onChange={e => handleField('description', e.target.value)} rows={3} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>
-                    <FormInput label="Contact Email" value={editData.contactEmail} onChange={v => handleField('contactEmail', v)} />
-                    <FormInput label="Contact Phone" value={editData.contactPhone} onChange={v => handleField('contactPhone', v)} />
-                    <div className="col-span-2 rounded-lg border border-border p-4">
-                      <label className="flex cursor-pointer items-center gap-2">
-                        <input type="checkbox" checked={editData.reminderEnabled} onChange={e => handleField('reminderEnabled', e.target.checked)} className="accent-primary" />
-                        <span className="flex items-center gap-1 text-xs font-semibold text-foreground"><Bell className="h-3.5 w-3.5" weight="duotone" /> Enable Reminders</span>
-                      </label>
-                      {editData.reminderEnabled && (
-                        <div className="mt-3 flex items-center gap-3">
-                          <span className="text-xs text-muted-foreground">Send</span>
-                          <select value={editData.reminderTime} onChange={e => handleField('reminderTime', e.target.value)} className="rounded-md border border-border px-3 py-1.5 text-xs text-foreground focus:border-primary">
-                            {['30 minutes before', '1 hour before', '1 day before', '3 days before', '1 week before'].map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                        </div>
-                      )}
-                    </div>
-                    <div className="col-span-2 rounded-lg bg-[var(--surface-2)] p-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1 font-semibold text-destructive"><Ticket className="h-3.5 w-3.5" weight="duotone" /> No Ticket Checkout</span> — per spec §5.14 boundary. No ticket purchase, booking, or reservation controls in this form.
-                    </div>
-                  </div>
+                  <EventFormFields />
                   <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
                     <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                       {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
@@ -358,4 +394,3 @@ function EventsPage() {
     </>
   )
 }
-

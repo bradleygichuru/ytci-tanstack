@@ -1,9 +1,15 @@
 import { useId } from 'react'
+import { format, parse } from 'date-fns'
+import { Calendar as CalendarIcon } from '@phosphor-icons/react'
 import { Field, FieldLabel, FieldDescription, FieldError } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
 import { Switch } from '#/components/ui/switch'
 import { Slider } from '#/components/ui/slider'
+import { Button } from '#/components/ui/button'
+import { Calendar } from '#/components/ui/calendar'
+import { Popover, PopoverTrigger, PopoverContent } from '#/components/ui/popover'
+import { cn } from '#/lib/utils'
 
 interface FormFieldProps {
   label: string
@@ -119,6 +125,43 @@ export function FormSlider({ label, description, error, required, value, onChang
         <Slider id={id} value={[value]} onValueChange={([v]) => onChange(v)} min={min} max={max} step={step} className="flex-1" />
         <span className="text-sm text-muted-foreground w-10 text-right">{value}</span>
       </div>
+    </FormField>
+  )
+}
+
+export function FormDatePicker({ label, description, error, required, value, onChange }: FormFieldProps & {
+  value: string
+  onChange: (v: string) => void
+}) {
+  const id = useId()
+  const date = value ? parse(value, 'yyyy-MM-dd', new Date()) : undefined
+
+  return (
+    <FormField label={label} description={description} error={error} required={required} id={id}>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            id={id}
+            variant="outline"
+            className={cn(
+              'w-full justify-start text-left font-normal',
+              !date && 'text-muted-foreground'
+            )}
+            aria-invalid={!!error || undefined}
+            data-invalid={!!error || undefined}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? format(date, 'PPP') : <span>Pick a date</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={(d) => onChange(d ? format(d, 'yyyy-MM-dd') : '')}
+          />
+        </PopoverContent>
+      </Popover>
     </FormField>
   )
 }

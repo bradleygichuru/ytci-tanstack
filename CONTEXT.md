@@ -27,13 +27,16 @@ A moderated conservation initiative (beach cleanup, tree planting, wildlife surv
 A user-submitted proof of participation in a Conservation Activity. Approved or rejected by admins.
 
 ### Event
-A scheduled public event. Has type, county, venue, dates, status workflow. Statuses: `scheduled`, `postponed`, `cancelled`.
+A scheduled public event. Has type, county, venue, dates, status workflow, hero image. Statuses: `scheduled`, `postponed`, `cancelled`.
 
 ### Campaign
 A promotional campaign. Types: `home_banner`, `featured_destination`, `push_notification`, `seasonal`. Statuses: `draft`, `active`, `paused`, `ended`.
 
 ### Media Asset
 An uploaded file (image, video, PDF, 360 media, audio). Stored in Cloudflare R2 with optimization metadata. Rights status tracked. The mock layer under the `media` namespace handles both moderation stories and media assets; the Go backend maps them to separate `/stories` and `/media` path groups per the contract.
+
+### Hero Image
+The primary/featured image for an entity (destination, event, story, course). Stored as a linked Media Asset in Cloudflare R2 with presigned URL access. Admins upload via `MediaUpload` component; the resulting `media_assets.id` is linked to the entity via a dedicated media endpoint (`POST /{entity}/{id}/media`).
 
 ### Story
 User-generated content (photo, video, journal) created by youth creators. Goes through moderation.
