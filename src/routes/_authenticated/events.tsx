@@ -142,21 +142,22 @@ function EventsPage() {
     try {
       const body: Record<string, unknown> = {
         ...editData,
+        imageUrl: editData.imageUrlKey || editData.imageUrl,
       }
 
       let newId: string | undefined
-      let savedEvent: EventItem | undefined
 
       if (panelMode === 'create') {
-        const created = await api.events.create(body)
+        const { id, ...createBody } = body as Record<string, unknown>
+        const created = await api.events.create(createBody)
         newId = created.id
         toast.success('Event created')
       } else if (selectedId) {
-        savedEvent = await api.events.update(selectedId, body)
+        await api.events.update(selectedId, body)
         toast.success('Event saved')
       }
 
-      const heroMid = editData.imageUrl ? (mediaIds.current[editData.imageUrl] || undefined) : undefined
+      const heroMid = editData.imageUrlKey ? (mediaIds.current[editData.imageUrlKey] || undefined) : undefined
       if (heroMid && (newId || selectedId)) {
         await api.events.uploadMedia(newId || selectedId!, { heroMediaId: heroMid })
       }
