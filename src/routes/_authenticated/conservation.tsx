@@ -113,7 +113,12 @@ function ConservationPage() {
     setSelectedId(id)
     setPanelMode('edit')
     const a = acts?.find(a => a.id === id)
-    if (a) setEditData({ ...a })
+    if (a) {
+      setEditData(prev => {
+        if (prev?.id === id) return { ...prev, ...a }
+        return { ...emptyAct(), ...a }
+      })
+    }
     setErrors({})
   }, [selectedId, acts])
 
