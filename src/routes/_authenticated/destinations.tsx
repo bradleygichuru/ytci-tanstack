@@ -140,9 +140,10 @@ function DestinationsPage() {
     setActiveTab('identity')
     const dest = data?.find(d => d.id === id)
     if (dest) {
-      const copy = { ...dest } as Record<string, unknown>
-      for (const [k, v] of Object.entries(copy)) {
-        if (v === null) copy[k] = undefined
+      const copy: Record<string, unknown> = {}
+      for (const [k, v] of Object.entries(dest)) {
+        const camel = k.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+        copy[camel] = v === null ? undefined : v
       }
       if (typeof copy.accessibility === 'string') {
         copy.accessibility = (copy.accessibility as string).split(',').map(s => s.trim()).filter(Boolean)
