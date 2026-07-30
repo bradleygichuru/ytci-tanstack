@@ -21,7 +21,7 @@ A component of a Course. Types: `video`, `text`, `pdf`. Has duration, URL, optio
 A question within a Course. Has text, multiple options, and a correct answer index.
 
 ### Conservation Activity
-A moderated conservation initiative (beach cleanup, tree planting, wildlife survey). Has organizer, location privacy level, dates, impact metrics, evidence submissions. Statuses: `active`. Do not use "Initiative" or "Project".
+A moderated conservation initiative (beach cleanup, tree planting, wildlife survey). Has organizer, location privacy level, dates, impact metrics, evidence submissions. Statuses: `open`, `full`, `completed`, `cancelled`. Do not use "Initiative" or "Project".
 
 ### Evidence Item
 A user-submitted proof of participation in a Conservation Activity. Approved or rejected by admins.

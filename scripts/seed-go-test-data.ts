@@ -64,8 +64,8 @@ async function main() {
   const existingConservation = await db.select({ id: conservationActivities.id }).from(conservationActivities).limit(1)
   if (existingConservation.length === 0) {
     await db.insert(conservationActivities).values([
-      { title: 'Mara River Cleanup', organizer: 'WWF Kenya', impactMetric: 'kg waste collected', status: 'active' },
-      { title: 'Tree Planting in Karura', organizer: 'Karura Forest Trust', impactMetric: 'trees planted', status: 'active' },
+      { title: 'Mara River Cleanup', organizer: 'WWF Kenya', impactMetric: 'kg waste collected', status: 'open' },
+      { title: 'Tree Planting in Karura', organizer: 'Karura Forest Trust', impactMetric: 'trees planted', status: 'open' },
     ])
     console.log('Created 2 test conservation activities')
   } else {

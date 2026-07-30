@@ -20,7 +20,7 @@ describe('conservationActivitySchema', () => {
   it('fills defaults', () => {
     const result = conservationActivitySchema.parse({ title: 'Test', organizer: 'Org', location: 'Loc' })
     expect(result.status).toBe('open')
-    expect(result.locationPrivacy).toBe('public')
-    expect(result.impactMetrics).toEqual({ treesPlanted: 0, wasteCollected: 0, wildlifeSurveyed: 0 })
+    expect(result.impactMetric).toBe('')
+    expect(result.participantCount).toBe(0)
   })
 })

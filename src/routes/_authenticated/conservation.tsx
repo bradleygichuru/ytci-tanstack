@@ -287,7 +287,7 @@ function ConservationPage() {
                           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} />
                             <FormInput label="Organizer" required value={editData.organizer} onChange={v => handleField('organizer', v)} error={errors.organizer} />
-                            <FormInput label="Location" value={editData.locationPrivacyLevel === 'sensitive' ? '[RESTRICTED]' : editData.location} onChange={() => {}} />
+                            <FormInput label="Location" value={editData.locationPrivacyLevel === 'sensitive' ? '[RESTRICTED]' : editData.location} onChange={v => handleField('location', v)} error={errors.location} />
                             <div>
                               <label className="mb-1 block text-xs font-semibold text-foreground">Privacy Level</label>
                               <div className="flex items-center gap-2">
@@ -301,7 +301,7 @@ function ConservationPage() {
                               {editData.locationPrivacyLevel === 'sensitive' && <p className="mt-1 text-[10px] text-destructive">⚠ Do not display sensitive wildlife locations (§5.15)</p>}
                             </div>
                             <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
-                      <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} />
+                      <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} error={errors.status} />
                             <FormInput label="Impact Metric" value={editData.impactMetric} onChange={v => handleField('impactMetric', v)} />
                             <FormInput label="Goal Count" value={String(editData.impactGoal)} onChange={v => handleField('impactGoal', Number(v))} />
                             <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
@@ -339,7 +339,7 @@ function ConservationPage() {
                       <FormInput label="Organizer" required value={editData.organizer} onChange={v => handleField('organizer', v)} error={errors.organizer} />
                       {editData.locationPrivacyLevel === 'sensitive'
                         ? <div><label className="mb-1 block text-xs font-semibold text-foreground">Location</label><div className="flex items-center gap-1 rounded-md border border-border bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--amber-deep)]"><Shield className="h-3 w-3" weight="duotone" /> Location restricted for wildlife protection</div><input type="hidden" value={editData.location} /></div>
-                        : <FormInput label="Location" value={editData.location} onChange={v => handleField('location', v)} />}
+                        : <FormInput label="Location" value={editData.location} onChange={v => handleField('location', v)} error={errors.location} />}
                       <div>
                         <label className="mb-1 block text-xs font-semibold text-foreground">Privacy Level</label>
                         <div className="flex items-center gap-2">
@@ -353,7 +353,7 @@ function ConservationPage() {
                         {editData.locationPrivacyLevel === 'sensitive' && <p className="mt-1 text-[10px] text-destructive">⚠ Do not display sensitive wildlife locations (§5.15)</p>}
                       </div>
                       <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
-                      <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} />
+                      <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} error={errors.status} />
                       <FormInput label="Impact Metric" value={editData.impactMetric} onChange={v => handleField('impactMetric', v)} />
                       <FormInput label="Goal Count" value={String(editData.impactGoal)} onChange={v => handleField('impactGoal', Number(v))} />
                       <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
