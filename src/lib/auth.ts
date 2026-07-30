@@ -32,6 +32,9 @@ export const auth = betterAuth({
     "http://localhost:8081",
     "exp://",
     "myapp://",
+    "ytci://",
+    "http://192.168.100.15:3000",
+    "http://192.168.100.15:8081",
   ],
   plugins: [
     jwt({
