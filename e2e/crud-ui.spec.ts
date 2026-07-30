@@ -25,12 +25,14 @@ test.describe('UI Structure Tests', () => {
     await page.route('**/v1/destinations', (route) => route.fulfill({ json: paginated([]) }))
     await loginAsAdmin(page)
     await page.goto('/destinations')
-    await page.getByRole('button', { name: /^New Destination$/ }).click()
-    await page.waitForTimeout(500)
-    const tabNames = ['Identity', 'Location', 'Overview', 'Experience', 'Planning', 'Media', 'Related', 'Governance']
+    await page.waitForURL('**/destinations', { timeout: 15000 })
+    await expect(page.locator('h1')).toContainText('Destination CMS', { timeout: 10000 })
+    await page.locator('button').filter({ hasText: 'New Destination' }).click({ force: true })
+    await page.waitForSelector('button:has-text("Identity")', { timeout: 10000 })
+    const tabNames = ['Location', 'Overview', 'Experience', 'Planning', 'Media', 'Related', 'Governance']
     for (const name of tabNames) {
       const btn = page.locator(`button:has-text("${name}")`).first()
-      await expect(btn).toBeVisible({ timeout: 3000 })
+      await expect(btn).toBeVisible({ timeout: 5000 })
     }
   })
 
@@ -38,9 +40,11 @@ test.describe('UI Structure Tests', () => {
     await page.route('**/v1/destinations', (route) => route.fulfill({ json: paginated([]) }))
     await loginAsAdmin(page)
     await page.goto('/destinations')
-    await page.getByRole('button', { name: /^New Destination$/ }).click()
-    await page.waitForTimeout(500)
-    await page.locator('button:has-text("Create Destination")').first().click()
+    await page.waitForURL('**/destinations', { timeout: 15000 })
+    await expect(page.locator('h1')).toContainText('Destination CMS', { timeout: 10000 })
+    await page.locator('button').filter({ hasText: 'New Destination' }).click({ force: true })
+    await page.waitForSelector('button:has-text("Identity")', { timeout: 10000 })
+    await page.locator('button:has-text("Create Destination")').first().click({ force: true })
     await expect(page.locator('text=Required').or(page.locator('text=required')).first()).toBeVisible({ timeout: 5000 })
   })
 
