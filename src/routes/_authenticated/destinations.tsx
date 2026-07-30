@@ -139,7 +139,18 @@ function DestinationsPage() {
     setPanelMode('edit')
     setActiveTab('identity')
     const dest = data?.find(d => d.id === id)
-    setEditData(dest ? { ...dest } : null)
+    if (dest) {
+      const copy = { ...dest } as Record<string, unknown>
+      for (const [k, v] of Object.entries(copy)) {
+        if (v === null) copy[k] = undefined
+      }
+      if (typeof copy.accessibility === 'string') {
+        copy.accessibility = (copy.accessibility as string).split(',').map(s => s.trim()).filter(Boolean)
+      }
+      setEditData(copy as Partial<Destination>)
+    } else {
+      setEditData(null)
+    }
     setErrors({})
   }, [selectedId, data])
 
@@ -167,6 +178,7 @@ function DestinationsPage() {
       }
       setErrors(fieldErrors)
       if (fieldErrors['name']) setActiveTab('identity')
+      toast.error('Validation failed. Check highlighted fields.')
       return false
     }
     setErrors({})
@@ -178,9 +190,13 @@ function DestinationsPage() {
     if (!validate()) return
     setSaving(true)
     try {
+      const body = { ...editData }
+      if (Array.isArray(body.accessibility)) {
+        body.accessibility = body.accessibility.join(', ')
+      }
       let newId: string | undefined
       if (panelMode === 'create') {
-        const created = await api.destinations.create(editData)
+        const created = await api.destinations.create(body)
         newId = created.id
         const galleryUrls = editData.gallery ?? []
         const heroMid = editData.heroImageUrl ? (mediaIds[editData.heroImageUrl] || editData.heroImageUrl) : undefined
@@ -199,7 +215,7 @@ function DestinationsPage() {
         }
         toast.success('Destination created')
       } else if (selectedId) {
-        await api.destinations.update(selectedId, editData)
+        await api.destinations.update(selectedId, body)
         toast.success('Destination saved')
         const galleryUrls = editData.gallery ?? []
         const heroMid = editData.heroImageUrl ? (mediaIds[editData.heroImageUrl] || editData.heroImageUrl) : undefined
