@@ -51,6 +51,6 @@ export function mediaApi(config: ApiConfig) {
     remove: (id: string) =>
       apiRequest<{ status: string }>(config, `/v1/media/${id}`, { method: 'DELETE' }),
     getUrl: (objectKey: string) =>
-      apiRequest<{ url: string; expiresAt: string }>(config, `/v1/media/${objectKey}/url`),
+      apiRequest<{ url: string; expiresAt: string }>(config, `/v1/media/url`, { params: { key: objectKey } }),
   }
 }
