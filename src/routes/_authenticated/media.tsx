@@ -410,7 +410,7 @@ function MediaPage() {
 function AssetThumbnail({ asset }: { asset: AssetItem }) {
   const [imgLoaded, setImgLoaded] = useState(false)
   const [imgError, setImgError] = useState(false)
-  const src = asset.thumbnailUrl ?? asset.url
+  const src = (asset.thumbnailUrl || asset.url) || undefined
 
   if (!src || imgError) {
     return (
