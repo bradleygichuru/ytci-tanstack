@@ -15,6 +15,186 @@ servers:
     description: Production (placeholder — replace before deploy)
 
 paths:
+  # ──────────────── Challenges ────────────────
+  /challenges:
+    get:
+      summary: List challenges
+      security: [{ BearerAuth: [] }]
+      tags: [Challenges]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated list of challenges
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ChallengeSummary"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      summary: Create a new challenge
+      security: [{ BearerAuth: [] }]
+      tags: [Challenges]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChallengeInput"
+      responses:
+        "201":
+          description: Challenge created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  status: { type: string }
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrors"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /challenges/{id}:
+    patch:
+      summary: Update a challenge
+      security: [{ BearerAuth: [] }]
+      tags: [Challenges]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChallengeInput"
+      responses:
+        "200":
+          description: Challenge updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    delete:
+      summary: End a challenge (sets status to ended)
+      security: [{ BearerAuth: [] }]
+      tags: [Challenges]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Challenge ended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /challenges/{id}/leaderboard:
+    get:
+      summary: Get challenge leaderboard
+      security: [{ BearerAuth: [] }]
+      tags: [Challenges]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    userId: { type: string }
+                    userName: { type: string }
+                    rank: { type: integer }
+                    status: { type: string }
+                    badgeAwardedAt: { type: string, format: date-time, nullable: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /challenges/evidence:
+    get:
+      summary: List submitted challenge evidence for moderation
+      security: [{ BearerAuth: [] }]
+      tags: [Challenges]
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Paginated evidence list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Paginated"
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ChallengeEvidence"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /challenges/evidence/{id}/review:
+    post:
+      summary: Approve or reject challenge evidence
+      security: [{ BearerAuth: [] }]
+      tags: [Challenges]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChallengeEvidenceReview"
+      responses:
+        "200":
+          description: Evidence reviewed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
   # ──────────────── Analytics ────────────────
   /analytics/summary:
     get:
@@ -1496,6 +1676,63 @@ components:
                   error:
                     type: string
                     enum: [DeviceNotRegistered, MessageTooBig, MessageRateExceeded, InvalidCredentials]
+
+    # ── Challenges ──
+    ChallengeSummary:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        rules: { type: string, nullable: true }
+        badgeName: { type: string, nullable: true }
+        badgeIconUrl: { type: string, format: uri, nullable: true }
+        eligibility: { type: string, nullable: true, description: "JSON string of eligibility rules" }
+        status: { type: string, enum: [draft, active, ended] }
+        startDate: { type: string, format: date, nullable: true }
+        endDate: { type: string, format: date, nullable: true }
+        createdAt: { type: string, format: date-time }
+    ChallengeInput:
+      type: object
+      required: [title, description, badgeName]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        badgeName: { type: string }
+        rules: { type: string }
+        badgeIconUrl: { type: string, format: uri }
+        eligibility: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+    ChallengeEvidence:
+      type: object
+      properties:
+        id: { type: string }
+        userId: { type: string }
+        challengeId: { type: string }
+        challengeTitle: { type: string }
+        userName: { type: string }
+        status: { type: string, enum: [submitted, approved, in_progress, rejected] }
+        moderatedBy: { type: string, nullable: true }
+        moderationNote: { type: string, nullable: true }
+        badgeAwardedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+    ChallengeEvidenceReview:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string, enum: [approve, reject] }
+        note: { type: string }
+    ValidationErrors:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
 
     # ── Users ──
     UserItem:

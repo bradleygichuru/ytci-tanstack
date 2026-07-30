@@ -12,15 +12,19 @@ export function useModerationAction() {
   const [pendingIds, setPendingIds] = useState<Record<string, boolean>>({})
   const [revertedCardId, setRevertedCardId] = useState<string | null>(null)
   const revertTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  const completed = useRef<Record<string, boolean>>({})
 
   const execute = useCallback((id: string | null, config: ModerationActionConfig) => {
     if (!id) return
     if (pendingIds[id]) return
 
+    completed.current[id] = false
     setPendingIds(prev => ({ ...prev, [id]: true }))
     config.onOptimistic?.()
 
-    const handleError = (error: unknown) => {
+    function handleError(error: unknown) {
+      if (completed.current[id]) return
+      completed.current[id] = true
       const msg = extractErrorMessage(error)
       config.onRollback?.()
       setRevertedCardId(id)
@@ -40,6 +44,8 @@ export function useModerationAction() {
 
     config.apiCall()
       .then(() => {
+        if (completed.current[id]) return
+        completed.current[id] = true
         clearTimeout(timeoutId)
         toast.success(config.successMsg)
       })

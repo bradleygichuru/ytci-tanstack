@@ -1,7 +1,7 @@
 import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useEffect, useState, useCallback, useRef } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
 import {
@@ -67,8 +67,6 @@ function MediaPage() {
   const [flagReason, setFlagReason] = useState('')
   const [submittingFlag, setSubmittingFlag] = useState(false)
   const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, string>>({})
-  const modRef = useRef(mod)
-  modRef.current = mod
 
   const loadAll = useCallback(async () => {
     setLoading(true)
@@ -171,27 +169,27 @@ function MediaPage() {
     }
   }, [selectedAssetId, api, loadAll])
 
-  const isPending = (id: string) => !!pendingIds[id]
+  const isPending = useCallback((id: string) => !!pendingIds[id], [pendingIds])
 
-  const handleApprove = (id: string) => {
+  const handleApprove = useCallback((id: string) => {
     moderateAction(id, {
       apiCall: () => api.stories.moderate(id, 'approve', ''),
       onOptimistic: () => setOptimisticStatuses(prev => ({ ...prev, [id]: 'approved' })),
       onRollback: () => setOptimisticStatuses(prev => { const n = { ...prev }; delete n[id]; return n }),
       successMsg: 'Story approved',
     })
-  }
+  }, [moderateAction, api])
 
-  const handleReject = (id: string) => {
+  const handleReject = useCallback((id: string) => {
     moderateAction(id, {
       apiCall: () => api.stories.moderate(id, 'reject', 'Rejected by moderator'),
       onOptimistic: () => setOptimisticStatuses(prev => ({ ...prev, [id]: 'rejected' })),
       onRollback: () => setOptimisticStatuses(prev => { const n = { ...prev }; delete n[id]; return n }),
       successMsg: 'Story rejected',
     })
-  }
+  }, [moderateAction, api])
 
-  const handleFlag = async (id: string, reason: string) => {
+  const handleFlag = useCallback(async (id: string, reason: string) => {
     setSubmittingFlag(true)
     try {
       await api.stories.report(id, reason, 'Reported by admin')
@@ -204,16 +202,16 @@ function MediaPage() {
     } finally {
       setSubmittingFlag(false)
     }
-  }
+  }, [api])
 
-  const handleRemoveStory = (id: string) => {
+  const handleRemoveStory = useCallback((id: string) => {
     moderateAction(id, {
       apiCall: () => api.stories.moderate(id, 'reject', 'Removed by admin'),
       onOptimistic: () => setOptimisticStatuses(prev => ({ ...prev, [id]: 'removed' })),
       onRollback: () => setOptimisticStatuses(prev => { const n = { ...prev }; delete n[id]; return n }),
       successMsg: 'Story removed',
     })
-  }
+  }, [moderateAction, api])
 
   const TABS = [
     { key: 'queue' as const, label: 'Queue', count: (mod ?? []).filter(m => m.status === 'pending').length },

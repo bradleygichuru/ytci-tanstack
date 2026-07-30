@@ -35,3 +35,34 @@ export function ChallengesSkeleton() {
     </div>
   )
 }
+
+export function EvidenceSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[700px] text-sm">
+          <thead>
+            <tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <th className="px-5 py-3">Challenge</th>
+              <th className="px-5 py-3">User</th>
+              <th className="px-5 py-3">Status</th>
+              <th className="px-5 py-3">Submitted</th>
+              <th className="w-28 px-5 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((_, i) => (
+              <tr key={i} className="border-b">
+                <td className="px-5 py-3"><Skeleton className="h-4 w-44" /></td>
+                <td className="px-5 py-3"><Skeleton className="h-4 w-28" /></td>
+                <td className="px-5 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                <td className="px-5 py-3"><Skeleton className="h-4 w-20" /></td>
+                <td className="px-5 py-3"><Skeleton className="h-4 w-16" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
