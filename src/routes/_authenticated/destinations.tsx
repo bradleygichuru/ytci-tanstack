@@ -192,7 +192,7 @@ function DestinationsPage() {
     try {
       const body = { ...editData }
       if (Array.isArray(body.accessibility)) {
-        body.accessibility = body.accessibility.join(', ')
+        body.accessibility = body.accessibility.join(',')
       }
       let newId: string | undefined
       if (panelMode === 'create') {
