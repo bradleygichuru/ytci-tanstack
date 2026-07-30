@@ -63,7 +63,7 @@ async function main() {
   const userId = signUpResult.user.id
 
   // Override role to super_admin via direct DB update
-  // (better-auth's admin plugin hook sets role to defaultRole="user" on signUp if admin plugin is active;
+  // (better-auth's admin plugin hook sets role to defaultRole="user" on signUp;
   //  the direct update bypasses that and sets the correct role regardless.)
   await pool.query(`UPDATE "user" SET role = 'super_admin' WHERE id = $1`, [userId])
 

@@ -11,6 +11,9 @@ export const Route = createFileRoute('/_authenticated')({
         search: { redirect: location.href },
       })
     }
+    if (context.user.role === 'user') {
+      throw redirect({ to: '/no-access' })
+    }
   },
   component: AuthenticatedLayout,
 })

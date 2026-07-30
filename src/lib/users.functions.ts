@@ -9,9 +9,9 @@ import { requirePermission } from "#/lib/authz"
 import type { AuthSession } from "#/lib/authz"
 import { eq, desc, sql } from "drizzle-orm"
 
-export type UserRole = 'super_admin' | 'administrator' | 'moderator' | 'county_officer'
+export type UserRole = 'super_admin' | 'administrator' | 'moderator' | 'county_officer' | 'user'
 
-const ALLOWED_ROLES: UserRole[] = ['super_admin', 'administrator', 'moderator', 'county_officer']
+const ALLOWED_ROLES: UserRole[] = ['super_admin', 'administrator', 'moderator', 'county_officer', 'user']
 
 export interface UserItem {
   id: string
@@ -81,7 +81,7 @@ export function toUserItem(user: Record<string, unknown>, profile?: ProfileField
     id: user.id as string,
     email: user.email as string,
     name: user.name as string,
-    role: (user.role as string) ?? 'moderator',
+    role: (user.role as string) ?? 'user',
     banned: (user.banned as boolean) ?? false,
     banReason: (user.banReason as string | null) ?? null,
     banExpires: (user.banExpires as string | null) ?? null,

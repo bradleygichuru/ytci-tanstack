@@ -129,10 +129,11 @@ const roles = {
 The `role` field on the `user` table stores one of:
 
 | DB value (string) | Pretty name |
-|---|---|
+|---|---|---|
 | `super_admin` | Super Admin |
 | `administrator` | Administrator |
 | `moderator` | Moderator |
 | `county_officer` | County Content Officer |
+| `user` | End User |
 
-Note: snake_case for `super_admin` in the DB (the `administrator` and `moderator` strings are already DB-friendly; `county_officer` uses underscore convention).
+Note: snake_case for `super_admin` in the DB (the `administrator` and `moderator` strings are already DB-friendly; `county_officer` and `user` use underscore convention).

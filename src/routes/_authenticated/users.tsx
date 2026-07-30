@@ -19,10 +19,11 @@ const roleColors: Record<string, { bg: string; text: string }> = {
   administrator: { bg: '#345a00', text: '#ffffff' },
   moderator: { bg: 'var(--amber-bg)', text: 'var(--amber-deep)' },
   county_officer: { bg: 'var(--surface-2)', text: 'var(--on-surface)' },
+  user: { bg: '#42493e', text: '#ffffff' },
 }
 
 function RolePill({ role }: { role: string }) {
-  const s = roleColors[role] ?? roleColors.moderator
+  const s = roleColors[role] ?? roleColors.user
   return <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest" style={{ backgroundColor: s.bg, color: s.text }}>{role.replace(/_/g, ' ')}</span>
 }
 
@@ -38,7 +39,7 @@ export const Route = createFileRoute('/_authenticated/users')({
   },
   component: UsersPage })
 
-const ROLE_OPTIONS = ['super_admin', 'administrator', 'moderator', 'county_officer'] as const
+const ROLE_OPTIONS = ['super_admin', 'administrator', 'moderator', 'county_officer', 'user'] as const
 type RoleFilter = (typeof ROLE_OPTIONS)[number] | null
 type StatusFilter = 'all' | 'active' | 'banned'
 const PAGE_SIZE = 50

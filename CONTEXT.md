@@ -39,7 +39,13 @@ An uploaded file (image, video, PDF, 360 media, audio). Stored in Cloudflare R2 
 User-generated content (photo, video, journal) created by youth creators. Goes through moderation.
 
 ### User
-Platform user. Roles: `super_admin`, `administrator`, `moderator`, `county_officer`. Auth-core identity with role, ban state stored on the `users` table (better-auth-owned). Extended profile fields live in `user_profiles`. Deleting a user cascade-deletes their profile and audit entries.
+Platform user. Roles: `super_admin`, `administrator`, `moderator`, `county_officer`, `user`. Auth-core identity with role, ban state stored on the `users` table (better-auth-owned). Extended profile fields live in `user_profiles`. Deleting a user cascade-deletes their profile and audit entries.
+
+### User (role)
+An end-user with no admin dashboard access. Has no permissions on any resource.
+On sign-up they receive the `user` role by default; an admin must upgrade them
+to a higher role to grant dashboard access.
+_Avoid_: Normal user, regular user, basic user
 
 ### User Profile
 Extended profile data for a User, stored in the `user_profiles` table. One-to-one with `users.id`. Fields: `age_range`, `county`, `languages`, `preferences`, `consent_granted_at`. Has a `created_by` FK to the admin who created the profile. Lives in the admin dashboard's Postgres — never in the Go backend.

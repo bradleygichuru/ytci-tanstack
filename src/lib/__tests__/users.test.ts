@@ -102,21 +102,22 @@ describe('toUserItem', () => {
     expect(result.banReason).toBe('test')
   })
 
-  it('defaults role to moderator when user has no role', () => {
+  it('defaults role to user when user has no role', () => {
     const result = toUserItem(
       { id: '1', email: 'a@b.com', name: 'A' },
     )
-    expect(result.role).toBe('moderator')
+    expect(result.role).toBe('user')
   })
 })
 
 describe('getValidRoles', () => {
-  it('returns the four admin roles', () => {
+  it('returns the five admin roles', () => {
     const roles = getValidRoles()
-    expect(roles).toHaveLength(4)
+    expect(roles).toHaveLength(5)
     expect(roles).toContain('super_admin')
     expect(roles).toContain('administrator')
     expect(roles).toContain('moderator')
     expect(roles).toContain('county_officer')
+    expect(roles).toContain('user')
   })
 })

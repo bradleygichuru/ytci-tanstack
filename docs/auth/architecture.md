@@ -39,14 +39,14 @@ Provides:
 
 ```ts
 admin({
-  defaultRole: "moderator",     // role assigned to new users if not specified
+  defaultRole: "user",            // role assigned to new users if not specified (prev: "moderator")
   adminRoles: ["super_admin", "administrator"],  // roles considered admin
   roles,                        // from createAccessControl
   ac,                           // the access control instance
 })
 ```
 
-**defaultRole**: new users who sign up via the sign-up endpoint get `moderator`. The bootstrap script (#7) overrides this by creating a user and then updating the role to `super_admin` via a direct DB write (bypassing the admin plugin's database hook).
+**defaultRole**: new users who sign up via the sign-up endpoint get `user`. The bootstrap script (#7) overrides this by creating a user and then updating the role to `super_admin` via a direct DB write (bypassing the admin plugin's database hook).
 
 **adminRoles**: users with either `super_admin` or `administrator` role can access admin API endpoints (setRole, listUsers, etc.). The actual area-level permissions are gated by the `ac` (access control) object, not by `adminRoles` — the `adminRoles` option controls access to the admin's meta-endpoints (like `setRole` and `impersonateUser`).
 

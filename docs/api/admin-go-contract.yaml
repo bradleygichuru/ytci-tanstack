@@ -1175,7 +1175,7 @@ paths:
               properties:
                 email: { type: string, format: email }
                 name: { type: string }
-                role: { type: string, enum: [super_admin, administrator, moderator, county_officer] }
+                role: { type: string, enum: [user, super_admin, administrator, moderator, county_officer] }
                 password: { type: string, writeOnly: true }
               required: [email, name, password]
       responses:
@@ -1209,7 +1209,7 @@ paths:
               type: object
               properties:
                 name: { type: string }
-                role: { type: string, enum: [super_admin, administrator, moderator, county_officer] }
+                role: { type: string, enum: [user, super_admin, administrator, moderator, county_officer] }
                 email: { type: string, format: email }
       responses:
         "200":
@@ -1256,7 +1256,7 @@ paths:
             schema:
               type: object
               properties:
-                role: { type: string, enum: [super_admin, administrator, moderator, county_officer] }
+                role: { type: string, enum: [user, super_admin, administrator, moderator, county_officer] }
               required: [role]
       responses:
         "200":
@@ -1741,9 +1741,10 @@ components:
         id: { type: string }
         email: { type: string, format: email }
         name: { type: string }
-        role: { type: string, enum: [super_admin, administrator, moderator, county_officer] }
+        role: { type: string, enum: [user, super_admin, administrator, moderator, county_officer] }
         banned: { type: boolean }
         banReason: { type: string, nullable: true }
+        banExpires: { type: string, format: date-time, nullable: true }
         emailVerified: { type: boolean }
         createdAt: { type: string, format: date-time }
 

@@ -50,4 +50,5 @@ export const roles = {
     destinations: ["read", "create", "edit"],
     media: ["read", "create"],
   }),
+  user: ac.newRole({}),
 }
