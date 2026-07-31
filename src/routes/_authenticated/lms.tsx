@@ -38,9 +38,6 @@ export const Route = createFileRoute('/_authenticated/lms')({
   },
   component: LmsPage })
 
-let nextLessonId = 100
-let nextQId = 100
-
 function emptyCourse(): Course {
   return { id: '', title: '', description: '', category: '', difficulty: 'beginner', status: 'draft', lessons: [], lessonCount: 0, passThreshold: 70, quizQuestions: [], certificateEnabled: false, certificateTemplate: 'standard', enrollmentCount: 0, completionCount: 0, createdAt: '', updatedAt: '' }
 }
@@ -136,52 +133,21 @@ function LmsPage() {
       delete body.enrollmentCount
       delete body.completionCount
       delete body.lessonCount
-      let courseId: string | undefined
+      delete body.lessons
+      delete body.quizQuestions
       if (panelMode === 'create') {
         const created = await api.courses.create(body)
-        courseId = created.id
         toast.success('Course created')
+        await loadList()
+        setSelectedId(created.id)
+        setPanelMode('edit')
+        setActiveTab('lessons')
       } else if (selectedId) {
         await api.courses.update(selectedId, body)
-        courseId = selectedId
         toast.success('Course saved')
-      }
-
-      if (courseId) {
-        for (const lesson of editData.lessons) {
-          try {
-            await api.courses.createLesson(courseId, {
-              title: lesson.title,
-              contentType: lesson.type,
-              contentUrl: lesson.url,
-              duration: lesson.duration,
-              displayOrder: 0,
-            })
-          } catch { /* lesson sync best-effort */ }
-        }
-
-        if (editData.quizQuestions.length > 0) {
-          try {
-            await api.courses.upsertQuiz(courseId, {
-              title: editData.title,
-              questions: editData.quizQuestions.map((q) => ({
-                id: q.id,
-                question: q.text,
-                options: q.options,
-                correctIndex: q.correctIndex,
-              })),
-              passThreshold: editData.passThreshold,
-            })
-          } catch { /* quiz sync best-effort */ }
-        }
-      }
-
-      await loadList()
-      if (panelMode === 'create') {
-        setPanelMode('edit')
-        setSelectedId(courseId ?? null)
-      } else {
-        setSelectedId(null); setPanelMode('view')
+        await loadList()
+        setSelectedId(null)
+        setPanelMode('view')
       }
     } catch {
       toast.error('Failed to save course')
@@ -210,12 +176,23 @@ function LmsPage() {
     setEditData({ ...editData, lessons: editData.lessons.map(l => l.id === lessonId ? { ...l, [field]: value } : l) })
   }
 
-  const handleAddLesson = () => {
-    if (!editData) return
-    const id = `l${nextLessonId++}`
-    const newLesson: Lesson = { id, title: 'New Lesson', type: 'text', duration: 10, url: '', hasTranscript: false, hasCaption: false }
-    setEditData({ ...editData, lessons: [...editData.lessons, newLesson], lessonCount: editData.lessons.length + 1 })
-    setSelectedLesson(id)
+  const handleAddLesson = async () => {
+    if (!editData || !editData.id) return
+    try {
+      const created = await api.courses.createLesson(editData.id, {
+        title: 'New Lesson',
+        contentType: 'text',
+        contentUrl: '',
+        duration: 10,
+        displayOrder: editData.lessons.length,
+      })
+      const newLesson: Lesson = { id: created.id, title: 'New Lesson', type: 'text', duration: 10, url: '', hasTranscript: false, hasCaption: false }
+      const updated = { ...editData, lessons: [...editData.lessons, newLesson], lessonCount: editData.lessons.length + 1 }
+      setEditData(updated)
+      setSelectedLesson(created.id)
+    } catch {
+      toast.error('Failed to add lesson')
+    }
   }
 
   const handleDeleteLesson = async (lessonId: string) => {
@@ -234,7 +211,7 @@ function LmsPage() {
 
   const handleAddQuestion = () => {
     if (!editData) return
-    const id = `q${nextQId++}`
+    const id = `q${Date.now()}`
     const newQ: QuizQuestion = { id, text: 'New question?', options: ['Option A', 'Option B', 'Option C', 'Option D'], correctIndex: 0 }
     setEditData({ ...editData, quizQuestions: [...editData.quizQuestions, newQ] })
   }
@@ -397,7 +374,7 @@ function LmsPage() {
                             <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
                               <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                                 {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
-                                {panelMode === 'create' ? 'Create Course' : 'Save Changes'}
+                                Save Changes
                               </button>
                               {panelMode === 'edit' && (
                                 <button onClick={() => setShowDelete(true)} className="flex items-center gap-1.5 rounded-full border border-red-300 bg-card px-5 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
@@ -418,54 +395,24 @@ function LmsPage() {
             })}
             {panelMode === 'create' && editData && (
               <tr key="create-row"><td colSpan={7} className="border-b p-0">
-                <div className="border-t border-border">
-                  <div className="flex gap-1 border-b border-border bg-card px-5 pt-3">
-                    {TABS.map(t => <button key={t.key} onClick={() => setActiveTab(t.key)} className={`px-3 py-2 text-xs font-semibold ${activeTab === t.key ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground'}`}>{t.label}</button>)}
+                <div className="border-t border-border bg-card px-6 py-5">
+                  <h3 className="mb-4 text-sm font-bold text-foreground">New Course</h3>
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
+                    <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
+                    <FormSelect label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
+                    <FormSelect label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
+                    <FormInput label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />
+                    <FormInput label="Pass Threshold" value={String(editData.passThreshold ?? 70)} onChange={v => handleField('passThreshold', Number(v))} />
                   </div>
-                  <div className="bg-card px-6 py-5">
-                    {activeTab === 'lessons' && (
-                      <div className="flex flex-col gap-6 md:flex-row">
-                        <div className="w-full shrink-0 md:w-64">
-                          <div className="mb-2 flex items-center justify-between">
-                            <span className="text-xs font-bold text-foreground">Module Lessons</span>
-                            <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px]">0</span>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground p-2">No lessons yet. Save the course first, then add lessons.</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {activeTab === 'quiz' && (
-                      <div><p className="text-xs text-muted-foreground">Save the course first, then add quiz questions.</p></div>
-                    )}
-                    {activeTab === 'certificate' && (
-                      <div>
-                        <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={editData.certificateEnabled} onChange={e => handleField('certificateEnabled', e.target.checked)} className="accent-primary" /><span className="text-sm font-semibold text-foreground">Auto-generate certificate on quiz pass</span></label>
-                      </div>
-                    )}
-                    {activeTab === 'settings' && (
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div className="md:col-span-2"><FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} /></div>
-                        <div className="md:col-span-2"><FormInput label="Description" value={editData.description} onChange={v => handleField('description', v)} /></div>
-                        <FormSelect label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
-                        <FormSelect label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
-                        <FormInput label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />
-                        <FormInput label="Badge Name" value={editData.badgeName ?? ''} onChange={v => handleField('badgeName', v)} />
-                        <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />
-                        <FormInput label="Pass Threshold" value={String(editData.passThreshold ?? 70)} onChange={v => handleField('passThreshold', Number(v))} />
-                        <FormInput label="Image URL" value={editData.imageUrl ?? ''} onChange={v => handleField('imageUrl', v)} />
-                      </div>
-                    )}
-                    <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
-                      <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
-                        {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
-                        Create Course
-                      </button>
-                      <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
-                        <X className="h-4 w-4" weight="duotone" /> Cancel
-                      </button>
-                    </div>
+                  <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                    <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                      {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
+                      Create Course
+                    </button>
+                    <button onClick={() => { setSelectedId(null); setPanelMode('view'); setEditData(null) }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
+                      <X className="h-4 w-4" weight="duotone" /> Cancel
+                    </button>
                   </div>
                 </div>
               </td></tr>
