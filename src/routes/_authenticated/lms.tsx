@@ -18,7 +18,7 @@ import { courseSchema } from '#/lib/schemas/course.schema'
 
 interface Lesson { id: string; title: string; type: string; duration: number; url: string; hasTranscript: boolean; hasCaption: boolean }
 interface QuizQuestion { id: string; text: string; options: string[]; correctIndex: number }
-interface Course { id: string; title: string; description: string; category: string; difficulty: string; status: string; lessons: Lesson[]; lessonCount: number; passThreshold: number; quizQuestions: QuizQuestion[]; certificateEnabled: boolean; certificateTemplate: string; enrollmentCount: number; completionCount: number; createdAt: string; updatedAt: string }
+interface Course { id: string; title: string; description: string; category: string; difficulty: string; status: string; lessons: Lesson[]; lessonCount: number; passThreshold: number; quizQuestions: QuizQuestion[]; certificateEnabled: boolean; certificateTemplate: string; enrollmentCount: number; completionCount: number; badgeName?: string; badgeIconUrl?: string; imageUrl?: string; createdAt: string; updatedAt: string }
 
 const difficultyColors: Record<string, string> = { beginner: 'var(--leaf)', intermediate: 'var(--amber-deep)', advanced: 'var(--error)' }
 
@@ -132,19 +132,50 @@ function LmsPage() {
     if (!validate()) return
     setSaving(true)
     try {
-      let newId: string | undefined
+      let courseId: string | undefined
       if (panelMode === 'create') {
         const created = await api.courses.create(editData as unknown as Record<string, unknown>)
-        newId = created.id
+        courseId = created.id
         toast.success('Course created')
       } else if (selectedId) {
         await api.courses.update(selectedId, editData as unknown as Record<string, unknown>)
+        courseId = selectedId
         toast.success('Course saved')
       }
+
+      if (courseId) {
+        for (const lesson of editData.lessons) {
+          try {
+            await api.courses.createLesson(courseId, {
+              title: lesson.title,
+              contentType: lesson.type,
+              contentUrl: lesson.url,
+              duration: lesson.duration,
+              displayOrder: 0,
+            })
+          } catch { /* lesson sync best-effort */ }
+        }
+
+        if (editData.quizQuestions.length > 0) {
+          try {
+            await api.courses.upsertQuiz(courseId, {
+              title: editData.title,
+              questions: editData.quizQuestions.map((q) => ({
+                id: q.id,
+                question: q.text,
+                options: q.options,
+                correctIndex: q.correctIndex,
+              })),
+              passThreshold: editData.passThreshold,
+            })
+          } catch { /* quiz sync best-effort */ }
+        }
+      }
+
       await loadList()
-      if (newId) {
+      if (panelMode === 'create') {
         setPanelMode('edit')
-        setSelectedId(newId)
+        setSelectedId(courseId ?? null)
       } else {
         setSelectedId(null); setPanelMode('view')
       }
