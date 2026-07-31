@@ -29,6 +29,13 @@
       "when": 1785416620854,
       "tag": "0003_whole_pestilence",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785471022703,
+      "tag": "0004_dusty_pride",
+      "breakpoints": true
     }
   ]
 }
