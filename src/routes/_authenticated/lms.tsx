@@ -97,7 +97,7 @@ function LmsPage() {
     if (selectedId === id) { setSelectedId(null); return }
     setSelectedId(id); setActiveTab('lessons'); setPanelMode('edit')
     const c = data?.find(c => c.id === id)
-    if (c) { setEditData({ ...c, lessons: (c.lessons ?? []).map(l => ({ ...l })), quizQuestions: (c.quizQuestions ?? []).map(q => ({ ...q })) }); setSelectedLesson((c.lessons ?? [])[0]?.id ?? null) }
+    if (c) { setEditData({ ...c, lessons: (c.lessons ?? []).map(l => ({ ...l })), quizQuestions: (c.quizQuestions ?? []).map((q: Record<string, unknown>) => ({ id: q.id, text: q.text || q.question, options: q.options, correctIndex: q.correctIndex })) }); setSelectedLesson((c.lessons ?? [])[0]?.id ?? null) }
     setErrors({})
   }, [selectedId, data])
 
