@@ -49,7 +49,8 @@ export const Route = createFileRoute('/_authenticated/destinations')({
 function emptyDestination(): Partial<Destination> {
   return {
     name: '', slug: '', county: '', locality: '', category: '', status: 'draft',
-    latitude: 0, longitude: 0, mapLabel: '', accessRoute: '', distanceReference: '',
+    latitude: '' as unknown as number, longitude: '' as unknown as number,
+    mapLabel: '', accessRoute: '', distanceReference: '',
     shortDescription: '', fullDescription: '', significance: '', history: '',
     thingsToDo: '', suitableAudiences: '', duration: '', difficulty: 'easy', seasonality: '',
     indicativeFees: '', openingInfo: '', transportNotes: '', accessibility: [], facilities: '', safetyNotes: '',
@@ -148,6 +149,9 @@ function DestinationsPage() {
       if (typeof copy.accessibility === 'string') {
         copy.accessibility = (copy.accessibility as string).split(',').map(s => s.trim()).filter(Boolean)
       }
+      if (copy.lat != null) copy.latitude = copy.lat
+      if (copy.lng != null) copy.longitude = copy.lng
+      delete copy.lat; delete copy.lng
       if (Array.isArray(copy.media)) {
         const mediaArr = copy.media as Array<Record<string, unknown>>
         const video = mediaArr.find(m => m.type === 'video')
@@ -218,12 +222,20 @@ function DestinationsPage() {
     if (!validate()) return
     setSaving(true)
     try {
-      const body = { ...editData }
+      const body: Record<string, unknown> = { ...editData }
       if (Array.isArray(body.accessibility)) {
         body.accessibility = body.accessibility.join(',')
       }
-      body.latitude = Number(body.latitude) || 0
-      body.longitude = Number(body.longitude) || 0
+      if (body.latitude !== '' && body.latitude != null) {
+        body.latitude = Number(body.latitude)
+      } else {
+        delete body.latitude
+      }
+      if (body.longitude !== '' && body.longitude != null) {
+        body.longitude = Number(body.longitude)
+      } else {
+        delete body.longitude
+      }
       const mediaKeys = ['heroImageUrl','heroCaption','heroCredit','heroAlt','gallery','videoUrl','videoCaption','videoCredit','media']
       for (const k of mediaKeys) delete body[k]
       let newId: string | undefined

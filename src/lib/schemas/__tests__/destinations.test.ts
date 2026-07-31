@@ -48,4 +48,30 @@ describe('destinationSchema', () => {
     expect(result.latitude).toBe(-1.4061)
     expect(result.longitude).toBe(35.2506)
   })
+
+  it('coerces zero lat/lng to 0', () => {
+    const result = destinationSchema.parse({
+      name: 'Test', slug: 'test', county: 'Nairobi', category: 'culture',
+      latitude: 0, longitude: 0,
+    })
+    expect(result.latitude).toBe(0)
+    expect(result.longitude).toBe(0)
+  })
+
+  it('treats empty string lat/lng as undefined, not 0', () => {
+    const result = destinationSchema.parse({
+      name: 'Test', slug: 'test', county: 'Nairobi', category: 'culture',
+      latitude: '', longitude: '',
+    })
+    expect(result.latitude).toBeUndefined()
+    expect(result.longitude).toBeUndefined()
+  })
+
+  it('treats undefined lat/lng as undefined, not 0', () => {
+    const result = destinationSchema.parse({
+      name: 'Test', slug: 'test', county: 'Nairobi', category: 'culture',
+    })
+    expect(result.latitude).toBeUndefined()
+    expect(result.longitude).toBeUndefined()
+  })
 })

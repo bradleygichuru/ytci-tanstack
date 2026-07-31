@@ -9,8 +9,14 @@ export const destinationSchema = z.object({
   locality: nullableStr(),
   category: z.string().min(1, 'Category is required'),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
-  latitude: z.coerce.number().nullable().optional().default(0),
-  longitude: z.coerce.number().nullable().optional().default(0),
+  latitude: z.preprocess(
+    (val) => val === '' || val === null ? undefined : val,
+    z.coerce.number().nullable().optional(),
+  ),
+  longitude: z.preprocess(
+    (val) => val === '' || val === null ? undefined : val,
+    z.coerce.number().nullable().optional(),
+  ),
   mapLabel: nullableStr(),
   accessRoute: nullableStr(),
   distanceReference: nullableStr(),
