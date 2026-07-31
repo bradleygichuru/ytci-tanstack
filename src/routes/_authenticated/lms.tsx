@@ -137,6 +137,7 @@ function LmsPage() {
       delete body.quizQuestions
       if (panelMode === 'create') {
         const created = await api.courses.create(body)
+        setEditData(prev => prev ? { ...prev, id: created.id } : prev)
         toast.success('Course created')
         await loadList()
         setSelectedId(created.id)
