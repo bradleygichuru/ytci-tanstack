@@ -179,6 +179,8 @@ export const courses = pgTable("courses", {
   passThreshold: integer("pass_threshold").default(70),
   badgeName: text("badge_name"),
   badgeIconUrl: text("badge_icon_url"),
+  certificateEnabled: boolean("certificate_enabled").default(false),
+  certificateTemplate: text("certificate_template").default('standard'),
   createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
