@@ -130,6 +130,7 @@ function EventsPage() {
         if (!fieldErrors[path]) fieldErrors[path] = issue.message
       }
       setErrors(fieldErrors)
+      toast.error('Validation failed. Check highlighted fields.')
       return false
     }
     setErrors({})
