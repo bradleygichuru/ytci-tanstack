@@ -264,6 +264,8 @@ export const conservationActivities = pgTable("conservation_activities", {
   eventDate: date("event_date"),
   impactMetric: text("impact_metric"),
   impactTarget: integer("impact_target"),
+  impactActual: integer("impact_actual"),
+  measurementUnit: text("measurement_unit"),
   participantLimit: integer("participant_limit"),
   currentParticipants: integer("current_participants").default(0),
   status: text("status", { enum: ["open", "full", "completed", "cancelled"] }).default("open").notNull(),
@@ -282,12 +284,35 @@ export const conservationEvidence = pgTable("conservation_evidence", {
   activityId: uuid("activity_id").notNull().references(() => conservationActivities.id, { onDelete: "cascade" }),
   description: text("description"),
   mediaIds: text("media_ids"),
-  status: text("status", { enum: ["pending", "approved", "rejected"] }).default("pending").notNull(),
+  status: text("status", { enum: ["pending", "in_progress", "approved", "rejected"] }).default("pending").notNull(),
   moderatedBy: text("moderated_by").references(() => users.id, { onDelete: "set null" }),
   moderationNote: text("moderation_note"),
   moderatedAt: timestamp("moderated_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
 });
+
+export const conservationParticipants = pgTable("conservation_participants", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  activityId: uuid("activity_id").notNull().references(() => conservationActivities.id, { onDelete: "cascade" }),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("idx_conservation_participants_user_activity").on(table.userId, table.activityId),
+]);
+
+export const badges = pgTable("badges", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  badgeName: text("badge_name").notNull(),
+  badgeIconUrl: text("badge_icon_url"),
+  sourceType: text("source_type", { enum: ["challenge", "course", "conservation"] }).notNull(),
+  sourceId: uuid("source_id").notNull(),
+  sourceTitle: text("source_title"),
+  awardedAt: timestamp("awarded_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("idx_badges_user_source").on(table.userId, table.sourceType, table.sourceId),
+]);
 
 // ── Campaigns ──
 export const campaigns = pgTable("campaigns", {

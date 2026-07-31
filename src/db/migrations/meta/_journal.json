@@ -43,6 +43,13 @@
       "when": 1785499478501,
       "tag": "0005_talented_justice",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785504288271,
+      "tag": "0006_wise_punisher",
+      "breakpoints": true
     }
   ]
 }

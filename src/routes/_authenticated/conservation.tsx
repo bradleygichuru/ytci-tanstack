@@ -13,7 +13,7 @@ import { CursorPagination } from '#/components/shared/CursorPagination'
 import { ConservationActivitiesSkeleton, EvidenceSkeleton } from '#/components/skeletons/conservation-skeleton'
 import { conservationActivitySchema } from '#/lib/schemas/conservation.schema'
 
-interface Act { id: string; title: string; organizer: string; location: string; locationPrivacyLevel: string; date: string; impactMetric: string; measurementUnit: string; impactGoal: number; impactActual: number; participantCount: number; status: string; verificationRules: string; badgeAwarded: boolean; badgeName: string }
+interface Act { id: string; title: string; organizer: string; location: string; locationPrivacyLevel: string; date: string; impactMetric: string; measurementUnit: string; impactGoal: number; impactActual: number; participantCount: number; status: string; verificationRules: string; badgeAwarded: boolean; badgeName: string; badgeIconUrl?: string }
 interface Evid { id: string; activityTitle: string; userName: string; description: string; imageUrl: string; status: string; submittedAt: string; reviewedAt?: string; reviewerNote?: string }
 
 export const Route = createFileRoute('/_authenticated/conservation')({
@@ -155,16 +155,18 @@ function ConservationPage() {
     if (!validate()) return
     setSaving(true)
     try {
-      const body: Record<string, unknown> = { ...editData }
-      if (body.impactGoal !== '' && body.impactGoal != null) {
-        body.impactGoal = Number(body.impactGoal)
-      } else {
-        delete body.impactGoal
-      }
-      if (body.impactActual !== '' && body.impactActual != null) {
-        body.impactActual = Number(body.impactActual)
-      } else {
-        delete body.impactActual
+      const body: Record<string, unknown> = {
+        title: editData.title,
+        organizer: editData.organizer,
+        description: editData.location || null,
+        eventDate: editData.date || null,
+        impactMetric: editData.impactMetric || null,
+        badgeName: editData.badgeName || null,
+        impactTarget: editData.impactGoal ? Number(editData.impactGoal) : null,
+        impactActual: editData.impactActual ? Number(editData.impactActual) : null,
+        measurementUnit: editData.measurementUnit || null,
+        privacyLevel: editData.locationPrivacyLevel || 'public',
+        locationLabel: editData.location || null,
       }
       let newId: string | undefined
       if (panelMode === 'create') {
