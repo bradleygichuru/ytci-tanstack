@@ -158,7 +158,7 @@ function ConservationPage() {
       const body: Record<string, unknown> = {
         title: editData.title,
         organizer: editData.organizer,
-        description: editData.location || null,
+        description: null,
         eventDate: editData.date || null,
         impactMetric: editData.impactMetric || null,
         badgeName: editData.badgeName || null,
