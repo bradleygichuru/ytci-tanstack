@@ -7,9 +7,9 @@ describe('mediaAssetSchema', () => {
     expect(result.success).toBe(true)
   })
 
-  it('rejects empty caption', () => {
+  it('accepts empty caption', () => {
     const result = mediaAssetSchema.safeParse({ caption: '' })
-    expect(result.success).toBe(false)
+    expect(result.success).toBe(true)
   })
 
   it('fills defaults', () => {

@@ -1,7 +1,7 @@
 import z from 'zod'
 
 export const mediaAssetSchema = z.object({
-  caption: z.string().min(1, 'Caption is required'),
+  caption: z.string().optional().default(''),
   altText: z.string().optional().default(''),
   credit: z.string().optional().default(''),
   type: z.enum(['image', 'video', 'pdf', '360', 'audio']).default('image'),

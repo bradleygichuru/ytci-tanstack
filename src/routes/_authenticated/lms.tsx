@@ -118,6 +118,7 @@ function LmsPage() {
         if (!fieldErrors[path]) fieldErrors[path] = issue.message
       }
       setErrors(fieldErrors)
+      toast.error('Validation failed. Check highlighted fields.')
       return false
     }
     setErrors({})
@@ -202,12 +203,12 @@ function LmsPage() {
       if (editData.id && selectedId) {
         await api.courses.deleteLesson(editData.id, lessonId)
       }
+      const remaining = editData.lessons.filter(l => l.id !== lessonId)
+      setEditData({ ...editData, lessons: remaining, lessonCount: remaining.length })
+      if (selectedLesson === lessonId) setSelectedLesson(remaining[0]?.id ?? null)
     } catch {
       toast.warning('Failed to delete lesson from server')
     }
-    const remaining = editData.lessons.filter(l => l.id !== lessonId)
-    setEditData({ ...editData, lessons: remaining, lessonCount: remaining.length })
-    if (selectedLesson === lessonId) setSelectedLesson(remaining[0]?.id ?? null)
   }
 
   const handleAddQuestion = () => {
@@ -319,7 +320,7 @@ function LmsPage() {
                                               contentType: selectedLessonData.type,
                                               contentUrl: selectedLessonData.url,
                                               duration: selectedLessonData.duration,
-                                              displayOrder: editData.lessons.indexOf(selectedLessonData),
+                                              displayOrder: editData.lessons.findIndex(l => l.id === selectedLessonData.id),
                                             })
                                             toast.success('Lesson saved')
                                           } catch {

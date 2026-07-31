@@ -173,6 +173,7 @@ export const courses = pgTable("courses", {
   id: uuid("id").defaultRandom().primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
+  category: text("category"),
   difficulty: text("difficulty", { enum: ["beginner", "intermediate", "advanced"] }).notNull(),
   status: text("status", { enum: ["draft", "published"] }).default("draft").notNull(),
   imageUrl: text("image_url"),

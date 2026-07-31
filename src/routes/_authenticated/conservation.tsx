@@ -114,9 +114,14 @@ function ConservationPage() {
     setPanelMode('edit')
     const a = acts?.find(a => a.id === id)
     if (a) {
+      const mapped: Record<string, unknown> = { ...a }
+      // Map Go field names to frontend Act interface field names
+      if ('eventDate' in mapped) { mapped.date = mapped.eventDate; delete mapped.eventDate }
+      if ('currentParticipants' in mapped) { mapped.participantCount = mapped.currentParticipants; delete mapped.currentParticipants }
+      if ('impactTarget' in mapped) { mapped.impactGoal = mapped.impactTarget; delete mapped.impactTarget }
       setEditData(prev => {
-        if (prev?.id === id) return { ...prev, ...a }
-        return { ...emptyAct(), ...a }
+        if (prev?.id === id) return { ...prev, ...mapped }
+        return { ...emptyAct(), ...mapped }
       })
     }
     setErrors({})
@@ -160,10 +165,12 @@ function ConservationPage() {
         organizer: editData.organizer,
         description: null,
         eventDate: editData.date || null,
+        status: editData.status || 'open',
         impactMetric: editData.impactMetric || null,
         badgeName: editData.badgeName || null,
-        impactTarget: editData.impactGoal ? Number(editData.impactGoal) : null,
-        impactActual: editData.impactActual ? Number(editData.impactActual) : null,
+        badgeIconUrl: editData.badgeIconUrl || null,
+        impactTarget: editData.impactGoal != null ? Number(editData.impactGoal) : null,
+        impactActual: editData.impactActual != null ? Number(editData.impactActual) : null,
         measurementUnit: editData.measurementUnit || null,
         privacyLevel: editData.locationPrivacyLevel || 'public',
         locationLabel: editData.location || null,
