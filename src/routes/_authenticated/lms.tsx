@@ -17,7 +17,7 @@ import { LmsSkeleton } from '#/components/skeletons/lms-skeleton'
 import { courseSchema } from '#/lib/schemas/course.schema'
 
 interface Lesson { id: string; title: string; type: string; duration: number; url: string; hasTranscript: boolean; hasCaption: boolean }
-interface QuizQuestion { id: string; text: string; options: string[]; correctIndex: number }
+interface QuizQuestion { id: string; lessonId?: string; text: string; options: string[]; correctIndex: number }
 interface Course { id: string; title: string; description: string; category: string; difficulty: string; status: string; lessons: Lesson[]; lessonCount: number; passThreshold: number; quizQuestions: QuizQuestion[]; certificateEnabled: boolean; certificateTemplate: string; enrollmentCount: number; completionCount: number; badgeName?: string; badgeIconUrl?: string; imageUrl?: string; createdAt: string; updatedAt: string }
 
 const difficultyColors: Record<string, string> = { beginner: 'var(--leaf)', intermediate: 'var(--amber-deep)', advanced: 'var(--error)' }
@@ -94,7 +94,7 @@ function LmsPage() {
     if (selectedId === id) { setSelectedId(null); return }
     setSelectedId(id); setActiveTab('lessons'); setPanelMode('edit')
     const c = data?.find(c => c.id === id)
-    if (c) { setEditData({ ...c, lessons: (c.lessons ?? []).map(l => ({ ...l })), quizQuestions: (c.quizQuestions ?? []).map((q: Record<string, unknown>) => ({ id: q.id, text: q.text || q.question, options: q.options, correctIndex: q.correctIndex })) }); setSelectedLesson((c.lessons ?? [])[0]?.id ?? null) }
+    if (c) { setEditData({ ...c, lessons: (c.lessons ?? []).map(l => ({ ...l })), quizQuestions: (c.quizQuestions ?? []).map((q: any) => ({ id: q.id, lessonId: q.lessonId, text: q.text || q.question, options: q.options, correctIndex: q.correctIndex })) }); setSelectedLesson((c.lessons ?? [])[0]?.id ?? null) }
     setErrors({})
   }, [selectedId, data])
 
@@ -213,7 +213,7 @@ function LmsPage() {
   const handleAddQuestion = () => {
     if (!editData) return
     const id = `q${Date.now()}`
-    const newQ: QuizQuestion = { id, text: 'New question?', options: ['Option A', 'Option B', 'Option C', 'Option D'], correctIndex: 0 }
+    const newQ: QuizQuestion = { id, lessonId: selectedLesson ?? undefined, text: '', options: ['', '', '', ''], correctIndex: 0 }
     setEditData({ ...editData, quizQuestions: [...editData.quizQuestions, newQ] })
   }
 
@@ -317,32 +317,79 @@ function LmsPage() {
                             )}
                             {activeTab === 'quiz' && (
                               <div>
-                                <div className="mb-4 flex items-center gap-4">
+                                <div className="mb-4 flex flex-wrap items-center gap-4">
                                   <label className="text-xs font-semibold text-foreground">Pass threshold</label>
                                   <input type="range" min={0} max={100} value={editData.passThreshold} onChange={e => handleField('passThreshold', Number(e.target.value))} className="w-40 accent-primary" />
                                   <span className="text-sm font-bold text-primary">{editData.passThreshold}%</span>
                                 </div>
-                                <div className="space-y-3">
-                                  {editData.quizQuestions.map((q, i) => (
-                                    <div key={q.id} className="rounded-lg border border-border p-4">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-muted-foreground">Q{i + 1}</span>
-                                        <input value={q.text} onChange={e => { const qs = [...editData.quizQuestions]; qs[i] = { ...qs[i], text: e.target.value }; handleField('quizQuestions', qs) }} className="flex-1 rounded-md border border-border px-3 py-1.5 text-sm text-foreground" />
-                                        <button onClick={() => handleDeleteQuestion(q.id)} className="rounded p-1 text-destructive hover:bg-red-50"><Trash className="h-3 w-3" weight="duotone" /></button>
-                                      </div>
-                                      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                        {q.options.map((o, oi) => (
-                                          <label key={oi} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs cursor-pointer ${oi === q.correctIndex ? 'border-[var(--leaf)] bg-[var(--leaf-bg)]' : 'border-border'}`}>
-                                            <input type="radio" name={`q-${q.id}`} checked={oi === q.correctIndex} onChange={() => { const qs = [...editData.quizQuestions]; qs[i] = { ...qs[i], correctIndex: oi }; handleField('quizQuestions', qs) }} className="sr-only" />
-                                            <span className="w-4 text-muted-foreground">{String.fromCharCode(65 + oi)}.</span> {o}
-                                            {oi === q.correctIndex && <CheckCircle className="ml-auto h-3.5 w-3.5 text-success-leaf" weight="fill" />}
-                                          </label>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  ))}
-                                  <button onClick={handleAddQuestion} className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"><Plus className="h-4 w-4" weight="duotone" /> Add Question</button>
+                                <div className="mb-4 flex items-center gap-3">
+                                  <label className="text-xs font-semibold text-foreground">Lesson</label>
+                                  <select value={selectedLesson ?? ''} onChange={e => setSelectedLesson(e.target.value || null)} className="rounded-md border border-border px-3 py-1.5 text-xs text-foreground">
+                                    <option value="">All lessons</option>
+                                    {editData.lessons.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
+                                  </select>
+                                  <button onClick={handleAddQuestion} disabled={!editData.lessons.length} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-50"><Plus className="h-4 w-4" weight="duotone" /> Add Question</button>
                                 </div>
+                                <div className="space-y-3">
+                                  {editData.quizQuestions
+                                    .filter(q => !selectedLesson || q.lessonId === selectedLesson)
+                                    .map((q, qi) => {
+                                      const globalIdx = editData.quizQuestions.indexOf(q)
+                                      return (
+                                        <div key={q.id} className="rounded-lg border border-border p-4">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs font-bold text-muted-foreground">Q{qi + 1}</span>
+                                            {q.lessonId && editData.lessons.length > 1 && (
+                                              <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-muted-foreground">
+                                                {editData.lessons.find(l => l.id === q.lessonId)?.title ?? 'Unassigned'}
+                                              </span>
+                                            )}
+                                            <input value={q.text} onChange={e => { const qs = [...editData.quizQuestions]; qs[globalIdx] = { ...qs[globalIdx], text: e.target.value }; handleField('quizQuestions', qs) }} className="flex-1 rounded-md border border-border px-3 py-1.5 text-sm text-foreground" placeholder="Question text" />
+                                            <button onClick={() => handleDeleteQuestion(q.id)} className="rounded p-1 text-destructive hover:bg-red-50"><Trash className="h-3 w-3" weight="duotone" /></button>
+                                          </div>
+                                          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                            {q.options.map((o, oi) => (
+                                              <div key={oi} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs ${oi === q.correctIndex ? 'border-[var(--leaf)] bg-[var(--leaf-bg)]' : 'border-border'}`}>
+                                                <button type="button" onClick={() => { const qs = [...editData.quizQuestions]; qs[globalIdx] = { ...qs[globalIdx], correctIndex: oi }; handleField('quizQuestions', qs) }} className={`h-4 w-4 shrink-0 rounded-full border-2 flex items-center justify-center ${oi === q.correctIndex ? 'border-[var(--leaf)] bg-[var(--leaf)]' : 'border-muted-foreground'}`}>
+                                                  {oi === q.correctIndex && <CheckCircle className="h-3 w-3 text-white" weight="fill" />}
+                                                </button>
+                                                <span className="w-4 shrink-0 text-muted-foreground">{String.fromCharCode(65 + oi)}.</span>
+                                                <input value={o} onChange={e => { const qs = [...editData.quizQuestions]; const opts = [...qs[globalIdx].options]; opts[oi] = e.target.value; qs[globalIdx] = { ...qs[globalIdx], options: opts }; handleField('quizQuestions', qs) }} className="flex-1 bg-transparent text-foreground outline-none" placeholder={`Option ${String.fromCharCode(65 + oi)}`} />
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )
+                                    })}
+                                  {editData.quizQuestions.filter(q => !selectedLesson || q.lessonId === selectedLesson).length === 0 && (
+                                    <p className="text-xs text-muted-foreground p-2">{editData.lessons.length ? 'No questions for this lesson yet.' : 'Add lessons first, then add questions.'}</p>
+                                  )}
+                                </div>
+                                {editData.quizQuestions.length > 0 && (
+                                  <div className="mt-4 border-t border-border pt-4">
+                                    <button onClick={async () => {
+                                      if (!editData?.id || !selectedId) return
+                                      try {
+                                        await api.courses.upsertQuiz(selectedId, {
+                                          title: editData.title,
+                                          questions: editData.quizQuestions.map((q) => ({
+                                            id: q.id,
+                                            lessonId: q.lessonId,
+                                            question: q.text,
+                                            options: q.options.filter(o => o.trim()),
+                                            correctIndex: q.correctIndex,
+                                          })),
+                                          passThreshold: editData.passThreshold,
+                                        })
+                                        toast.success('Quiz saved')
+                                      } catch {
+                                        toast.error('Failed to save quiz')
+                                      }
+                                    }} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm">
+                                      <FloppyDisk className="h-4 w-4" weight="duotone" /> Upsert Quiz
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             )}
                             {activeTab === 'certificate' && (

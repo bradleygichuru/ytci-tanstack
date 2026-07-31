@@ -205,7 +205,9 @@ export const quizzes = pgTable("quizzes", {
   questions: jsonb("questions").notNull(),
   passThreshold: integer("pass_threshold").default(70),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  uniqueIndex("idx_quizzes_course_id").on(table.courseId),
+]);
 
 export const courseEnrollments = pgTable("course_enrollments", {
   id: uuid("id").defaultRandom().primaryKey(),

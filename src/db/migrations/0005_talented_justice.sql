@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "idx_quizzes_course_id" ON "quizzes" USING btree ("course_id");
