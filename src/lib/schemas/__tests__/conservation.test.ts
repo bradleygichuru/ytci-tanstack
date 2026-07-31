@@ -22,5 +22,38 @@ describe('conservationActivitySchema', () => {
     expect(result.status).toBe('open')
     expect(result.impactMetric).toBe('')
     expect(result.participantCount).toBe(0)
+    expect(result.measurementUnit).toBe('')
+  })
+
+  it('coerces string impactGoal to number', () => {
+    const result = conservationActivitySchema.parse({
+      title: 'Test', organizer: 'Org', location: 'Loc',
+      impactGoal: '100',
+    })
+    expect(result.impactGoal).toBe(100)
+  })
+
+  it('coerces string impactActual to number', () => {
+    const result = conservationActivitySchema.parse({
+      title: 'Test', organizer: 'Org', location: 'Loc',
+      impactActual: '42.5',
+    })
+    expect(result.impactActual).toBe(42.5)
+  })
+
+  it('treats empty string impactGoal as undefined, not 0', () => {
+    const result = conservationActivitySchema.parse({
+      title: 'Test', organizer: 'Org', location: 'Loc',
+      impactGoal: '',
+    })
+    expect(result.impactGoal).toBeUndefined()
+  })
+
+  it('treats undefined impactGoal as undefined', () => {
+    const result = conservationActivitySchema.parse({
+      title: 'Test', organizer: 'Org', location: 'Loc',
+    })
+    expect(result.impactGoal).toBeUndefined()
+    expect(result.impactActual).toBeUndefined()
   })
 })

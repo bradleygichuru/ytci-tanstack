@@ -161,7 +161,7 @@ function EventsPage() {
       if (heroMid && (newId || selectedId)) {
         await api.events.uploadMedia(newId || selectedId!, { heroMediaId: heroMid })
       }
-
+      mediaIds.current = {}
       await loadList()
       if (newId) {
         setPanelMode('edit')

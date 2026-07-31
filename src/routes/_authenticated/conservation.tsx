@@ -27,7 +27,7 @@ export const Route = createFileRoute('/_authenticated/conservation')({
   component: ConservationPage })
 
 function emptyAct(): Act {
-  return { id: '', title: '', organizer: '', location: '', locationPrivacyLevel: 'public', date: '', impactMetric: '', measurementUnit: '', impactGoal: 0, impactActual: 0, participantCount: 0, status: 'open', verificationRules: '', badgeAwarded: false, badgeName: '' }
+  return { id: '', title: '', organizer: '', location: '', locationPrivacyLevel: 'public', date: '', impactMetric: '', measurementUnit: '', impactGoal: '' as unknown as number, impactActual: '' as unknown as number, participantCount: 0, status: 'open', verificationRules: '', badgeAwarded: false, badgeName: '' }
 }
 
 function ConservationPage() {
@@ -155,13 +155,24 @@ function ConservationPage() {
     if (!validate()) return
     setSaving(true)
     try {
+      const body: Record<string, unknown> = { ...editData }
+      if (body.impactGoal !== '' && body.impactGoal != null) {
+        body.impactGoal = Number(body.impactGoal)
+      } else {
+        delete body.impactGoal
+      }
+      if (body.impactActual !== '' && body.impactActual != null) {
+        body.impactActual = Number(body.impactActual)
+      } else {
+        delete body.impactActual
+      }
       let newId: string | undefined
       if (panelMode === 'create') {
-        const created = await api.conservation.activities.create(editData as unknown as Record<string, unknown>)
+        const created = await api.conservation.activities.create(body)
         newId = created.id
         toast.success('Activity created')
       } else if (selectedId) {
-        await api.conservation.activities.update(selectedId, editData as unknown as Record<string, unknown>)
+        await api.conservation.activities.update(selectedId, body)
         toast.success('Activity saved')
       }
       await loadList()
@@ -308,7 +319,7 @@ function ConservationPage() {
                             <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
                       <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} error={errors.status} />
                             <FormInput label="Impact Metric" value={editData.impactMetric} onChange={v => handleField('impactMetric', v)} />
-                            <FormInput label="Goal Count" value={String(editData.impactGoal)} onChange={v => handleField('impactGoal', Number(v))} />
+                            <FormInput label="Goal Count" value={String(editData.impactGoal ?? '')} onChange={v => handleField('impactGoal', v)} />
                             <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
                             <FormInput label="Badge Name" value={editData.badgeName} onChange={v => handleField('badgeName', v)} />
                             <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />
@@ -361,7 +372,7 @@ function ConservationPage() {
                       <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
                       <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} error={errors.status} />
                       <FormInput label="Impact Metric" value={editData.impactMetric} onChange={v => handleField('impactMetric', v)} />
-                      <FormInput label="Goal Count" value={String(editData.impactGoal)} onChange={v => handleField('impactGoal', Number(v))} />
+                      <FormInput label="Goal Count" value={String(editData.impactGoal ?? '')} onChange={v => handleField('impactGoal', v)} />
                       <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
                       <FormInput label="Badge Name" value={editData.badgeName} onChange={v => handleField('badgeName', v)} />
                       <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />

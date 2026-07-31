@@ -161,7 +161,7 @@ function UsersPage() {
 
   const handleSave = useCallback(async () => {
     if (!selectedId || !editData) return
-    const patch: Record<string, unknown> = { userId: selectedId }
+    const patch: Record<string, unknown> = {}
     const orig = data.find(u => u.id === selectedId)
     if (!orig) return
     if (editData.name !== orig.name) patch.name = editData.name
@@ -172,7 +172,7 @@ function UsersPage() {
     if (editData.languages !== orig.languages) patch.languages = editData.languages
     if (editData.preferences !== orig.preferences) patch.preferences = editData.preferences
     if (editData.consentGrantedAt !== orig.consentGrantedAt) patch.consentGrantedAt = editData.consentGrantedAt
-    if (Object.keys(patch).length <= 1) return
+    if (Object.keys(patch).length === 0) return
     await apiPost('update', patch)
     await loadData(filtersRef.current)
     setSelectedId(null)

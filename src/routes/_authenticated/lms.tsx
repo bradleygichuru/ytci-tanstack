@@ -132,13 +132,17 @@ function LmsPage() {
     if (!validate()) return
     setSaving(true)
     try {
+      const body: Record<string, unknown> = { ...editData }
+      delete body.enrollmentCount
+      delete body.completionCount
+      delete body.lessonCount
       let courseId: string | undefined
       if (panelMode === 'create') {
-        const created = await api.courses.create(editData as unknown as Record<string, unknown>)
+        const created = await api.courses.create(body)
         courseId = created.id
         toast.success('Course created')
       } else if (selectedId) {
-        await api.courses.update(selectedId, editData as unknown as Record<string, unknown>)
+        await api.courses.update(selectedId, body)
         courseId = selectedId
         toast.success('Course saved')
       }
