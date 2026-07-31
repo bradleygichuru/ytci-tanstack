@@ -311,6 +311,7 @@ function ConservationPage() {
                             <FormInput label="Goal Count" value={String(editData.impactGoal)} onChange={v => handleField('impactGoal', Number(v))} />
                             <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
                             <FormInput label="Badge Name" value={editData.badgeName} onChange={v => handleField('badgeName', v)} />
+                            <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />
                             <div className="sm:col-span-2"><label className="mb-1 block text-xs font-semibold text-foreground">Verification Rules</label><textarea value={editData.verificationRules} onChange={e => handleField('verificationRules', e.target.value)} rows={3} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>
                           </div>
                           <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
@@ -363,6 +364,7 @@ function ConservationPage() {
                       <FormInput label="Goal Count" value={String(editData.impactGoal)} onChange={v => handleField('impactGoal', Number(v))} />
                       <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
                       <FormInput label="Badge Name" value={editData.badgeName} onChange={v => handleField('badgeName', v)} />
+                      <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />
                     </div>
                     <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
                       <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">

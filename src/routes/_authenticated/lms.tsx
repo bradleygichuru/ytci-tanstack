@@ -346,6 +346,9 @@ function LmsPage() {
                                 <FormSelect label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
                                 <FormSelect label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
                                 <FormInput label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />
+                                <FormInput label="Badge Name" value={editData.badgeName ?? ''} onChange={v => handleField('badgeName', v)} />
+                                <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />
+                                <FormInput label="Pass Threshold" value={String(editData.passThreshold ?? 70)} onChange={v => handleField('passThreshold', Number(v))} />
                               </div>
                             )}
                             <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
@@ -405,6 +408,9 @@ function LmsPage() {
                         <FormSelect label="Difficulty" value={editData.difficulty} options={['beginner', 'intermediate', 'advanced']} onChange={v => handleField('difficulty', v)} />
                         <FormSelect label="Status" value={editData.status} options={['draft', 'published']} onChange={v => handleField('status', v)} />
                         <FormInput label="Category" value={editData.category ?? ''} onChange={v => handleField('category', v)} />
+                        <FormInput label="Badge Name" value={editData.badgeName ?? ''} onChange={v => handleField('badgeName', v)} />
+                        <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />
+                        <FormInput label="Pass Threshold" value={String(editData.passThreshold ?? 70)} onChange={v => handleField('passThreshold', Number(v))} />
                       </div>
                     )}
                     <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
