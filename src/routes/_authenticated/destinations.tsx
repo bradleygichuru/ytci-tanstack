@@ -195,6 +195,24 @@ function DestinationsPage() {
     return true
   }
 
+  const linkMedia = useCallback(async (entityId: string, data: Partial<Destination>, warnMsg: string) => {
+    const galleryUrls = data.gallery ?? []
+    const heroMid = data.heroImageUrl ? mediaIds[data.heroImageUrl] : undefined
+    const videoMid = data.videoUrl ? mediaIds[data.videoUrl] : undefined
+    const galleryMids = galleryUrls.map(u => mediaIds[u]).filter(Boolean) as string[]
+    if (heroMid || galleryMids.length > 0 || videoMid) {
+      try {
+        await api.destinations.uploadMedia(entityId, {
+          heroMediaId: heroMid,
+          galleryMediaIds: galleryMids.length > 0 ? galleryMids : undefined,
+          videoMediaId: videoMid,
+        })
+      } catch {
+        toast.warning(warnMsg)
+      }
+    }
+  }, [mediaIds, api])
+
   const handleSave = useCallback(async () => {
     if (!editData) return
     if (!validate()) return
@@ -212,41 +230,14 @@ function DestinationsPage() {
       if (panelMode === 'create') {
         const created = await api.destinations.create(body)
         newId = created.id
-        const galleryUrls = editData.gallery ?? []
-        const heroMid = editData.heroImageUrl ? (mediaIds[editData.heroImageUrl] || editData.heroImageUrl) : undefined
-        const videoMid = editData.videoUrl ? (mediaIds[editData.videoUrl] || editData.videoUrl) : undefined
-        const galleryMids = galleryUrls.map(u => mediaIds[u] || u)
-        if (heroMid || galleryMids.length > 0 || videoMid) {
-          try {
-            await api.destinations.uploadMedia(newId, {
-              heroMediaId: heroMid,
-              galleryMediaIds: galleryMids.length > 0 ? galleryMids : undefined,
-              videoMediaId: videoMid,
-            })
-          } catch {
-            toast.warning('Destination created but media linking failed')
-          }
-        }
+        await linkMedia(newId, editData, 'Destination created but media linking failed')
         toast.success('Destination created')
       } else if (selectedId) {
         await api.destinations.update(selectedId, body)
         toast.success('Destination saved')
-        const galleryUrls = editData.gallery ?? []
-        const heroMid = editData.heroImageUrl ? (mediaIds[editData.heroImageUrl] || editData.heroImageUrl) : undefined
-        const videoMid = editData.videoUrl ? (mediaIds[editData.videoUrl] || editData.videoUrl) : undefined
-        const galleryMids = galleryUrls.map(u => mediaIds[u] || u)
-        if (heroMid || galleryMids.length > 0 || videoMid) {
-          try {
-            await api.destinations.uploadMedia(selectedId, {
-              heroMediaId: heroMid,
-              galleryMediaIds: galleryMids.length > 0 ? galleryMids : undefined,
-              videoMediaId: videoMid,
-            })
-          } catch {
-            toast.warning('Destination saved but media linking failed')
-          }
-        }
+        await linkMedia(selectedId, editData, 'Destination saved but media linking failed')
       }
+      setMediaIds({})
       await loadList()
       if (newId) {
         setPanelMode('edit')
@@ -260,7 +251,7 @@ function DestinationsPage() {
     } finally {
       setSaving(false)
     }
-  }, [editData, selectedId, panelMode, api, loadList])
+  }, [editData, selectedId, panelMode, api, loadList, linkMedia])
 
   const handleDelete = useCallback(async () => {
     if (!selectedId) return
