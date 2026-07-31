@@ -18,6 +18,7 @@ export interface ConservationActivity {
   verificationRules: string
   badgeAwarded: boolean
   badgeName: string
+  badgeIconUrl?: string
 }
 
 export interface EvidenceItem {

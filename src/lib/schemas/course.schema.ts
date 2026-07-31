@@ -7,6 +7,9 @@ export const courseSchema = z.object({
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']).default('beginner'),
   status: z.enum(['draft', 'published']).default('draft'),
   passThreshold: z.number().min(0).max(100).default(70),
+  imageUrl: z.string().optional().default(''),
+  badgeName: z.string().optional().default(''),
+  badgeIconUrl: z.string().optional().default(''),
   certificateEnabled: z.boolean().default(false),
   certificateTemplate: z.string().optional().default('standard'),
 })

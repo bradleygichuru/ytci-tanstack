@@ -8,6 +8,8 @@ export const conservationActivitySchema = z.object({
   impactMetric: z.string().optional().default(''),
   participantCount: z.number().optional().default(0),
   status: z.enum(['open', 'full', 'completed', 'cancelled']).default('open'),
+  badgeName: z.string().optional().default(''),
+  badgeIconUrl: z.string().optional().default(''),
 })
 
 export type ConservationActivityInput = z.input<typeof conservationActivitySchema>

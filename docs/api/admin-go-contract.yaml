@@ -601,6 +601,106 @@ paths:
         - { name: id, in: path, required: true, schema: { type: string } }
       responses:
         "204": { description: Deleted }
+  /courses/{id}/lessons:
+    post:
+      summary: Create a lesson
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string }, description: Course ID }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LessonInput"
+      responses:
+        "201":
+          description: Created lesson
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  status: { type: string }
+  /courses/{id}/lessons/{lessonId}:
+    patch:
+      summary: Update a lesson
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string }, description: Course ID }
+        - { name: lessonId, in: path, required: true, schema: { type: string }, description: Lesson ID }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LessonInput"
+      responses:
+        "200":
+          description: Updated lesson
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+    delete:
+      summary: Delete a lesson
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string }, description: Course ID }
+        - { name: lessonId, in: path, required: true, schema: { type: string }, description: Lesson ID }
+      responses:
+        "200":
+          description: Deleted lesson
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+  /courses/{id}/quiz:
+    post:
+      summary: Create or replace a quiz
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string }, description: Course ID }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizInput"
+      responses:
+        "200":
+          description: Upserted quiz
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  status: { type: string }
+    delete:
+      summary: Delete a quiz
+      security: [{ BearerAuth: [] }]
+      tags: [LMS]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string }, description: Course ID }
+      responses:
+        "200":
+          description: Deleted quiz
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
 
   # ──────────────── Conservation ────────────────
   /conservation/activities:
@@ -1507,6 +1607,41 @@ components:
         description: { type: string }
         difficulty: { type: string, enum: [beginner, intermediate, advanced] }
         status: { type: string, enum: [draft, published] }
+        imageUrl: { type: string, format: uri }
+        passThreshold: { type: integer, minimum: 0, maximum: 100 }
+        badgeName: { type: string }
+        badgeIconUrl: { type: string, format: uri }
+
+    # ── Lessons ──
+    LessonInput:
+      type: object
+      required: [title, contentType]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        contentType: { type: string, enum: [video, pdf, text] }
+        contentUrl: { type: string, format: uri }
+        duration: { type: integer }
+        displayOrder: { type: integer }
+
+    # ── Quiz ──
+    QuizInput:
+      type: object
+      required: [title, questions]
+      properties:
+        title: { type: string }
+        questions:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              question: { type: string }
+              options:
+                type: array
+                items: { type: string }
+              correctIndex: { type: integer }
+        passThreshold: { type: integer, minimum: 0, maximum: 100 }
 
     # ── Conservation ──
     ConservationActivity:
@@ -1521,6 +1656,8 @@ components:
         impactMetric: { type: string }
         participantCount: { type: integer }
         status: { type: string, enum: [open, full, completed, cancelled] }
+        badgeName: { type: string }
+        badgeIconUrl: { type: string, format: uri }
         createdAt: { type: string, format: date-time }
 
     # ── Events ──
