@@ -218,8 +218,15 @@ function LmsPage() {
     setSelectedLesson(id)
   }
 
-  const handleDeleteLesson = (lessonId: string) => {
+  const handleDeleteLesson = async (lessonId: string) => {
     if (!editData) return
+    try {
+      if (editData.id && selectedId) {
+        await api.courses.deleteLesson(editData.id, lessonId)
+      }
+    } catch {
+      toast.warning('Failed to delete lesson from server')
+    }
     const remaining = editData.lessons.filter(l => l.id !== lessonId)
     setEditData({ ...editData, lessons: remaining, lessonCount: remaining.length })
     if (selectedLesson === lessonId) setSelectedLesson(remaining[0]?.id ?? null)
