@@ -204,6 +204,8 @@ function DestinationsPage() {
       if (Array.isArray(body.accessibility)) {
         body.accessibility = body.accessibility.join(',')
       }
+      body.latitude = Number(body.latitude) || 0
+      body.longitude = Number(body.longitude) || 0
       const mediaKeys = ['heroImageUrl','heroCaption','heroCredit','heroAlt','gallery','videoUrl','videoCaption','videoCredit','media']
       for (const k of mediaKeys) delete body[k]
       let newId: string | undefined
@@ -365,8 +367,8 @@ function DestinationsPage() {
                             )}
                             {activeTab === 'location' && (
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <FormInput label="Latitude" value={String(editData.latitude ?? 0)} onChange={v => handleField('latitude', Number(v))} />
-                                <FormInput label="Longitude" value={String(editData.longitude ?? 0)} onChange={v => handleField('longitude', Number(v))} />
+                                <FormInput label="Latitude" value={String(editData.latitude ?? '')} onChange={v => handleField('latitude', v)} error={errors.latitude} />
+                                <FormInput label="Longitude" value={String(editData.longitude ?? '')} onChange={v => handleField('longitude', v)} error={errors.longitude} />
                                 <FormInput label="Map Label" value={editData.mapLabel ?? ''} onChange={v => handleField('mapLabel', v)} />
                                 <FormInput label="Access Route" value={editData.accessRoute ?? ''} onChange={v => handleField('accessRoute', v)} />
                                 <FormInput label="Distance Reference" value={editData.distanceReference ?? ''} onChange={v => handleField('distanceReference', v)} />
@@ -587,8 +589,8 @@ function DestinationsPage() {
                         )}
                         {activeTab === 'location' && (
                           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <FormInput label="Latitude" value={String(editData.latitude ?? 0)} onChange={v => handleField('latitude', Number(v))} />
-                            <FormInput label="Longitude" value={String(editData.longitude ?? 0)} onChange={v => handleField('longitude', Number(v))} />
+                            <FormInput label="Latitude" value={String(editData.latitude ?? '')} onChange={v => handleField('latitude', v)} error={errors.latitude} />
+                            <FormInput label="Longitude" value={String(editData.longitude ?? '')} onChange={v => handleField('longitude', v)} error={errors.longitude} />
                             <FormInput label="Map Label" value={editData.mapLabel ?? ''} onChange={v => handleField('mapLabel', v)} />
                             <FormInput label="Access Route" value={editData.accessRoute ?? ''} onChange={v => handleField('accessRoute', v)} />
                             <FormInput label="Distance Reference" value={editData.distanceReference ?? ''} onChange={v => handleField('distanceReference', v)} />

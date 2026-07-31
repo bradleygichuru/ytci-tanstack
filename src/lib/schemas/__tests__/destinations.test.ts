@@ -39,4 +39,13 @@ describe('destinationSchema', () => {
     expect(result.difficulty).toBe('easy')
     expect(result.accessibility).toEqual([])
   })
+
+  it('coerces string lat/lng input to numbers', () => {
+    const result = destinationSchema.parse({
+      name: 'Test', slug: 'test', county: 'Nairobi', category: 'culture',
+      latitude: '-1.4061', longitude: '35.2506',
+    })
+    expect(result.latitude).toBe(-1.4061)
+    expect(result.longitude).toBe(35.2506)
+  })
 })
