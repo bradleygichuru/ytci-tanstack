@@ -10,8 +10,8 @@ export const courseSchema = z.object({
   imageUrl: z.string().optional().default(''),
   badgeName: z.string().optional().default(''),
   badgeIconUrl: z.string().optional().default(''),
-  certificateEnabled: z.boolean().default(false),
-  certificateTemplate: z.string().optional().default('standard'),
+  certificateEnabled: z.boolean().nullable().default(false),
+  certificateTemplate: z.string().nullable().optional().default('standard'),
 })
 
 export type CourseInput = z.input<typeof courseSchema>
