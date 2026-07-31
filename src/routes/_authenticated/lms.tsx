@@ -310,6 +310,25 @@ function LmsPage() {
                                           <label className="flex items-center gap-1.5 text-xs font-medium text-foreground"><input type="checkbox" checked={selectedLessonData.hasCaption} onChange={e => handleLessonField(selectedLessonData.id, 'hasCaption', e.target.checked)} className="accent-primary" /> Captions</label>
                                         </div>
                                       </div>
+                                      <div className="border-t border-border pt-3">
+                                        <button onClick={async () => {
+                                          if (!editData?.id) return
+                                          try {
+                                            await api.courses.updateLesson(editData.id, selectedLessonData.id, {
+                                              title: selectedLessonData.title,
+                                              contentType: selectedLessonData.type,
+                                              contentUrl: selectedLessonData.url,
+                                              duration: selectedLessonData.duration,
+                                              displayOrder: editData.lessons.indexOf(selectedLessonData),
+                                            })
+                                            toast.success('Lesson saved')
+                                          } catch {
+                                            toast.error('Failed to save lesson')
+                                          }
+                                        }} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white shadow-sm">
+                                          <FloppyDisk className="h-3.5 w-3.5" weight="duotone" /> Save Lesson
+                                        </button>
+                                      </div>
                                     </div>
                                   )}
                                 </div>
@@ -328,7 +347,7 @@ function LmsPage() {
                                     <option value="">All lessons</option>
                                     {editData.lessons.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
                                   </select>
-                                  <button onClick={handleAddQuestion} disabled={!editData.lessons.length} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-50"><Plus className="h-4 w-4" weight="duotone" /> Add Question</button>
+                                  <button onClick={handleAddQuestion} disabled={!editData.lessons.length || !selectedLesson} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-50"><Plus className="h-4 w-4" weight="duotone" /> Add Question</button>
                                 </div>
                                 <div className="space-y-3">
                                   {editData.quizQuestions
