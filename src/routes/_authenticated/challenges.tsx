@@ -343,7 +343,7 @@ function ChallengesPage() {
                       {(() => {
                         if (!e.evidence) return '—'
                         try {
-                          const ev = JSON.parse(e.evidence)
+                          const ev = typeof e.evidence === 'string' ? JSON.parse(e.evidence) : e.evidence
                           return (
                             <div className="space-y-0.5">
                               {ev.description && <div className="max-w-xs truncate">{ev.description}</div>}

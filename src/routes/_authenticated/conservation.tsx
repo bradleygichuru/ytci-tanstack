@@ -429,7 +429,7 @@ function ConservationPage() {
                     {e.treesPlanted != null || e.hoursSpent != null ? (
                       <div className="space-y-0.5">
                         {e.treesPlanted != null && <div>{e.treesPlanted} trees</div>}
-                        {e.hoursSpent != null && <div>{e.hoursSpent}h</div>}
+                        {e.hoursSpent != null && <div>{Math.round(e.hoursSpent * 10) / 10}h</div>}
                       </div>
                     ) : '—'}
                   </td>
