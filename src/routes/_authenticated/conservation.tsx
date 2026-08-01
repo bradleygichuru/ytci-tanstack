@@ -426,12 +426,12 @@ function ConservationPage() {
                   <td className="px-5 py-3"><span className="flex items-center gap-1 text-xs text-muted-foreground"><User className="h-3 w-3" weight="duotone" /> {e.userName}</span></td>
                   <td className="max-w-xs truncate px-5 py-3 text-xs text-muted-foreground">{e.description}</td>
                   <td className="px-5 py-3 text-xs text-muted-foreground">
-                    {(e.treesPlanted != null || e.hoursSpent != null) && (
+                    {e.treesPlanted != null || e.hoursSpent != null ? (
                       <div className="space-y-0.5">
                         {e.treesPlanted != null && <div>{e.treesPlanted} trees</div>}
                         {e.hoursSpent != null && <div>{e.hoursSpent}h</div>}
                       </div>
-                    )}
+                    ) : '—'}
                   </td>
                   <td className="px-5 py-3 text-xs text-muted-foreground">
                     {e.lat != null && e.lng != null ? (
