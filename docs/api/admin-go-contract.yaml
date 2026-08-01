@@ -785,11 +785,20 @@ paths:
                           properties:
                             id: { type: string }
                             userId: { type: string }
+                            userName: { type: string }
                             activityId: { type: string }
-                            description: { type: string }
-                            imageUrl: { type: string, format: uri }
+                            activityTitle: { type: string, nullable: true }
+                            description: { type: string, nullable: true }
+                            mediaIds: { type: string, nullable: true }
+                            treesPlanted: { type: integer, nullable: true }
+                            hoursSpent: { type: number, format: double, nullable: true }
+                            lat: { type: number, format: double, nullable: true }
+                            lng: { type: number, format: double, nullable: true }
                             status: { type: string, enum: [pending, approved, rejected] }
-                            submittedAt: { type: string, format: date-time }
+                            moderatedBy: { type: string, nullable: true }
+                            reviewerNote: { type: string, nullable: true }
+                            reviewedAt: { type: string, format: date-time, nullable: true }
+                            createdAt: { type: string, format: date-time }
   /conservation/evidence/{id}/review:
     post:
       summary: Review evidence submission
@@ -1641,6 +1650,7 @@ components:
                 type: array
                 items: { type: string }
               correctIndex: { type: integer }
+              hint: { type: string }
         passThreshold: { type: integer, minimum: 0, maximum: 100 }
 
     # ── Conservation ──
@@ -1850,6 +1860,16 @@ components:
         challengeTitle: { type: string }
         userName: { type: string }
         status: { type: string, enum: [submitted, approved, in_progress, rejected] }
+        evidence:
+          description: Raw jsonb evidence blob (description + optional lat/lng). Serialized as a JSON string by the Go handler.
+          oneOf:
+            - type: string
+            - type: object
+              properties:
+                description: { type: string }
+                mediaIds: { type: string }
+                lat: { type: number, format: double }
+                lng: { type: number, format: double }
         moderatedBy: { type: string, nullable: true }
         moderationNote: { type: string, nullable: true }
         badgeAwardedAt: { type: string, format: date-time, nullable: true }
