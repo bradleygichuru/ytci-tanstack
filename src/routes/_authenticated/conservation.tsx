@@ -14,7 +14,7 @@ import { ConservationActivitiesSkeleton, EvidenceSkeleton } from '#/components/s
 import { conservationActivitySchema } from '#/lib/schemas/conservation.schema'
 
 interface Act { id: string; title: string; organizer: string; location: string; locationPrivacyLevel: string; date: string; impactMetric: string; measurementUnit: string; impactGoal: number; impactActual: number; participantCount: number; status: string; verificationRules: string; badgeAwarded: boolean; badgeName: string; badgeIconUrl?: string }
-interface Evid { id: string; activityTitle: string; userName: string; description: string; imageUrl: string; status: string; submittedAt: string; reviewedAt?: string; reviewerNote?: string }
+interface Evid { id: string; activityTitle: string; userName: string; description: string; imageUrl: string; status: string; submittedAt: string; reviewedAt?: string; reviewerNote?: string; treesPlanted?: number | null; hoursSpent?: number | null; lat?: number | null; lng?: number | null }
 
 export const Route = createFileRoute('/_authenticated/conservation')({
   beforeLoad: ({ context }) => {
@@ -417,7 +417,7 @@ function ConservationPage() {
           <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-sm">
             <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-              <th className="px-5 py-3">Activity</th><th className="px-5 py-3">User</th><th className="px-5 py-3">Description</th><th className="px-5 py-3">Submitted</th><th className="px-5 py-3">Status</th><th className="w-28 px-5 py-3 text-right">Actions</th>
+              <th className="px-5 py-3">Activity</th><th className="px-5 py-3">User</th><th className="px-5 py-3">Description</th><th className="px-5 py-3">Metrics</th><th className="px-5 py-3">Location</th><th className="px-5 py-3">Submitted</th><th className="px-5 py-3">Status</th><th className="w-28 px-5 py-3 text-right">Actions</th>
             </tr></thead>
             <tbody>
               {(evids ?? []).map(e => (
@@ -425,6 +425,21 @@ function ConservationPage() {
                   <td className="px-5 py-3 text-sm font-semibold text-foreground">{e.activityTitle}</td>
                   <td className="px-5 py-3"><span className="flex items-center gap-1 text-xs text-muted-foreground"><User className="h-3 w-3" weight="duotone" /> {e.userName}</span></td>
                   <td className="max-w-xs truncate px-5 py-3 text-xs text-muted-foreground">{e.description}</td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground">
+                    {(e.treesPlanted != null || e.hoursSpent != null) && (
+                      <div className="space-y-0.5">
+                        {e.treesPlanted != null && <div>{e.treesPlanted} trees</div>}
+                        {e.hoursSpent != null && <div>{e.hoursSpent}h</div>}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground">
+                    {e.lat != null && e.lng != null ? (
+                      <a href={`https://www.google.com/maps?q=${e.lat},${e.lng}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                        {e.lat.toFixed(4)}, {e.lng.toFixed(4)}
+                      </a>
+                    ) : '—'}
+                  </td>
                   <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(e.submittedAt).toLocaleDateString()}</td>
                   <td className="px-5 py-3"><StatusBadge status={e.status} /></td>
                   <td className="px-5 py-3 text-right">
@@ -440,7 +455,7 @@ function ConservationPage() {
                 </tr>
               ))}
               {evids && evids.length === 0 && (
-                <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">No evidence items to review.</td></tr>
+                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-muted-foreground">No evidence items to review.</td></tr>
               )}
             </tbody>
           </table>

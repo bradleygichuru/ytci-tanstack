@@ -33,6 +33,10 @@ export interface EvidenceItem {
   submittedAt: string
   reviewedAt?: string
   reviewerNote?: string
+  treesPlanted?: number | null
+  hoursSpent?: number | null
+  lat?: number | null
+  lng?: number | null
 }
 
 export function conservationApi(config: ApiConfig) {

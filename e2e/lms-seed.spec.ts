@@ -15,7 +15,7 @@ const QUIZ_QUESTIONS = [
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D']
 
-test('LMS — seed course with lessons and quiz', async ({ page }) => {
+async function loginAsAdmin(page) {
   await page.goto('/login')
   await page.waitForFunction(() => Object.keys(document).some(k => k.startsWith('__reactContainer')))
   await page.waitForTimeout(500)
@@ -24,9 +24,13 @@ test('LMS — seed course with lessons and quiz', async ({ page }) => {
   await page.click('button:has-text("Sign In")')
   await page.waitForURL('**/analytics', { timeout: 20000 })
   await page.waitForTimeout(500)
+}
 
+test('LMS — seed course with lessons and quiz', async ({ page }) => {
+  await loginAsAdmin(page)
   await page.goto('/lms')
-  await expect(page.getByText(/courses/)).toBeVisible({ timeout: 15000 })
+  await expect(page.getByText('Learning Hub')).toBeVisible({ timeout: 15000 })
+  await page.waitForTimeout(1000)
 
   await page.getByRole('button', { name: 'New Course' }).click()
   await expect(page.getByLabel('Title')).toBeVisible({ timeout: 10000 })
@@ -35,8 +39,10 @@ test('LMS — seed course with lessons and quiz', async ({ page }) => {
   await page.getByLabel('Difficulty').selectOption('beginner')
   await page.getByLabel('Status').selectOption('published')
   await page.getByLabel('Pass Threshold').fill(PASS_THRESHOLD)
+  await page.waitForTimeout(500)
 
   await page.getByRole('button', { name: 'Create Course' }).click()
+  await expect(page.getByText(COURSE_TITLE).first()).toBeVisible({ timeout: 15000 })
   await expect(page.locator('button:has-text("Save Changes")')).toBeVisible({ timeout: 10000 })
 
   await page.getByRole('button', { name: 'Lessons' }).click()
@@ -70,7 +76,7 @@ test('LMS — seed course with lessons and quiz', async ({ page }) => {
 
   await expect(page.getByText(COURSE_TITLE).first()).toBeVisible({ timeout: 10000 })
 
-  console.log('=== SEED COMPLETE ===')
+  console.log('\n=== SEED COMPLETE ===')
   console.log(`Course: ${COURSE_TITLE}`)
   console.log(`Lesson 1: ${LESSON_1}`)
   console.log(`Lesson 2: ${LESSON_2}`)
@@ -78,4 +84,5 @@ test('LMS — seed course with lessons and quiz', async ({ page }) => {
   QUIZ_QUESTIONS.forEach((q, i) => {
     console.log(`Q${i + 1}: "${q.text}" → correct: ${OPTION_LABELS[q.correct]}`)
   })
+  console.log('====================\n')
 })

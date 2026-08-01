@@ -17,7 +17,7 @@ import { LmsSkeleton } from '#/components/skeletons/lms-skeleton'
 import { courseSchema } from '#/lib/schemas/course.schema'
 
 interface Lesson { id: string; title: string; type: string; duration: number; url: string; hasTranscript: boolean; hasCaption: boolean }
-interface QuizQuestion { id: string; lessonId?: string; text: string; options: string[]; correctIndex: number }
+interface QuizQuestion { id: string; lessonId?: string; text: string; options: string[]; correctIndex: number; hint?: string }
 interface Course { id: string; title: string; description: string; category: string; difficulty: string; status: string; lessons: Lesson[]; lessonCount: number; passThreshold: number; quizQuestions: QuizQuestion[]; certificateEnabled: boolean; certificateTemplate: string; enrollmentCount: number; completionCount: number; badgeName?: string; badgeIconUrl?: string; imageUrl?: string; createdAt: string; updatedAt: string }
 
 const difficultyColors: Record<string, string> = { beginner: 'var(--leaf)', intermediate: 'var(--amber-deep)', advanced: 'var(--error)' }
@@ -93,8 +93,8 @@ function LmsPage() {
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
     setSelectedId(id); setActiveTab('lessons'); setPanelMode('edit')
-    const c = data?.find(c => c.id === id)
-    if (c) { setEditData({ ...c, lessons: (c.lessons ?? []).map(l => ({ ...l })), quizQuestions: (c.quizQuestions ?? []).map((q: any) => ({ id: q.id, lessonId: q.lessonId, text: q.text || q.question, options: q.options, correctIndex: q.correctIndex })) }); setSelectedLesson((c.lessons ?? [])[0]?.id ?? null) }
+                                      const c = data?.find(c => c.id === id)
+    if (c) { setEditData({ ...c, lessons: (c.lessons ?? []).map(l => ({ ...l })), quizQuestions: (c.quizQuestions ?? []).map((q: any) => ({ id: q.id, lessonId: q.lessonId, text: q.text || q.question, options: q.options, correctIndex: q.correctIndex, hint: q.hint })) }); setSelectedLesson((c.lessons ?? [])[0]?.id ?? null) }
     setErrors({})
   }, [selectedId, data])
 
@@ -214,7 +214,7 @@ function LmsPage() {
   const handleAddQuestion = () => {
     if (!editData) return
     const id = `q${Date.now()}`
-    const newQ: QuizQuestion = { id, lessonId: selectedLesson ?? undefined, text: '', options: ['', '', '', ''], correctIndex: 0 }
+    const newQ: QuizQuestion = { id, lessonId: selectedLesson ?? undefined, text: '', options: ['', '', '', ''], correctIndex: 0, hint: '' }
     setEditData({ ...editData, quizQuestions: [...editData.quizQuestions, newQ] })
   }
 
@@ -378,6 +378,9 @@ function LmsPage() {
                                               </div>
                                             ))}
                                           </div>
+                                          <div className="mt-2">
+                                            <input value={q.hint ?? ''} onChange={e => { const qs = [...editData.quizQuestions]; qs[globalIdx] = { ...qs[globalIdx], hint: e.target.value }; handleField('quizQuestions', qs) }} className="w-full rounded-md border border-border px-3 py-1.5 text-xs text-foreground" placeholder="Hint (optional)" />
+                                          </div>
                                         </div>
                                       )
                                     })}
@@ -390,7 +393,7 @@ function LmsPage() {
                                     <button onClick={async () => {
                                       if (!editData?.id || !selectedId) return
                                       try {
-                                        await api.courses.upsertQuiz(selectedId, {
+                                          await api.courses.upsertQuiz(selectedId, {
                                           title: editData.title,
                                           questions: editData.quizQuestions.map((q) => ({
                                             id: q.id,
@@ -398,6 +401,7 @@ function LmsPage() {
                                             question: q.text,
                                             options: q.options.filter(o => o.trim()),
                                             correctIndex: q.correctIndex,
+                                            hint: q.hint || undefined,
                                           })),
                                           passThreshold: editData.passThreshold,
                                         })

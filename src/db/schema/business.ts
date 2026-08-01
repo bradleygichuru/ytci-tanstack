@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { pgTable, uuid, text, timestamp, boolean, integer, bigint, numeric, jsonb, date, index, uniqueIndex, primaryKey, customType } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, boolean, integer, bigint, numeric, jsonb, date, index, uniqueIndex, primaryKey, customType, doublePrecision } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
 const geometry = customType<{ data: string }>({
@@ -287,6 +287,10 @@ export const conservationEvidence = pgTable("conservation_evidence", {
   activityId: uuid("activity_id").notNull().references(() => conservationActivities.id, { onDelete: "cascade" }),
   description: text("description"),
   mediaIds: text("media_ids"),
+  treesPlanted: integer("trees_planted"),
+  hoursSpent: doublePrecision("hours_spent"),
+  lat: doublePrecision("lat"),
+  lng: doublePrecision("lng"),
   status: text("status", { enum: ["pending", "in_progress", "approved", "rejected"] }).default("pending").notNull(),
   moderatedBy: text("moderated_by").references(() => users.id, { onDelete: "set null" }),
   moderationNote: text("moderation_note"),

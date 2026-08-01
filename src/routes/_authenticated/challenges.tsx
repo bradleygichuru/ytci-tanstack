@@ -332,13 +332,31 @@ function ChallengesPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px] text-sm">
               <thead><tr className="border-b bg-[var(--surface-2)] text-left text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-                <th className="px-5 py-3">Challenge</th><th className="px-5 py-3">User</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Submitted</th><th className="w-28 px-5 py-3 text-right">Actions</th>
+                <th className="px-5 py-3">Challenge</th><th className="px-5 py-3">User</th><th className="px-5 py-3">Evidence</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Submitted</th><th className="w-28 px-5 py-3 text-right">Actions</th>
               </tr></thead>
               <tbody>
                 {(evids ?? []).map(e => (
                   <tr key={e.id} className="border-b hover:bg-[var(--surface-2)]">
                     <td className="px-5 py-3 text-sm font-semibold text-foreground">{e.challengeTitle}</td>
                     <td className="px-5 py-3"><span className="flex items-center gap-1 text-xs text-muted-foreground"><User className="h-3 w-3" weight="duotone" /> {e.userName}</span></td>
+                    <td className="px-5 py-3 text-xs text-muted-foreground">
+                      {(() => {
+                        if (!e.evidence) return '—'
+                        try {
+                          const ev = JSON.parse(e.evidence)
+                          return (
+                            <div className="space-y-0.5">
+                              {ev.description && <div className="max-w-xs truncate">{ev.description}</div>}
+                              {ev.lat != null && ev.lng != null && (
+                                <a href={`https://www.google.com/maps?q=${ev.lat},${ev.lng}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                                  {ev.lat.toFixed(4)}, {ev.lng.toFixed(4)}
+                                </a>
+                              )}
+                            </div>
+                          )
+                        } catch { return '—' }
+                      })()}
+                    </td>
                     <td className="px-5 py-3"><StatusBadge status={e.status} /></td>
                     <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(e.createdAt).toLocaleDateString()}</td>
                     <td className="px-5 py-3 text-right">
@@ -359,7 +377,7 @@ function ChallengesPage() {
                   </tr>
                 ))}
                 {evids && evids.length === 0 && (
-                  <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-muted-foreground">No evidence items to review.</td></tr>
+                  <tr><td colSpan={6} className="px-5 py-12 text-center text-sm text-muted-foreground">No evidence items to review.</td></tr>
                 )}
               </tbody>
             </table>

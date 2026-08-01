@@ -26,6 +26,7 @@ export interface ChallengeEvidence {
   moderatedBy?: string
   moderationNote?: string
   badgeAwardedAt?: string
+  evidence?: string | null
   createdAt: string
 }
 
