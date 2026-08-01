@@ -1861,15 +1861,8 @@ components:
         userName: { type: string }
         status: { type: string, enum: [submitted, approved, in_progress, rejected] }
         evidence:
-          description: Raw jsonb evidence blob (description + optional lat/lng). Serialized as a JSON string by the Go handler.
-          oneOf:
-            - type: string
-            - type: object
-              properties:
-                description: { type: string }
-                mediaIds: { type: string }
-                lat: { type: number, format: double }
-                lng: { type: number, format: double }
+          description: Raw jsonb evidence blob (description + optional lat/lng). Serialized as a JSON string by the Go handler; admins unmarshal it.
+          type: string
         moderatedBy: { type: string, nullable: true }
         moderationNote: { type: string, nullable: true }
         badgeAwardedAt: { type: string, format: date-time, nullable: true }
