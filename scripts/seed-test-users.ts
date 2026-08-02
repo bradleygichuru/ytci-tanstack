@@ -1,10 +1,23 @@
 import { auth } from '../src/lib/auth'
-import { Pool } from 'pg'
+import { db } from '../src/db'
+import { users } from '../src/db/schema/auth'
+import { userProfiles } from '../src/db/schema/admin'
+import { eq, sql } from 'drizzle-orm'
 
-const DATABASE_URL = process.env.DATABASE_URL
-if (!DATABASE_URL) { console.error('FATAL: DATABASE_URL is not set'); process.exit(2) }
-
-const pool = new Pool({ connectionString: DATABASE_URL })
+async function dbQuery<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (i < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, 2000 * (i + 1)))
+        continue
+      }
+      throw err
+    }
+  }
+  throw new Error('unreachable')
+}
 
 type UserRole = 'super_admin' | 'administrator' | 'moderator' | 'county_officer' | 'user'
 
@@ -25,14 +38,11 @@ interface SeedUser {
   }
 }
 
-const users: SeedUser[] = [
-  // Existing users (will be skipped if already present)
-  { email: 'admin@example.com', password: 'password', name: 'Admin User', role: 'super_admin', profile: { displayName: 'Admin User', county: 'Nairobi', ageRange: '35-44', languages: 'English, Swahili' } },
+const seedUsers: SeedUser[] = [
   { email: 'grace@example.com', password: 'password', name: 'Grace Akinyi', role: 'administrator', profile: { displayName: 'Grace Akinyi', county: 'Mombasa', ageRange: '25-34', languages: 'English, Swahili' } },
   { email: 'moderator@example.com', password: 'password', name: 'Moderator User', role: 'moderator' },
   { email: 'officer@example.com', password: 'password', name: 'James Ouma', role: 'county_officer', profile: { displayName: 'James Ouma', county: 'Narok', ageRange: '35-44', languages: 'English, Swahili, Maa' } },
-  { email: 'suspended@example.com', password: 'password', name: 'Suspended User', role: 'moderator', ban: { reason: 'Test suspension — violating community guidelines', expiresInterval: "1 year" } },
-  // New users
+  { email: 'suspended@example.com', password: 'password', name: 'Suspended User', role: 'moderator', ban: { reason: 'Test suspension', expiresInterval: "1 year" } },
   { email: 'alice@example.com', password: 'password', name: 'Alice Njeri', role: 'user', profile: { displayName: 'Alice Njeri', county: 'Kiambu', ageRange: '18-24', languages: 'English, Swahili' } },
   { email: 'bob@example.com', password: 'password', name: 'Bob Otieno', role: 'user', profile: { displayName: 'Bob Otieno', county: 'Kisumu', ageRange: '25-34', languages: 'English, Swahili, Luo' } },
   { email: 'carol@example.com', password: 'password', name: 'Carol Wanjiku', role: 'county_officer', profile: { displayName: 'Carol Wanjiku', county: 'Kwale', ageRange: '25-34', languages: 'English, Swahili' } },
@@ -43,60 +53,56 @@ const users: SeedUser[] = [
 ]
 
 async function main() {
-  console.log('Seeding test users...')
+  console.log('Seeding test users via better-auth...')
 
-  for (const u of users) {
+  for (const u of seedUsers) {
     try {
-      const existing = await pool.query(`SELECT id FROM "users" WHERE email = $1`, [u.email])
-      if (existing.rows.length > 0) {
+      const r = await dbQuery(() => db.select({ id: users.id }).from(users).where(eq(users.email, u.email)).limit(1))
+      if (r.length > 0) {
         console.log(`SKIP ${u.email} — already exists`)
         continue
       }
-      const result = await auth.api.signUpEmail({
-        body: { email: u.email, password: u.password, name: u.name },
-      }) as unknown as { user: { id: string; email: string } }
 
-      await pool.query(`UPDATE "users" SET role = $1 WHERE id = $2`, [u.role, result.user.id])
+      const result = await dbQuery(() => auth.api.signUpEmail({
+        body: { email: u.email, password: u.password, name: u.name },
+      })) as unknown as { user: { id: string; email: string } }
+
       console.log(`CREATED ${u.email} (${u.role})`)
 
-      // Create profile if provided
-      if (u.profile) {
-        await pool.query(
-          `INSERT INTO "user_profiles" ("user_id", "display_name", "age_range", "county", "languages", "created_by", "created_at", "updated_at")
-           VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-           ON CONFLICT ("user_id") DO NOTHING`,
-          [
-            result.user.id,
-            u.profile.displayName ?? u.name,
-            u.profile.ageRange ?? null,
-            u.profile.county ?? null,
-            u.profile.languages ?? null,
-            result.user.id,
-          ],
-        )
+      await dbQuery(() => db.update(users).set({ role: u.role }).where(eq(users.id, result.user.id)))
+
+      const profile = u.profile
+      if (profile) {
+        await dbQuery(() => db.insert(userProfiles).values({
+          userId: result.user.id,
+          displayName: profile.displayName ?? u.name,
+          ageRange: profile.ageRange ?? null,
+          county: profile.county ?? null,
+          languages: profile.languages ?? null,
+          createdBy: result.user.id,
+        }).onConflictDoNothing())
         console.log(`  PROFILE ${u.email}`)
       }
     } catch (err) {
-      console.error(`FAIL ${u.email}`, err)
+      console.error(`FAIL ${u.email}`, (err as Error).message)
     }
   }
 
-  // Apply bans
-  for (const u of users.filter((u) => u.ban)) {
+  for (const u of seedUsers.filter(u => u.ban)) {
     try {
-      await pool.query(
-        `UPDATE "users"
-         SET banned = true, "ban_reason" = $1, "ban_expires" = NOW() + $2::interval
-         WHERE email = $3 AND banned = false`,
-        [u.ban!.reason, u.ban!.expiresInterval, u.email],
-      )
+      const r = await dbQuery(() => db.select({ id: users.id }).from(users).where(eq(users.email, u.email)).limit(1))
+      if (r.length === 0) continue
+      await dbQuery(() => db.update(users).set({
+        banned: true,
+        banReason: u.ban!.reason,
+        banExpires: sql`NOW() + ${u.ban!.expiresInterval.replace(/\s/g, '')}::interval`,
+      }).where(eq(users.id, r[0].id)))
       console.log(`BANNED ${u.email}`)
     } catch (err) {
-      console.error(`FAIL banning ${u.email}`, err)
+      console.error(`FAIL banning ${u.email}`, (err as Error).message)
     }
   }
 
-  await pool.end()
   console.log('Done!')
 }
 

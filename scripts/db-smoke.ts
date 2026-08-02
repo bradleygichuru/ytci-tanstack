@@ -8,7 +8,10 @@ if (!url) {
   process.exit(1);
 }
 
-const pool = new Pool({ connectionString: url });
+const pool = new Pool({
+  connectionString: url,
+  ssl: url.includes('neon.tech') ? { rejectUnauthorized: false } : undefined,
+});
 const db = drizzle(pool);
 
 const AUTH_TABLES = ["users", "sessions", "accounts", "verifications", "jwkss"];

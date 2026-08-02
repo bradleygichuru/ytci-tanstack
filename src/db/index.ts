@@ -6,6 +6,9 @@ import * as businessSchema from "#/db/schema/business"
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL!,
+  ssl: process.env.DATABASE_URL!.includes('neon.tech') ? { rejectUnauthorized: false } : undefined,
+  max: 1,
+  connectionTimeoutMillis: 15000,
 })
 
 const schema = { ...authSchema, ...adminSchema, ...businessSchema }

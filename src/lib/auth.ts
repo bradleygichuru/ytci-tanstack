@@ -12,6 +12,8 @@ import { ac, roles } from "#/lib/rbac";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL!,
+  ssl: process.env.DATABASE_URL!.includes('neon.tech') ? { rejectUnauthorized: false } : undefined,
+  max: 1,
 })
 
 export const db = drizzle(pool)

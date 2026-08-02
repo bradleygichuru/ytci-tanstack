@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "db:smoke": "bun --env-file=.env.local run scripts/db-smoke.ts",
     "db:generate": "better-auth generate -y --output ./src/db/schema/auth.ts && drizzle-kit generate",
-    "db:migrate": "bunx drizzle-kit migrate",
+    "db:migrate": "bun --env-file=.env.local run bunx drizzle-kit migrate",
     "db:setup": "bun run db:generate && bun run db:migrate && bun run db:smoke",
     "bootstrap:admin": "bun --env-file=.env.local run scripts/bootstrap-admin.ts",
     "seed:test-users": "bun --env-file=.env.local run scripts/seed-test-users.ts",
