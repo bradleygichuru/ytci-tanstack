@@ -420,6 +420,17 @@ export const appOpens = pgTable("app_opens", {
   openedAt: timestamp("opened_at").defaultNow().notNull(),
 });
 
+// ── Analytics Events ──
+export const analyticsEvents = pgTable("analytics_events", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  event: text("event").notNull(),
+  properties: jsonb("properties").default({}),
+  platform: text("platform", { enum: ["ios", "android"] }),
+  appVersion: text("app_version"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // ── Report Jobs ──
 export const reportJobs = pgTable("report_jobs", {
   id: uuid("id").defaultRandom().primaryKey(),

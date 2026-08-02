@@ -78,6 +78,13 @@
       "when": 1754088000000,
       "tag": "0010_backfill_display_name",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1785704486757,
+      "tag": "0011_left_hedge_knight",
+      "breakpoints": true
     }
   ]
 }
