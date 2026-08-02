@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { SidebarProvider } from '../components/ui/sidebar'
+import { SidebarProvider, SidebarTrigger } from '../components/ui/sidebar'
 import { AppSidebar } from '../components/shell/Sidebar'
 import { Toaster } from '../components/ui/sonner'
 
@@ -24,6 +24,9 @@ function AuthenticatedLayout() {
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
+          <header className="flex h-12 items-center border-b border-border px-4 md:hidden">
+            <SidebarTrigger />
+          </header>
           <main className="flex-1 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
             <div className="mx-auto w-full max-w-[1440px]">
               <Outlet />

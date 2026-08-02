@@ -43,20 +43,54 @@ export const Route = createFileRoute('/_authenticated/analytics')({
   component: AnalyticsPage,
 })
 
+function safeNum(v: unknown): number {
+  const n = Number(v)
+  return Number.isFinite(n) ? n : 0
+}
+
 function fmtNum(n: number): string {
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
-  return String(n)
+  const v = safeNum(n)
+  if (v >= 1000000) return `${(v / 1000000).toFixed(1)}M`
+  if (v >= 1000) return `${(v / 1000).toFixed(1)}k`
+  return String(v)
+}
+
+function sanitizeAnalyticsData(raw: Partial<AnalyticsData>): AnalyticsData {
+  return {
+    dau: safeNum(raw.dau), dauChange: safeNum(raw.dauChange),
+    wau: safeNum(raw.wau), wauChange: safeNum(raw.wauChange),
+    mau: safeNum(raw.mau), mauChange: safeNum(raw.mauChange),
+    newRegistrations: safeNum(raw.newRegistrations), newRegistrationsChange: safeNum(raw.newRegistrationsChange),
+    userLocations: (raw.userLocations ?? []).map(l => ({ county: String(l?.county ?? ''), count: safeNum(l?.count) })),
+    itinerariesGenerated: safeNum(raw.itinerariesGenerated), itinerariesGeneratedChange: safeNum(raw.itinerariesGeneratedChange),
+    itinerariesSaved: safeNum(raw.itinerariesSaved), itinerariesExported: safeNum(raw.itinerariesExported), itinerariesShared: safeNum(raw.itinerariesShared),
+    mapInteractions: safeNum(raw.mapInteractions), mapInteractionsChange: safeNum(raw.mapInteractionsChange),
+    destinationDetailViews: safeNum(raw.destinationDetailViews),
+    storiesSubmitted: safeNum(raw.storiesSubmitted), storiesSubmittedChange: safeNum(raw.storiesSubmittedChange),
+    storiesApproved: safeNum(raw.storiesApproved), storiesReported: safeNum(raw.storiesReported),
+    courseEnrollments: safeNum(raw.courseEnrollments), courseEnrollmentsChange: safeNum(raw.courseEnrollmentsChange), courseCompletions: safeNum(raw.courseCompletions),
+    challengeParticipants: safeNum(raw.challengeParticipants),
+    conservationParticipants: safeNum(raw.conservationParticipants), conservationParticipantsChange: safeNum(raw.conservationParticipantsChange),
+    topDestinations: (raw.topDestinations ?? []).map(d => ({ name: String(d?.name ?? ''), county: String(d?.county ?? ''), views: safeNum(d?.views) })),
+    topCategories: (raw.topCategories ?? []).map(c => ({ name: String(c?.name ?? ''), count: safeNum(c?.count) })),
+    contentAwaitingReview: safeNum(raw.contentAwaitingReview), contentScheduledUpdate: safeNum(raw.contentScheduledUpdate),
+    systemAlerts: (raw.systemAlerts ?? []).map(a => ({
+      id: String(a?.id ?? ''), title: String(a?.title ?? ''), description: String(a?.description ?? ''),
+      severity: String(a?.severity ?? 'info'), timestamp: String(a?.timestamp ?? ''),
+    })),
+    failedIntegrations: (raw.failedIntegrations ?? []).map(f => ({ name: String(f?.name ?? ''), lastError: String(f?.lastError ?? ''), since: String(f?.since ?? '') })),
+  }
 }
 
 function ChangeChip({ value }: { value: number }) {
-  const positive = value >= 0
+  const v = safeNum(value)
+  const positive = v >= 0
   return (
     <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
       positive ? 'bg-[rgba(52,90,0,0.2)] text-[#345a00]' : 'bg-[rgba(186,26,26,0.1)] text-[#ba1a1a]'
     }`}>
       {positive ? <ArrowUpRight className="h-3 w-3" weight="bold" /> : <ArrowDownRight className="h-3 w-3" weight="bold" />}
-      {Math.abs(value)}%
+      {Math.abs(v)}%
     </span>
   )
 }
@@ -72,7 +106,7 @@ function HeroStat({ icon: Icon, label, value, change }: { icon: typeof ChartBar;
       </div>
       <div className="flex items-baseline gap-2">
           <span className="font-sans text-3xl font-bold text-foreground md:text-4xl">{fmtNum(value)}</span>
-        <ChangeChip value={change} />
+        {change != null && <ChangeChip value={change} />}
       </div>
     </div>
   )
@@ -184,10 +218,10 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
         <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
           <div className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Awaiting Review</div>
           <div className="flex items-baseline gap-2">
-            <span className="font-sans text-3xl font-bold text-[var(--amber-deep)]">{data.contentAwaitingReview}</span>
+            <span className="font-sans text-3xl font-bold text-[var(--amber-deep)]">{fmtNum(data.contentAwaitingReview)}</span>
             <span className="text-xs text-muted-foreground">stories</span>
           </div>
-          <div className="mt-2 text-xs text-muted-foreground">+{data.contentScheduledUpdate} scheduled for update</div>
+          <div className="mt-2 text-xs text-muted-foreground">+{fmtNum(data.contentScheduledUpdate)} scheduled for update</div>
         </div>
 
         <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
@@ -276,7 +310,7 @@ function AnalyticsPage() {
   useEffect(() => {
     setLoading(true)
     api.analytics.summary().then((r) => {
-      setData(r as AnalyticsData)
+      setData(sanitizeAnalyticsData(r as Partial<AnalyticsData>))
     }).catch((e: ApiErrorResponse) => {
       setError(e.message)
     }).finally(() => {
