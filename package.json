@@ -27,6 +27,7 @@
   "dependencies": {
     "@better-auth/expo": "^1.6.25",
     "@faker-js/faker": "^10.3.0",
+    "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/match-sorter-utils": "latest",
     "@tanstack/react-devtools": "latest",
