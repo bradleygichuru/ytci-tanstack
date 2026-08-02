@@ -69,16 +69,18 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
     >
-      <SidebarHeader className="px-5 py-6 bg-sidebar">
-        <div className="font-sans text-2xl font-bold leading-none text-sidebar-foreground">
-          YTC Explorer
+      <SidebarHeader className="px-5 py-6 bg-sidebar group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-4">
+        <div className="group-data-[collapsible=icon]:hidden">
+          <div className="font-sans text-2xl font-bold leading-none text-sidebar-foreground">
+            YTC Explorer
+          </div>
+          <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-sidebar-foreground/60">
+            Admin Portal
+          </p>
         </div>
-        <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-sidebar-foreground/60">
-          Admin Portal
-        </p>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 pt-4">
+      <SidebarContent className="px-3 pt-4 group-data-[collapsible=icon]:px-1">
         {navGroups.map((group, gi) => (
           <SidebarGroup key={gi} className="mb-4">
             <SidebarGroupLabel className="px-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/50">
@@ -107,7 +109,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="mt-auto space-y-1 px-3 pb-5 bg-sidebar">
+      <SidebarFooter className="mt-auto space-y-1 px-3 pb-5 bg-sidebar group-data-[collapsible=icon]:px-1">
         {user && (
           <div className="flex items-center gap-3 rounded-lg px-2 py-2">
             {user.image ? (
@@ -119,7 +121,7 @@ export function AppSidebar() {
                 </span>
               </div>
             )}
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
               <p className="truncate text-sm font-semibold text-sidebar-foreground">
                 {user.name ?? 'User'}
               </p>
