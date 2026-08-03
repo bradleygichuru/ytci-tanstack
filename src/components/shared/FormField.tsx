@@ -140,6 +140,7 @@ export function FormDatePicker({ label, description, error, required, value, onC
 }) {
   const id = useId()
   const date = value ? parse(value, 'yyyy-MM-dd', new Date()) : undefined
+  const isValidDate = date instanceof Date && !isNaN(date.getTime())
 
   return (
     <FormField label={label} description={description} error={error} required={required} id={id}>
@@ -150,13 +151,13 @@ export function FormDatePicker({ label, description, error, required, value, onC
             variant="outline"
             className={cn(
               'w-full justify-start text-left font-normal',
-              !date && 'text-muted-foreground'
+              !isValidDate && 'text-muted-foreground'
             )}
             aria-invalid={!!error || undefined}
             data-invalid={!!error || undefined}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, 'PPP') : <span>Pick a date</span>}
+            {isValidDate ? format(date!, 'PPP') : <span>Pick a date</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

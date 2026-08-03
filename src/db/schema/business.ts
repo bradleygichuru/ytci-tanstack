@@ -333,6 +333,7 @@ export const campaigns = pgTable("campaigns", {
   targetUrl: text("target_url"),
   destinationId: uuid("destination_id").references(() => destinations.id, { onDelete: "set null" }),
   audience: text("audience"),
+  description: text("description"),
   createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
