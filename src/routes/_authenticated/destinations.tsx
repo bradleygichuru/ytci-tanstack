@@ -282,10 +282,19 @@ function DestinationsPage() {
   }, [selectedId, loadList, api])
 
   const visible = (filter
-    ? data?.filter(d => d.status === filter || d.category === filter || d.county === filter)
+    ? data?.filter(d =>
+        d.status === filter || d.category === filter || d.county === filter ||
+        (filter === 'curated' && d.source !== 'google_places') ||
+        (filter === 'google_places' && d.source === 'google_places')
+      )
     : data) ?? []
 
-  const filters = [null, 'published', 'draft', 'archived', 'wildlife', 'beach', 'adventure', 'Narok', 'Kwale', 'Meru']
+  const filters = [null, 'published', 'draft', 'archived', 'wildlife', 'beach', 'adventure', 'Narok', 'Kwale', 'Meru', 'curated', 'google_places']
+
+  const filterLabels: Record<string, string> = {
+    curated: 'Curated',
+    google_places: 'Google Places',
+  }
 
   return (
     <div>
@@ -305,7 +314,7 @@ function DestinationsPage() {
           {filters.map(f => (
             <button key={f ?? 'all'} onClick={() => setFilter(f)}
               className={`rounded-full px-3 py-1 text-xs font-semibold ${filter === f ? 'bg-primary text-white' : 'border border-border bg-card text-muted-foreground hover:border-[var(--outline)]'}`}>
-              {f ?? 'All'}
+              {f ? (filterLabels[f] ?? f) : 'All'}
             </button>
           ))}
         </div>

@@ -43,7 +43,7 @@ export interface Destination {
   associatedStories: string
   associatedCourses: string
   associatedConservation: string
-  source: string
+  source?: string
   contentOwner: string
   verificationStatus: 'verified' | 'unverified' | 'pending'
   reviewDate: string
