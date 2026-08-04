@@ -328,14 +328,19 @@ function DestinationsPage() {
           </button>
           <button
             onClick={async () => {
+              const btn = document.querySelector('#clear-cache-btn') as HTMLButtonElement
+              if (btn) btn.disabled = true
               try {
                 await api.destinations.invalidateCache()
-                alert('Places cache cleared successfully')
+                toast.success('Places cache cleared. Refresh page to revalidate.')
               } catch (e) {
-                alert('Failed to clear cache: ' + (e instanceof Error ? e.message : String(e)))
+                toast.error('Failed to clear cache')
+              } finally {
+                if (btn) btn.disabled = false
               }
             }}
-            className="flex items-center gap-1.5 rounded-full bg-red-500 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-600"
+            id="clear-cache-btn"
+            className="flex items-center gap-1.5 rounded-full bg-red-500 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-600 disabled:opacity-50"
           >
             Clear Places Cache
           </button>
