@@ -326,6 +326,19 @@ function DestinationsPage() {
           <button className="flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-bold text-primary">
             <CloudArrowDown className="h-4 w-4" weight="duotone" /> Bulk Import
           </button>
+          <button
+            onClick={async () => {
+              try {
+                await api.destinations.invalidateCache()
+                alert('Places cache cleared successfully')
+              } catch (e) {
+                alert('Failed to clear cache: ' + (e instanceof Error ? e.message : String(e)))
+              }
+            }}
+            className="flex items-center gap-1.5 rounded-full bg-red-500 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-600"
+          >
+            Clear Places Cache
+          </button>
         </div>
       </div>
 
