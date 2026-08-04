@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { isNotNull, relations, sql } from "drizzle-orm";
 import { pgTable, uuid, text, timestamp, boolean, integer, bigint, numeric, jsonb, date, index, uniqueIndex, primaryKey, customType, doublePrecision } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
@@ -35,6 +35,7 @@ export const destinations = pgTable("destinations", {
   facilities: text("facilities"),
   safetyNotes: text("safety_notes"),
   source: text("source"),
+  googlePlaceId: text("google_place_id"),
   contentOwner: text("content_owner"),
   verificationStatus: text("verification_status"),
   lastUpdated: timestamp("last_updated"),
@@ -45,7 +46,27 @@ export const destinations = pgTable("destinations", {
 }, (table) => [
   index("destinations_location_idx").using("gist", table.location),
   index("destinations_county_category_status_idx").on(table.county, table.category, table.status),
+  uniqueIndex("destinations_google_place_id_unique").on(table.googlePlaceId).where(isNotNull(table.googlePlaceId)),
 ]);
+
+// ── Google Places Cache ──
+export const googlePlacesCache = pgTable("google_places_cache", {
+  placeId: text("place_id").primaryKey(),
+  name: text("name"),
+  formattedAddress: text("formatted_address"),
+  lat: doublePrecision("lat"),
+  lng: doublePrecision("lng"),
+  types: text("types").array(),
+  data: jsonb("data"),
+  cachedAt: timestamp("cached_at", { withTimezone: true }).defaultNow(),
+});
+
+export const googlePlacesSearchCache = pgTable("google_places_search_cache", {
+  queryHash: text("query_hash").primaryKey(),
+  response: jsonb("response"),
+  cachedAt: timestamp("cached_at", { withTimezone: true }).defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+});
 
 // ── Events ──
 export const events = pgTable("events", {
