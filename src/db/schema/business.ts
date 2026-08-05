@@ -59,6 +59,9 @@ export const googlePlacesCache = pgTable("google_places_cache", {
   types: text("types").array(),
   data: jsonb("data"),
   cachedAt: timestamp("cached_at", { withTimezone: true }).defaultNow(),
+  heroImageUrl: text("hero_image_url"),
+  heroImageSource: text("hero_image_source"),
+  heroImageAttribution: text("hero_image_attribution"),
 });
 
 export const googlePlacesSearchCache = pgTable("google_places_search_cache", {
