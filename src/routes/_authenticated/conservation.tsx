@@ -13,7 +13,7 @@ import { CursorPagination } from '#/components/shared/CursorPagination'
 import { ConservationActivitiesSkeleton, EvidenceSkeleton } from '#/components/skeletons/conservation-skeleton'
 import { conservationActivitySchema } from '#/lib/schemas/conservation.schema'
 
-interface Act { id: string; title: string; organizer: string; location: string; locationPrivacyLevel: string; date: string; impactMetric: string; measurementUnit: string; impactGoal: number; impactActual: number; participantCount: number; status: string; verificationRules: string; badgeAwarded: boolean; badgeName: string; badgeIconUrl?: string }
+interface Act { id: string; title: string; organizer: string; location: string; locationPrivacyLevel: string; date: string; impactMetric: string; measurementUnit: string; progressDriver: string; impactGoal: number; impactActual: number; participantCount: number; status: string; verificationRules: string; badgeAwarded: boolean; badgeName: string; badgeIconUrl?: string }
 interface Evid { id: string; activityTitle: string; userName: string; description: string; imageUrl: string; status: string; submittedAt: string; reviewedAt?: string; reviewerNote?: string; treesPlanted?: number | null; hoursSpent?: number | null; lat?: number | null; lng?: number | null }
 
 export const Route = createFileRoute('/_authenticated/conservation')({
@@ -27,7 +27,7 @@ export const Route = createFileRoute('/_authenticated/conservation')({
   component: ConservationPage })
 
 function emptyAct(): Act {
-  return { id: '', title: '', organizer: '', location: '', locationPrivacyLevel: 'public', date: '', impactMetric: '', measurementUnit: '', impactGoal: '' as unknown as number, impactActual: '' as unknown as number, participantCount: 0, status: 'open', verificationRules: '', badgeAwarded: false, badgeName: '' }
+  return { id: '', title: '', organizer: '', location: '', locationPrivacyLevel: 'public', date: '', impactMetric: '', measurementUnit: '', progressDriver: 'trees', impactGoal: '' as unknown as number, impactActual: '' as unknown as number, participantCount: 0, status: 'open', verificationRules: '', badgeAwarded: false, badgeName: '' }
 }
 
 function ConservationPage() {
@@ -173,6 +173,7 @@ function ConservationPage() {
         impactTarget: editData.impactGoal != null ? Number(editData.impactGoal) : null,
         impactActual: editData.impactActual != null ? Number(editData.impactActual) : null,
         measurementUnit: editData.measurementUnit || null,
+        progressDriver: editData.progressDriver || 'trees',
         privacyLevel: editData.locationPrivacyLevel || 'public',
         locationLabel: editData.location || null,
       }
@@ -330,7 +331,9 @@ function ConservationPage() {
                       <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} error={errors.status} />
                             <FormInput label="Impact Metric" value={editData.impactMetric} onChange={v => handleField('impactMetric', v)} />
                             <FormInput label="Goal Count" value={String(editData.impactGoal ?? '')} onChange={v => handleField('impactGoal', v)} />
-                            <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
+                      <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
+                      <FormSelect label="Progress Driver" value={editData.progressDriver} options={['trees', 'hours', 'area']} onChange={v => handleField('progressDriver', v)} />
+                            <FormSelect label="Progress Driver" value={editData.progressDriver} options={['trees', 'hours', 'area']} onChange={v => handleField('progressDriver', v)} />
                             <FormInput label="Badge Name" value={editData.badgeName} onChange={v => handleField('badgeName', v)} />
                             <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />
                             <div className="sm:col-span-2"><label className="mb-1 block text-xs font-semibold text-foreground">Verification Rules</label><textarea value={editData.verificationRules} onChange={e => handleField('verificationRules', e.target.value)} rows={3} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>

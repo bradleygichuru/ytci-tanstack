@@ -293,6 +293,7 @@ export const conservationActivities = pgTable("conservation_activities", {
   impactTarget: integer("impact_target"),
   impactActual: integer("impact_actual"),
   measurementUnit: text("measurement_unit"),
+  progressDriver: text("progress_driver", { enum: ["trees", "hours", "area"] }).default("trees").notNull(),
   participantLimit: integer("participant_limit"),
   currentParticipants: integer("current_participants").default(0),
   status: text("status", { enum: ["open", "full", "completed", "cancelled"] }).default("open").notNull(),

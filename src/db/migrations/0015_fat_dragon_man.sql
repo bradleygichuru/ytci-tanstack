@@ -1,0 +1,1 @@
+ALTER TABLE "conservation_activities" ADD COLUMN "progress_driver" text DEFAULT 'trees' NOT NULL;

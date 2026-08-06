@@ -15,6 +15,7 @@ export const conservationActivitySchema = z.object({
     z.coerce.number().optional(),
   ),
   measurementUnit: z.string().optional().default(''),
+  progressDriver: z.enum(['trees', 'hours', 'area']).default('trees'),
   participantCount: z.number().optional().default(0),
   status: z.enum(['open', 'full', 'completed', 'cancelled']).default('open'),
   badgeName: z.string().optional().default(''),

@@ -11,6 +11,7 @@ export interface ConservationActivity {
   date: string
   impactMetric: string
   measurementUnit: string
+  progressDriver: 'trees' | 'hours' | 'area'
   impactGoal: number
   impactActual: number
   participantCount: number
