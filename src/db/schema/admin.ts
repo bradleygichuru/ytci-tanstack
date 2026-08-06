@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, index, boolean } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
 export const userProfiles = pgTable("user_profiles", {
@@ -10,6 +10,10 @@ export const userProfiles = pgTable("user_profiles", {
   languages: text("languages"),
   preferences: text("preferences"),
   consentGrantedAt: timestamp("consent_granted_at"),
+  consentLocation: boolean("consent_location").default(false).notNull(),
+  consentCamera: boolean("consent_camera").default(false).notNull(),
+  consentNotifications: boolean("consent_notifications").default(false).notNull(),
+  consentUgc: boolean("consent_ugc").default(false).notNull(),
   createdBy: text("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
