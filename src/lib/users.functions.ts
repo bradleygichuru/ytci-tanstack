@@ -27,6 +27,7 @@ export interface UserItem {
   languages: string | null
   preferences: string | null
   consentGrantedAt: string | null
+  onboardingCompleted: boolean
   createdAt: string
   createdBy: string | null
 }
@@ -91,6 +92,7 @@ export function toUserItem(user: Record<string, unknown>, profile?: ProfileField
     languages: profile?.languages ?? null,
     preferences: profile?.preferences ?? null,
     consentGrantedAt: profile?.consentGrantedAt?.toISOString() ?? null,
+    onboardingCompleted: true,
     createdAt: (user.createdAt as string) ?? new Date().toISOString(),
     createdBy: profile?.createdBy ?? null,
   }

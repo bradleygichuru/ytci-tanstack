@@ -113,6 +113,13 @@
       "when": 1786038753093,
       "tag": "0015_fat_dragon_man",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1786053227765,
+      "tag": "0016_brainy_namorita",
+      "breakpoints": true
     }
   ]
 }

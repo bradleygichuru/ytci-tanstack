@@ -14,6 +14,7 @@ export const userProfiles = pgTable("user_profiles", {
   consentCamera: boolean("consent_camera").default(false).notNull(),
   consentNotifications: boolean("consent_notifications").default(false).notNull(),
   consentUgc: boolean("consent_ugc").default(false).notNull(),
+  onboardingCompleted: boolean("onboarding_completed").default(false).notNull(),
   createdBy: text("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")

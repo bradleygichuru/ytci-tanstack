@@ -14,6 +14,7 @@ export interface UserItem {
   languages?: string | null
   preferences?: string | null
   consentGrantedAt?: string | null
+  onboardingCompleted: boolean
   createdAt: string
 }
 

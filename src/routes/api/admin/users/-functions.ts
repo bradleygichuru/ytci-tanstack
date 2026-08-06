@@ -15,7 +15,8 @@ export interface UserItem {
   banned: boolean; banReason: string | null; banExpires: string | null
   emailVerified: boolean
   ageRange: string | null; county: string | null; languages: string | null; preferences: string | null
-  consentGrantedAt: string | null; createdAt: string; createdBy: string | null
+  consentGrantedAt: string | null; onboardingCompleted: boolean
+  createdAt: string; createdBy: string | null
 }
 
 export interface AuditItem {
@@ -45,6 +46,7 @@ function toUserItem(user: Record<string, unknown>, profile?: Record<string, unkn
     ageRange: (profile?.age_range as string | null) ?? null, county: (profile?.county as string | null) ?? null,
     languages: (profile?.languages as string | null) ?? null, preferences: (profile?.preferences as string | null) ?? null,
     consentGrantedAt: (profile?.consent_granted_at as Date | null)?.toISOString() ?? null,
+    onboardingCompleted: profile ? ((profile.onboarding_completed as boolean) ?? true) : true,
     createdAt: (user.created_at as string) ?? new Date().toISOString(),
     createdBy: (profile?.created_by as string | null) ?? null,
   }

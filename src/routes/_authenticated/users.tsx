@@ -11,7 +11,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '#/components/ui/dialog'
 import { UsersSkeleton, AuditSkeleton } from '#/components/skeletons/users-skeleton'
 
-interface UserItem { id: string; email: string; name: string; role: string; banned: boolean; banReason?: string | null; ageRange?: string | null; county?: string | null; languages?: string | null; preferences?: string | null; consentGrantedAt?: string | null; createdAt: string }
+interface UserItem { id: string; email: string; name: string; role: string; banned: boolean; banReason?: string | null; ageRange?: string | null; county?: string | null; languages?: string | null; preferences?: string | null; consentGrantedAt?: string | null; onboardingCompleted: boolean; createdAt: string }
 interface AuditItem { id: string; userId: string; userName: string; action: string; details: string | null; performedBy: string; performedByName: string; createdAt: string }
 
 const roleColors: Record<string, { bg: string; text: string }> = {
@@ -68,6 +68,7 @@ const columnHeaders: { key: string; label: string; sortable: boolean }[] = [
   { key: 'email', label: 'Email', sortable: true },
   { key: 'role', label: 'Role', sortable: true },
   { key: 'county', label: 'County', sortable: true },
+  { key: 'onboardingCompleted', label: 'Onboarded', sortable: false },
   { key: 'banned', label: 'Status', sortable: false },
   { key: 'createdAt', label: 'Created', sortable: true },
 ]
@@ -300,7 +301,7 @@ function UsersPage() {
             </tr></thead>
             <tbody>
               {data.length === 0 ? (
-                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-muted-foreground">No users match the current filters.</td></tr>
+                <tr><td colSpan={9} className="px-5 py-12 text-center text-sm text-muted-foreground">No users match the current filters.</td></tr>
               ) : (
                 data.map(u => {
                   const isSelected = selectedId === u.id
@@ -311,12 +312,13 @@ function UsersPage() {
                         <td className="px-5 py-3 text-xs text-muted-foreground">{u.email}</td>
                         <td className="px-5 py-3"><RolePill role={u.role} /></td>
                         <td className="px-5 py-3 text-xs text-muted-foreground">{u.county}</td>
+                        <td className="px-5 py-3">{u.onboardingCompleted ? <span className="flex items-center gap-1 text-xs font-semibold text-success-leaf"><CheckCircle className="h-3.5 w-3.5" weight="fill" /> Yes</span> : <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground">— No</span>}</td>
                         <td className="px-5 py-3">{u.banned ? <span className="flex items-center gap-1 text-xs font-semibold text-destructive"><Prohibit className="h-3.5 w-3.5" weight="duotone" /> Banned</span> : <span className="flex items-center gap-1 text-xs font-semibold text-success-leaf"><CheckCircle className="h-3.5 w-3.5" weight="fill" /> Active</span>}</td>
                         <td className="px-5 py-3 text-xs text-muted-foreground">{new Date(u.createdAt).toLocaleDateString()}</td>
                         <td className="px-5 py-3"><PencilSimple className="h-4 w-4 text-muted-foreground" weight="duotone" /></td>
                       </tr>
-                      {isSelected && editData && (
-                        <tr><td colSpan={7} className="border-b p-0">
+                        {isSelected && editData && (
+                        <tr><td colSpan={8} className="border-b p-0">
                           <div className="border-t border-border bg-card px-6 py-5">
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                               <UField label="Name" value={editData.name} onChange={v => setEditData({ ...editData, name: v })} />
