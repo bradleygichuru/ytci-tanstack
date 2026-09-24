@@ -11,6 +11,7 @@ import {
   GearSix,
   ChatDots,
   SignOut,
+  Robot,
 } from '@phosphor-icons/react'
 import { Link, useLocation, useRouter } from '@tanstack/react-router'
 import {
@@ -51,6 +52,7 @@ const navGroups = [
       { icon: ChatDots, label: 'Comments', path: '/comments' },
       { icon: Megaphone, label: 'Campaigns', path: '/campaigns' },
       { icon: Users, label: 'User Management', path: '/users' },
+      { icon: Robot, label: 'AI Config', path: '/ai-config' },
     ],
   },
 ]

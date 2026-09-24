@@ -25,15 +25,18 @@ function CommentsPage() {
   const api = useApi()
   const [comments, setComments] = useState<CommentItem[] | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [filter, setFilter] = useState<string | null>(null)
   const [showDelete, setShowDelete] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [hasMore, setHasMore] = useState(false)
 
+  const PAGE_SIZE = 50
+
   const loadAll = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await api.comments.moderationList({ limit: 50 })
+      const res = await api.comments.moderationList({ limit: PAGE_SIZE })
       setComments(res.items)
       setHasMore(res.hasMore)
     } catch {
@@ -43,6 +46,20 @@ function CommentsPage() {
       setLoading(false)
     }
   }, [api])
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return
+    setLoadingMore(true)
+    try {
+      const res = await api.comments.moderationList({ limit: PAGE_SIZE, offset: comments?.length ?? 0 })
+      setComments(prev => [...(prev ?? []), ...res.items])
+      setHasMore(res.hasMore)
+    } catch {
+      toast.error('Failed to load more comments')
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [api, comments, hasMore, loadingMore])
 
   useEffect(() => { loadAll() }, [loadAll])
 
@@ -55,7 +72,7 @@ function CommentsPage() {
     try {
       await api.comments.moderate(commentId, 'delete', 'Removed by moderator')
       toast.success('Comment removed')
-      setComments(prev => prev.filter(c => c.id !== commentId))
+      setComments(prev => (prev ?? []).filter(c => c.id !== commentId))
     } catch {
       toast.error('Failed to remove comment')
     } finally {
@@ -119,6 +136,13 @@ function CommentsPage() {
         ))}
         {visible.length === 0 && (
           <p className="py-8 text-center text-sm text-muted-foreground">No comments found</p>
+        )}
+        {hasMore && !filter && (
+          <div className="flex justify-center pt-2">
+            <button onClick={() => void loadMore()} disabled={loadingMore} className="rounded-full border border-border px-5 py-2 text-xs font-bold text-foreground hover:bg-[var(--surface-2)] disabled:opacity-50">
+              {loadingMore ? 'Loading…' : `Load more (${comments?.length ?? 0} shown)`}
+            </button>
+          </div>
         )}
       </div>
 

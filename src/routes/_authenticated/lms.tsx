@@ -61,10 +61,11 @@ function LmsPage() {
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
+  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor, reset: resetPagination } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
     setLoading(true)
+    if (!c) resetPagination()
     try {
       const r = await api.courses.list(c ? { cursor: c } : undefined)
       setData(r.items)
@@ -76,13 +77,17 @@ function LmsPage() {
     } finally {
       setLoading(false)
     }
-  }, [api])
+  }, [api, resetPagination])
 
   const handleNext = useCallback(() => {
+    setSelectedId(null)
+    setPanelMode('view')
     handleNextCursor((c) => loadList(c))
   }, [handleNextCursor, loadList])
 
   const handlePrev = useCallback(() => {
+    setSelectedId(null)
+    setPanelMode('view')
     handlePrevCursor((c) => loadList(c))
   }, [handlePrevCursor, loadList])
 
@@ -443,8 +448,8 @@ function LmsPage() {
                                 <FormInput label="Image URL" value={editData.imageUrl ?? ''} onChange={v => handleField('imageUrl', v)} />
                               </div>
                             )}
-                            <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
-                              <button onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
+                            <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+                              <button onClick={handleSave} disabled={saving} aria-label="Save course settings" className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                                 {saving ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FloppyDisk className="h-4 w-4" weight="duotone" />}
                                 Save Changes
                               </button>
@@ -456,6 +461,7 @@ function LmsPage() {
                               <button onClick={() => { setSelectedId(null); setPanelMode('view') }} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground">
                                 <X className="h-4 w-4" weight="duotone" /> Cancel
                               </button>
+                              <span className="w-full text-[11px] text-muted-foreground">Saves course settings only. Use Save Lesson and Upsert Quiz for lesson and quiz edits.</span>
                             </div>
                           </div>
                         </div>

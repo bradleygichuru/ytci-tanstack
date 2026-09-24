@@ -7,7 +7,7 @@ import { userProfiles, auditLogs } from "#/db/schema/admin"
 import { users } from "#/db/schema/auth"
 import { requirePermission } from "#/lib/authz"
 import type { AuthSession } from "#/lib/authz"
-import { eq, desc, sql } from "drizzle-orm"
+import { eq, desc, asc, sql, ilike, and } from "drizzle-orm"
 
 export type UserRole = 'super_admin' | 'administrator' | 'moderator' | 'county_officer' | 'user'
 
@@ -121,9 +121,56 @@ async function writeAudit(userId: string, action: string, details: string | null
 }
 
 export const listUsers = createServerFn({ method: "POST" })
-  .validator((d: { limit?: number; offset?: number; sortBy?: string; sortDirection?: string; searchValue?: string; searchField?: string; filterField?: string; filterValue?: string; filterOperator?: string }) => d)
+  .validator((d: { limit?: number; offset?: number; sortBy?: string; sortDirection?: string; searchValue?: string; searchField?: string; filterField?: string; filterValue?: string; filterOperator?: string; search?: string; role?: string; banned?: string }) => d)
   .handler(async ({ data }) => {
-    return { users: [], total: 0, limit: data.limit ?? 0, offset: data.offset ?? 0 }
+    const headers = reqHeaders()
+    await requireUsersRead(headers)
+    const limit = Math.min(Math.max(data.limit ?? 50, 1), 100)
+    const offset = Math.max(data.offset ?? 0, 0)
+
+    const conditions = []
+    const search = data.search ?? data.searchValue
+    const searchField = data.searchField ?? (search?.includes('@') ? 'email' : 'name')
+    if (search) {
+      const pattern = `%${search}%`
+      if (searchField === 'email') conditions.push(ilike(users.email, pattern))
+      else conditions.push(ilike(users.name, pattern))
+    }
+    const roleFilter = data.role ?? (data.filterField === 'role' ? data.filterValue : undefined)
+    if (roleFilter) conditions.push(eq(users.role, roleFilter))
+    const bannedParam = data.banned ?? (data.filterField === 'banned' ? data.filterValue : undefined)
+    if (bannedParam === 'true' || bannedParam === 'false') {
+      conditions.push(eq(users.banned, bannedParam === 'true'))
+    }
+
+    const sortColMap: Record<string, unknown> = {
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      createdAt: users.createdAt,
+    }
+    const sortCol = sortColMap[data.sortBy ?? ''] ?? users.createdAt
+    const orderBy = data.sortDirection === 'asc' ? asc(sortCol as never) : desc(sortCol as never)
+    const where = conditions.length > 0 ? and(...conditions) : undefined
+
+    const rows = await db
+      .select({ user: users, profile: userProfiles })
+      .from(users)
+      .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+      .where(where)
+      .orderBy(orderBy)
+      .limit(limit)
+      .offset(offset)
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(where)
+    return {
+      users: rows.map((r) => toUserItem(r.user as unknown as Record<string, unknown>, (r.profile ?? undefined) as unknown as ProfileFields | undefined)),
+      total: Number(count),
+      limit,
+      offset,
+    }
   })
 
 export const getUser = createServerFn({ method: "GET" })

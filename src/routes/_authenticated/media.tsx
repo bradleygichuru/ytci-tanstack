@@ -361,8 +361,14 @@ function MediaPage() {
             {assetPanelMode === 'create' && (
               <div className="col-span-2 md:col-span-3 rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
                 <h3 className="mb-4 text-sm font-bold text-foreground">Upload Media Asset</h3>
+                <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <FormInput label="Caption" value={editData?.caption ?? ''} onChange={v => handleField('caption', v)} placeholder="Shown under the asset" />
+                  <FormInput label="Alt Text" value={editData?.altText ?? ''} onChange={v => handleField('altText', v)} placeholder="For screen readers" />
+                  <FormInput label="Credit" value={editData?.credit ?? ''} onChange={v => handleField('credit', v)} placeholder="Photographer or source" />
+                </div>
                 <MediaUpload
                   label="Choose a file to upload"
+                  metadata={{ caption: editData?.caption ?? '', altText: editData?.altText ?? '', credit: editData?.credit ?? '' }}
                   onComplete={handleUploadComplete}
                   onError={(msg) => toast.error(msg)}
                 />

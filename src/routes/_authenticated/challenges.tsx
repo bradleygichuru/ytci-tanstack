@@ -42,6 +42,7 @@ function ChallengesPage() {
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [reviewPending, setReviewPending] = useState<Record<string, boolean>>({})
 
   const loadList = useCallback(async () => {
     setLoading(true)
@@ -82,17 +83,27 @@ function ChallengesPage() {
     })
   }, [api])
 
-  const handleApprove = useCallback(async (id: string) => {
-    await api.challenges.evidence.review(id, 'approve')
-    await loadEvidence()
-    toast.success('Evidence approved')
-  }, [api, loadEvidence])
+  const handleReview = useCallback(async (id: string, decision: 'approve' | 'reject') => {
+    if (reviewPending[id]) return
+    setReviewPending(prev => ({ ...prev, [id]: true }))
+    try {
+      await api.challenges.evidence.review(id, decision)
+      await loadEvidence()
+      toast.success(decision === 'approve' ? 'Evidence approved' : 'Evidence rejected')
+    } catch {
+      toast.error(`Failed to ${decision} evidence. Please try again.`)
+    } finally {
+      setReviewPending(prev => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    }
+  }, [api, loadEvidence, reviewPending])
 
-  const handleReject = useCallback(async (id: string) => {
-    await api.challenges.evidence.review(id, 'reject')
-    await loadEvidence()
-    toast.success('Evidence rejected')
-  }, [api, loadEvidence])
+  const handleApprove = useCallback((id: string) => handleReview(id, 'approve'), [handleReview])
+
+  const handleReject = useCallback((id: string) => handleReview(id, 'reject'), [handleReview])
 
   const selected = data?.find(d => d.id === selectedId) ?? null
 
@@ -362,8 +373,8 @@ function ChallengesPage() {
                     <td className="px-5 py-3 text-right">
                       {e.status === 'submitted' && (
                         <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => handleApprove(e.id)} className="rounded-full bg-[var(--leaf)] p-1.5 text-white"><CheckCircle className="h-4 w-4" weight="fill" /></button>
-                          <button onClick={() => handleReject(e.id)} className="rounded-full bg-destructive p-1.5 text-white"><XCircle className="h-4 w-4" weight="fill" /></button>
+                          <button onClick={() => handleApprove(e.id)} disabled={!!reviewPending[e.id]} aria-label={`Approve evidence ${e.id}`} title="Approve evidence" className="rounded-full bg-[var(--leaf)] p-1.5 text-white disabled:opacity-50"><CheckCircle className="h-4 w-4" weight="fill" /></button>
+                          <button onClick={() => handleReject(e.id)} disabled={!!reviewPending[e.id]} aria-label={`Reject evidence ${e.id}`} title="Reject evidence" className="rounded-full bg-destructive p-1.5 text-white disabled:opacity-50"><XCircle className="h-4 w-4" weight="fill" /></button>
                         </div>
                       )}
                       {e.status !== 'submitted' && (

@@ -62,6 +62,13 @@ function emptyDestination(): Partial<Destination> {
   }
 }
 
+function slugifyName(name: string): string {
+  return name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/[\s_]+/g, '-').replace(/-+/g, '-')
+}
+
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
+const VIDEO_TYPES = ['video/mp4'] as const
+
 function DestinationsPage() {
   const api = useApi()
   const [data, setData] = useState<Destination[] | null>(null)
@@ -70,12 +77,12 @@ function DestinationsPage() {
   const [activeTab, setActiveTab] = useState('identity')
   const [editData, setEditData] = useState<Partial<Destination> | null>(null)
   const [filter, setFilter] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [totalDestinations, setTotalDestinations] = useState(0)
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({})
   const [mediaIds, setMediaIds] = useState<Record<string, string>>({})
   const mediaUrlCache = useRef<Record<string, string>>({})
@@ -104,23 +111,23 @@ function DestinationsPage() {
     }
   }, [editData?.heroImageUrl, editData?.videoUrl, editData?.gallery])
 
-  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
+  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor, reset: resetPagination } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
     setLoading(true)
+    if (!c) resetPagination()
     try {
       const r = await api.destinations.list(c ? { cursor: c } : undefined)
       setData(r.items)
       setHasMore(r.hasMore)
       setCursor(r.nextCursor)
-      setTotalDestinations(prev => Math.max(prev, r.items.length))
     } catch {
       toast.error('Failed to load destinations')
       if (!data) setData([])
     } finally {
       setLoading(false)
     }
-  }, [api])
+  }, [api, resetPagination])
 
   const handleNext = useCallback(() => {
     handleNextCursor((c) => { loadList(c); setSelectedId(null) })
@@ -281,20 +288,34 @@ function DestinationsPage() {
     }
   }, [selectedId, loadList, api])
 
-  const visible = (filter
+  const visible = ((filter
     ? data?.filter(d =>
         d.status === filter || d.category === filter || d.county === filter ||
         (filter === 'curated' && d.source !== 'google_places') ||
         (filter === 'google_places' && d.source === 'google_places')
       )
-    : data) ?? []
+    : data) ?? []).filter(d => {
+      const q = search.trim().toLowerCase()
+      if (!q) return true
+      return d.name.toLowerCase().includes(q) || d.county.toLowerCase().includes(q) || d.category.toLowerCase().includes(q)
+    })
 
-  const filters = [null, 'published', 'draft', 'archived', 'wildlife', 'beach', 'adventure', 'Narok', 'Kwale', 'Meru', 'curated', 'google_places']
+  const statusFilters = [null, 'published', 'draft', 'archived'] as const
+  const categoryFilters = ['wildlife', 'beach', 'adventure'] as const
+  const countyFilters = ['Narok', 'Kwale', 'Meru'] as const
+  const sourceFilters = ['curated', 'google_places'] as const
 
   const filterLabels: Record<string, string> = {
     curated: 'Curated',
     google_places: 'Google Places',
   }
+
+  const renderFilterPill = (f: string | null, label?: string) => (
+    <button key={f ?? 'all'} onClick={() => setFilter(f)} aria-pressed={filter === f}
+      className={`rounded-full px-3 py-1 text-xs font-semibold ${filter === f ? 'bg-primary text-white' : 'border border-border bg-card text-muted-foreground hover:border-[var(--outline)]'}`}>
+      {label ?? (f ? (filterLabels[f] ?? f) : 'All')}
+    </button>
+  )
 
   return (
     <div>
@@ -308,22 +329,29 @@ function DestinationsPage() {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative">
           <MagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" weight="duotone" />
-          <input placeholder="Search destinations..." className="h-9 w-56 rounded-md border border-border bg-card pl-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary" />
+          <input placeholder="Search destinations..." aria-label="Search destinations" value={search} onChange={e => setSearch(e.target.value)} className="h-9 w-56 rounded-md border border-border bg-card pl-9 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary" />
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {filters.map(f => (
-            <button key={f ?? 'all'} onClick={() => setFilter(f)}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${filter === f ? 'bg-primary text-white' : 'border border-border bg-card text-muted-foreground hover:border-[var(--outline)]'}`}>
-              {f ? (filterLabels[f] ?? f) : 'All'}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by status">
+          {statusFilters.map(f => renderFilterPill(f))}
+        </div>
+        <div className="h-5 w-px bg-[var(--surface-4)]" aria-hidden="true" />
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by category">
+          {categoryFilters.map(f => renderFilterPill(f))}
+        </div>
+        <div className="h-5 w-px bg-[var(--surface-4)]" aria-hidden="true" />
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by county">
+          {countyFilters.map(f => renderFilterPill(f))}
+        </div>
+        <div className="h-5 w-px bg-[var(--surface-4)]" aria-hidden="true" />
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by source">
+          {sourceFilters.map(f => renderFilterPill(f, filterLabels[f]))}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground">{visible?.length ?? 0} destinations</span>
+          <span className="text-xs font-semibold text-muted-foreground">{visible?.length ?? 0} shown{search.trim() ? ` for “${search.trim()}”` : ''}</span>
           <button onClick={handleNew} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm">
             <Plus className="h-4 w-4" weight="duotone" /> New Destination
           </button>
-          <button className="flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-bold text-primary">
+          <button disabled title="Bulk import is not available yet" aria-label="Bulk import (not available yet)" className="flex cursor-not-allowed items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-xs font-bold text-primary opacity-50">
             <CloudArrowDown className="h-4 w-4" weight="duotone" /> Bulk Import
           </button>
           <button
@@ -387,8 +415,8 @@ function DestinationsPage() {
                           <div className="bg-card px-6 py-5">
                             {activeTab === 'identity' && (
                               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <FormInput label="Name" required value={editData.name ?? ''} onChange={v => handleField('name', v)} error={errors.name} />
-                                <FormInput label="Slug" required value={editData.slug ?? ''} onChange={v => handleField('slug', v)} error={errors.slug} />
+                                <FormInput label="Name" required value={editData.name ?? ''} onChange={v => { handleField('name', v); if (!(editData.slug ?? '').trim()) handleField('slug', slugifyName(v)) }} error={errors.name} />
+                                <FormInput label="Slug" required value={editData.slug ?? ''} onChange={v => handleField('slug', slugifyName(v))} error={errors.slug} description="Auto-generated from the name. Edit to override." />
                                 <FormInput label="County" required value={editData.county ?? ''} onChange={v => handleField('county', v)} error={errors.county} />
                                 <FormInput label="Locality" value={editData.locality ?? ''} onChange={v => handleField('locality', v)} />
                                 <FormSelect label="Category" required value={editData.category ?? ''} options={CATEGORIES} onChange={v => handleField('category', v)} error={errors.category} />
@@ -459,6 +487,7 @@ function DestinationsPage() {
                                   <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Hero Image</h4>
                                   <MediaUpload
                                     label={editData.heroImageUrl ? 'Replace hero image' : 'Upload hero image'}
+                                    allowedTypes={IMAGE_TYPES}
                                     onComplete={(result) => {
                                       handleField('heroImageUrl', result.objectKey)
                                       if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))
@@ -489,6 +518,7 @@ function DestinationsPage() {
                                   <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Gallery Images</h4>
                                   <MediaUpload
                                     label="Add gallery image"
+                                    allowedTypes={IMAGE_TYPES}
                                     onComplete={(result) => {
                                       const current = editData.gallery ?? []
                                       handleField('gallery', [...current, result.objectKey])
@@ -527,6 +557,7 @@ function DestinationsPage() {
                                   <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Video</h4>
                                   <MediaUpload
                                     label={editData.videoUrl ? 'Replace video' : 'Upload video'}
+                                    allowedTypes={VIDEO_TYPES}
                                     onComplete={(result) => {
                                       handleField('videoUrl', result.objectKey)
                                       if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))
@@ -609,8 +640,8 @@ function DestinationsPage() {
                         {/* same form content as above */}
                         {activeTab === 'identity' && (
                           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <FormInput label="Name" required value={editData.name ?? ''} onChange={v => handleField('name', v)} error={errors.name} />
-                            <FormInput label="Slug" required value={editData.slug ?? ''} onChange={v => handleField('slug', v)} error={errors.slug} />
+                            <FormInput label="Name" required value={editData.name ?? ''} onChange={v => { handleField('name', v); if (!(editData.slug ?? '').trim()) handleField('slug', slugifyName(v)) }} error={errors.name} />
+                            <FormInput label="Slug" required value={editData.slug ?? ''} onChange={v => handleField('slug', slugifyName(v))} error={errors.slug} description="Auto-generated from the name. Edit to override." />
                             <FormInput label="County" required value={editData.county ?? ''} onChange={v => handleField('county', v)} error={errors.county} />
                             <FormInput label="Locality" value={editData.locality ?? ''} onChange={v => handleField('locality', v)} />
                             <FormSelect label="Category" required value={editData.category ?? ''} options={CATEGORIES} onChange={v => handleField('category', v)} error={errors.category} />
@@ -675,6 +706,7 @@ function DestinationsPage() {
                               <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Hero Image</h4>
                               <MediaUpload
                                 label="Upload hero image"
+                                allowedTypes={IMAGE_TYPES}
                                 onComplete={(result) => {
                                   handleField('heroImageUrl', result.objectKey)
                                   if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))
@@ -699,6 +731,7 @@ function DestinationsPage() {
                               <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Gallery Images</h4>
                               <MediaUpload
                                 label="Add gallery image"
+                                allowedTypes={IMAGE_TYPES}
                                 onComplete={(result) => {
                                   const current = editData.gallery ?? []
                                   handleField('gallery', [...current, result.objectKey])
@@ -736,6 +769,7 @@ function DestinationsPage() {
                               <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Video</h4>
                               <MediaUpload
                                 label="Upload video"
+                                allowedTypes={VIDEO_TYPES}
                                 onComplete={(result) => {
                                   handleField('videoUrl', result.objectKey)
                                   if (result.id) setMediaIds(prev => ({ ...prev, [result.objectKey]: result.id }))

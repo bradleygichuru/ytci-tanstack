@@ -115,14 +115,28 @@ export function MediaUpload({ label = 'Upload File', allowedTypes = ALLOWED_TYPE
       setErrorMsg('Failed to finalize upload')
       onError?.('Complete request failed')
     }
-  }, [api, allowedTypes, onComplete, onError])
+  }, [api, allowedTypes, metadata, onComplete, onError])
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (!selectedFile) return
     setFile(selectedFile)
-    if (autoUpload) startUpload(selectedFile)
+    if (autoUpload) void startUpload(selectedFile)
   }, [autoUpload, startUpload])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    if (state !== 'idle') return
+    const dropped = e.dataTransfer.files?.[0]
+    if (!dropped) return
+    setFile(dropped)
+    if (autoUpload) void startUpload(dropped)
+    else if (inputRef.current) {
+      const dt = new DataTransfer()
+      dt.items.add(dropped)
+      inputRef.current.files = dt.files
+    }
+  }, [state, autoUpload, startUpload])
 
   function SpinnerIcon() {
     return <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--forest)] border-t-transparent" />
@@ -161,7 +175,20 @@ export function MediaUpload({ label = 'Upload File', allowedTypes = ALLOWED_TYPE
       />
 
       <div
+        role="button"
+        tabIndex={state === 'idle' ? 0 : -1}
+        aria-label={label}
+        aria-disabled={state !== 'idle'}
         onClick={() => state === 'idle' && inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (state !== 'idle') return
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            inputRef.current?.click()
+          }
+        }}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
         className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${
           state === 'done'
             ? 'border-[var(--leaf)] bg-[var(--leaf-bg)]'
@@ -173,7 +200,7 @@ export function MediaUpload({ label = 'Upload File', allowedTypes = ALLOWED_TYPE
         }`}
       >
         {sd ? (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-2" role="status" aria-live="polite">
             {sd.icon}
             <span className="text-sm font-semibold text-foreground">{sd.text}</span>
             {state === 'uploading' && (
@@ -182,6 +209,11 @@ export function MediaUpload({ label = 'Upload File', allowedTypes = ALLOWED_TYPE
               </div>
             )}
             {state === 'idle' && file && <span className="text-xs text-[var(--on-surface-variant)]">{file.name} ({fmtSize(file.size)})</span>}
+            {state === 'idle' && file && !autoUpload && (
+              <button onClick={(e) => { e.stopPropagation(); if (file) void startUpload(file) }} className="mt-1 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white shadow-sm">
+                Upload {file.name.length > 24 ? `${file.name.substring(0, 24)}…` : file.name}
+              </button>
+            )}
             {(state === 'error' || state === 'done') && (
               <button onClick={(e) => { e.stopPropagation(); reset() }} className="mt-1 text-xs font-semibold text-primary hover:underline">
                 {state === 'done' ? 'Upload another' : 'Try again'}

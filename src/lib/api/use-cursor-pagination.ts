@@ -9,10 +9,14 @@ export interface CursorPaginationState {
   handlePrev: (onPaginate: (cursor: string | null) => void) => void
 }
 
-export function useCursorPagination(): CursorPaginationState {
+export function useCursorPagination(): CursorPaginationState & { reset: () => void } {
   const [cursor, setCursor] = useState<string | null>(null)
   const [cursorHistory, setCursorHistory] = useState<string[]>([])
   const [hasMore, setHasMore] = useState(false)
+
+  const reset = useCallback(() => {
+    setCursorHistory([])
+  }, [])
 
   const handleNext = useCallback((onPaginate: (cursor: string) => void) => {
     if (cursor) {
@@ -22,16 +26,14 @@ export function useCursorPagination(): CursorPaginationState {
   }, [cursor])
 
   const handlePrev = useCallback((onPaginate: (cursor: string | null) => void) => {
-    const prev = cursorHistory[cursorHistory.length - 1]
-    if (prev === undefined) {
-      setCursorHistory([])
+    if (cursorHistory.length === 0) {
       onPaginate(null)
       return
     }
-    const prevCursor = cursorHistory.length > 1 ? cursorHistory[cursorHistory.length - 2] : null
-    setCursorHistory(prev => prev.slice(0, -1))
-    onPaginate(prevCursor)
+    const next = cursorHistory.slice(0, -1)
+    setCursorHistory(next)
+    onPaginate(next.length > 0 ? next[next.length - 1] : null)
   }, [cursorHistory])
 
-  return { cursor, hasMore, setCursor, setHasMore, handleNext, handlePrev }
+  return { cursor, hasMore, setCursor, setHasMore, handleNext, handlePrev, reset }
 }

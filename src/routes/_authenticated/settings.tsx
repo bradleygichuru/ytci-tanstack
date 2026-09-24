@@ -24,14 +24,33 @@ const emptyProfile: ProfileInput = {
   preferences: '',
 }
 
+interface FormMsgProps {
+  msg: { kind: 'error' | 'success'; text: string } | null
+}
+
+function FormMsg({ msg }: FormMsgProps) {
+  if (!msg) return null
+  return (
+    <div
+      role={msg.kind === 'error' ? 'alert' : 'status'}
+      className={msg.kind === 'error'
+        ? 'mb-4 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive'
+        : 'mb-4 rounded-lg border border-emerald-500/50 bg-emerald-50 p-4 text-sm text-emerald-800'}
+    >
+      {msg.text}
+    </div>
+  )
+}
+
 function SettingsPage() {
   const { data: session, refetch: refetchSession } = authClient.useSession()
   const router = useRouter()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [profileMsg, setProfileMsg] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
+  const [passwordMsg, setPasswordMsg] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
+  const [emailMsg, setEmailMsg] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
 
   const [displayName, setDisplayName] = useState('')
   const [profile, setProfile] = useState<ProfileInput>(emptyProfile)
@@ -58,12 +77,12 @@ function SettingsPage() {
           })
         } else {
           upsertOwnProfile({ data: {} }).catch((err: Error) => {
-            setError(err.message || 'Failed to initialize profile')
+            setProfileMsg({ kind: 'error', text: err.message || 'Failed to initialize profile' })
           })
         }
       })
       .catch((err: Error) => {
-        setError(err.message || 'Failed to load profile')
+        setProfileMsg({ kind: 'error', text: err.message || 'Failed to load profile' })
       })
       .finally(() => setLoading(false))
   }, [])
@@ -81,8 +100,7 @@ function SettingsPage() {
 
   async function handleProfileSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
-    setSuccess(null)
+    setProfileMsg(null)
     setSaving(true)
     try {
       await upsertOwnProfile({
@@ -99,9 +117,9 @@ function SettingsPage() {
         await authClient.updateUser({ name: profile.displayName })
         await refetchSession()
       }
-      setSuccess('Profile updated')
+      setProfileMsg({ kind: 'success', text: 'Profile updated' })
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update profile')
+      setProfileMsg({ kind: 'error', text: err instanceof Error ? err.message : 'Failed to update profile' })
     } finally {
       setSaving(false)
     }
@@ -109,45 +127,43 @@ function SettingsPage() {
 
   async function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
-    setSuccess(null)
+    setPasswordMsg(null)
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match')
+      setPasswordMsg({ kind: 'error', text: 'Passwords do not match' })
       return
     }
     setChangingPassword(true)
     try {
       const { error: err } = await authClient.changePassword({ currentPassword, newPassword })
       if (err) {
-        setError(err.message ?? 'Failed to change password')
+        setPasswordMsg({ kind: 'error', text: err.message ?? 'Failed to change password' })
       } else {
-        setSuccess('Password changed')
+        setPasswordMsg({ kind: 'success', text: 'Password changed' })
         setCurrentPassword('')
         setNewPassword('')
         setConfirmPassword('')
       }
     } catch {
-      setError('Network error. Please try again.')
+      setPasswordMsg({ kind: 'error', text: 'Network error. Please try again.' })
     }
     setChangingPassword(false)
   }
 
   async function handleEmailChange(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
-    setSuccess(null)
+    setEmailMsg(null)
     setChangingEmail(true)
     try {
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
       const { error: err } = await authClient.changeEmail({ newEmail, callbackURL: `${baseUrl}/settings` })
       if (err) {
-        setError(err.message ?? 'Failed to update email')
+        setEmailMsg({ kind: 'error', text: err.message ?? 'Failed to update email' })
       } else {
-        setSuccess('Verification email sent. Check your inbox.')
+        setEmailMsg({ kind: 'success', text: 'Verification email sent. Check your inbox.' })
         setNewEmail('')
       }
     } catch {
-      setError('Network error. Please try again.')
+      setEmailMsg({ kind: 'error', text: 'Network error. Please try again.' })
     }
     setChangingEmail(false)
   }
@@ -178,17 +194,6 @@ function SettingsPage() {
         </p>
       </div>
 
-      {error && (
-        <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-4 rounded-lg border border-emerald-500/50 bg-emerald-50 p-4 text-sm text-emerald-800">
-          {success}
-        </div>
-      )}
-
       <div className="space-y-6">
         <div className={sectionClass}>
           <h2 className={sectionTitleClass}>
@@ -197,6 +202,7 @@ function SettingsPage() {
               Profile
             </span>
           </h2>
+          <FormMsg msg={profileMsg} />
           <div className="flex items-center gap-4">
             {user.image ? (
               <img
@@ -252,6 +258,7 @@ function SettingsPage() {
               Change Password
             </span>
           </h2>
+          <FormMsg msg={passwordMsg} />
           <div className="space-y-4">
             <InputField label="Current Password" value={currentPassword} type="password" required onChange={(v) => setCurrentPassword(v)} inputClass={inputClass} labelClass={labelClass} />
             <InputField label="New Password" value={newPassword} type="password" required onChange={(v) => setNewPassword(v)} inputClass={inputClass} labelClass={labelClass} />
@@ -273,6 +280,7 @@ function SettingsPage() {
               Change Email
             </span>
           </h2>
+          <FormMsg msg={emailMsg} />
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Current email: <span className="font-semibold text-foreground">{user.email}</span>

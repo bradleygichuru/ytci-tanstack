@@ -249,52 +249,121 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
   )
 }
 
-function ReportsTab() {
+const REPORT_SECTIONS = ['User Activity', 'Destinations', 'Itineraries', 'Stories', 'Courses', 'Conservation', 'Alerts'] as const
+
+function buildReportCsv(data: AnalyticsData, sections: readonly string[], from: string, to: string): string {
+  const rows: string[][] = [
+    ['YTCI Analytics Report', `${from} to ${to}`],
+    ['Generated', new Date().toISOString()],
+    [],
+  ]
+  const has = (s: string) => sections.includes(s)
+  if (has('User Activity')) {
+    rows.push(['User Activity'], ['DAU', String(data.dau)], ['WAU', String(data.wau)], ['MAU', String(data.mau)], ['New registrations', String(data.newRegistrations)], [])
+    rows.push(['County', 'Users'])
+    for (const loc of data.userLocations) rows.push([loc.county, String(loc.count)])
+    rows.push([])
+  }
+  if (has('Destinations')) {
+    rows.push(['Top Destinations'], ['Name', 'County', 'Views'])
+    for (const d of data.topDestinations) rows.push([d.name, d.county, String(d.views)])
+    rows.push(['Top Categories'], ['Name', 'Count'])
+    for (const c of data.topCategories) rows.push([c.name, String(c.count)])
+    rows.push([])
+  }
+  if (has('Itineraries')) {
+    rows.push(['Itineraries'], ['Generated', String(data.itinerariesGenerated)], ['Saved', String(data.itinerariesSaved)], ['Exported', String(data.itinerariesExported)], ['Shared', String(data.itinerariesShared)], ['Map interactions', String(data.mapInteractions)], [])
+  }
+  if (has('Stories')) {
+    rows.push(['Stories'], ['Submitted', String(data.storiesSubmitted)], ['Approved', String(data.storiesApproved)], ['Reported', String(data.storiesReported)], ['Awaiting review', String(data.contentAwaitingReview)], [])
+  }
+  if (has('Courses')) {
+    rows.push(['Courses'], ['Enrollments', String(data.courseEnrollments)], ['Completions', String(data.courseCompletions)], ['Challenge participants', String(data.challengeParticipants)], [])
+  }
+  if (has('Conservation')) {
+    rows.push(['Conservation'], ['Participants', String(data.conservationParticipants)], [])
+  }
+  if (has('Alerts')) {
+    rows.push(['System Alerts'], ['Title', 'Severity', 'Timestamp'])
+    for (const a of data.systemAlerts) rows.push([a.title, a.severity, a.timestamp])
+    rows.push([])
+  }
+  return rows.map(r => r.map(cell => /[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell).join(',')).join('\n')
+}
+
+function ReportsTab({ data }: { data: AnalyticsData }) {
+  const [from, setFrom] = useState('2025-06-01')
+  const [to, setTo] = useState('2025-07-31')
+  const [format, setFormat] = useState<'csv' | 'pdf'>('csv')
+  const [sections, setSections] = useState<string[]>([...REPORT_SECTIONS])
+  const [exporting, setExporting] = useState(false)
+
+  const toggleSection = (s: string) => {
+    setSections(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
+  }
+
+  const handleExportCsv = () => {
+    if (sections.length === 0 || exporting) return
+    setExporting(true)
+    try {
+      const csv = buildReportCsv(data, sections, from, to)
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `ytci-report-${from}-to-${to}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="rounded-lg border border-border bg-card p-8" style={{ boxShadow: 'var(--card-shadow)' }}>
       <h2 className="font-sans text-base font-bold text-foreground">Export Reports</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Generate CSV or PDF summaries for YTCI, counties, and development partners.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Generate CSV summaries for YTCI, counties, and development partners.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-sm font-semibold text-foreground">Date Range</label>
           <div className="flex gap-3">
-            <input type="date" className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary" defaultValue="2025-06-01" />
+            <input type="date" aria-label="Report start date" value={from} onChange={e => setFrom(e.target.value)} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary" />
             <span className="flex items-center text-sm text-muted-foreground">to</span>
-            <input type="date" className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary" defaultValue="2025-07-31" />
+            <input type="date" aria-label="Report end date" value={to} onChange={e => setTo(e.target.value)} min={from} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary" />
           </div>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-foreground">Format</label>
+          <span className="mb-1.5 block text-sm font-semibold text-foreground">Format</span>
           <div className="flex gap-4">
             <label className="flex items-center gap-2 text-sm text-foreground">
-              <input type="radio" name="format" defaultChecked className="accent-primary" /> <FileCsv className="h-4 w-4 text-success-leaf" weight="duotone" /> CSV
+              <input type="radio" name="format" checked={format === 'csv'} onChange={() => setFormat('csv')} className="accent-primary" /> <FileCsv className="h-4 w-4 text-success-leaf" weight="duotone" /> CSV
             </label>
-            <label className="flex items-center gap-2 text-sm text-foreground">
-              <input type="radio" name="format" className="accent-primary" /> <FilePdf className="h-4 w-4 text-destructive" weight="duotone" /> PDF
+            <label className="flex items-center gap-2 text-sm text-muted-foreground" title="PDF export is not available yet">
+              <input type="radio" name="format" checked={format === 'pdf'} disabled className="accent-primary disabled:cursor-not-allowed" /> <FilePdf className="h-4 w-4 text-destructive" weight="duotone" /> PDF (soon)
             </label>
           </div>
         </div>
       </div>
 
       <div className="mt-5">
-        <label className="mb-2 block text-sm font-semibold text-foreground">Sections</label>
+        <span className="mb-2 block text-sm font-semibold text-foreground">Sections</span>
         <div className="flex flex-wrap gap-3">
-          {['User Activity', 'Destinations', 'Itineraries', 'Stories', 'Courses', 'Conservation', 'Alerts'].map((s) => (
+          {REPORT_SECTIONS.map((s) => (
             <label key={s} className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-foreground hover:border-primary">
-              <input type="checkbox" defaultChecked className="accent-primary" /> {s}
+              <input type="checkbox" checked={sections.includes(s)} onChange={() => toggleSection(s)} className="accent-primary" /> {s}
             </label>
           ))}
         </div>
       </div>
 
-      <div className="mt-8 flex gap-3">
-        <button className="flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02]">
-          <CloudArrowDown className="h-4 w-4" weight="duotone" /> Export CSV
+      <div className="mt-8 flex flex-wrap items-center gap-3">
+        <button onClick={handleExportCsv} disabled={exporting || sections.length === 0} aria-label="Export report as CSV" className="flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002b02] disabled:opacity-50">
+          <CloudArrowDown className="h-4 w-4" weight="duotone" /> {exporting ? 'Exporting…' : `Export CSV${sections.length > 0 ? ` (${sections.length} sections)` : ''}`}
         </button>
-        <button className="flex items-center gap-2 rounded-full bg-[var(--amber)] px-6 py-3 text-sm font-bold text-[var(--forest-deep)] shadow-sm transition-colors">
-          <CloudArrowDown className="h-4 w-4" weight="duotone" /> Export PDF
-        </button>
+        {sections.length === 0 && <p className="text-xs text-muted-foreground">Select at least one section to export.</p>}
       </div>
     </div>
   )
@@ -306,9 +375,11 @@ function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'reports'>('dashboard')
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     setLoading(true)
+    setError(null)
     api.analytics.summary().then((r) => {
       setData(sanitizeAnalyticsData(r as Partial<AnalyticsData>))
     }).catch((e: ApiErrorResponse) => {
@@ -316,7 +387,7 @@ function AnalyticsPage() {
     }).finally(() => {
       setLoading(false)
     })
-  }, [api])
+  }, [api, reloadKey])
 
   return (
     <div>
@@ -347,13 +418,14 @@ function AnalyticsPage() {
       </div>
 
       {error && (
-        <div className="mt-4 rounded-lg border border-[var(--error)] bg-[rgba(186,26,26,0.05)] p-4 text-sm text-destructive">
-          {error}
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-[var(--error)] bg-[rgba(186,26,26,0.05)] p-4 text-sm text-destructive" role="alert">
+          <span>{error}</span>
+          <button onClick={() => setReloadKey(k => k + 1)} className="shrink-0 rounded-full border border-[var(--error)] px-4 py-1.5 text-xs font-bold">Retry</button>
         </div>
       )}
 
       {loading ? <AnalyticsSkeleton /> : data ? (
-        activeTab === 'dashboard' ? <DashboardTab data={data} /> : <ReportsTab />
+        activeTab === 'dashboard' ? <DashboardTab data={data} /> : <ReportsTab data={data} />
       ) : !error && null}
     </div>
   )

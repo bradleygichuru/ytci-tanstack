@@ -2,6 +2,7 @@ import { redirect } from '@tanstack/react-router'
 import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { toast } from 'sonner'
 import { authClient } from '#/lib/auth-client'
 import {
   Shield, Prohibit, CheckCircle, PencilSimple,
@@ -90,6 +91,9 @@ function UsersPage() {
   const [createLoading, setCreateLoading] = useState(false)
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const requestSeq = useRef(0)
 
   const filtersRef = useRef<Filters>({ search: '', role: null, status: 'all', page: 1 })
   const [filters, setFilters] = useState<Filters>({ search: '', role: null, status: 'all', page: 1 })
@@ -107,15 +111,22 @@ function UsersPage() {
     params.limit = PAGE_SIZE
     params.offset = (f.page - 1) * PAGE_SIZE
     if (f.sortBy) { params.sortBy = f.sortBy; params.sortDirection = f.sortDirection ?? 'asc' }
+    const seq = ++requestSeq.current
     setLoading(true)
+    setLoadError(null)
     try {
       const res = await apiGet('list', params) as { users: UserItem[]; total: number }
+      if (requestSeq.current !== seq) return
       setData(res.users)
       setTotal(res.total)
       const ra = await apiGet('audit', { limit: 50 }) as { items: AuditItem[] }
+      if (requestSeq.current !== seq) return
       setAudit(ra.items)
     } catch (err) {
-      console.error('Failed to load users:', err)
+      if (requestSeq.current !== seq) return
+      const msg = err instanceof Error ? err.message : 'Failed to load users'
+      setLoadError(msg)
+      toast.error(`Failed to load users: ${msg}`)
       setData([])
       setTotal(0)
     } finally {
@@ -161,7 +172,7 @@ function UsersPage() {
   }, [selectedId, data])
 
   const handleSave = useCallback(async () => {
-    if (!selectedId || !editData) return
+    if (!selectedId || !editData || saving) return
     const patch: Record<string, unknown> = { userId: selectedId }
     const orig = data.find(u => u.id === selectedId)
     if (!orig) return
@@ -173,14 +184,31 @@ function UsersPage() {
     if (editData.languages !== orig.languages) patch.languages = editData.languages
     if (editData.preferences !== orig.preferences) patch.preferences = editData.preferences
     if (editData.consentGrantedAt !== orig.consentGrantedAt) patch.consentGrantedAt = editData.consentGrantedAt
-    if (Object.keys(patch).length <= 1) return
-    await apiPost('update', patch)
-    await loadData(filtersRef.current)
-    setSelectedId(null)
-  }, [selectedId, editData, data, loadData])
+    if (Object.keys(patch).length <= 1) {
+      toast.info('No changes to save')
+      return
+    }
+    setSaving(true)
+    try {
+      await apiPost('update', patch)
+      await loadData(filtersRef.current)
+      setSelectedId(null)
+      toast.success('User saved')
+    } catch (err) {
+      toast.error(`Failed to save user: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setSaving(false)
+    }
+  }, [selectedId, editData, data, loadData, saving])
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   const handleCreate = useCallback(async () => {
-    if (!createForm.name || !createForm.email || !createConsent) return
+    if (!createForm.name || !createForm.email || !createConsent || createLoading) return
+    if (!emailPattern.test(createForm.email)) {
+      toast.error('Enter a valid email address')
+      return
+    }
     setCreateLoading(true)
     try {
       const payload: Record<string, unknown> = { name: createForm.name, email: createForm.email, role: createForm.role }
@@ -190,12 +218,13 @@ function UsersPage() {
       const result = await apiPost('create', payload) as { user: UserItem; tempPassword: string }
       setCreateResult({ email: createForm.email, password: result.tempPassword })
       await loadData(filtersRef.current)
+      toast.success('User created. Copy the temporary password.')
     } catch (err) {
-      console.error('Create user failed:', err)
+      toast.error(`Failed to create user: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setCreateLoading(false)
     }
-  }, [createForm, createConsent, loadData])
+  }, [createForm, createConsent, createLoading, loadData])
 
   const resetCreate = useCallback(() => {
     setCreateOpen(false)
@@ -254,6 +283,13 @@ function UsersPage() {
       {/* Users tab */}
       {tab === 'users' && (
         loading ? <UsersSkeleton /> :
+        <>
+        {loadError && (
+          <div className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3" role="alert">
+            <p className="text-sm font-semibold text-destructive">Failed to load users: {loadError}</p>
+            <button onClick={() => loadData(filtersRef.current)} className="rounded-full border border-destructive/40 px-4 py-1.5 text-xs font-bold text-destructive">Retry</button>
+          </div>
+        )}
         <div className="overflow-hidden rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
           {/* Toolbar */}
           <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-3">
@@ -372,7 +408,7 @@ function UsersPage() {
                             </div>
 
                             <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
-                              <button onClick={handleSave} className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm"><FloppyDisk className="h-4 w-4" weight="duotone" /> Save</button>
+                              <button onClick={handleSave} disabled={saving} aria-label="Save user changes" className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-xs font-bold text-white shadow-sm disabled:opacity-50"><FloppyDisk className="h-4 w-4" weight="duotone" /> {saving ? 'Saving…' : 'Save'}</button>
                               <button onClick={() => setSelectedId(null)} className="flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-xs font-bold text-muted-foreground"><X className="h-4 w-4" weight="duotone" /> Cancel</button>
                             </div>
                           </div>
@@ -416,6 +452,7 @@ function UsersPage() {
             </div>
           )}
         </div>
+        </>
       )}
 
       {/* Consent Audit tab */}

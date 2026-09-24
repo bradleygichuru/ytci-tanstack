@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { useApi } from '#/lib/api/use-api'
 import { useCursorPagination } from '#/lib/api/use-cursor-pagination'
 import { Trash, MapPin, Shield, CheckCircle, XCircle, Eye, User, PencilSimple, FloppyDisk, X, Plus } from '@phosphor-icons/react'
-import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
+import { FormInput, FormSelect } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { CursorPagination } from '#/components/shared/CursorPagination'
@@ -43,11 +43,13 @@ function ConservationPage() {
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [reviewPending, setReviewPending] = useState<Record<string, boolean>>({})
 
-  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
+  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor, reset: resetPagination } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
     setLoading(true)
+    if (!c) resetPagination()
     try {
       const r = await api.conservation.activities.list(c ? { cursor: c } : undefined)
       setActs(r.items)
@@ -58,13 +60,17 @@ function ConservationPage() {
     } finally {
       setLoading(false)
     }
-  }, [api])
+  }, [api, resetPagination])
 
   const handleNext = useCallback(() => {
+    setSelectedId(null)
+    setPanelMode('view')
     handleNextCursor((c) => loadList(c))
   }, [handleNextCursor, loadList])
 
   const handlePrev = useCallback(() => {
+    setSelectedId(null)
+    setPanelMode('view')
     handlePrevCursor((c) => loadList(c))
   }, [handlePrevCursor, loadList])
 
@@ -96,17 +102,27 @@ function ConservationPage() {
     })
   }, [api])
 
-  const handleApprove = useCallback(async (id: string) => {
-    await api.conservation.evidence.review(id, 'approve')
-    await loadEvidence()
-    toast.success('Evidence approved')
-  }, [api, loadEvidence])
+  const handleReview = useCallback(async (id: string, decision: 'approve' | 'reject') => {
+    if (reviewPending[id]) return
+    setReviewPending(prev => ({ ...prev, [id]: true }))
+    try {
+      await api.conservation.evidence.review(id, decision)
+      await loadEvidence()
+      toast.success(decision === 'approve' ? 'Evidence approved' : 'Evidence rejected')
+    } catch {
+      toast.error(`Failed to ${decision} evidence. Please try again.`)
+    } finally {
+      setReviewPending(prev => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    }
+  }, [api, loadEvidence, reviewPending])
 
-  const handleReject = useCallback(async (id: string) => {
-    await api.conservation.evidence.review(id, 'reject')
-    await loadEvidence()
-    toast.success('Evidence rejected')
-  }, [api, loadEvidence])
+  const handleApprove = useCallback((id: string) => handleReview(id, 'approve'), [handleReview])
+
+  const handleReject = useCallback((id: string) => handleReview(id, 'reject'), [handleReview])
 
   const handleSelect = useCallback((id: string) => {
     if (selectedId === id) { setSelectedId(null); return }
@@ -170,8 +186,8 @@ function ConservationPage() {
         impactMetric: editData.impactMetric || null,
         badgeName: editData.badgeName || null,
         badgeIconUrl: editData.badgeIconUrl || null,
-        impactTarget: editData.impactGoal != null ? Number(editData.impactGoal) : null,
-        impactActual: editData.impactActual != null ? Number(editData.impactActual) : null,
+        impactTarget: (editData.impactGoal as unknown) === '' || editData.impactGoal == null ? null : Number(editData.impactGoal),
+        impactActual: (editData.impactActual as unknown) === '' || editData.impactActual == null ? null : Number(editData.impactActual),
         measurementUnit: editData.measurementUnit || null,
         progressDriver: editData.progressDriver || 'trees',
         privacyLevel: editData.locationPrivacyLevel || 'public',
@@ -314,7 +330,7 @@ function ConservationPage() {
                           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} />
                             <FormInput label="Organizer" required value={editData.organizer} onChange={v => handleField('organizer', v)} error={errors.organizer} />
-                            <FormInput label="Location" value={editData.locationPrivacyLevel === 'sensitive' ? '[RESTRICTED]' : editData.location} onChange={v => handleField('location', v)} error={errors.location} />
+                            <FormInput label={editData.locationPrivacyLevel === 'sensitive' ? 'Location (stored, masked in lists)' : 'Location'} value={editData.location} onChange={v => handleField('location', v)} error={errors.location} description={editData.locationPrivacyLevel === 'sensitive' ? 'Stored privately. Lists show “Location restricted”.' : undefined} />
                             <div>
                               <label className="mb-1 block text-xs font-semibold text-foreground">Privacy Level</label>
                               <div className="flex items-center gap-2">
@@ -330,10 +346,9 @@ function ConservationPage() {
                             <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
                       <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} error={errors.status} />
                             <FormInput label="Impact Metric" value={editData.impactMetric} onChange={v => handleField('impactMetric', v)} />
-                            <FormInput label="Goal Count" value={String(editData.impactGoal ?? '')} onChange={v => handleField('impactGoal', v)} />
+                            <FormInput label="Goal Count" type="number" value={(editData.impactGoal as unknown) === '' ? '' : String(editData.impactGoal ?? '')} onChange={v => handleField('impactGoal', v === '' ? ('' as unknown as number) : (Number(v) as unknown as number))} error={errors.impactGoal} />
                       <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
                       <FormSelect label="Progress Driver" value={editData.progressDriver} options={['trees', 'hours', 'area']} onChange={v => handleField('progressDriver', v)} />
-                            <FormSelect label="Progress Driver" value={editData.progressDriver} options={['trees', 'hours', 'area']} onChange={v => handleField('progressDriver', v)} />
                             <FormInput label="Badge Name" value={editData.badgeName} onChange={v => handleField('badgeName', v)} />
                             <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />
                             <div className="sm:col-span-2"><label className="mb-1 block text-xs font-semibold text-foreground">Verification Rules</label><textarea value={editData.verificationRules} onChange={e => handleField('verificationRules', e.target.value)} rows={3} className="w-full rounded-md border border-border px-3 py-2 text-sm text-foreground focus:border-primary" /></div>
@@ -368,7 +383,7 @@ function ConservationPage() {
                       <FormInput label="Title" required value={editData.title} onChange={v => handleField('title', v)} error={errors.title} />
                       <FormInput label="Organizer" required value={editData.organizer} onChange={v => handleField('organizer', v)} error={errors.organizer} />
                       {editData.locationPrivacyLevel === 'sensitive'
-                        ? <div><label className="mb-1 block text-xs font-semibold text-foreground">Location</label><div className="flex items-center gap-1 rounded-md border border-border bg-[var(--surface-2)] px-3 py-2 text-xs text-[var(--amber-deep)]"><Shield className="h-3 w-3" weight="duotone" /> Location restricted for wildlife protection</div><input type="hidden" value={editData.location} /></div>
+                        ? <FormInput label="Location (stored, masked in lists)" value={editData.location} onChange={v => handleField('location', v)} error={errors.location} description="Stored privately. Lists show “Location restricted”." />
                         : <FormInput label="Location" value={editData.location} onChange={v => handleField('location', v)} error={errors.location} />}
                       <div>
                         <label className="mb-1 block text-xs font-semibold text-foreground">Privacy Level</label>
@@ -385,7 +400,7 @@ function ConservationPage() {
                       <FormInput label="Date" value={editData.date} onChange={v => handleField('date', v)} />
                       <FormSelect label="Status" value={editData.status} options={['open', 'full', 'completed', 'cancelled']} onChange={v => handleField('status', v)} error={errors.status} />
                       <FormInput label="Impact Metric" value={editData.impactMetric} onChange={v => handleField('impactMetric', v)} />
-                      <FormInput label="Goal Count" value={String(editData.impactGoal ?? '')} onChange={v => handleField('impactGoal', v)} />
+                      <FormInput label="Goal Count" type="number" value={(editData.impactGoal as unknown) === '' ? '' : String(editData.impactGoal ?? '')} onChange={v => handleField('impactGoal', v === '' ? ('' as unknown as number) : (Number(v) as unknown as number))} error={errors.impactGoal} />
                       <FormInput label="Measurement Unit" value={editData.measurementUnit} onChange={v => handleField('measurementUnit', v)} />
                       <FormInput label="Badge Name" value={editData.badgeName} onChange={v => handleField('badgeName', v)} />
                       <FormInput label="Badge Icon URL" value={editData.badgeIconUrl ?? ''} onChange={v => handleField('badgeIconUrl', v)} />
@@ -448,9 +463,13 @@ function ConservationPage() {
                   <td className="px-5 py-3 text-right">
                     {e.status === 'pending' && (
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => handleApprove(e.id)} className="rounded-full bg-[var(--leaf)] p-1.5 text-white"><CheckCircle className="h-4 w-4" weight="fill" /></button>
-                        <button onClick={() => handleReject(e.id)} className="rounded-full bg-destructive p-1.5 text-white"><XCircle className="h-4 w-4" weight="fill" /></button>
-                        <button className="rounded-full border border-border p-1.5 text-muted-foreground"><Eye className="h-4 w-4" weight="duotone" /></button>
+                        <button onClick={() => handleApprove(e.id)} disabled={!!reviewPending[e.id]} aria-label={`Approve evidence ${e.id}`} title="Approve evidence" className="rounded-full bg-[var(--leaf)] p-1.5 text-white disabled:opacity-50"><CheckCircle className="h-4 w-4" weight="fill" /></button>
+                        <button onClick={() => handleReject(e.id)} disabled={!!reviewPending[e.id]} aria-label={`Reject evidence ${e.id}`} title="Reject evidence" className="rounded-full bg-destructive p-1.5 text-white disabled:opacity-50"><XCircle className="h-4 w-4" weight="fill" /></button>
+                        {e.imageUrl ? (
+                          <a href={e.imageUrl} target="_blank" rel="noopener noreferrer" aria-label={`View evidence image for ${e.activityTitle}`} title="View evidence image" className="rounded-full border border-border p-1.5 text-muted-foreground hover:text-foreground"><Eye className="h-4 w-4" weight="duotone" /></a>
+                        ) : (
+                          <span title="No image attached" className="cursor-not-allowed rounded-full border border-border p-1.5 text-muted-foreground opacity-40"><Eye className="h-4 w-4" weight="duotone" /></span>
+                        )}
                       </div>
                     )}
                     {e.status !== 'pending' && <span className="text-[10px] text-muted-foreground">{e.reviewerNote?.substring(0, 40)}</span>}

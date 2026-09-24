@@ -12,6 +12,8 @@ import {
 import { FormInput, FormSelect, FormDatePicker } from '#/components/shared/FormField'
 import { MediaUpload } from '#/components/shared/MediaUpload'
 import type { MediaUploadResult } from '#/components/shared/MediaUpload'
+
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { CursorPagination } from '#/components/shared/CursorPagination'
@@ -55,10 +57,11 @@ function EventsPage() {
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({})
   const mediaIds = useRef<Record<string, string>>({})
 
-  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
+  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor, reset: resetPagination } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
     setLoading(true)
+    if (!c) resetPagination()
     try {
       const r = await api.events.list(c ? { cursor: c } : undefined)
       setData(r.items)
@@ -70,7 +73,7 @@ function EventsPage() {
     } finally {
       setLoading(false)
     }
-  }, [api])
+  }, [api, resetPagination])
 
   const loadMediaUrl = useCallback(async (objectKey: string) => {
     if (mediaUrlCache.current[objectKey]) return
@@ -84,10 +87,14 @@ function EventsPage() {
   }, [api])
 
   const handleNext = useCallback(() => {
+    setSelectedId(null)
+    setPanelMode('view')
     handleNextCursor((c) => loadList(c))
   }, [handleNextCursor, loadList])
 
   const handlePrev = useCallback(() => {
+    setSelectedId(null)
+    setPanelMode('view')
     handlePrevCursor((c) => loadList(c))
   }, [handlePrevCursor, loadList])
 
@@ -195,13 +202,31 @@ function EventsPage() {
     }
   }, [selectedId, loadList, api])
 
+  const [statusPending, setStatusPending] = useState<string | null>(null)
+  const [confirmStatus, setConfirmStatus] = useState<string | null>(null)
+
   const handleStatusTransition = useCallback(async (newStatus: string) => {
-    if (!editData) return
-    const updated = { ...editData, status: newStatus }
-    setEditData(updated)
-    await api.events.updateStatus(editData.id, newStatus)
-    await loadList()
-  }, [editData, loadList, api])
+    if (!editData || statusPending) return
+    const prev = editData.status
+    setStatusPending(newStatus)
+    setEditData({ ...editData, status: newStatus })
+    try {
+      await api.events.updateStatus(editData.id, newStatus)
+      toast.success(`Event ${newStatus}`)
+      await loadList()
+    } catch {
+      setEditData(current => current ? { ...current, status: prev } : current)
+      toast.error(`Failed to change status to ${newStatus}. Reverted.`)
+    } finally {
+      setStatusPending(null)
+      setConfirmStatus(null)
+    }
+  }, [editData, statusPending, loadList, api])
+
+  const requestStatusTransition = useCallback((target: string) => {
+    if (target === 'cancelled') setConfirmStatus(target)
+    else void handleStatusTransition(target)
+  }, [handleStatusTransition])
 
   const handleMediaComplete = useCallback((result: MediaUploadResult) => {
     handleField('imageUrlKey', result.objectKey)
@@ -235,7 +260,7 @@ function EventsPage() {
 
         <div className="md:col-span-2 rounded-lg border border-border p-4">
           <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">Hero Image</h3>
-          <MediaUpload label="Upload hero image" onComplete={handleMediaComplete} onError={(msg) => toast.error(msg)} />
+          <MediaUpload label="Upload hero image" allowedTypes={IMAGE_TYPES} onComplete={handleMediaComplete} onError={(msg) => toast.error(msg)} />
           {editData.imageUrlKey && mediaUrls[editData.imageUrlKey] && (
             <div className="mt-2 overflow-hidden rounded-lg border border-border">
               <img src={mediaUrls[editData.imageUrlKey]} alt="" className="h-40 w-full object-cover" />
@@ -262,13 +287,16 @@ function EventsPage() {
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {(transitions[editData.status] ?? []).map(target => (
-                <button key={target} onClick={() => handleStatusTransition(target)}
-                  className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm transition-colors"
+                <button key={target} onClick={() => requestStatusTransition(target)} disabled={!!statusPending} aria-label={`Change event status to ${target}`}
+                  className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm transition-colors disabled:opacity-50"
                   style={{ backgroundColor: statusColors[target] ?? 'var(--forest)' }}>
-                  → {target}
+                  {statusPending === target ? 'Saving…' : `→ ${target}`}
                 </button>
               ))}
             </div>
+            {editData.status === 'cancelled' && (
+              <p className="mt-2 text-[11px] text-muted-foreground">Cancelling notifies registered attendees. This can be reversed by moving back to scheduled.</p>
+            )}
           </div>
         )}
 
@@ -392,6 +420,14 @@ function EventsPage() {
         description={`Are you sure you want to delete "${selected?.title}"? This cannot be undone.`}
         onConfirm={handleDelete}
         loading={deleting}
+      />
+      <ConfirmDialog
+        open={confirmStatus !== null}
+        onOpenChange={(open) => { if (!open) setConfirmStatus(null) }}
+        title="Cancel event?"
+        description={`"${editData?.title}" will be marked cancelled and registered attendees will be notified. You can move it back to scheduled later.`}
+        onConfirm={() => { if (confirmStatus) void handleStatusTransition(confirmStatus) }}
+        loading={!!statusPending}
       />
     </>
   )

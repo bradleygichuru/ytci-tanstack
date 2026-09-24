@@ -59,15 +59,20 @@ function CampaignsPage() {
   const [sendingPush, setSendingPush] = useState(false)
   const [scheduleTime, setScheduleTime] = useState('')
   const [pushSending, setPushSending] = useState(false)
+  const [transitionPending, setTransitionPending] = useState<string | null>(null)
+  const [confirmPush, setConfirmPush] = useState(false)
+  const [confirmSchedule, setConfirmSchedule] = useState(false)
+  const [confirmStatus, setConfirmStatus] = useState<string | null>(null)
 
   const [destinations, setDestinations] = useState<{ id: string; name: string }[]>([])
   const mediaUrlCache = useRef<Record<string, string>>({})
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({})
 
-  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor } = useCursorPagination()
+  const { cursor, hasMore, setHasMore, setCursor, handleNext: handleNextCursor, handlePrev: handlePrevCursor, reset: resetPagination } = useCursorPagination()
 
   const loadList = useCallback(async (c?: string | null) => {
     setLoading(true)
+    if (!c) resetPagination()
     try {
       const r = await api.campaigns.list(c ? { cursor: c } : undefined)
       setData(r.items)
@@ -79,13 +84,17 @@ function CampaignsPage() {
     } finally {
       setLoading(false)
     }
-  }, [api])
+  }, [api, resetPagination])
 
   const handleNext = useCallback(() => {
+    setSelectedId(null)
+    setPanelMode('view')
     handleNextCursor((c) => loadList(c))
   }, [handleNextCursor, loadList])
 
   const handlePrev = useCallback(() => {
+    setSelectedId(null)
+    setPanelMode('view')
     handlePrevCursor((c) => loadList(c))
   }, [handlePrevCursor, loadList])
 
@@ -216,11 +225,12 @@ function CampaignsPage() {
   }, [pushAudience, api])
 
   const handlePushSend = useCallback(async () => {
-    if (!selectedId || !editData) return
+    if (!selectedId || !editData || pushSending) return
     setPushSending(true)
+    setConfirmPush(false)
     try {
       await api.push.send({ campaignId: selectedId, audience: pushAudience, title: editData.title, body: editData.description })
-      toast.success('Push notification sent')
+      toast.success(`Push sent${pushCount !== null ? ` to ${pushCount.toLocaleString()} devices` : ''}`)
       const hist = await api.push.history({ campaignId: selectedId })
       setPushHistory(hist.items)
     } catch {
@@ -228,20 +238,21 @@ function CampaignsPage() {
     } finally {
       setPushSending(false)
     }
-  }, [selectedId, editData, pushAudience, api])
+  }, [selectedId, editData, pushAudience, pushSending, pushCount, api])
 
   const handlePushSchedule = useCallback(async () => {
-    if (!selectedId || !editData || !scheduleTime) return
+    if (!selectedId || !editData || !scheduleTime || pushSending) return
     setPushSending(true)
+    setConfirmSchedule(false)
     try {
       await api.push.schedule({ campaignId: selectedId, audience: pushAudience, title: editData.title, body: editData.description, scheduledAt: scheduleTime })
-      toast.success('Push notification scheduled')
+      toast.success(`Push scheduled for ${new Date(scheduleTime).toLocaleString()}`)
     } catch {
       toast.error('Failed to schedule push notification')
     } finally {
       setPushSending(false)
     }
-  }, [selectedId, editData, pushAudience, scheduleTime, api])
+  }, [selectedId, editData, pushAudience, scheduleTime, pushSending, api])
 
   useEffect(() => {
     if (selectedId) {
@@ -249,6 +260,28 @@ function CampaignsPage() {
     }
   }, [selectedId, api])
 
+  const doStatusTransition = useCallback(async (target: string) => {
+    if (!editData || !selectedId || transitionPending) return
+    const prev = editData.status
+    setTransitionPending(target)
+    setEditData({ ...editData, status: target })
+    try {
+      await api.campaigns.update(selectedId, { status: target })
+      toast.success(`Campaign ${target}`)
+      await loadList()
+    } catch {
+      setEditData(prevState => prevState ? { ...prevState, status: prev } : prevState)
+      toast.error(`Failed to change status to ${target}. Reverted.`)
+    } finally {
+      setTransitionPending(null)
+      setConfirmStatus(null)
+    }
+  }, [editData, selectedId, transitionPending, api, loadList])
+
+  const requestStatusTransition = useCallback((target: string) => {
+    if (target === 'ended') setConfirmStatus(target)
+    else void doStatusTransition(target)
+  }, [doStatusTransition])
   const statusTransitions: Record<string, string[]> = { draft: ['active'], active: ['paused', 'ended'], paused: ['active', 'ended'], ended: ['draft'] }
   const selected = data?.find(d => d.id === selectedId) ?? null
 
@@ -336,12 +369,8 @@ function CampaignsPage() {
                             </div>
                             <div className="mt-3 flex flex-wrap gap-2">
                                 {(statusTransitions[editData.status] ?? []).map(target => (
-                                  <button key={target} onClick={async () => {
-                                    handleField('status', target)
-                                    await api.campaigns.update(editData.id, { status: target })
-                                    await loadList()
-                                  }} className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm bg-primary">
-                                    → {target}
+                                  <button key={target} onClick={() => requestStatusTransition(target)} disabled={!!transitionPending} aria-label={`Change status to ${target}`} className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm bg-primary disabled:opacity-50">
+                                    {transitionPending === target ? 'Saving…' : `→ ${target}`}
                                   </button>
                                 ))}
                             </div>
@@ -390,16 +419,18 @@ function CampaignsPage() {
 
                             {/* Send controls */}
                             <div className="flex flex-wrap items-center gap-2">
-                              <button onClick={handlePushSend} disabled={pushSending || (pushAudience.type !== 'all' && !pushAudience.value)}
+                              <button onClick={() => setConfirmPush(true)} disabled={pushSending || (pushAudience.type !== 'all' && !pushAudience.value)}
+                                aria-label="Send push notification now" title={pushCount !== null ? `Send to ${pushCount} devices` : 'Send push notification'}
                                 className="flex items-center gap-1 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-50">
                                 {pushSending ? <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <PaperPlaneTilt className="h-3.5 w-3.5" weight="duotone" />}
-                                Send Now
+                                Send Now{pushCount !== null ? ` to ${pushCount.toLocaleString()}` : ''}
                               </button>
                               <div className="flex items-center gap-1">
                                 <span className="text-[10px] text-muted-foreground">or schedule:</span>
                                 <input id="push-schedule" type="datetime-local" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)}
                                   className="rounded-md border border-border px-2 py-1.5 text-xs text-foreground focus:border-primary" />
-                                <button onClick={handlePushSchedule} disabled={pushSending || !scheduleTime || (pushAudience.type !== 'all' && !pushAudience.value)}
+                                <button onClick={() => setConfirmSchedule(true)} disabled={pushSending || !scheduleTime || (pushAudience.type !== 'all' && !pushAudience.value)}
+                                  aria-label="Schedule push notification"
                                   className="rounded-full bg-[var(--amber)] px-3 py-1.5 text-xs font-bold text-primary shadow-sm disabled:opacity-50">
                                   <CalendarBlank className="inline h-3 w-3" weight="duotone" /> Schedule
                                 </button>
@@ -513,6 +544,30 @@ function CampaignsPage() {
         description={`Are you sure you want to delete "${selected?.title}"? This cannot be undone.`}
         onConfirm={handleDelete}
         loading={deleting}
+      />
+      <ConfirmDialog
+        open={confirmPush}
+        onOpenChange={setConfirmPush}
+        title="Send push notification?"
+        description={`Title: "${editData?.title}" — ${(editData?.description ?? '').substring(0, 120)}${(editData?.description ?? '').length > 120 ? '…' : ''} Will be sent now${pushCount !== null ? ` to ${pushCount.toLocaleString()} devices` : ''} (audience: ${pushAudience.type}${pushAudience.value ? ` = ${pushAudience.value}` : ''}). This cannot be unsent.`}
+        onConfirm={() => void handlePushSend()}
+        loading={pushSending}
+      />
+      <ConfirmDialog
+        open={confirmSchedule}
+        onOpenChange={setConfirmSchedule}
+        title="Schedule push notification?"
+        description={`Title: "${editData?.title}" — scheduled for ${scheduleTime ? new Date(scheduleTime).toLocaleString() : '—'} (audience: ${pushAudience.type}${pushAudience.value ? ` = ${pushAudience.value}` : ''}).`}
+        onConfirm={() => void handlePushSchedule()}
+        loading={pushSending}
+      />
+      <ConfirmDialog
+        open={confirmStatus !== null}
+        onOpenChange={(open) => { if (!open) setConfirmStatus(null) }}
+        title={`End campaign?`}
+        description={`"${editData?.title}" will be marked ended. Users will stop seeing it. You can reopen it as draft later.`}
+        onConfirm={() => { if (confirmStatus) void doStatusTransition(confirmStatus) }}
+        loading={!!transitionPending}
       />
     </div>
   )

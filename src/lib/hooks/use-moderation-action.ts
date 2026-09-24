@@ -39,7 +39,10 @@ export function useModerationAction() {
     }
 
     const timeoutId = setTimeout(() => {
-      handleError(new Error('Request timed out. Please try again.'))
+      if (completed.current[id]) return
+      toast.warning('Request is taking longer than expected. It may still succeed.', {
+        duration: 5000,
+      })
     }, 15000)
 
     config.apiCall()
