@@ -72,13 +72,16 @@ export function AppSidebar() {
       collapsible="icon"
     >
       <SidebarHeader className="px-5 py-6 bg-sidebar group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-4">
-        <div className="group-data-[collapsible=icon]:hidden">
-          <div className="font-sans text-2xl font-bold leading-none text-sidebar-foreground">
-            YTC Explorer
+        <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
+          <img src="/logo.png" alt="YTC Explorer logo" className="h-9 w-9 shrink-0 rounded-xl object-cover" />
+          <div className="group-data-[collapsible=icon]:hidden">
+            <div className="font-sans text-2xl font-bold leading-none text-sidebar-foreground">
+              YTC Explorer
+            </div>
+            <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-sidebar-foreground/60">
+              Admin Portal
+            </p>
           </div>
-          <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-sidebar-foreground/60">
-            Admin Portal
-          </p>
         </div>
       </SidebarHeader>
 

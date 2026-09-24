@@ -397,7 +397,7 @@ function DestinationsPage() {
                     <td className="px-5 py-3"><StatusBadge status={d.status} /></td>
                     <td className="px-5 py-3 text-muted-foreground">{formatDate(d.updatedAt)}</td>
                     <td className="px-5 py-3 text-right">
-                      <button className="rounded p-1 text-muted-foreground hover:bg-[var(--surface-2)]"><PencilSimple className="h-4 w-4" weight="duotone" /></button>
+                      <span aria-hidden="true" className="inline-block rounded p-1 text-muted-foreground"><PencilSimple className="h-4 w-4" weight="duotone" /></span>
                     </td>
                   </tr>
                   {selectedId === d.id && editData && (

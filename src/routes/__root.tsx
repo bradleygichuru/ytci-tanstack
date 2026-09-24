@@ -44,7 +44,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: 'YTC Explorer' },
     ],
-    links: [{ rel: 'stylesheet', href: appCss }],
+    links: [
+      { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', type: 'image/png', href: '/favicon.png' },
+      { rel: 'apple-touch-icon', href: '/logo.png' },
+    ],
   }),
   shellComponent: RootDocument,
 })

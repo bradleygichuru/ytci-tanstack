@@ -1,4 +1,4 @@
-import { Tree, MapPin, Compass } from '@phosphor-icons/react'
+import { MapPin, Compass } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 
 interface AuthLayoutProps {
@@ -14,9 +14,7 @@ export function AuthLayout({ title, subtitle, children, nav }: AuthLayoutProps) 
       <div className="hidden w-1/2 flex-col items-center justify-center p-8 lg:flex lg:p-12" style={{ backgroundColor: 'var(--primary-container)' }}>
         <div className="max-w-sm text-center">
           <div className="mb-6 flex items-center justify-center gap-3">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15">
-              <Tree className="h-8 w-8 text-white" weight="duotone" />
-            </div>
+            <img src="/logo.png" alt="YTC Explorer logo" className="h-16 w-16 rounded-2xl object-cover shadow-lg" />
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-white">YTC Explorer</h1>
