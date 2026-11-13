@@ -24,6 +24,7 @@ import { Route as AuthenticatedConservationRouteImport } from './routes/_authent
 import { Route as AuthenticatedDestinationsRouteImport } from './routes/_authenticated/destinations'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedLmsRouteImport } from './routes/_authenticated/lms'
+import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
@@ -106,6 +107,12 @@ const AuthenticatedLmsRoute = AuthenticatedLmsRouteImport.update({
   path: '/lms',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMarketplaceRoute =
+  AuthenticatedMarketplaceRouteImport.update({
+    id: '/marketplace',
+    path: '/marketplace',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMediaRoute = AuthenticatedMediaRouteImport.update({
   id: '/media',
   path: '/media',
@@ -147,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/destinations': typeof AuthenticatedDestinationsRoute
   '/events': typeof AuthenticatedEventsRoute
   '/lms': typeof AuthenticatedLmsRoute
+  '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/media': typeof AuthenticatedMediaRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -168,6 +176,7 @@ export interface FileRoutesByTo {
   '/destinations': typeof AuthenticatedDestinationsRoute
   '/events': typeof AuthenticatedEventsRoute
   '/lms': typeof AuthenticatedLmsRoute
+  '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/media': typeof AuthenticatedMediaRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -191,6 +200,7 @@ export interface FileRoutesById {
   '/_authenticated/destinations': typeof AuthenticatedDestinationsRoute
   '/_authenticated/events': typeof AuthenticatedEventsRoute
   '/_authenticated/lms': typeof AuthenticatedLmsRoute
+  '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
   '/_authenticated/media': typeof AuthenticatedMediaRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/destinations'
     | '/events'
     | '/lms'
+    | '/marketplace'
     | '/media'
     | '/settings'
     | '/users'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/destinations'
     | '/events'
     | '/lms'
+    | '/marketplace'
     | '/media'
     | '/settings'
     | '/users'
@@ -257,6 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/destinations'
     | '/_authenticated/events'
     | '/_authenticated/lms'
+    | '/_authenticated/marketplace'
     | '/_authenticated/media'
     | '/_authenticated/settings'
     | '/_authenticated/users'
@@ -382,6 +395,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLmsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/marketplace': {
+      id: '/_authenticated/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof AuthenticatedMarketplaceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/media': {
       id: '/_authenticated/media'
       path: '/media'
@@ -430,6 +450,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDestinationsRoute: typeof AuthenticatedDestinationsRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
   AuthenticatedLmsRoute: typeof AuthenticatedLmsRoute
+  AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
   AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
@@ -445,6 +466,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDestinationsRoute: AuthenticatedDestinationsRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,
   AuthenticatedLmsRoute: AuthenticatedLmsRoute,
+  AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
   AuthenticatedMediaRoute: AuthenticatedMediaRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
