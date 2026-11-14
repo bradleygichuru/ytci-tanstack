@@ -18,9 +18,10 @@ import { destinationSchema } from '#/lib/schemas/destination.schema'
 import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
+import { DESTINATION_CATEGORIES } from '#/lib/catalog'
 
 const STATUS = ['draft', 'published', 'archived'] as const
-const CATEGORIES = ['wildlife', 'beach', 'adventure', 'culture', 'conservation']
+const CATEGORIES = [...DESTINATION_CATEGORIES]
 
 const TABS = [
   { key: 'identity', label: 'Identity' },
@@ -301,7 +302,7 @@ function DestinationsPage() {
     })
 
   const statusFilters = [null, 'published', 'draft', 'archived'] as const
-  const categoryFilters = ['wildlife', 'beach', 'adventure'] as const
+  const categoryFilters = ['Wildlife', 'Beach', 'Hiking', 'Culture'] as const
   const countyFilters = ['Narok', 'Kwale', 'Meru'] as const
   const sourceFilters = ['curated', 'google_places'] as const
 

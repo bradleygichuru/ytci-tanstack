@@ -12,8 +12,10 @@ export const destinations = pgTable("destinations", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   county: text("county").notNull(),
+  countyCode: text("county_code"),
   locality: text("locality"),
   category: text("category").notNull(),
+  interestTags: text("interest_tags").array().notNull().default(sql`'{}'::text[]`),
   status: text("status", { enum: ["draft", "published", "archived"] }).default("draft").notNull(),
   location: geometry("location"),
   mapLabel: text("map_label"),
@@ -38,6 +40,8 @@ export const destinations = pgTable("destinations", {
   googlePlaceId: text("google_place_id"),
   contentOwner: text("content_owner"),
   verificationStatus: text("verification_status"),
+  verifiedAt: timestamp("verified_at"),
+  verifiedBy: text("verified_by").references(() => users.id, { onDelete: "set null" }),
   lastUpdated: timestamp("last_updated"),
   reviewDate: timestamp("review_date"),
   createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
@@ -524,6 +528,7 @@ export const eventSaves = pgTable("event_saves", {
 // ── Kenya Counties (PostGIS loaded via ogr2ogr) ──
 export const kenyaCounties = pgTable("kenya_counties", {
   gid: integer("gid").primaryKey(),
+  countyCode: text("county_code").notNull().unique(),
   adm1Name: text("adm1_name").notNull(),
   adm1Pcode: text("adm1_pcode"),
   areaSqkm: integer("area_sqkm"),
