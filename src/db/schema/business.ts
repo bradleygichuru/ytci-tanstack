@@ -16,6 +16,8 @@ export const destinations = pgTable("destinations", {
   locality: text("locality"),
   category: text("category").notNull(),
   interestTags: text("interest_tags").array().notNull().default(sql`'{}'::text[]`),
+  transportModes: text("transport_modes").array().notNull().default(sql`'{}'::text[]`),
+  bestSeasons: text("best_seasons").array().notNull().default(sql`'{}'::text[]`),
   status: text("status", { enum: ["draft", "published", "archived"] }).default("draft").notNull(),
   isCurated: boolean("is_curated").default(false).notNull(),
   visitDurationMinMinutes: integer("visit_duration_min_minutes"),
