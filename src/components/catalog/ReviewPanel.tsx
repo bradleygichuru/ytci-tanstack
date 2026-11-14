@@ -46,17 +46,23 @@ interface ReviewPanelProps {
   fields: ReviewFields
   readiness: ReadinessResult
   errors: Record<string, string>
-  saving: boolean
+  savingAction: 'draft' | 'publish' | 'reject' | null
+  dirty: boolean
   canPublish: boolean
   onChange: (patch: Partial<ReviewFields>) => void
   onSaveDraft: () => void
+  onSaveAndNext: () => void
   onPublish: () => void
   onReject: (reason: string) => void
 }
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
-  return <p className="mt-1 text-xs font-medium text-destructive">{message}</p>
+  return (
+    <p role="alert" className="mt-1 text-xs font-medium text-destructive">
+      {message}
+    </p>
+  )
 }
 
 function Section({
@@ -106,7 +112,12 @@ function Chip({
 
 function CheckRow({ check }: { check: ReadinessResult['checks'][number] }) {
   return (
-    <li className="flex items-start gap-2 text-xs">
+    <li
+      className="flex items-start gap-2 text-xs"
+      aria-label={`${check.label}: ${
+        check.ok ? 'passed' : check.required ? 'required and incomplete' : 'recommended'
+      }`}
+    >
       {check.ok ? (
         <CheckCircle
           className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--success-leaf)]"
@@ -148,13 +159,16 @@ export function ReviewPanel({
   fields,
   readiness,
   errors,
-  saving,
+  savingAction,
+  dirty,
   canPublish,
   onChange,
   onSaveDraft,
+  onSaveAndNext,
   onPublish,
   onReject,
 }: ReviewPanelProps) {
+  const saving = savingAction != null
   const [rejectOpen, setRejectOpen] = useState(false)
   const [reason, setReason] = useState('')
   const required = readiness.checks.filter((check) => check.required)
@@ -190,7 +204,13 @@ export function ReviewPanel({
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge status={candidate.curationStatus} />
+            <StatusBadge
+              status={candidate.curationStatus}
+              label={
+                candidate.curationStatus[0].toUpperCase() + candidate.curationStatus.slice(1)
+              }
+            />
+            {dirty ? <Badge variant="outline">Unsaved changes</Badge> : null}
             <Badge variant={readiness.ready ? 'default' : 'outline'}>
               {readiness.ready
                 ? 'Composer ready'
@@ -219,13 +239,61 @@ export function ReviewPanel({
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
         <div className="rounded-xl border border-border bg-background p-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Traveler preview
+          </p>
+          <div className="mt-2 flex gap-3">
+            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
+              {fields.heroImageUrl ? (
+                <img
+                  src={fields.heroImageUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                  <MapPin className="h-6 w-6" weight="duotone" />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Badge variant="secondary">{fields.category || 'Category'}</Badge>
+                <span className="text-[11px] text-muted-foreground">{candidate.county}</span>
+              </div>
+              <p className="mt-1 truncate text-sm font-bold text-foreground">
+                {fields.name || 'Place name'}
+              </p>
+              <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                {fields.shortDescription ||
+                  'Add a short description to see the mobile card copy.'}
+              </p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {fields.feeStatus ? humanize(fields.feeStatus) : 'Fee not set'}
+                {' · '}
+                {fields.durationMinMinutes != null && fields.durationMaxMinutes != null
+                  ? `${fields.durationMinMinutes}–${fields.durationMaxMinutes} min`
+                  : 'Duration not set'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3 rounded-xl border border-border bg-background p-3">
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-sm font-bold text-foreground">Composer-ready checklist</h3>
             <span className="text-xs font-semibold text-muted-foreground">
               {passed}/{required.length} required
             </span>
           </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={required.length}
+            aria-valuenow={passed}
+            aria-label="Required composer checks passed"
+          >
             <div
               className="h-full rounded-full bg-primary transition-all"
               style={{
@@ -291,7 +359,7 @@ export function ReviewPanel({
             </div>
             <div>
               <Label>Interest tags</Label>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
+              <div className="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label="Interest tags">
                 {CATEGORY_OPTIONS.map((tag) => (
                   <Chip
                     key={tag}
@@ -361,7 +429,7 @@ export function ReviewPanel({
             <FieldError message={errors.duration} />
             <div>
               <Label>Transport modes</Label>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
+              <div className="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label="Transport modes">
                 {TRANSPORT_MODES.map((mode) => (
                   <Chip
                     key={mode}
@@ -380,7 +448,7 @@ export function ReviewPanel({
             </div>
             <div>
               <Label>Best seasons</Label>
-              <div className="mt-1.5 flex flex-wrap gap-1.5">
+              <div className="mt-1.5 flex flex-wrap gap-1.5" role="group" aria-label="Best seasons">
                 {BEST_SEASONS.map((season) => (
                   <Chip
                     key={season}
@@ -517,6 +585,12 @@ export function ReviewPanel({
                 <FieldError message={errors.review_date} />
               </div>
             </div>
+          </Section>
+
+          <Section
+            title="Media and provenance"
+            hint="A hero image and a source make the place legible in the traveler app."
+          >
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <Label htmlFor="curation-image">Hero image URL</Label>
@@ -567,13 +641,16 @@ export function ReviewPanel({
         ) : null}
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={onSaveDraft} disabled={saving || isPublished}>
-            {saving ? 'Saving…' : 'Save draft'}
+            {savingAction === 'draft' ? 'Saving…' : 'Save draft'}
+          </Button>
+          <Button variant="outline" onClick={onSaveAndNext} disabled={saving || isPublished}>
+            Save & next
           </Button>
           <Button
             onClick={onPublish}
             disabled={saving || !readiness.ready || !canPublish || isPublished}
           >
-            {saving ? 'Publishing…' : 'Publish as YTCI-reviewed'}
+            {savingAction === 'publish' ? 'Publishing…' : 'Publish as YTCI-reviewed'}
           </Button>
           <Button
             variant="ghost"
@@ -581,7 +658,7 @@ export function ReviewPanel({
             onClick={() => setRejectOpen(true)}
             disabled={saving || isPublished}
           >
-            Reject
+            {savingAction === 'reject' ? 'Rejecting…' : 'Reject'}
           </Button>
           {!canPublish ? (
             <span className="text-xs text-muted-foreground">
@@ -594,10 +671,10 @@ export function ReviewPanel({
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject this imported place?</DialogTitle>
+            <DialogTitle>Reject {candidate.name}?</DialogTitle>
             <DialogDescription>
-              It will leave the review queue and stop counting as an unverified candidate. Any
-              linked draft is archived.
+              This place will leave the review queue and stop counting as an unverified candidate.
+              Any linked draft is archived. The name is kept in the rejection record.
             </DialogDescription>
           </DialogHeader>
           <Label htmlFor="rejection-reason">Reason</Label>

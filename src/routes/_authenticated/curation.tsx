@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createFileRoute, redirect, useRouteContext } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { MagnifyingGlass, MapTrifold, ClipboardText, ArrowClockwise } from '@phosphor-icons/react'
@@ -51,21 +51,6 @@ export const Route = createFileRoute('/_authenticated/curation')({
 
 type Tab = 'queue' | 'coverage'
 
-function EmptyReview() {
-  return (
-    <div className="flex h-full min-h-[320px] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card px-6 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--leaf-bg)]">
-        <ClipboardText className="h-6 w-6 text-[var(--success-leaf)]" weight="duotone" />
-      </div>
-      <h2 className="mt-3 text-sm font-bold text-foreground">Choose a place to review</h2>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-        The queue holds real Google Places rows. Open one to classify it, check the
-        composer-ready requirements, and either publish it or send it back.
-      </p>
-    </div>
-  )
-}
-
 function CurationPage() {
   const context = useRouteContext({ from: '/_authenticated' })
   const canPublish = useMemo(() => {
@@ -96,7 +81,10 @@ function CurationPage() {
   const [fields, setFields] = useState<ReviewFields | null>(null)
   const [readiness, setReadiness] = useState<ReadinessResult | null>(null)
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({})
-  const [saving, setSaving] = useState(false)
+  const [savingAction, setSavingAction] = useState<'draft' | 'publish' | 'reject' | null>(null)
+  const [dirty, setDirty] = useState(false)
+  const requestRef = useRef(0)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -143,24 +131,40 @@ function CurationPage() {
     void loadCoverage()
   }, [loadCoverage])
 
+  const confirmDiscard = useCallback(() => {
+    if (!dirty) return true
+    return window.confirm('Discard unsaved changes to this place?')
+  }, [dirty])
+
   const openCandidate = useCallback(async (placeId: string) => {
+    if (selectedId === placeId) return
+    if (!confirmDiscard()) return
+    const requestId = ++requestRef.current
     setSelectedId(placeId)
+    setDetail(null)
+    setFields(null)
+    setReadiness(null)
     setDetailLoading(true)
     setServerErrors({})
+    setDirty(false)
     try {
       const response = await catalogAdminApi.candidate(placeId)
+      if (requestRef.current !== requestId) return
       setDetail(response)
       setFields(response.fields)
       setReadiness(evaluateComposerReadiness(response.fields))
     } catch (error) {
+      if (requestRef.current !== requestId) return
       toast.error(error instanceof Error ? error.message : 'Failed to load the candidate')
     } finally {
-      setDetailLoading(false)
+      if (requestRef.current === requestId) setDetailLoading(false)
     }
-  }, [])
+  }, [confirmDiscard, selectedId])
 
   const refreshCandidate = useCallback(async (placeId: string) => {
+    const requestId = ++requestRef.current
     const response = await catalogAdminApi.candidate(placeId)
+    if (requestRef.current !== requestId) return
     setDetail(response)
     setFields(response.fields)
     setReadiness(evaluateComposerReadiness(response.fields))
@@ -175,27 +179,87 @@ function CurationPage() {
         return next
       })
       setServerErrors({})
+      setDirty(true)
     },
     [],
   )
 
+  const advanceToNext = useCallback(
+    async (currentPlaceId: string) => {
+      const filtered = {
+        status,
+        county: county === 'all' ? undefined : county,
+        search,
+        limit,
+        offset,
+      }
+      const currentIndex = queue?.items.findIndex((item) => item.placeId === currentPlaceId) ?? 0
+      const clearPanel = () => {
+        requestRef.current += 1
+        setSelectedId(null)
+        setDetail(null)
+        setFields(null)
+        setReadiness(null)
+        setServerErrors({})
+        setDirty(false)
+      }
+      try {
+        const page = await catalogAdminApi.queue(filtered)
+        const currentStillVisible = page.items.some((item) => item.placeId === currentPlaceId)
+        const targetIndex = currentStillVisible
+          ? currentIndex + 1
+          : Math.min(currentIndex, Math.max(0, page.items.length - 1))
+        let target: QueueResponse['items'][number] | undefined = page.items[targetIndex]
+        if (!target && currentStillVisible && offset + limit < page.total) {
+          const nextPage = await catalogAdminApi.queue({ ...filtered, offset: offset + limit })
+          target = nextPage.items[0]
+          if (target) setOffset(offset + limit)
+        }
+        if (!target && offset > 0) {
+          const previousOffset = Math.max(0, offset - limit)
+          const previous = await catalogAdminApi.queue({ ...filtered, offset: previousOffset })
+          target = previous.items.find((item) => item.placeId !== currentPlaceId)
+          if (target) setOffset(previousOffset)
+        }
+        if (target) {
+          await openCandidate(target.placeId)
+        } else {
+          clearPanel()
+        }
+      } catch {
+        // Leaving the current panel is safer than failing the save.
+        clearPanel()
+      }
+    },
+    [county, limit, offset, openCandidate, queue?.items, search, status],
+  )
+
   const submit = useCallback(
-    async (mode: 'draft' | 'publish') => {
+    async (mode: 'draft' | 'publish', options: { advance?: boolean } = {}) => {
       if (!selectedId || !fields) return
-      setSaving(true)
+      if (detail?.candidate.placeId !== selectedId) {
+        toast.error('The selected place changed. Re-open it before saving.')
+        return
+      }
+      setSavingAction(mode)
       setServerErrors({})
       try {
         const result =
           mode === 'publish'
             ? await catalogAdminApi.publish(selectedId, fields)
             : await catalogAdminApi.draft(selectedId, fields)
+        setReadiness(result.readiness)
+        setDirty(false)
+        await Promise.all([loadQueue(), loadCoverage()])
+        await refreshCandidate(selectedId).catch(() => {})
         toast.success(
           mode === 'publish'
             ? 'Place published as YTCI-reviewed.'
             : 'Draft saved. Keep enriching it when you are ready.',
         )
-        setReadiness(result.readiness)
-        await Promise.all([loadQueue(), loadCoverage(), refreshCandidate(selectedId)])
+        if (mode === 'publish' || options.advance) {
+          await advanceToNext(selectedId)
+        }
       } catch (error) {
         if (error instanceof CatalogApiError) {
           setServerErrors(error.fields ?? {})
@@ -209,31 +273,65 @@ function CurationPage() {
           toast.error('Could not save the review')
         }
       } finally {
-        setSaving(false)
+        setSavingAction(null)
       }
     },
-    [fields, loadCoverage, loadQueue, refreshCandidate, selectedId],
+    [advanceToNext, detail?.candidate.placeId, fields, loadCoverage, loadQueue, refreshCandidate, selectedId],
   )
 
   const reject = useCallback(
     async (reason: string) => {
       if (!selectedId) return
-      setSaving(true)
+      setSavingAction('reject')
       try {
         await catalogAdminApi.reject(selectedId, reason)
+        setDirty(false)
+        await Promise.all([loadQueue(), loadCoverage()])
         toast.success('Place rejected and removed from the composer queue.')
+        await advanceToNext(selectedId)
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Could not reject the place')
+      } finally {
+        setSavingAction(null)
+      }
+    },
+    [advanceToNext, loadCoverage, loadQueue, selectedId],
+  )
+
+  useEffect(() => {
+    if (!dirty) return
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty])
+
+  useEffect(() => {
+    if (!detail) return
+    requestAnimationFrame(() => {
+      panelRef.current?.focus()
+      panelRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    })
+  }, [detail?.candidate.placeId])
+
+  const changeTab = useCallback(
+    (next: Tab) => {
+      if (next === tab) return
+      if (!confirmDiscard()) return
+      if (dirty) {
+        requestRef.current += 1
         setSelectedId(null)
         setDetail(null)
         setFields(null)
         setReadiness(null)
-        await Promise.all([loadQueue(), loadCoverage()])
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'Could not reject the place')
-      } finally {
-        setSaving(false)
+        setServerErrors({})
+        setDirty(false)
       }
+      setTab(next)
     },
-    [loadCoverage, loadQueue, selectedId],
+    [confirmDiscard, dirty, tab],
   )
 
   const total = queue?.total ?? 0
@@ -251,18 +349,22 @@ function CurationPage() {
             until every required checklist item passes.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Catalog curation views">
           <Button
             variant={tab === 'queue' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setTab('queue')}
+            role="tab"
+            aria-selected={tab === 'queue'}
+            onClick={() => changeTab('queue')}
           >
             <ClipboardText className="h-4 w-4" /> Review queue
           </Button>
           <Button
             variant={tab === 'coverage' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setTab('coverage')}
+            role="tab"
+            aria-selected={tab === 'coverage'}
+            onClick={() => changeTab('coverage')}
           >
             <MapTrifold className="h-4 w-4" /> Coverage report
           </Button>
@@ -270,7 +372,11 @@ function CurationPage() {
       </div>
 
       {tab === 'queue' ? (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.95fr)]">
+        <div
+          className={`grid gap-5 ${
+            selectedId ? 'xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.95fr)]' : 'grid-cols-1'
+          }`}
+        >
           <div className="min-w-0 rounded-xl border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
             <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
               <div className="relative min-w-[180px] flex-1">
@@ -283,24 +389,6 @@ function CurationPage() {
                   aria-label="Search the review queue"
                 />
               </div>
-              <Select
-                value={status}
-                onValueChange={(value) => {
-                  setStatus(value as CurationStatus)
-                  setOffset(0)
-                }}
-              >
-                <SelectTrigger className="h-9 w-36" aria-label="Filter by review status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURATION_STATUSES.map((value) => (
-                    <SelectItem key={value} value={value}>
-                      {value[0].toUpperCase() + value.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <Select
                 value={county}
                 onValueChange={(value) => {
@@ -363,14 +451,14 @@ function CurationPage() {
                   <TableHead>Category</TableHead>
                   <TableHead>Reviews</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Open</TableHead>
+                  <TableHead className="text-right">Review</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {(queue?.items ?? []).map((item) => (
                   <TableRow
                     key={item.placeId}
-                    className={selectedId === item.placeId ? 'bg-muted/60' : ''}
+                    className={selectedId === item.placeId ? 'bg-primary/10' : ''}
                   >
                     <TableCell className="max-w-[280px] whitespace-normal">
                       <div className="font-medium text-foreground">{item.name}</div>
@@ -385,13 +473,19 @@ function CurationPage() {
                       {item.reviewCount != null ? ` (${item.reviewCount})` : ''}
                     </TableCell>
                     <TableCell>
-                      <StatusBadge status={item.curationStatus} />
+                      <StatusBadge
+                        status={item.curationStatus}
+                        label={
+                          item.curationStatus[0].toUpperCase() + item.curationStatus.slice(1)
+                        }
+                      />
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => void openCandidate(item.placeId)}
+                        disabled={savingAction !== null}
                         aria-label={`Review ${item.name}`}
                       >
                         Review
@@ -434,31 +528,61 @@ function CurationPage() {
             </div>
           </div>
 
-          <div className="min-h-0 xl:h-[calc(100vh-220px)]">
-            {detailLoading ? (
-              <div className="flex h-full min-h-[320px] items-center justify-center rounded-xl border border-border bg-card text-sm text-muted-foreground">
-                Loading candidate…
-              </div>
-            ) : detail && fields && readiness ? (
-              <ReviewPanel
-                candidate={detail.candidate}
-                fields={fields}
-                readiness={readiness}
-                errors={serverErrors}
-                saving={saving}
-                canPublish={canPublish}
-                onChange={onFieldChange}
-                onSaveDraft={() => void submit('draft')}
-                onPublish={() => void submit('publish')}
-                onReject={(reason) => void reject(reason)}
-              />
-            ) : (
-              <EmptyReview />
-            )}
-          </div>
+          {selectedId ? (
+            <div
+              ref={panelRef}
+              tabIndex={-1}
+              className="min-h-0 focus:outline-none xl:h-[calc(100vh-220px)]"
+              aria-label="Place review panel"
+            >
+              {detailLoading ? (
+                <div className="flex h-full min-h-[320px] items-center justify-center rounded-xl border border-border bg-card text-sm text-muted-foreground">
+                  Loading candidate…
+                </div>
+              ) : detail && fields && readiness && detail.candidate.placeId === selectedId ? (
+                <ReviewPanel
+                  candidate={detail.candidate}
+                  fields={fields}
+                  readiness={readiness}
+                  errors={serverErrors}
+                  savingAction={savingAction}
+                  dirty={dirty}
+                  canPublish={canPublish}
+                  onChange={onFieldChange}
+                  onSaveDraft={() => void submit('draft')}
+                  onSaveAndNext={() => void submit('draft', { advance: true })}
+                  onPublish={() => void submit('publish')}
+                  onReject={(reason) => void reject(reason)}
+                />
+              ) : (
+                <div className="flex h-full min-h-[320px] items-center justify-center rounded-xl border border-border bg-card text-sm text-muted-foreground">
+                  Select the place again to review it.
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
       ) : (
-        <CoverageReport data={coverage} loading={coverageLoading} onRefresh={() => void loadCoverage()} />
+        <CoverageReport
+          data={coverage}
+          loading={coverageLoading}
+          onRefresh={() => void loadCoverage()}
+          onOpenCounty={(countyCode) => {
+            if (!confirmDiscard()) return
+            requestRef.current += 1
+            setTab('queue')
+            setCounty(countyCode)
+            setStatus('pending')
+            setSearch('')
+            setSearchInput('')
+            setOffset(0)
+            setSelectedId(null)
+            setDetail(null)
+            setFields(null)
+            setReadiness(null)
+            setDirty(false)
+          }}
+        />
       )}
     </div>
   )

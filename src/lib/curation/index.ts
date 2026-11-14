@@ -193,8 +193,8 @@ export function evaluateComposerReadiness(fields: ReviewFields): ReadinessResult
   add(
     'description',
     'Short description',
-    fields.shortDescription.trim().length > 0,
-    'One or two sentences the mobile card can show.',
+    fields.shortDescription.trim().length >= 40,
+    'Write at least 40 characters; one clear sentence is better.',
   )
 
   const durationOk =

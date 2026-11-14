@@ -26,6 +26,14 @@ import {
 } from '#/lib/curation'
 import type { CoverageResponse } from '#/lib/api/catalog-admin'
 
+function formatDate(value: string | null): string {
+  if (!value) return '—'
+  const date = new Date(`${value.slice(0, 10)}T12:00:00`)
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 function download(filename: string, content: string, type: string) {
   const blob = new Blob([content], { type })
   const url = URL.createObjectURL(blob)
@@ -77,10 +85,12 @@ export function CoverageReport({
   data,
   loading,
   onRefresh,
+  onOpenCounty,
 }: {
   data: CoverageResponse | null
   loading: boolean
   onRefresh: () => void
+  onOpenCounty: (countyCode: string) => void
 }) {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
@@ -91,14 +101,21 @@ export function CoverageReport({
   const rows = useMemo(() => {
     if (!data) return []
     const needle = search.trim().toLowerCase()
-    return data.coverage.filter((row) => {
-      if (status !== 'all' && row.coverageStatus !== status) return false
-      if (!needle) return true
-      return (
-        row.county.toLowerCase().includes(needle) ||
-        row.countyCode.includes(needle)
+    const rank: Record<string, number> = { not_covered: 0, limited: 1, covered: 2 }
+    return data.coverage
+      .filter((row) => {
+        if (status !== 'all' && row.coverageStatus !== status) return false
+        if (!needle) return true
+        return (
+          row.county.toLowerCase().includes(needle) ||
+          row.countyCode.includes(needle)
+        )
+      })
+      .sort(
+        (a, b) =>
+          (rank[a.coverageStatus] ?? 3) - (rank[b.coverageStatus] ?? 3) ||
+          a.countyCode.localeCompare(b.countyCode),
       )
-    })
   }, [data, search, status])
 
   if (!data || !summary) {
@@ -118,6 +135,14 @@ export function CoverageReport({
             Composer-ready counties have at least three reviewed places. Unverified rows count only
             while they are still in the queue.
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Generated{' '}
+            {new Date(data.generatedAt).toLocaleString('en-KE', {
+              timeZone: 'Africa/Nairobi',
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            })}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
@@ -128,7 +153,7 @@ export function CoverageReport({
             size="sm"
             onClick={() => download('coverage.csv', coverageCsv(data.coverage), 'text/csv')}
           >
-            <DownloadSimple className="h-4 w-4" /> CSV
+            <DownloadSimple className="h-4 w-4" /> CSV (counties)
           </Button>
           <Button
             variant="outline"
@@ -145,7 +170,7 @@ export function CoverageReport({
               )
             }
           >
-            <DownloadSimple className="h-4 w-4" /> JSON
+            <DownloadSimple className="h-4 w-4" /> JSON (all)
           </Button>
         </div>
       </div>
@@ -153,16 +178,16 @@ export function CoverageReport({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
           icon={CheckCircle}
-          label="Composer-ready"
-          value={summary.covered}
-          hint={`${summary.counties} counties · ≥3 reviewed places`}
+          label="Composer-ready counties"
+          value={`${summary.covered} / ${summary.counties}`}
+          hint="≥3 reviewed places in the county"
           tone="good"
         />
         <SummaryCard
           icon={WarningCircle}
           label="Limited"
           value={summary.limited}
-          hint="1–2 reviewed places; nearby counties fill gaps"
+          hint="0–2 reviewed places; nearby counties can fill gaps"
           tone="caution"
         />
         <SummaryCard
@@ -174,7 +199,7 @@ export function CoverageReport({
         />
         <SummaryCard
           icon={ChartBar}
-          label="Golden fixtures"
+          label="Golden fixtures ready"
           value={`${summary.fixturesReady}/${summary.fixturesTotal}`}
           hint={`${summary.fixturesDue} review${summary.fixturesDue === 1 ? '' : 's'} due within 30 days`}
         />
@@ -215,10 +240,11 @@ export function CoverageReport({
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search county"
                 className="h-8 w-48 pl-8"
+                aria-label="Search counties"
               />
             </div>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="h-8 w-40">
+              <SelectTrigger className="h-8 w-40" aria-label="Filter counties by coverage status">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -239,6 +265,7 @@ export function CoverageReport({
               <TableHead className="text-right">Unverified</TableHead>
               <TableHead className="text-right">Total</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="text-right">Queue</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -269,11 +296,26 @@ export function CoverageReport({
                         : 'Limited'}
                   </Badge>
                 </TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onOpenCounty(row.countyCode)}
+                    disabled={row.unverifiedCount === 0}
+                    aria-label={
+                      row.unverifiedCount === 0
+                        ? `No pending places in ${row.county}`
+                        : `Review pending places in ${row.county}`
+                    }
+                  >
+                    Review
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
                   No counties match this filter.
                 </TableCell>
               </TableRow>
@@ -295,7 +337,7 @@ export function CoverageReport({
             size="sm"
             onClick={() => download('golden-fixtures.csv', fixturesCsv(data.fixtures), 'text/csv')}
           >
-            <DownloadSimple className="h-4 w-4" /> CSV
+            <DownloadSimple className="h-4 w-4" /> CSV (fixtures)
           </Button>
         </div>
         <Table>
@@ -306,6 +348,7 @@ export function CoverageReport({
               <TableHead>Status</TableHead>
               <TableHead>Composer</TableHead>
               <TableHead>Next review</TableHead>
+              <TableHead className="text-right">CMS</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -317,7 +360,10 @@ export function CoverageReport({
                 </TableCell>
                 <TableCell>{fixture.county}</TableCell>
                 <TableCell>
-                  <StatusBadge status={fixture.status} />
+                  <StatusBadge
+                    status={fixture.status}
+                    label={fixture.status[0].toUpperCase() + fixture.status.slice(1)}
+                  />
                 </TableCell>
                 <TableCell>
                   {fixture.composerReady ? (
@@ -331,7 +377,15 @@ export function CoverageReport({
                   )}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
-                  {fixture.reviewDate ? fixture.reviewDate.slice(0, 10) : '—'}
+                  {formatDate(fixture.reviewDate)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <a
+                    href={`/destinations?search=${encodeURIComponent(fixture.slug)}`}
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
+                    Open
+                  </a>
                 </TableCell>
               </TableRow>
             ))}

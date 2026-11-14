@@ -100,6 +100,11 @@ describe('composer readiness', () => {
     expect(result.ready).toBe(true)
   })
 
+  it('rejects a one-line description with no substance', () => {
+    const result = evaluateComposerReadiness(validFields({ shortDescription: 'Nice place.' }))
+    expect(result.errors.description).toBeTruthy()
+  })
+
   it('rejects a missing coordinate', () => {
     const result = evaluateComposerReadiness(validFields({ latitude: null }))
     expect(result.errors.coordinates).toBeTruthy()
