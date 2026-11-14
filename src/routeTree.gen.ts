@@ -21,6 +21,7 @@ import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedChallengesRouteImport } from './routes/_authenticated/challenges'
 import { Route as AuthenticatedCommentsRouteImport } from './routes/_authenticated/comments'
 import { Route as AuthenticatedConservationRouteImport } from './routes/_authenticated/conservation'
+import { Route as AuthenticatedCurationRouteImport } from './routes/_authenticated/curation'
 import { Route as AuthenticatedDestinationsRouteImport } from './routes/_authenticated/destinations'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedLmsRouteImport } from './routes/_authenticated/lms'
@@ -28,6 +29,7 @@ import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiAdminCatalogSplatRouteImport } from './routes/api/admin/catalog/$'
 import { Route as ApiAdminUsersSplatRouteImport } from './routes/api/admin/users/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -90,6 +92,11 @@ const AuthenticatedConservationRoute =
     path: '/conservation',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedCurationRoute = AuthenticatedCurationRouteImport.update({
+  id: '/curation',
+  path: '/curation',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDestinationsRoute =
   AuthenticatedDestinationsRouteImport.update({
     id: '/destinations',
@@ -126,6 +133,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminCatalogSplatRoute = ApiAdminCatalogSplatRouteImport.update({
+  id: '/api/admin/catalog/$',
+  path: '/api/admin/catalog/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminUsersSplatRoute = ApiAdminUsersSplatRouteImport.update({
   id: '/api/admin/users/$',
   path: '/api/admin/users/$',
@@ -144,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/challenges': typeof AuthenticatedChallengesRoute
   '/comments': typeof AuthenticatedCommentsRoute
   '/conservation': typeof AuthenticatedConservationRoute
+  '/curation': typeof AuthenticatedCurationRoute
   '/destinations': typeof AuthenticatedDestinationsRoute
   '/events': typeof AuthenticatedEventsRoute
   '/lms': typeof AuthenticatedLmsRoute
@@ -151,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/admin/catalog/$': typeof ApiAdminCatalogSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
 }
 export interface FileRoutesByTo {
@@ -165,6 +179,7 @@ export interface FileRoutesByTo {
   '/challenges': typeof AuthenticatedChallengesRoute
   '/comments': typeof AuthenticatedCommentsRoute
   '/conservation': typeof AuthenticatedConservationRoute
+  '/curation': typeof AuthenticatedCurationRoute
   '/destinations': typeof AuthenticatedDestinationsRoute
   '/events': typeof AuthenticatedEventsRoute
   '/lms': typeof AuthenticatedLmsRoute
@@ -172,6 +187,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/admin/catalog/$': typeof ApiAdminCatalogSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
 }
 export interface FileRoutesById {
@@ -188,6 +204,7 @@ export interface FileRoutesById {
   '/_authenticated/challenges': typeof AuthenticatedChallengesRoute
   '/_authenticated/comments': typeof AuthenticatedCommentsRoute
   '/_authenticated/conservation': typeof AuthenticatedConservationRoute
+  '/_authenticated/curation': typeof AuthenticatedCurationRoute
   '/_authenticated/destinations': typeof AuthenticatedDestinationsRoute
   '/_authenticated/events': typeof AuthenticatedEventsRoute
   '/_authenticated/lms': typeof AuthenticatedLmsRoute
@@ -195,6 +212,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/admin/catalog/$': typeof ApiAdminCatalogSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
 }
 export interface FileRouteTypes {
@@ -211,6 +229,7 @@ export interface FileRouteTypes {
     | '/challenges'
     | '/comments'
     | '/conservation'
+    | '/curation'
     | '/destinations'
     | '/events'
     | '/lms'
@@ -218,6 +237,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/api/auth/$'
+    | '/api/admin/catalog/$'
     | '/api/admin/users/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -232,6 +252,7 @@ export interface FileRouteTypes {
     | '/challenges'
     | '/comments'
     | '/conservation'
+    | '/curation'
     | '/destinations'
     | '/events'
     | '/lms'
@@ -239,6 +260,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/api/auth/$'
+    | '/api/admin/catalog/$'
     | '/api/admin/users/$'
   id:
     | '__root__'
@@ -254,6 +276,7 @@ export interface FileRouteTypes {
     | '/_authenticated/challenges'
     | '/_authenticated/comments'
     | '/_authenticated/conservation'
+    | '/_authenticated/curation'
     | '/_authenticated/destinations'
     | '/_authenticated/events'
     | '/_authenticated/lms'
@@ -261,6 +284,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/users'
     | '/api/auth/$'
+    | '/api/admin/catalog/$'
     | '/api/admin/users/$'
   fileRoutesById: FileRoutesById
 }
@@ -272,6 +296,7 @@ export interface RootRouteChildren {
   NoAccessRoute: typeof NoAccessRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAdminCatalogSplatRoute: typeof ApiAdminCatalogSplatRoute
   ApiAdminUsersSplatRoute: typeof ApiAdminUsersSplatRoute
 }
 
@@ -361,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConservationRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/curation': {
+      id: '/_authenticated/curation'
+      path: '/curation'
+      fullPath: '/curation'
+      preLoaderRoute: typeof AuthenticatedCurationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/destinations': {
       id: '/_authenticated/destinations'
       path: '/destinations'
@@ -410,6 +442,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/catalog/$': {
+      id: '/api/admin/catalog/$'
+      path: '/api/admin/catalog/$'
+      fullPath: '/api/admin/catalog/$'
+      preLoaderRoute: typeof ApiAdminCatalogSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/users/$': {
       id: '/api/admin/users/$'
       path: '/api/admin/users/$'
@@ -427,6 +466,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedChallengesRoute: typeof AuthenticatedChallengesRoute
   AuthenticatedCommentsRoute: typeof AuthenticatedCommentsRoute
   AuthenticatedConservationRoute: typeof AuthenticatedConservationRoute
+  AuthenticatedCurationRoute: typeof AuthenticatedCurationRoute
   AuthenticatedDestinationsRoute: typeof AuthenticatedDestinationsRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRoute
   AuthenticatedLmsRoute: typeof AuthenticatedLmsRoute
@@ -442,6 +482,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChallengesRoute: AuthenticatedChallengesRoute,
   AuthenticatedCommentsRoute: AuthenticatedCommentsRoute,
   AuthenticatedConservationRoute: AuthenticatedConservationRoute,
+  AuthenticatedCurationRoute: AuthenticatedCurationRoute,
   AuthenticatedDestinationsRoute: AuthenticatedDestinationsRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRoute,
   AuthenticatedLmsRoute: AuthenticatedLmsRoute,
@@ -462,6 +503,7 @@ const rootRouteChildren: RootRouteChildren = {
   NoAccessRoute: NoAccessRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAdminCatalogSplatRoute: ApiAdminCatalogSplatRoute,
   ApiAdminUsersSplatRoute: ApiAdminUsersSplatRoute,
 }
 export const routeTree = rootRouteImport

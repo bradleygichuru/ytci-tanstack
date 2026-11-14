@@ -1,5 +1,6 @@
 import {
   ChartBar,
+  ClipboardText,
   MapTrifold,
   Image as ImageIcon,
   BookOpen,
@@ -34,6 +35,7 @@ const navGroups = [
     items: [
       { icon: ChartBar, label: 'Analytics', path: '/analytics' },
       { icon: MapTrifold, label: 'CMS', path: '/destinations' },
+      { icon: ClipboardText, label: 'Catalog Curation', path: '/curation' },
       { icon: ImageIcon, label: 'Media Library', path: '/media' },
     ],
   },
