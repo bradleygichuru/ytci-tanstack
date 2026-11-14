@@ -48,8 +48,8 @@ async function seedDestinations(adminId: string) {
 
   const destinationValues = [
     {
-      name: 'Maasai Mara National Reserve',
-      slug: 'maasai-mara-national-reserve',
+      name: 'Maasai Mara',
+      slug: 'maasai-mara',
       county: 'Narok',
       locality: 'Maasai Mara',
       category: 'Wildlife',
