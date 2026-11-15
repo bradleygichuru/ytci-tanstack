@@ -12,6 +12,7 @@ import {
   ChatDots,
   SignOut,
   Robot,
+  Storefront,
 } from '@phosphor-icons/react'
 import { Link, useLocation, useRouter } from '@tanstack/react-router'
 import {
@@ -43,6 +44,7 @@ const navGroups = [
       { icon: BookOpen, label: 'LMS', path: '/lms' },
       { icon: Leaf, label: 'Conservation', path: '/conservation' },
       { icon: Calendar, label: 'Events', path: '/events' },
+      { icon: Storefront, label: 'Marketplace', path: '/marketplace' },
     ],
   },
   {
