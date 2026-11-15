@@ -148,6 +148,13 @@
       "when": 1794775811669,
       "tag": "0020_alert_mapping_mixed",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794776441586,
+      "tag": "0021_alert_defaults",
+      "breakpoints": true
     }
   ]
 }
