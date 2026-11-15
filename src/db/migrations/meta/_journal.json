@@ -155,6 +155,13 @@
       "when": 1794776441586,
       "tag": "0021_alert_defaults",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1794777951813,
+      "tag": "0022_alert_preference_backfill",
+      "breakpoints": true
     }
   ]
 }
