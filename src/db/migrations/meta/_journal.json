@@ -134,6 +134,13 @@
       "when": 1794774314051,
       "tag": "0018_alert_os_permission",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794775534914,
+      "tag": "0019_alert_program_important",
+      "breakpoints": true
     }
   ]
 }
