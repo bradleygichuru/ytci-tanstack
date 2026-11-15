@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS alerts (
     content_hash            text NOT NULL,
     raw_area_desc           text,
     mapping_method          text CHECK (mapping_method IN
-                              ('polygon','area_desc','region','national','manual','unmapped')),
+                              ('polygon','area_desc','region','mixed','national','manual','unmapped')),
     mapping_review          boolean NOT NULL DEFAULT false,
     cap_references          text[] NOT NULL DEFAULT '{}',
     is_test                 boolean NOT NULL DEFAULT false,

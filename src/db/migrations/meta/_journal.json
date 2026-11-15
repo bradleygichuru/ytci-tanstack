@@ -141,6 +141,13 @@
       "when": 1794775534914,
       "tag": "0019_alert_program_important",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794775811669,
+      "tag": "0020_alert_mapping_mixed",
+      "breakpoints": true
     }
   ]
 }
