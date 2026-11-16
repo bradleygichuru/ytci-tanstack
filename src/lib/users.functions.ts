@@ -9,9 +9,9 @@ import { requirePermission } from "#/lib/authz"
 import type { AuthSession } from "#/lib/authz"
 import { eq, desc, asc, sql, ilike, and } from "drizzle-orm"
 
-export type UserRole = 'super_admin' | 'administrator' | 'moderator' | 'county_officer' | 'user'
+export type UserRole = 'super_admin' | 'administrator' | 'moderator' | 'content_editor' | 'county_officer' | 'user'
 
-const ALLOWED_ROLES: UserRole[] = ['super_admin', 'administrator', 'moderator', 'county_officer', 'user']
+const ALLOWED_ROLES: UserRole[] = ['super_admin', 'administrator', 'moderator', 'content_editor', 'county_officer', 'user']
 
 export interface UserItem {
   id: string
