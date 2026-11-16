@@ -17,6 +17,7 @@ import { Route as NoAccessRouteImport } from './routes/no-access'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAiConfigRouteImport } from './routes/_authenticated/ai-config'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedAudioStoriesRouteImport } from './routes/_authenticated/audio-stories'
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
 import { Route as AuthenticatedChallengesRouteImport } from './routes/_authenticated/challenges'
 import { Route as AuthenticatedCommentsRouteImport } from './routes/_authenticated/comments'
@@ -27,6 +28,7 @@ import { Route as AuthenticatedLmsRouteImport } from './routes/_authenticated/lm
 import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedAudioStoriesStoryIdRouteImport } from './routes/_authenticated/audio-stories_.$storyId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAdminUsersSplatRouteImport } from './routes/api/admin/users/$'
 
@@ -69,6 +71,12 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAudioStoriesRoute =
+  AuthenticatedAudioStoriesRouteImport.update({
+    id: '/audio-stories',
+    path: '/audio-stories',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCampaignsRoute = AuthenticatedCampaignsRouteImport.update({
   id: '/campaigns',
   path: '/campaigns',
@@ -121,6 +129,12 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAudioStoriesStoryIdRoute =
+  AuthenticatedAudioStoriesStoryIdRouteImport.update({
+    id: '/audio-stories_/$storyId',
+    path: '/audio-stories/$storyId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -140,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/ai-config': typeof AuthenticatedAiConfigRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/audio-stories': typeof AuthenticatedAudioStoriesRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/challenges': typeof AuthenticatedChallengesRoute
   '/comments': typeof AuthenticatedCommentsRoute
@@ -150,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/media': typeof AuthenticatedMediaRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/audio-stories/$storyId': typeof AuthenticatedAudioStoriesStoryIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
 }
@@ -161,6 +177,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/ai-config': typeof AuthenticatedAiConfigRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
+  '/audio-stories': typeof AuthenticatedAudioStoriesRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/challenges': typeof AuthenticatedChallengesRoute
   '/comments': typeof AuthenticatedCommentsRoute
@@ -171,6 +188,7 @@ export interface FileRoutesByTo {
   '/media': typeof AuthenticatedMediaRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/audio-stories/$storyId': typeof AuthenticatedAudioStoriesStoryIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
 }
@@ -184,6 +202,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/ai-config': typeof AuthenticatedAiConfigRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
+  '/_authenticated/audio-stories': typeof AuthenticatedAudioStoriesRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
   '/_authenticated/challenges': typeof AuthenticatedChallengesRoute
   '/_authenticated/comments': typeof AuthenticatedCommentsRoute
@@ -194,6 +213,7 @@ export interface FileRoutesById {
   '/_authenticated/media': typeof AuthenticatedMediaRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/audio-stories_/$storyId': typeof AuthenticatedAudioStoriesStoryIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
 }
@@ -207,6 +227,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/ai-config'
     | '/analytics'
+    | '/audio-stories'
     | '/campaigns'
     | '/challenges'
     | '/comments'
@@ -217,6 +238,7 @@ export interface FileRouteTypes {
     | '/media'
     | '/settings'
     | '/users'
+    | '/audio-stories/$storyId'
     | '/api/auth/$'
     | '/api/admin/users/$'
   fileRoutesByTo: FileRoutesByTo
@@ -228,6 +250,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/ai-config'
     | '/analytics'
+    | '/audio-stories'
     | '/campaigns'
     | '/challenges'
     | '/comments'
@@ -238,6 +261,7 @@ export interface FileRouteTypes {
     | '/media'
     | '/settings'
     | '/users'
+    | '/audio-stories/$storyId'
     | '/api/auth/$'
     | '/api/admin/users/$'
   id:
@@ -250,6 +274,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/ai-config'
     | '/_authenticated/analytics'
+    | '/_authenticated/audio-stories'
     | '/_authenticated/campaigns'
     | '/_authenticated/challenges'
     | '/_authenticated/comments'
@@ -260,6 +285,7 @@ export interface FileRouteTypes {
     | '/_authenticated/media'
     | '/_authenticated/settings'
     | '/_authenticated/users'
+    | '/_authenticated/audio-stories_/$storyId'
     | '/api/auth/$'
     | '/api/admin/users/$'
   fileRoutesById: FileRoutesById
@@ -333,6 +359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/audio-stories': {
+      id: '/_authenticated/audio-stories'
+      path: '/audio-stories'
+      fullPath: '/audio-stories'
+      preLoaderRoute: typeof AuthenticatedAudioStoriesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/campaigns': {
       id: '/_authenticated/campaigns'
       path: '/campaigns'
@@ -403,6 +436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/audio-stories_/$storyId': {
+      id: '/_authenticated/audio-stories_/$storyId'
+      path: '/audio-stories/$storyId'
+      fullPath: '/audio-stories/$storyId'
+      preLoaderRoute: typeof AuthenticatedAudioStoriesStoryIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -423,6 +463,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAiConfigRoute: typeof AuthenticatedAiConfigRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
+  AuthenticatedAudioStoriesRoute: typeof AuthenticatedAudioStoriesRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
   AuthenticatedChallengesRoute: typeof AuthenticatedChallengesRoute
   AuthenticatedCommentsRoute: typeof AuthenticatedCommentsRoute
@@ -433,11 +474,13 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedAudioStoriesStoryIdRoute: typeof AuthenticatedAudioStoriesStoryIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAiConfigRoute: AuthenticatedAiConfigRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
+  AuthenticatedAudioStoriesRoute: AuthenticatedAudioStoriesRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
   AuthenticatedChallengesRoute: AuthenticatedChallengesRoute,
   AuthenticatedCommentsRoute: AuthenticatedCommentsRoute,
@@ -448,6 +491,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMediaRoute: AuthenticatedMediaRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedAudioStoriesStoryIdRoute: AuthenticatedAudioStoriesStoryIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

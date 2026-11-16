@@ -253,6 +253,16 @@
 
 .dark {
 
+  --primary: #9adf6a;
+  --primary-foreground: #0f1a1e;
+  --success-leaf: #9adf6a;
+  --leaf: #9adf6a;
+  --leaf-bg: rgba(154, 223, 106, 0.16);
+  --amber-deep: #ffd866;
+  --amber-bg: rgba(253, 192, 2, 0.16);
+  --error: #ffb4ab;
+  --error-container: #93000a;
+
   --surface: #0f1a1e;
 
   --surface-dim: #2e3132;

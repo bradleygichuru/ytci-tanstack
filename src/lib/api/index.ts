@@ -11,6 +11,7 @@ import { challengesApi } from './challenges'
 import { analyticsApi } from './analytics'
 import { usersApi } from './users'
 import { commentsApi } from './comments'
+import { audioStoriesApi } from './audio-stories'
 
 export type { ApiConfig } from './client'
 
@@ -28,6 +29,7 @@ export function createApiClient(config: ApiConfig) {
     analytics: analyticsApi(config),
     users: usersApi(config),
     comments: commentsApi(config),
+    audioStories: audioStoriesApi(config),
   }
 }
 

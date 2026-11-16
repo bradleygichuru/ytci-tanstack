@@ -28,17 +28,19 @@ export function FormField({ label, description, error, required, id, children }:
         {required && <span className="text-destructive">*</span>}
       </FieldLabel>
       {children}
-      {description && <FieldDescription>{description}</FieldDescription>}
-      {error && <FieldError>{error}</FieldError>}
+      {description && <FieldDescription id={`${id}-description`}>{description}</FieldDescription>}
+      {error && <FieldError id={`${id}-error`}>{error}</FieldError>}
     </Field>
   )
 }
 
-export function FormInput({ label, description, error, required, value, onChange, placeholder, type }: FormFieldProps & {
+export function FormInput({ label, description, error, required, value, onChange, placeholder, type, disabled, readOnly }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
   placeholder?: string
   type?: string
+  disabled?: boolean
+  readOnly?: boolean
 }) {
   const id = useId()
   return (
@@ -49,17 +51,24 @@ export function FormInput({ label, description, error, required, value, onChange
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
+        disabled={disabled}
+        readOnly={readOnly}
         aria-invalid={!!error || undefined}
+        aria-required={required || undefined}
+        aria-describedby={error ? `${id}-error` : description ? `${id}-description` : undefined}
         data-invalid={!!error || undefined}
+        className="read-only:bg-[var(--surface-2)] read-only:cursor-default disabled:opacity-100 disabled:text-foreground"
       />
     </FormField>
   )
 }
 
-export function FormTextarea({ label, description, error, required, value, onChange, placeholder }: FormFieldProps & {
+export function FormTextarea({ label, description, error, required, value, onChange, placeholder, disabled, maxLength }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
   placeholder?: string
+  disabled?: boolean
+  maxLength?: number
 }) {
   const id = useId()
   return (
@@ -69,8 +78,13 @@ export function FormTextarea({ label, description, error, required, value, onCha
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
+        disabled={disabled}
+        maxLength={maxLength}
         aria-invalid={!!error || undefined}
+        aria-required={required || undefined}
+        aria-describedby={error ? `${id}-error` : description ? `${id}-description` : undefined}
         data-invalid={!!error || undefined}
+        className="read-only:bg-[var(--surface-2)] read-only:cursor-default disabled:opacity-100 disabled:text-foreground"
       />
     </FormField>
   )
@@ -78,10 +92,11 @@ export function FormTextarea({ label, description, error, required, value, onCha
 
 export type SelectOption = string | { value: string; label: string }
 
-export function FormSelect({ label, description, error, required, value, onChange, options }: FormFieldProps & {
+export function FormSelect({ label, description, error, required, value, onChange, options, disabled }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
   options: SelectOption[]
+  disabled?: boolean
 }) {
   const id = useId()
   return (
@@ -90,9 +105,12 @@ export function FormSelect({ label, description, error, required, value, onChang
         id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
+        disabled={disabled}
         aria-invalid={!!error || undefined}
+        aria-required={required || undefined}
+        aria-describedby={error ? `${id}-error` : description ? `${id}-description` : undefined}
         data-invalid={!!error || undefined}
-        className="flex h-9 w-full rounded-lg border border-input bg-card px-3 py-1 text-sm text-foreground shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive"
+        className="flex h-9 w-full rounded-lg border border-[var(--outline)] bg-card px-3 py-1 text-sm text-foreground shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:bg-[var(--surface-2)] disabled:text-muted-foreground disabled:opacity-100 aria-invalid:border-destructive"
       >
         <option value="">Select...</option>
         {options.map(o => typeof o === 'string'
@@ -134,9 +152,10 @@ export function FormSlider({ label, description, error, required, value, onChang
   )
 }
 
-export function FormDatePicker({ label, description, error, required, value, onChange }: FormFieldProps & {
+export function FormDatePicker({ label, description, error, required, value, onChange, disabled }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
+  disabled?: boolean
 }) {
   const id = useId()
   const date = value ? parse(value, 'yyyy-MM-dd', new Date()) : undefined
@@ -149,20 +168,24 @@ export function FormDatePicker({ label, description, error, required, value, onC
           <Button
             id={id}
             variant="outline"
+            disabled={disabled}
             className={cn(
-              'w-full justify-start text-left font-normal',
+              'w-full justify-start text-left font-normal disabled:bg-[var(--surface-2)] disabled:text-foreground disabled:opacity-100',
               !isValidDate && 'text-muted-foreground'
             )}
             aria-invalid={!!error || undefined}
+            aria-required={required || undefined}
+            aria-describedby={error ? `${id}-error` : description ? `${id}-description` : undefined}
             data-invalid={!!error || undefined}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {isValidDate ? format(date!, 'PPP') : <span>Pick a date</span>}
+            {isValidDate ? format(date!, 'd MMM yyyy') : <span>Pick a date</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
+            defaultMonth={isValidDate ? date : undefined}
             selected={date}
             onSelect={(d) => onChange(d ? format(d, 'yyyy-MM-dd') : '')}
           />

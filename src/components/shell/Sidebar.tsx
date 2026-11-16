@@ -12,6 +12,7 @@ import {
   ChatDots,
   SignOut,
   Robot,
+  Waveform,
 } from '@phosphor-icons/react'
 import { Link, useLocation, useRouter } from '@tanstack/react-router'
 import {
@@ -34,6 +35,7 @@ const navGroups = [
     items: [
       { icon: ChartBar, label: 'Analytics', path: '/analytics' },
       { icon: MapTrifold, label: 'CMS', path: '/destinations' },
+      { icon: Waveform, label: 'Audio Stories', path: '/audio-stories' },
       { icon: ImageIcon, label: 'Media Library', path: '/media' },
     ],
   },
