@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Audio Stories — Admin Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./audio-stories-admin.css" />
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to admin content</a>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="m9 18-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15M15 6v15"/></symbol>
+  <symbol id="i-audio" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1.03H3v-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1.03-1.56V3h4v.09A1.7 1.7 0 0 0 15 4.64a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.37 9a1.7 1.7 0 0 0 1.56 1.03H21v4h-.09A1.7 1.7 0 0 0 19.4 15Z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5M12 18v.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7-11-7Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke-width="3"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+</svg>
+
+<header class="proto-head">
+  <div class="proto-title">
+    <span class="proto-eyebrow">TanStack admin · Audio Stories · Prototype</span>
+    <h1>Author, review, and publish without losing the live story.</h1>
+    <p>Throwaway design artifact for #264. Use the controls to switch role, scenario, and screen. The app frame is the product; the bar above it is prototype chrome.</p>
+  </div>
+  <div class="proto-controls">
+    <label class="proto-field"><span>Role</span><select id="roleSelect">
+      <option value="administrator" selected>Administrator</option>
+      <option value="content_editor">Content editor</option>
+      <option value="super_admin">Super admin</option>
+      <option value="moderator">Moderator (read-only)</option>
+    </select></label>
+    <label class="proto-field"><span>Scenario</span><select id="scenarioSelect">
+      <option value="default" selected>Default</option>
+      <option value="empty">Empty library / queue</option>
+      <option value="loading">Loading</option>
+      <option value="error">Load error</option>
+      <option value="conflict">Edit conflict</option>
+      <option value="upload-failed">Upload failed</option>
+      <option value="sensitive">Sensitive review</option>
+      <option value="restricted">Restricted review</option>
+      <option value="scheduled">Scheduled publish</option>
+    </select></label>
+    <label class="proto-field"><span>Screen</span><select id="screenSelect">
+      <option value="stories" selected>Stories</option>
+      <option value="editor">Story editor</option>
+      <option value="collections">Collections</option>
+      <option value="collection-editor">Collection editor</option>
+      <option value="review">Review queue</option>
+      <option value="review-detail">Review detail</option>
+    </select></label>
+    <button type="button" class="proto-reset" id="resetPrototype">Reset</button>
+  </div>
+</header>
+
+<div class="app-frame" id="app" data-role="administrator" data-scenario="default" data-screen="stories">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">Y</span>
+      <span class="brand-copy"><strong>YTC Explorer</strong><small>Command Centre</small></span>
+    </div>
+    <nav class="nav" aria-label="Admin navigation">
+      <div class="nav-group">
+        <span class="nav-label">Discovery</span>
+        <button type="button" class="nav-item"><svg class="icon"><use href="#i-grid"/></svg><span>Analytics</span></button>
+        <button type="button" class="nav-item"><svg class="icon"><use href="#i-map"/></svg><span>CMS</span></button>
+        <button type="button" class="nav-item is-active" aria-current="page"><svg class="icon"><use href="#i-audio"/></svg><span>Audio Stories</span><span class="nav-badge" id="navReviewCount">4</span></button>
+        <button type="button" class="nav-item"><svg class="icon"><use href="#i-image"/></svg><span>Media Library</span></button>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Engagement</span>
+        <button type="button" class="nav-item"><svg class="icon"><use href="#i-book"/></svg><span>LMS</span></button>
+        <button type="button" class="nav-item"><svg class="icon"><use href="#i-calendar"/></svg><span>Events</span></button>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Platform</span>
+        <button type="button" class="nav-item"><svg class="icon"><use href="#i-users"/></svg><span>User Management</span></button>
+        <button type="button" class="nav-item"><svg class="icon"><use href="#i-settings"/></svg><span>Settings</span></button>
+      </div>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="avatar avatar--small">DO</div>
+      <div><strong>D. Otieno</strong><small>Administrator · reviewer</small></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb"><span>Audio Stories</span><svg class="icon"><use href="#i-chevron"/></svg><strong id="crumbCurrent">Stories</strong></div>
+      <div class="topbar-actions">
+        <label class="global-search"><svg class="icon"><use href="#i-search"/></svg><input type="search" placeholder="Search stories, collections, narrators" aria-label="Search admin content" /></label>
+        <button type="button" class="icon-btn" aria-label="Notifications, unread" data-action="notifications"><svg class="icon"><use href="#i-bell"/></svg><span class="dot"></span></button>
+        <div class="avatar">DO</div>
+      </div>
+    </header>
+
+    <div class="role-banner" id="roleBanner" hidden></div>
+    <div class="scenario-banner" id="scenarioBanner" hidden></div>
+
+    <main class="content" id="main-content">
+      <!-- STORIES -->
+      <section class="view" id="view-stories" data-view="stories" aria-label="Stories">
+        <div class="page-head">
+          <div>
+            <h2>Stories</h2>
+            <p>Curated, narrated, rights-cleared. The live version stays public while a replacement is reviewed.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" class="btn btn-outline" id="openCollectionsFromStories">Collections</button>
+            <button type="button" class="btn btn-primary" data-action="new-story"><svg class="icon"><use href="#i-plus"/></svg>New story</button>
+          </div>
+        </div>
+
+        <div class="tabs-row">
+          <div class="tabs" role="tablist" aria-label="Audio Stories sections">
+            <button type="button" role="tab" class="tab is-active" aria-selected="true" data-tab-screen="stories" aria-controls="view-stories">Stories <span class="tab-count">6</span></button>
+            <button type="button" role="tab" class="tab" aria-selected="false" data-tab-screen="collections" aria-controls="view-collections">Collections <span class="tab-count">4</span></button>
+            <button type="button" role="tab" class="tab" aria-selected="false" data-tab-screen="review" aria-controls="view-review">Review <span class="tab-count tab-count--amber" id="reviewTabCount">4</span></button>
+          </div>
+          <span class="sync-note"><svg class="icon"><use href="#i-clock"/></svg>Last sync 09:41 EAT</span>
+        </div>
+
+        <div class="stat-grid" id="statGrid">
+          <article class="stat-card"><span class="stat-label">Published stories</span><strong>2</strong><small>1 has a revision in review</small></article>
+          <article class="stat-card"><span class="stat-label">Revisions in review</span><strong>4</strong><small>2 unassigned · 1 sensitive</small></article>
+          <article class="stat-card stat-card--amber"><span class="stat-label">Needs attention</span><strong>1</strong><small>Readiness blocked · Forest Keepers</small></article>
+          <article class="stat-card"><span class="stat-label">Rights expiring</span><strong>1</strong><small>Tidal Memories · 12 days</small></article>
+        </div>
+
+        <div class="panel">
+          <div class="filter-bar">
+            <label class="search-filter"><svg class="icon"><use href="#i-search"/></svg><input type="search" id="storySearch" placeholder="Search title, narrator, community" aria-label="Search stories" /></label>
+            <select aria-label="Filter by status" id="statusFilter"><option value="">All statuses</option><option>Published</option><option>In review</option><option>Draft</option><option>Scheduled</option><option>Unpublished</option><option>Revoked</option></select>
+            <select aria-label="Filter by collection"><option>All collections</option><option>Coastal Voices</option><option>Rift Valley Stories</option><option>History &amp; Places</option><option>Youth Perspectives</option></select>
+            <select aria-label="Filter by risk"><option>All risk tiers</option><option>Standard</option><option>Sensitive</option><option>Restricted</option></select>
+            <button type="button" class="filter-chip" id="needsAttention" aria-pressed="false"><svg class="icon"><use href="#i-alert"/></svg>Needs attention</button>
+            <button type="button" class="icon-btn filter-more" aria-label="More filters" data-action="more-filters"><svg class="icon"><use href="#i-more"/></svg></button>
+          </div>
+
+          <div class="data-state" id="storiesLoading" hidden>
+            <div class="skeleton skeleton--row"></div><div class="skeleton skeleton--row"></div><div class="skeleton skeleton--row"></div>
+          </div>
+          <div class="data-state data-state--empty" id="storiesEmpty" hidden>
+            <div class="empty-mark"><svg class="icon"><use href="#i-audio"/></svg></div>
+            <h3>No stories match</h3>
+            <p>Try a different search or filter. Drafts and reviews stay here until they are published.</p>
+            <div class="inline-actions" style="justify-content:center"><button type="button" class="btn btn-primary" data-action="new-story">New story</button><button type="button" class="btn btn-outline" id="clearStoryFilters">Clear filters</button></div>
+          </div>
+          <div class="data-state data-state--error" id="storiesError" hidden>
+            <div class="empty-mark empty-mark--error"><svg class="icon"><use href="#i-alert"/></svg></div>
+            <h3>We couldn’t load the stories</h3>
+            <p>The API did not respond. Your saved drafts are safe.</p>
+            <button type="button" class="btn btn-primary" id="retryStories">Retry</button>
+          </div>
+
+          <div class="table-wrap" id="storiesTable">
+            <table class="data-table">
+              <thead><tr><th scope="col">Story</th><th scope="col">Collection</th><th scope="col">Status</th><th scope="col">Revision</th><th scope="col">Languages</th><th scope="col">Risk</th><th scope="col">Rights</th><th scope="col">Reviewer</th><th scope="col">Updated</th><th scope="col"><span class="sr-only">Open</span></th></tr></thead>
+              <tbody>
+                <tr class="row-link" data-open-story="mangrove">
+                  <td><div class="story-cell"><span class="cover cover--mangrove"></span><span><strong>The Last Mangrove</strong><small>Kilifi · Culture &amp; Heritage</small></span></div></td>
+                  <td>Coastal Voices</td>
+                  <td><span class="badge badge--leaf">Published</span></td>
+                  <td><span class="badge badge--amber">Revision in review</span></td>
+                  <td><span class="lang">EN</span><span class="lang">SW</span></td>
+                  <td><span class="risk risk--standard">Standard</span></td>
+                  <td>No expiry</td>
+                  <td>D. Otieno</td>
+                  <td>2h ago</td>
+                  <td><button type="button" class="icon-btn" aria-label="Open The Last Mangrove"><svg class="icon"><use href="#i-chevron"/></svg></button></td>
+                </tr>
+                <tr class="row-link" data-open-story="drum">
+                  <td><div class="story-cell"><span class="cover cover--forest"></span><span><strong>The Drum at Dusk</strong><small>Kajiado · Culture &amp; Heritage</small></span></div></td>
+                  <td>Rift Valley Stories</td>
+                  <td><span class="badge badge--amber">In review</span></td>
+                  <td><span class="badge badge--amber">Revision in review</span></td>
+                  <td><span class="lang">EN</span></td>
+                  <td><span class="risk risk--sensitive">Sensitive</span></td>
+                  <td>No expiry</td>
+                  <td><span class="text-muted">Unassigned</span></td>
+                  <td>18h ago</td>
+                  <td><button type="button" class="icon-btn" aria-label="Open The Drum at Dusk"><svg class="icon"><use href="#i-chevron"/></svg></button></td>
+                </tr>
+                <tr class="row-link" data-open-story="forest" data-attention="true">
+                  <td><div class="story-cell"><span class="cover cover--night"></span><span><strong>Forest Keepers</strong><small>Nyandarua · Conservation in Action</small></span></div></td>
+                  <td>Rift Valley Stories</td>
+                  <td><span class="badge badge--amber">In review</span></td>
+                  <td><span class="badge badge--amber">Revision in review</span></td>
+                  <td><span class="lang">SW</span><span class="lang lang--quiet">EN transcript</span></td>
+                  <td><span class="risk risk--restricted">Restricted</span></td>
+                  <td>Pending</td>
+                  <td><span class="text-muted">Legal/rights</span></td>
+                  <td>3d ago</td>
+                  <td><button type="button" class="icon-btn" aria-label="Open Forest Keepers"><svg class="icon"><use href="#i-chevron"/></svg></button></td>
+                </tr>
+                <tr class="row-link" data-open-story="lake">
+                  <td><div class="story-cell"><span class="cover cover--coast"></span><span><strong>Lake Stories</strong><small>Homa Bay · Nature &amp; Wildlife</small></span></div></td>
+                  <td>Coastal Voices</td>
+                  <td><span class="badge badge--forest">Scheduled</span></td>
+                  <td><span class="badge badge--muted">Approved</span></td>
+                  <td><span class="lang">EN</span><span class="lang">SW</span></td>
+                  <td><span class="risk risk--standard">Standard</span></td>
+                  <td>No expiry</td>
+                  <td>A. Mwangi</td>
+                  <td>1d ago</td>
+                  <td><button type="button" class="icon-btn" aria-label="Open Lake Stories"><svg class="icon"><use href="#i-chevron"/></svg></button></td>
+                </tr>
+                <tr class="row-link" data-open-story="tidal">
+                  <td><div class="story-cell"><span class="cover cover--tidal"></span><span><strong>Tidal Memories</strong><small>Kilifi · Culture &amp; Heritage</small></span></div></td>
+                  <td>Coastal Voices</td>
+                  <td><span class="badge badge--leaf">Published</span></td>
+                  <td><span class="badge badge--muted">Live version</span></td>
+                  <td><span class="lang">SW</span><span class="lang lang--quiet">EN transcript</span></td>
+                  <td><span class="risk risk--standard">Standard</span></td>
+                  <td><span class="risk risk--sensitive">12 days</span></td>
+                  <td>A. Mwangi</td>
+                  <td>5d ago</td>
+                  <td><button type="button" class="icon-btn" aria-label="Open Tidal Memories"><svg class="icon"><use href="#i-chevron"/></svg></button></td>
+                </tr>
+                <tr class="row-link" data-open-story="oldtown">
+                  <td><div class="story-cell"><span class="cover cover--oldtown"></span><span><strong>Old Town Walk</strong><small>Mombasa · History &amp; Places</small></span></div></td>
+                  <td>History &amp; Places</td>
+                  <td><span class="badge badge--muted">Unpublished</span></td>
+                  <td><span class="badge badge--amber">Revision in review</span></td>
+                  <td><span class="lang">EN</span></td>
+                  <td><span class="risk risk--standard">Standard</span></td>
+                  <td>No expiry</td>
+                  <td>D. Otieno</td>
+                  <td>1w ago</td>
+                  <td><button type="button" class="icon-btn" aria-label="Open Old Town Walk"><svg class="icon"><use href="#i-chevron"/></svg></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-foot" id="storiesFooter"><span id="storiesShown">Showing 6 of 6 stories</span><span>Updates save explicitly · no autosave</span></div>
+        </div>
+      </section>
+
+      <!-- EDITOR -->
+      <section class="view" id="view-editor" data-view="editor" aria-label="Story editor">
+        <div class="editor-head">
+          <button type="button" class="back-btn" data-go="stories"><svg class="icon"><use href="#i-back"/></svg>Stories</button>
+          <div class="editor-title">
+            <span class="eyebrow">Audio Story · <span id="editorCollection">Coastal Voices</span></span>
+            <h2 id="editorTitle">The Last Mangrove</h2>
+            <div class="title-badges" id="editorBadges"><span class="badge badge--leaf">Published</span><span class="badge badge--amber">Revision 3 in review</span><span class="badge badge--outline">Standard</span></div>
+          </div>
+          <div class="editor-actions">
+            <button type="button" class="btn btn-outline" data-open-preview><svg class="icon"><use href="#i-eye"/></svg>Preview</button>
+            <button type="button" class="btn btn-outline" data-action="save-draft">Save story details</button>
+            <button type="button" class="btn btn-outline" data-go="review-detail"><svg class="icon"><use href="#i-shield"/></svg>Open review</button>
+            <button type="button" class="btn btn-primary" data-action="submit-review">Submit for review</button>
+          </div>
+        </div>
+
+        <div class="conflict-banner" id="conflictBanner" hidden>
+          <svg class="icon"><use href="#i-alert"/></svg>
+          <div><strong>This story changed while you were editing.</strong><span>Your copy is 2 versions behind. Reload the latest or copy your changes before saving.</span></div>
+          <button type="button" class="btn btn-sm btn-outline" id="copyChanges">Copy my changes</button>
+          <button type="button" class="btn btn-sm btn-primary" id="reloadStory">Reload</button>
+        </div>
+        <div class="freeze-banner" id="freezeBanner" hidden>
+          <svg class="icon"><use href="#i-lock"/></svg>
+          <div><strong id="freezeTitle">Revision 3 is frozen for review.</strong><span id="freezeText">Return it to draft to edit audio, transcripts, placement, notes, or rights. Story details can still be saved.</span></div>
+          <button type="button" class="btn btn-sm btn-outline" data-action="request-return" data-role-only="content_editor">Request return to draft</button>
+          <button type="button" class="btn btn-sm btn-outline" data-action="return-draft" data-role-min="administrator">Return to draft</button>
+        </div>
+
+        <div class="editor-layout">
+          <div class="editor-main">
+            <div class="section-tabs" role="tablist" aria-label="Story editor sections">
+              <button type="button" role="tab" id="editor-tab-story" class="section-tab is-active" aria-selected="true" aria-controls="editor-panel-story" data-editor-tab="story">Story</button>
+              <button type="button" role="tab" id="editor-tab-tracks" class="section-tab" aria-selected="false" aria-controls="editor-panel-tracks" data-editor-tab="tracks">Tracks &amp; transcripts</button>
+              <button type="button" role="tab" id="editor-tab-credits" class="section-tab" aria-selected="false" aria-controls="editor-panel-credits" data-editor-tab="credits">Credits &amp; placement</button>
+              <button type="button" role="tab" id="editor-tab-rights" class="section-tab" aria-selected="false" aria-controls="editor-panel-rights" data-editor-tab="rights">Rights &amp; review</button>
+              <button type="button" role="tab" id="editor-tab-publish" class="section-tab" aria-selected="false" aria-controls="editor-panel-publish" data-editor-tab="publish">Publish</button>
+            </div>
+
+            <section class="editor-panel" id="editor-panel-story" role="tabpanel" aria-labelledby="editor-tab-story" data-editor-panel="story">
+              <div class="panel-head"><div><h3>Story</h3><p>The public identity and collection placement.</p></div><span class="save-state" id="saveState">All changes saved</span></div>
+              <div class="form-grid">
+                <label class="field field--wide"><span>Title</span><input id="storyTitleInput" value="The Last Mangrove" data-dirty /></label>
+                <label class="field field--wide"><span>Summary</span><textarea id="storySummaryInput" rows="3" data-dirty>Amina Yusuf follows the people replanting the mangrove that has held this coast together for generations.</textarea></label>
+                <label class="field"><span>Theme</span><select data-dirty><option>Culture &amp; Heritage</option><option>Nature &amp; Wildlife</option><option>History &amp; Places</option><option>Conservation in Action</option><option>Youth Perspectives</option></select></label>
+                <label class="field"><span>Slug</span><input value="the-last-mangrove" disabled /><small>Immutable after first publish.</small></label>
+                <label class="field"><span>Collection</span><select data-dirty><option>Coastal Voices</option><option>Rift Valley Stories</option><option>History &amp; Places</option></select></label>
+                <label class="field"><span>Order in collection</span><input type="number" value="1" min="1" data-dirty /></label>
+                <label class="field field--wide"><span>Tags</span><div class="tag-input"><span class="tag">oral-history</span><span class="tag">mangrove</span><span class="tag">kilifi</span><input placeholder="Add a tag" aria-label="Add a tag" /></div></label>
+                <div class="field field--wide"><span>Cover</span><div class="cover-upload"><span class="cover cover--mangrove cover--large"></span><div><strong>cover-mangrove.jpg</strong><small>1600 × 900 · 412 KB · image</small><button type="button" class="link-btn" data-action="replace-cover">Replace cover</button></div></div></div>
+                <div class="field field--wide"><span>Content notes</span><div class="check-grid"><label><input type="checkbox" checked /> Colonial or oppression history</label><label><input type="checkbox" checked /> Sensitive cultural practices</label><label><input type="checkbox" /> Violence or conflict</label><label><input type="checkbox" /> Death or grief</label><label><input type="checkbox" /> Distressing animal content</label><label><input type="checkbox" /> Strong language</label></div><textarea id="contentNoteText" rows="2" aria-label="Content note text" data-dirty>Discusses coastal displacement and changing tides. No graphic content.</textarea></div>
+              </div>
+            </section>
+
+            <section class="editor-panel" id="editor-panel-tracks" role="tabpanel" aria-labelledby="editor-tab-tracks" data-editor-panel="tracks" hidden>
+              <div class="panel-head"><div><h3>Tracks &amp; transcripts</h3><p>One track per language. Each audio track needs a transcript in the same language.</p></div><button type="button" class="btn btn-outline btn-sm" id="addLanguage">Add language</button></div>
+              <article class="upload-card" id="uploadCard">
+                <div class="upload-copy"><span class="upload-icon"><svg class="icon"><use href="#i-upload"/></svg></span><div><strong id="uploadTitle">Replace English audio</strong><p id="uploadHint">M4A or MP3 · 30 s–60 min · up to 100 MB. Audio is validated after upload.</p></div></div>
+                <div class="upload-actions"><button type="button" class="btn btn-outline btn-sm" id="chooseAudio">Choose file</button><span class="upload-note">Direct to R2 · resumable</span></div>
+                <div class="upload-progress" id="uploadProgress" hidden><div class="progress-track"><span id="uploadBar"></span></div><span id="uploadStatus">Uploading 42% · 8.1 MB of 19.4 MB</span><button type="button" class="link-btn" id="cancelUpload">Cancel</button></div>
+                <div class="upload-error" id="uploadError" hidden><svg class="icon"><use href="#i-alert"/></svg><div><strong>Upload failed</strong><span>The connection dropped at 62%. The file was not attached.</span></div><button type="button" class="btn btn-sm btn-outline" id="retryUpload">Retry</button></div>
+              </article>
+              <article class="track-card">
+                <div class="track-head"><div><strong>English</strong><span class="badge badge--leaf">Ready</span></div><div class="track-actions"><button type="button" class="btn btn-sm btn-outline" data-audio-preview><svg class="icon"><use href="#i-play"/></svg>Preview</button><button type="button" class="btn btn-sm btn-outline" data-audio-replace>Replace audio</button></div></div>
+                <div class="audio-file"><span class="file-icon"><svg class="icon"><use href="#i-audio"/></svg></span><div><strong>mangrove-en-final.m4a</strong><small>12:04 · 19.4 MB · AAC-LC 96 kbps · 44.1 kHz</small></div><span class="badge badge--leaf">Validated</span></div>
+                <div class="form-grid form-grid--tight">
+                  <label class="field"><span>Narrator</span><input value="Amina Yusuf" /></label>
+                  <label class="field"><span>Recorded</span><input type="date" value="2026-03-14" /></label>
+                  <label class="field"><span>Consent date</span><input type="date" value="2026-03-12" /></label>
+                  <label class="field"><span>Consent reference</span><input value="REL-KLF-0042" /></label>
+                </div>
+                <div class="transcript-block"><div class="transcript-head"><strong>English transcript</strong><span>5 paragraphs · cues 0:00–11:48 · 612 words</span></div><div class="paragraph-row"><span class="para-num">1</span><textarea rows="2" aria-label="English transcript paragraph 1">The first time I heard the story, I was standing at the edge of the mangrove. The tide was coming in, and the roots were full of small sounds.</textarea><input class="cue" value="0:00" aria-label="Cue for paragraph 1" /></div><div class="paragraph-row"><span class="para-num">2</span><textarea rows="2" aria-label="English transcript paragraph 2">The elders say the mangrove is not just a thing. It is a wall, a nursery, and a calendar. It keeps the place from leaving.</textarea><input class="cue" value="0:42" aria-label="Cue for paragraph 2" /></div><div class="transcript-foot"><button type="button" class="link-btn" id="addParagraph"><svg class="icon"><use href="#i-plus"/></svg>Add paragraph</button><span>Plain text only · no HTML</span></div></div>
+              </article>
+              <article class="track-card">
+                <div class="track-head"><div><strong>Kiswahili</strong><span class="badge badge--leaf">Ready</span></div><div class="track-actions"><button type="button" class="btn btn-sm btn-outline" data-audio-preview><svg class="icon"><use href="#i-play"/></svg>Preview</button><button type="button" class="btn btn-sm btn-outline" data-audio-replace>Replace audio</button></div></div>
+                <div class="audio-file"><span class="file-icon"><svg class="icon"><use href="#i-audio"/></svg></span><div><strong>mangrove-sw-final.m4a</strong><small>11:58 · 19.2 MB · AAC-LC 96 kbps · 44.1 kHz</small></div><span class="badge badge--leaf">Validated</span></div>
+                <div class="form-grid form-grid--tight"><label class="field"><span>Narrator</span><input value="Halima Bakari" /></label><label class="field"><span>Recorded</span><input type="date" value="2026-03-15" /></label><label class="field"><span>Consent date</span><input type="date" value="2026-03-12" /></label><label class="field"><span>Consent reference</span><input value="REL-KLF-0043" /></label></div>
+                <div class="transcript-block"><div class="transcript-head"><strong>Kiswahili transcript</strong><span>5 paragraphs · cues 0:00–11:40 · 648 words</span></div><div class="paragraph-row"><span class="para-num">1</span><textarea rows="2" aria-label="Kiswahili transcript paragraph 1">Mara ya kwanza niliposikia simulizi hii, nilikuwa nimesimama kando ya maji. Mawimbi yalikuwa yakija, na sauti ndogo ndogo zilijaa pale.</textarea><input class="cue" value="0:00" aria-label="Cue for paragraph 1" /></div><div class="transcript-foot"><button type="button" class="link-btn" id="addParagraphSw"><svg class="icon"><use href="#i-plus"/></svg>Add paragraph</button><span>Plain text only · no HTML</span></div></div>
+              </article>
+
+            </section>
+
+            <section class="editor-panel" id="editor-panel-credits" role="tabpanel" aria-labelledby="editor-tab-credits" data-editor-panel="credits" hidden>
+              <div class="panel-head"><div><h3>Credits &amp; placement</h3><p>Public attribution and where this story belongs.</p></div></div>
+              <div class="form-grid">
+                <label class="field"><span>Producer</span><input value="YTCI Coastal Unit" data-dirty /></label>
+                <label class="field"><span>Community / source</span><input value="Kilifi mangrove elders" data-dirty /></label>
+                <label class="field"><span>Recorded</span><input type="date" value="2026-03-14" data-dirty /></label>
+                <label class="field"><span>Place scope</span><select data-dirty><option>County</option><option>Multi-county</option><option>National</option></select></label>
+                <label class="field field--wide"><span>Counties</span><div class="tag-input"><span class="tag">Kilifi</span><input placeholder="Add county" aria-label="Add county" /></div></label>
+                <label class="field field--wide"><span>Destinations</span><div class="linked-row"><span class="link-pill"><svg class="icon"><use href="#i-pin"/></svg>Kilifi Creek Boardwalk</span><button type="button" class="link-btn" data-action="manage-links">Manage links</button></div><small>Only published destinations appear publicly. The story remains public by county.</small></label>
+                <label class="field field--wide"><span>Source references</span><textarea rows="2" data-dirty>YTCI field interview, 12 March 2026; Kilifi County mangrove restoration records, 2024–2026.</textarea></label>
+              </div>
+              <div class="rights-line-preview"><span class="eyebrow">Public rights line</span><p>Produced by YTCI Coastal Unit · Published with permission from the Kilifi mangrove elders · Reviewed August 2026</p></div>
+            </section>
+
+            <section class="editor-panel" id="editor-panel-rights" role="tabpanel" aria-labelledby="editor-tab-rights" data-editor-panel="rights" hidden>
+              <div class="panel-head"><div><h3>Rights &amp; review</h3><p>Evidence first for sensitive or licensed material. The reviewer cannot be the uploader or attester.</p></div><span class="badge badge--amber">Review in progress</span></div>
+              <div class="form-grid">
+                <label class="field"><span>Rights basis</span><select><option>YTCI-owned</option><option>Partner permission</option><option>Licensed</option><option>Public domain</option></select></label>
+                <label class="field"><span>Rights holder</span><input value="YTCI" /></label>
+                <label class="field"><span>Licence / consent reference</span><input value="YTCI-KLF-2026-014" /></label>
+                <label class="field"><span>Rights expiry</span><input value="No expiry" disabled /></label>
+                <label class="field field--wide"><span>Evidence references</span><div class="linked-row"><span class="link-pill"><svg class="icon"><use href="#i-shield"/></svg>release-mangrove-elders.pdf</span><span class="link-pill"><svg class="icon"><use href="#i-shield"/></svg>consent-amina-yusuf.pdf</span><span class="link-pill"><svg class="icon"><use href="#i-shield"/></svg>consent-halima-bakari.pdf</span></div><small>Private evidence. Not exposed to the public app or media library.</small></label>
+                <label class="field"><span>Review risk</span><select><option>Standard</option><option>Sensitive</option><option>Restricted</option></select></label>
+                <label class="field"><span>Assigned reviewer</span><input id="assignedReviewer" value="D. Otieno" /></label>
+              </div>
+              <div class="review-summary">
+                <div><span class="eyebrow">Review record</span><p><strong>Revision 2 approved</strong> by D. Otieno · 14 Aug 2026 · Standard. <button type="button" class="link-btn" data-action="open-record">Open record</button></p></div>
+                <div><span class="eyebrow">Current revision</span><p><strong>Revision 3 in review</strong> · submitted 2h ago · assigned to D. Otieno.</p></div>
+              </div>
+              <div class="audit-block"><div class="panel-head"><div><h3>Audit timeline</h3><p>Append-only. No consent documents or personal contact details.</p></div><button type="button" class="link-btn" data-action="open-audit">Open full audit</button></div>
+                <ol class="timeline">
+                  <li><span class="timeline-dot"></span><div><strong>Revision 3 submitted for review</strong><span>Wanjiku M. · 2h ago</span></div><span class="badge badge--amber">In review</span></li>
+                  <li><span class="timeline-dot"></span><div><strong>Audio replaced · English</strong><span>Wanjiku M. · 4h ago · contentVersion 3</span></div><span class="badge badge--muted">Material</span></li>
+                  <li><span class="timeline-dot"></span><div><strong>Revision 3 created from live</strong><span>Wanjiku M. · 4h ago</span></div><span class="badge badge--muted">Revision</span></li>
+                  <li><span class="timeline-dot"></span><div><strong>Revision 2 published</strong><span>D. Otieno · 14 Aug 2026 · live version</span></div><span class="badge badge--leaf">Published</span></li>
+                </ol>
+              </div>
+            </section>
+
+            <section class="editor-panel" id="editor-panel-publish" role="tabpanel" aria-labelledby="editor-tab-publish" data-editor-panel="publish" hidden>
+              <div class="panel-head"><div><h3>Publish</h3><p>Publishing a revision swaps the live version atomically.</p></div><span class="badge badge--amber" id="publishStatusBadge">Blocked by review</span></div>
+              <div class="publish-grid">
+                <div class="publish-card">
+                  <span class="eyebrow">Current live</span>
+                  <h4>Revision 2 · published 14 Aug 2026</h4>
+                  <p>English 12:04 · Kiswahili 11:58 · 2 transcripts · contentVersion 2</p>
+                  <div class="inline-actions"><button type="button" class="btn btn-sm btn-outline" data-open-preview>Preview live</button><button type="button" class="btn btn-sm btn-outline" data-role-min="administrator" data-action="unpublish">Unpublish</button></div>
+                </div>
+                <div class="publish-card publish-card--focus">
+                  <span class="eyebrow">Revision 3</span>
+                  <h4 id="revisionCardTitle">Ready except review</h4>
+                  <p id="revisionCardCopy">All content and rights checks pass. Approve the revision before publishing.</p>
+                  <div class="inline-actions"><button type="button" class="btn btn-sm btn-primary" data-role-min="administrator" data-action="publish-now">Publish now</button><button type="button" class="btn btn-sm btn-outline" id="scheduleButton" data-role-min="administrator" data-action="schedule">Schedule</button><button type="button" class="btn btn-sm btn-outline" id="cancelSchedule" data-role-min="administrator" data-action="cancel-schedule" hidden>Cancel schedule</button></div>
+                </div>
+              </div>
+              <div class="schedule-preview"><div><span class="eyebrow">Collection</span><p><strong>Coastal Voices</strong> is published. Unpublishing it would hide 3 stories, including this one.</p></div><span class="badge badge--leaf">Published</span></div>
+              <div class="danger-zone"><div><strong>Archive or revoke</strong><span>Archive retires the story. Revoke is a rights/safety takedown. Both require a super-admin and a reason.</span></div><div class="inline-actions"><button type="button" class="btn btn-sm btn-outline" data-role-only="super_admin" data-action="archive">Archive</button><button type="button" class="btn btn-sm btn-danger" data-role-only="super_admin" data-action="revoke">Revoke</button></div></div>
+            </section>
+          </div>
+
+          <aside class="readiness" aria-label="Publish readiness">
+            <div class="readiness-head"><div><h3>Readiness</h3><strong class="readiness-score" id="readinessScore">6 of 7</strong></div><span class="ring" id="readinessRing" style="--pct:86">86%</span></div>
+            <p class="readiness-copy" id="readinessCopy">One blocking item. The live version stays public until revision 3 is approved and published.</p>
+            <div class="readiness-group" id="blockingGroup"><span class="readiness-label">Blocking</span>
+              <div class="check-row check-row--warn"><span class="check-icon">!</span><div><strong>Revision review</strong><small>Assigned to D. Otieno · 2h in queue</small></div><button type="button" class="link-btn" data-go="review-detail">Open</button></div>
+            </div>
+            <div class="readiness-group"><span class="readiness-label">Passed</span>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Story identity</strong><small>Title, summary, theme, slug</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Collection published</strong><small>Coastal Voices</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>2 tracks complete</strong><small>EN + SW · transcripts and cues valid</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Cover and credits</strong><small>YTCI Coastal Unit · Kilifi elders</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Rights and evidence</strong><small>YTCI-owned · no expiry</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Cultural review</strong><small>Standard · one reviewer</small></div></div>
+            </div>
+            <div class="readiness-group"><span class="readiness-label">Warnings</span>
+              <div class="check-row check-row--note"><span class="check-icon check-icon--note">i</span><div><strong>Downloads stale after publish</strong><small>English audio changed · contentVersion 3</small></div></div>
+            </div>
+            <div class="readiness-foot"><span>Computed by the API</span><button type="button" class="link-btn" data-action="view-checklist">View checklist</button></div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- COLLECTIONS -->
+      <section class="view" id="view-collections" data-view="collections" aria-label="Collections">
+        <div class="page-head"><div><h2>Collections</h2><p>One primary collection per published story. Order is manual, not a series.</p></div><div class="page-actions"><button type="button" class="btn btn-primary" data-action="new-collection"><svg class="icon"><use href="#i-plus"/></svg>New collection</button></div></div>
+        <div class="tabs-row"><div class="tabs" role="tablist"><button type="button" role="tab" class="tab" data-tab-screen="stories" aria-controls="view-stories">Stories <span class="tab-count">6</span></button><button type="button" role="tab" class="tab is-active" aria-selected="true" data-tab-screen="collections" aria-controls="view-collections">Collections <span class="tab-count">4</span></button><button type="button" role="tab" class="tab" data-tab-screen="review" aria-controls="view-review">Review <span class="tab-count tab-count--amber">4</span></button></div></div>
+        <div class="panel">
+          <div class="filter-bar"><label class="search-filter"><svg class="icon"><use href="#i-search"/></svg><input type="search" placeholder="Search collections" aria-label="Search collections" /></label><select aria-label="Filter collections"><option>All statuses</option><option>Published</option><option>Draft</option><option>Scheduled</option><option>Unpublished</option><option>Archived</option></select><span class="filter-note">4 collections · 8 stories</span></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr><th>Collection</th><th>Status</th><th>Stories</th><th>Order</th><th>Featured</th><th>Publish at</th><th>Updated</th><th></th></tr></thead><tbody>
+            <tr class="row-link" data-open-collection="coastal"><td><div class="story-cell"><span class="cover cover--coast"></span><span><strong>Coastal Voices</strong><small>coastal-voices</small></span></div></td><td><span class="badge badge--leaf">Published</span></td><td>3 <small class="text-muted">· 3 published</small></td><td>1</td><td><span class="badge badge--amber">Featured</span></td><td>—</td><td>2d ago</td><td><button type="button" class="icon-btn" aria-label="Open Coastal Voices"><svg class="icon"><use href="#i-chevron"/></svg></button></td></tr>
+            <tr class="row-link" data-open-collection="rift"><td><div class="story-cell"><span class="cover cover--rift"></span><span><strong>Rift Valley Stories</strong><small>rift-valley-stories</small></span></div></td><td><span class="badge badge--leaf">Published</span></td><td>2 <small class="text-muted">· 1 published</small></td><td>2</td><td><span class="badge badge--muted">Not featured</span></td><td>—</td><td>18h ago</td><td><button type="button" class="icon-btn" aria-label="Open Rift Valley Stories"><svg class="icon"><use href="#i-chevron"/></svg></button></td></tr>
+            <tr class="row-link" data-open-collection="history"><td><div class="story-cell"><span class="cover cover--oldtown"></span><span><strong>History &amp; Places</strong><small>history-and-places</small></span></div></td><td><span class="badge badge--muted">Draft</span></td><td>1 <small class="text-muted">· 0 published</small></td><td>3</td><td><span class="badge badge--muted">Not featured</span></td><td>—</td><td>1w ago</td><td><button type="button" class="icon-btn" aria-label="Open History and Places"><svg class="icon"><use href="#i-chevron"/></svg></button></td></tr>
+            <tr class="row-link" data-open-collection="youth"><td><div class="story-cell"><span class="cover cover--youth"></span><span><strong>Youth Perspectives</strong><small>youth-perspectives</small></span></div></td><td><span class="badge badge--forest">Scheduled</span></td><td>2 <small class="text-muted">· 2 approved</small></td><td>4</td><td><span class="badge badge--amber">Featured</span></td><td>Tomorrow · 09:00 EAT</td><td>3h ago</td><td><button type="button" class="icon-btn" aria-label="Open Youth Perspectives"><svg class="icon"><use href="#i-chevron"/></svg></button></td></tr>
+          </tbody></table></div>
+          <div class="table-foot"><span>Showing 4 of 4 collections</span><span>Public surfaces show up to 3 featured collections</span></div>
+        </div>
+        <div class="help-grid">
+          <div class="help-card"><span class="help-num">1</span><strong>One primary collection</strong><p>A published story belongs to one collection. Cross-collection membership is deferred.</p></div>
+          <div class="help-card"><span class="help-num">2</span><strong>Order is manual</strong><p>Lower display order first. This is a curated group, not a series or release order.</p></div>
+          <div class="help-card help-card--warn"><span class="help-num">!</span><strong>Unpublish cascades</strong><p>Hiding a collection hides its stories but does not change their status. Republish to restore them.</p></div>
+        </div>
+      </section>
+
+      <!-- COLLECTION EDITOR -->
+      <section class="view" id="view-collection-editor" data-view="collection-editor" aria-label="Collection editor">
+        <div class="editor-head"><button type="button" class="back-btn" data-go="collections"><svg class="icon"><use href="#i-back"/></svg>Collections</button><div class="editor-title"><h2>Coastal Voices</h2><div class="title-badges"><span class="badge badge--leaf">Published</span><span class="badge badge--amber">Featured</span></div></div><div class="editor-actions"><button type="button" class="btn btn-outline" data-action="save-collection">Save changes</button><button type="button" class="btn btn-outline" data-role-only="super_admin" data-action="archive-collection">Archive</button><button type="button" class="btn btn-outline" data-role-min="administrator" data-action="unpublish-collection">Unpublish</button><button type="button" class="btn btn-primary" data-role-min="administrator" data-action="publish-collection">Update live</button></div></div>
+        <div class="editor-layout">
+          <div class="editor-main">
+            <div class="panel">
+              <div class="panel-head"><div><h3>Collection</h3><p>This is a page, not a series. Order is manual.</p></div><span class="save-state" id="collectionSaveState">All changes saved</span></div>
+              <div class="form-grid"><label class="field field--wide"><span>Title</span><input value="Coastal Voices" /></label><label class="field field--wide"><span>Description</span><textarea rows="2">Tides, trade, and the people who keep the coast alive.</textarea></label><label class="field"><span>Slug</span><input value="coastal-voices" disabled /><small>Immutable after first publish.</small></label><label class="field"><span>Display order</span><input type="number" value="1" min="1" /></label><div class="field"><span>Status</span><div class="readonly-field">Published</div><small>Use Publish, Unpublish, or Update live.</small></div><label class="field"><span>Published at (EAT)</span><input value="14 Aug 2026 · 09:00 EAT" disabled title="Only editable for scheduled collections." /></label><div class="field field--wide"><span>Cover</span><div class="cover-upload"><span class="cover cover--coast cover--large"></span><div><strong>coastal-voices-cover.jpg</strong><small>1600 × 900 · 388 KB · image</small><button type="button" class="link-btn" data-action="replace-cover">Replace cover</button></div></div></div><label class="switch-row field--wide"><span><strong>Featured collection</strong><small>Shown first on public surfaces, up to 3.</small></span><input type="checkbox" checked /></label></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div><h3>Stories in this collection</h3><p>3 stories · 3 published. Order is manual.</p></div><button type="button" class="btn btn-sm btn-outline" data-action="add-story">Add story</button></div>
+              <div class="ordered-list">
+                <div class="ordered-row"><span class="order-num">1</span><span class="cover cover--mangrove"></span><div><strong>The Last Mangrove</strong><small>Published · revision in review · EN + SW</small></div><div class="order-actions"><button type="button" class="icon-btn" aria-label="Move up"><svg class="icon"><use href="#i-up"/></svg></button><button type="button" class="icon-btn" aria-label="Move down"><svg class="icon"><use href="#i-down"/></svg></button><button type="button" class="link-btn">Remove</button></div></div>
+                <div class="ordered-row"><span class="order-num">2</span><span class="cover cover--coast"></span><div><strong>Lake Stories</strong><small>Scheduled · tomorrow 09:00 EAT · EN + SW</small></div><div class="order-actions"><button type="button" class="icon-btn" aria-label="Move up"><svg class="icon"><use href="#i-up"/></svg></button><button type="button" class="icon-btn" aria-label="Move down"><svg class="icon"><use href="#i-down"/></svg></button><button type="button" class="link-btn">Remove</button></div></div>
+                <div class="ordered-row"><span class="order-num">3</span><span class="cover cover--tidal"></span><div><strong>Tidal Memories</strong><small>Published · rights expire in 12 days · SW</small></div><div class="order-actions"><button type="button" class="icon-btn" aria-label="Move up"><svg class="icon"><use href="#i-up"/></svg></button><button type="button" class="icon-btn" aria-label="Move down"><svg class="icon"><use href="#i-down"/></svg></button><button type="button" class="link-btn">Remove</button></div></div>
+              </div>
+            </div>
+          </div>
+          <aside class="readiness"><div class="readiness-head"><div><h3>Readiness</h3><strong class="readiness-score">Ready</strong></div><span class="ring" style="--pct:100">100%</span></div><p class="readiness-copy">3 published stories, title and description, display order. This collection is publicly visible.</p><div class="readiness-group"><span class="readiness-label">Passed</span><div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>At least one published story</strong><small>3 published</small></div></div><div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Title and description</strong><small>Complete</small></div></div><div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Display order</strong><small>1</small></div></div></div><div class="cascade-warning"><svg class="icon"><use href="#i-alert"/></svg><div><strong>Unpublish hides 3 stories</strong><span>Story statuses do not change. Republish to restore them.</span></div></div><div class="readiness-foot"><span>Computed by the API</span><button type="button" class="link-btn" data-action="view-checklist">View checklist</button></div></aside>
+        </div>
+      </section>
+
+      <!-- REVIEW QUEUE -->
+      <section class="view" id="view-review" data-view="review" aria-label="Review queue">
+        <div class="page-head"><div><h2>Review</h2><p>Submitted revisions are frozen. Assign, review, and decide without moving the live story.</p></div><div class="page-actions"><span class="badge badge--amber">4 in review</span></div></div>
+        <div class="tabs-row"><div class="tabs" role="tablist"><button type="button" role="tab" class="tab" data-tab-screen="stories" aria-controls="view-stories">Stories <span class="tab-count">6</span></button><button type="button" role="tab" class="tab" data-tab-screen="collections" aria-controls="view-collections">Collections <span class="tab-count">4</span></button><button type="button" role="tab" class="tab is-active" aria-selected="true" data-tab-screen="review" aria-controls="view-review">Review <span class="tab-count tab-count--amber">4</span></button></div></div>
+        <div class="queue-tabs" role="group" aria-label="Review filters"><button type="button" class="queue-tab is-active" aria-pressed="true" data-queue-filter="all">All in review <span>4</span></button><button type="button" class="queue-tab" aria-pressed="false" data-queue-filter="unassigned">Unassigned <span>2</span></button><button type="button" class="queue-tab" aria-pressed="false" data-queue-filter="mine">Assigned to me <span>1</span></button><button type="button" class="queue-tab" aria-pressed="false" data-queue-filter="sensitive">Sensitive <span>1</span></button><button type="button" class="queue-tab" aria-pressed="false" data-queue-filter="restricted">Restricted <span>1</span></button></div>
+        <div class="panel">
+          <div class="data-state" id="reviewLoading" hidden><div class="skeleton skeleton--row"></div><div class="skeleton skeleton--row"></div><div class="skeleton skeleton--row"></div></div>
+          <div class="data-state data-state--empty" id="reviewEmpty" hidden><div class="empty-mark"><svg class="icon"><use href="#i-check"/></svg></div><h3>Nothing is waiting for review</h3><p>Submitted revisions appear here. Drafts stay with their editors.</p></div>
+          <div class="data-state data-state--error" id="reviewError" hidden><div class="empty-mark empty-mark--error"><svg class="icon"><use href="#i-alert"/></svg></div><h3>We couldn’t load the review queue</h3><p>Retry before assigning or deciding. No review action was recorded.</p><button type="button" class="btn btn-primary" id="retryReview">Retry</button></div>
+          <div class="table-wrap" id="reviewTable"><table class="data-table review-table"><thead><tr><th>Revision</th><th>Story</th><th>Live version</th><th>Risk</th><th>Submitted</th><th>Reviewer</th><th>Action</th></tr></thead><tbody>
+            <tr class="row-link" data-open-review="drum"><td><strong>Rev 2</strong></td><td><div class="story-cell"><span class="cover cover--forest cover--tiny"></span><span><strong>The Drum at Dusk</strong><small>Rift Valley Stories</small></span></div></td><td><span class="badge badge--muted">Never published</span></td><td><span class="risk risk--sensitive">Sensitive</span></td><td>Wanjiku M. · 18h ago</td><td><span class="text-muted">Unassigned</span></td><td><button type="button" class="btn btn-sm btn-outline" data-assign-self>Assign to me</button></td></tr>
+            <tr class="row-link" data-open-review="mangrove"><td><strong>Rev 3</strong></td><td><div class="story-cell"><span class="cover cover--mangrove cover--tiny"></span><span><strong>The Last Mangrove</strong><small>Coastal Voices</small></span></div></td><td><span class="badge badge--leaf">Rev 2 live</span></td><td><span class="risk risk--standard">Standard</span></td><td>Wanjiku M. · 2h ago</td><td>D. Otieno</td><td><button type="button" class="btn btn-sm btn-outline" data-open-review="mangrove">Open review</button></td></tr>
+            <tr class="row-link" data-open-review="forest"><td><strong>Rev 1</strong></td><td><div class="story-cell"><span class="cover cover--night cover--tiny"></span><span><strong>Forest Keepers</strong><small>Rift Valley Stories</small></span></div></td><td><span class="badge badge--muted">Never published</span></td><td><span class="risk risk--restricted">Restricted</span></td><td>F. Kariuki · 3d ago</td><td>Legal/rights</td><td><button type="button" class="btn btn-sm btn-outline" data-open-review="forest">Open review</button></td></tr>
+            <tr class="row-link" data-open-review="oldtown"><td><strong>Rev 1</strong></td><td><div class="story-cell"><span class="cover cover--oldtown cover--tiny"></span><span><strong>Old Town Walk</strong><small>History &amp; Places</small></span></div></td><td><span class="badge badge--muted">Live · unpublished</span></td><td><span class="risk risk--standard">Standard</span></td><td>D. Otieno · 5h ago</td><td><span class="text-muted">Unassigned</span></td><td><button type="button" class="btn btn-sm btn-outline" data-assign-self>Assign to me</button></td></tr>
+          </tbody></table></div>
+          <div class="table-foot" id="reviewFooter"><span>4 revisions in review · oldest 3 days</span><span>No bulk approve</span></div>
+        </div>
+        <div class="help-grid">
+          <div class="help-card"><span class="help-num">1</span><strong>Reviewer ≠ uploader</strong><p>A reviewer cannot decide on a revision they uploaded or attested. The API enforces it.</p></div>
+          <div class="help-card"><span class="help-num">2</span><strong>Sensitive needs two</strong><p>Community knowledge, vulnerable people, or sensitive practices need a second reviewer. External reviews are recorded.</p></div>
+          <div class="help-card help-card--warn"><span class="help-num">!</span><strong>Frozen on submit</strong><p>Reviewers see one exact snapshot. Editing returns the revision to draft and clears the review.</p></div>
+        </div>
+      </section>
+
+      <!-- REVIEW DETAIL -->
+      <section class="view" id="view-review-detail" data-view="review-detail" aria-label="Review detail">
+        <div class="editor-head"><button type="button" class="back-btn" data-go="review"><svg class="icon"><use href="#i-back"/></svg>Review</button><div class="editor-title"><span class="eyebrow" id="reviewEyebrow">Review · Revision 3 · Standard</span><h2>The Last Mangrove</h2><div class="title-badges" id="reviewBadges"><span class="badge badge--amber">In review</span><span class="badge badge--leaf">Rev 2 live</span><span class="badge badge--outline">Submitted 2h ago</span></div></div><div class="editor-actions"><button type="button" class="btn btn-outline" data-open-preview><svg class="icon"><use href="#i-eye"/></svg>Preview revision</button></div></div>
+        <div class="review-layout">
+          <div class="review-main">
+            <div class="panel">
+              <div class="panel-head"><div><h3>Changes since live</h3><p>Revision 3 replaces English audio and updates one transcript paragraph.</p></div><span class="badge badge--amber">2 material changes</span></div>
+              <div class="diff-row"><span class="diff-tag">Audio</span><div><strong>English track replaced</strong><small>mangrove-en-final.m4a · 12:04 · 19.4 MB · narrator unchanged</small></div><span class="badge badge--amber">Material</span></div>
+              <div class="diff-row"><span class="diff-tag">Transcript</span><div><strong>English transcript updated</strong><small>1 paragraph reworded · cues unchanged · 612 words</small><blockquote class="diff-excerpt"><span>Before</span>“The elders say the mangrove is not just a thing.”<br /><span>After</span>“The elders say the mangrove is a wall, a nursery, and a calendar.”</blockquote></div><span class="badge badge--amber">Material</span></div>
+              <div class="diff-row"><span class="diff-tag">Metadata</span><div><strong>Summary edited</strong><small>“Amina Yusuf follows…” · no re-review required</small></div><span class="badge badge--muted">Minor</span></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><div><h3>Frozen revision</h3><p>Reviewers see this exact snapshot. Editing withdraws it back to draft.</p></div><span class="badge badge--outline">Locked</span></div>
+              <div class="snapshot-grid"><div><span class="eyebrow">Story</span><p><strong>The Last Mangrove</strong><br />Culture &amp; Heritage · Kilifi County · Coastal Voices</p></div><div><span class="eyebrow">Tracks</span><p><strong>EN</strong> Amina Yusuf · 12:04 · 19.4 MB<br /><strong>SW</strong> Halima Bakari · 11:58 · 19.2 MB</p></div><div><span class="eyebrow">Rights</span><p>YTCI-owned · no expiry<br />Narrator consent per track · community consent recorded</p></div><div><span class="eyebrow">Content notes</span><p>Colonial or oppression history · sensitive cultural practices<br />“Discusses coastal displacement and changing tides.”</p></div><div><span class="eyebrow">Credits</span><p>Produced by YTCI Coastal Unit · Community: Kilifi mangrove elders<br />Recorded 14 March 2026 · Reviewed August 2026</p></div><div><span class="eyebrow">Place scope</span><p>County: Kilifi · Destination: Kilifi Creek Boardwalk</p></div></div>
+            <details class="review-transcript">
+              <summary>English transcript · read all 5 paragraphs</summary>
+              <div class="review-transcript-body">
+                <p><span>1 · 0:00</span>“The first time I heard the story, I was standing at the edge of the mangrove. The tide was coming in, and the roots were full of small sounds.”</p>
+                <p class="is-changed"><span>2 · 0:42 · changed</span>“The elders say the mangrove is a wall, a nursery, and a calendar. It keeps the place from leaving.”</p>
+                <p><span>3 · 2:18</span>“For generations, families here have read the tides and the seasons. The story is not only about the past; it is about what the next generation will inherit.”</p>
+                <p><span>4 · 5:06</span>“When the mangrove is cleared, the water arrives faster. The village moves inland. The school, the market, the graves — all of it moves.”</p>
+                <p><span>5 · 9:31</span>“The people here are replanting. It is slow work. But the story is still being written, one seedling at a time.”</p>
+              </div>
+            </details>
+            </div>
+            <div class="panel"><div class="panel-head"><div><h3>Review record</h3><p>Append-only. The reviewer cannot be the uploader or attester.</p></div><button type="button" class="link-btn" data-action="open-audit">Full audit</button></div><ol class="timeline"><li><span class="timeline-dot"></span><div><strong>Submitted for review</strong><span>Wanjiku M. · 2h ago</span></div><span class="badge badge--amber">In review</span></li><li><span class="timeline-dot"></span><div><strong>Revision 3 created from live</strong><span>Wanjiku M. · 4h ago</span></div><span class="badge badge--muted">Revision</span></li><li><span class="timeline-dot"></span><div><strong>Revision 2 approved</strong><span>D. Otieno · 14 Aug 2026 · standard</span></div><span class="badge badge--leaf">Approved</span></li></ol></div>
+          </div>
+          <aside class="review-side">
+            <div class="panel decision-panel">
+              <div class="panel-head"><div><h3>Checklist</h3><p>Server-computed before submit.</p></div><span class="badge badge--leaf" id="reviewCheckCount">7/7</span></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Reviewer separation</strong><small>D. Otieno ≠ Wanjiku M.</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Rights evidence</strong><small>3 references · private</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Transcript validity</strong><small>EN + SW · cues in range</small></div></div>
+              <div class="check-row" id="riskCheckRow"><span class="check-icon check-icon--ok" id="riskCheckIcon">✓</span><div><strong>Sensitive tier</strong><small id="riskCheckDetail">Standard · one reviewer</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Content note</strong><small>2 categories + text</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>Collection published</strong><small>Coastal Voices</small></div></div>
+              <div class="check-row"><span class="check-icon check-icon--ok">✓</span><div><strong>No rights expiry</strong><small>YTCI-owned</small></div></div>
+            </div>
+            <div class="panel decision-panel">
+              <div class="panel-head"><div><h3>Decision</h3><p>Approval does not publish. Publishing is a separate action.</p></div></div>
+              <label class="field"><span>Review notes</span><textarea id="reviewNotes" rows="4" placeholder="Add review notes. Required for request changes or reject."></textarea></label>
+              <div class="decision-actions"><button type="button" class="btn btn-primary" data-role-min="administrator" data-action="approve-revision">Approve revision</button><button type="button" class="btn btn-outline" data-role-min="administrator" data-action="request-changes">Request changes</button><button type="button" class="btn btn-danger-ghost" data-role-min="administrator" data-action="reject-revision">Reject</button></div>
+              <p class="decision-note" id="decisionNote">Approving makes revision 3 ready to publish. The live revision stays public until then.</p>
+              <div class="decision-recorded" id="decisionRecorded" hidden><strong>Decision recorded</strong><span id="decisionRecordedText"></span><button type="button" class="link-btn" data-go="review">Back to queue</button></div>
+            </div>
+            <div class="panel assignment-card"><div class="panel-head"><div><h3>Assignment</h3><p>Assigned 2h ago by A. Mwangi.</p></div></div><div class="assignee"><span class="avatar avatar--small">DO</span><div><strong>D. Otieno (you)</strong><small>Administrator · assigned reviewer</small></div><button type="button" class="link-btn" data-role-min="administrator" data-action="reassign">Reassign</button></div><div class="sensitive-note" id="secondReviewerNote" hidden><svg class="icon"><use href="#i-shield"/></svg><div><strong>Second reviewer required</strong><span>Prof. J. Mwangi · community historian · external review pending. Record it from the review alert.</span></div></div></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- PREVIEW MODAL -->
+  <div class="modal-backdrop" id="previewBackdrop" hidden></div>
+  <div class="preview-modal" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="previewTitle" hidden>
+    <div class="preview-head"><div><span class="eyebrow">Admin preview · Revision 3</span><h3 id="previewTitle">The Last Mangrove</h3></div><div class="preview-actions"><span class="badge badge--amber">Draft preview — not public</span><button type="button" class="icon-btn" id="closePreview" aria-label="Close preview"><svg class="icon"><use href="#i-x"/></svg></button></div></div>
+    <div class="preview-body">
+      <div class="phone">
+        <span class="phone-watermark">DRAFT PREVIEW</span>
+        <div class="phone-status"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="phone-scroll">
+          <div class="phone-cover cover--mangrove"><span class="phone-back"><svg class="icon"><use href="#i-back"/></svg></span><span class="phone-save"><svg class="icon"><use href="#i-book"/></svg></span></div>
+          <div class="phone-body"><span class="phone-kicker">AUDIO STORY · CULTURE &amp; HERITAGE</span><h4>The Last Mangrove</h4><p class="phone-meta">Narrated by Amina Yusuf · 12 min · Kilifi County</p><div class="phone-chips"><span>EN audio</span><span>SW audio</span><span>EN transcript</span></div><p class="phone-note"><strong>Content note</strong>Discusses coastal displacement and changing tides. No graphic content.</p><button type="button" class="phone-listen" data-action="preview-play">▶ Listen</button><div class="phone-transcript"><strong>Transcript · English</strong><p>“The mangrove keeps the coast from leaving…”</p></div></div>
+        </div>
+      </div>
+      <aside class="preview-notes"><span class="eyebrow">What the public will see</span><h4>Revision 3</h4><p>The live revision 2 remains public until this revision is approved and published. This preview is watermarked and authenticated.</p><div class="preview-check"><span class="check-icon check-icon--ok">✓</span><div><strong>Media URLs are short-lived</strong><small>Refreshed by the admin session</small></div></div><div class="preview-check"><span class="check-icon check-icon--ok">✓</span><div><strong>No public share link</strong><small>External reviewers are recorded, not invited</small></div></div><div class="preview-check"><span class="check-icon check-icon--warn">!</span><div><strong>Content note visible</strong><small>2 categories + free text</small></div></div><div class="preview-check"><span class="check-icon check-icon--ok">✓</span><div><strong>Visibility gate</strong><small>Story published + collection published</small></div></div><div class="preview-check"><span class="check-icon check-icon--note">i</span><div><strong>Rights line</strong><small>Produced by YTCI Coastal Unit · Reviewed Aug 2026</small></div></div><div class="preview-material"><span class="eyebrow">Material changes in this revision</span><p>English audio replaced · English transcript updated · Kiswahili unchanged</p></div><div class="preview-foot"><button type="button" class="btn btn-outline btn-sm" id="closePreview2">Back to editor</button></div></aside>
+    </div>
+  </div>
+
+  <!-- DIALOGS -->
+  <div class="modal-backdrop" id="dialogBackdrop" hidden></div>
+  <div class="dialog" id="actionDialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle" hidden>
+    <div class="dialog-head"><h3 id="dialogTitle">Confirm</h3><button type="button" class="icon-btn" id="closeDialog" aria-label="Close dialog"><svg class="icon"><use href="#i-x"/></svg></button></div>
+    <p class="dialog-copy" id="dialogCopy"></p>
+    <div id="dialogExtra" hidden><label class="field"><span>Publish at (EAT)</span><input type="datetime-local" id="dialogScheduleAt" value="2026-11-17T09:00" /></label></div>
+    <label class="field" id="dialogReasonWrap"><span>Reason</span><textarea id="dialogReason" rows="3" placeholder="Record the reason for the audit trail"></textarea></label>
+    <div class="dialog-actions"><button type="button" class="btn btn-outline" id="dialogCancel">Cancel</button><button type="button" class="btn btn-primary" id="dialogConfirm">Confirm</button></div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<script src="./audio-stories-admin.js"></script>
+</body>
+</html>
