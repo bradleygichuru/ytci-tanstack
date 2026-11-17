@@ -182,3 +182,28 @@ export const audioStoryEvents = pgTable("audio_story_events", {
   index("audio_story_events_story_idx").on(table.storyId, table.createdAt),
   index("audio_story_events_revision_idx").on(table.revisionId, table.createdAt),
 ]);
+
+// ── Listener state (saved stories and playback progress) ──
+export const audioStorySaves = pgTable("audio_story_saves", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  storyId: uuid("story_id").notNull().references(() => audioStories.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("audio_story_saves_user_story_unique").on(table.userId, table.storyId),
+  index("audio_story_saves_user_idx").on(table.userId, table.createdAt),
+]);
+
+export const audioStoryProgress = pgTable("audio_story_progress", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  storyId: uuid("story_id").notNull().references(() => audioStories.id, { onDelete: "cascade" }),
+  positionSeconds: integer("position_seconds").default(0).notNull(),
+  durationSeconds: integer("duration_seconds").default(0).notNull(),
+  language: text("language"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("audio_story_progress_user_story_unique").on(table.userId, table.storyId),
+  index("audio_story_progress_user_idx").on(table.userId, table.updatedAt),
+]);
