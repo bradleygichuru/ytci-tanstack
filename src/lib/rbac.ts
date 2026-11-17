@@ -12,6 +12,11 @@ export const ac = createAccessControl({
   user: ["read", "create", "edit", "delete", "publish", "assign-role", "suspend-user", "update", "set-role", "ban", "get", "list"],
   challenges: ["read", "create", "edit", "delete", "publish"],
   comments: ["read", "create", "edit", "delete", "publish"],
+  thenNow: [
+    "read", "create", "edit", "submit", "review", "publish", "unpublish",
+    "archive", "revoke", "manage_rights", "assign_reviewer",
+    "override_separation", "manage_recognition", "hard_delete_draft",
+  ],
 });
 
 export const roles = {
@@ -27,6 +32,11 @@ export const roles = {
     user: ["read", "create", "edit", "delete", "publish", "assign-role", "suspend-user", "update", "set-role", "ban", "get", "list"],
     challenges: ["read", "create", "edit", "delete", "publish"],
     comments: ["read", "create", "edit", "delete", "publish"],
+    thenNow: [
+      "read", "create", "edit", "submit", "review", "publish", "unpublish",
+      "archive", "revoke", "manage_rights", "assign_reviewer",
+      "override_separation", "manage_recognition", "hard_delete_draft",
+    ],
   }),
   administrator: ac.newRole({
     analytics: ["read", "create", "edit", "delete", "publish"],
@@ -40,11 +50,19 @@ export const roles = {
     user: ["read", "create", "edit", "delete", "publish", "update", "get", "list"],
     challenges: ["read", "create", "edit", "delete", "publish"],
     comments: ["read", "create", "edit", "delete", "publish"],
+    thenNow: [
+      "read", "create", "edit", "submit", "review", "publish", "unpublish",
+      "manage_rights", "assign_reviewer", "hard_delete_draft",
+    ],
+  }),
+  content_editor: ac.newRole({
+    thenNow: ["read", "create", "edit", "submit"],
   }),
   moderator: ac.newRole({
     analytics: ["read"],
     media: ["read", "edit", "delete", "publish"],
     comments: ["read", "delete"],
+    thenNow: ["read"],
   }),
   county_officer: ac.newRole({
     destinations: ["read", "create", "edit"],

@@ -111,11 +111,12 @@ describe('toUserItem', () => {
 })
 
 describe('getValidRoles', () => {
-  it('returns the five admin roles', () => {
+  it('returns the six admin roles, including the Then & Now content editor', () => {
     const roles = getValidRoles()
-    expect(roles).toHaveLength(5)
+    expect(roles).toHaveLength(6)
     expect(roles).toContain('super_admin')
     expect(roles).toContain('administrator')
+    expect(roles).toContain('content_editor')
     expect(roles).toContain('moderator')
     expect(roles).toContain('county_officer')
     expect(roles).toContain('user')
