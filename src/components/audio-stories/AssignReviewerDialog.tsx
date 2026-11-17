@@ -70,10 +70,13 @@ export function AssignReviewerDialog({
     let cancelled = false
     setLoading(true)
     setLoadError(null)
-    Promise.all([
-      api.users.list({ role: 'administrator', limit: 100 }),
-      api.users.list({ role: 'super_admin', limit: 100 }),
-    ])
+    const loadRole = (role: string) =>
+      fetch(`/api/admin/users/list?role=${role}&limit=100`, { credentials: 'same-origin' })
+        .then(async (response) => {
+          if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error ?? 'Failed to load reviewers')
+          return response.json() as Promise<{ users: UserItem[] }>
+        })
+    Promise.all([loadRole('administrator'), loadRole('super_admin')])
       .then(([administrators, superAdmins]) => {
         if (cancelled) return
         const excluded = new Set(excludedKey ? excludedKey.split('|') : [])

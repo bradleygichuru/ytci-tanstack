@@ -167,7 +167,7 @@ export const audioStoryReviews = pgTable("audio_story_reviews", {
 // ── Append-only audit events ──
 export const audioStoryEvents = pgTable("audio_story_events", {
   id: uuid("id").defaultRandom().primaryKey(),
-  storyId: uuid("story_id").notNull(),
+  storyId: uuid("story_id"),
   revisionId: uuid("revision_id"),
   trackId: uuid("track_id"),
   collectionId: uuid("collection_id"),
