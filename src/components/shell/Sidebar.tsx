@@ -99,7 +99,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
                       asChild
-                      isActive={location.pathname === item.path}
+                      isActive={location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)}
                       tooltip={item.label}
                       className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                     >

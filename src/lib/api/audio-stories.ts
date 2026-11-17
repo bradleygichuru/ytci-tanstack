@@ -254,14 +254,117 @@ export interface UpdateTrackInput {
   bitrateKbps?: number
 }
 
+export type CollectionStatus = 'draft' | 'scheduled' | 'published' | 'unpublished' | 'archived'
+
 export interface AudioStoryCollection {
   id: string
   slug: string
   title: string
   description: string
-  status: 'draft' | 'scheduled' | 'published' | 'unpublished' | 'archived'
+  status: CollectionStatus
   displayOrder: number
   featured: boolean
+  coverMediaId?: string
+  coverObjectKey?: string
+  publishAt?: string
+  publishedAt?: string
+  storyCount?: number
+  publishedStoryCount?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface AudioCollectionDetail {
+  collection: AudioStoryCollection
+  stories: AudioStory[]
+}
+
+export interface CreateAudioStoryCollectionInput {
+  slug: string
+  title: string
+  description: string
+  coverMediaId?: string
+}
+
+export interface UpdateAudioStoryCollectionInput {
+  title?: string
+  description?: string
+  coverMediaId?: string
+  displayOrder?: number
+  featured?: boolean
+}
+
+export type ReviewQueueFilter = 'all' | 'unassigned' | 'mine' | 'sensitive' | 'restricted'
+export type ReviewDecision = 'approve' | 'request_changes' | 'reject'
+
+export interface AudioReviewQueueItem {
+  storyId: string
+  storyTitle: string
+  revisionId: string
+  riskTier: RiskTier
+  submittedAt?: string
+  assignedReviewerId?: string
+  assignedReviewerName?: string
+  secondReviewerId?: string
+  secondReviewerName?: string
+  languages: Language[]
+  collectionTitle?: string
+}
+
+export interface AudioReviewQueueCounts {
+  unassigned: number
+  mine: number
+  sensitive: number
+  restricted: number
+}
+
+export interface AudioReviewQueueResponse {
+  items: AudioReviewQueueItem[]
+  counts: AudioReviewQueueCounts
+}
+
+export interface AudioRevisionReview {
+  id: string
+  reviewerId?: string
+  reviewerName?: string
+  externalReviewerName?: string
+  externalReviewerAffiliation?: string
+  decision: ReviewDecision
+  riskTier: RiskTier
+  notes?: string
+  createdAt: string
+}
+
+export interface AudioRevisionReviews {
+  items: AudioRevisionReview[]
+  approvals: number
+  requiredApprovals: number
+}
+
+export interface AssignReviewerInput {
+  reviewerId: string
+  secondReviewerId?: string
+  reason?: string
+}
+
+export interface ReviewDecisionInput {
+  decision: ReviewDecision
+  notes?: string
+  externalReviewerName?: string
+  externalReviewerAffiliation?: string
+}
+
+export interface AudioReviewActionResult {
+  status?: string
+  needsSecondReviewer?: boolean
+  approvals?: number
+  requiredApprovals?: number
+}
+
+export interface AudioPublishActionResult {
+  status?: string
+  contentVersion?: number
+  publishAt?: string
 }
 
 export interface AudioStoryListParams {
@@ -275,6 +378,54 @@ export function audioStoriesApi(config: ApiConfig) {
   return {
     listCollections: () =>
       apiRequest<{ items: AudioStoryCollection[] }>(config, '/v1/audio-story-collections'),
+
+    getCollection: (id: string) =>
+      apiRequest<AudioCollectionDetail>(config, `/v1/audio-story-collections/${id}`),
+
+    createCollection: (body: CreateAudioStoryCollectionInput) =>
+      apiRequest<{ id: string; slug: string; status: string }>(config, '/v1/audio-story-collections', {
+        method: 'POST',
+        body,
+      }),
+
+    updateCollection: (id: string, body: UpdateAudioStoryCollectionInput) =>
+      apiRequest<{ status: string; updatedAt?: string }>(config, `/v1/audio-story-collections/${id}`, {
+        method: 'PATCH',
+        body,
+      }),
+
+    setCollectionStories: (id: string, storyIds: string[]) =>
+      apiRequest<{ status: string }>(config, `/v1/audio-story-collections/${id}/stories`, {
+        method: 'POST',
+        body: { storyIds },
+      }),
+
+    publishCollection: (id: string) =>
+      apiRequest<{ status: string }>(config, `/v1/audio-story-collections/${id}/publish`, {
+        method: 'POST',
+      }),
+
+    scheduleCollection: (id: string, publishAt: string) =>
+      apiRequest<{ status: string; publishAt?: string }>(
+        config,
+        `/v1/audio-story-collections/${id}/schedule`,
+        { method: 'POST', body: { publishAt } },
+      ),
+
+    unpublishCollection: (id: string, reason: string) =>
+      apiRequest<{ status: string }>(config, `/v1/audio-story-collections/${id}/unpublish`, {
+        method: 'POST',
+        body: { reason },
+      }),
+
+    archiveCollection: (id: string, reason: string) =>
+      apiRequest<{ status: string }>(config, `/v1/audio-story-collections/${id}/archive`, {
+        method: 'POST',
+        body: { reason },
+      }),
+
+    deleteCollection: (id: string) =>
+      apiRequest<void>(config, `/v1/audio-story-collections/${id}`, { method: 'DELETE' }),
 
     list: (params?: AudioStoryListParams) =>
       apiRequest<{ items: AudioStory[] }>(config, '/v1/audio-stories', { params }),
@@ -321,6 +472,88 @@ export function audioStoriesApi(config: ApiConfig) {
 
     submit: (id: string, revisionId: string) =>
       apiRequest<{ status: string }>(config, `/v1/audio-stories/${id}/revisions/${revisionId}/submit`, {
+        method: 'POST',
+      }),
+
+    withdraw: (id: string, revisionId: string, reason: string) =>
+      apiRequest<AudioReviewActionResult>(config, `/v1/audio-stories/${id}/revisions/${revisionId}/withdraw`, {
+        method: 'POST',
+        body: { reason },
+      }),
+
+    reviewQueue: (status: ReviewQueueFilter = 'all') =>
+      apiRequest<AudioReviewQueueResponse>(config, '/v1/audio-stories/review-queue', {
+        params: { status },
+      }),
+
+    reviews: (id: string, revisionId: string) =>
+      apiRequest<AudioRevisionReviews>(
+        config,
+        `/v1/audio-stories/${id}/revisions/${revisionId}/reviews`,
+      ),
+
+    assignReviewer: (id: string, revisionId: string, body: AssignReviewerInput) =>
+      apiRequest<AudioReviewActionResult>(config, `/v1/audio-stories/${id}/revisions/${revisionId}/assign`, {
+        method: 'POST',
+        body,
+      }),
+
+    recuse: (id: string, revisionId: string, reason: string) =>
+      apiRequest<AudioReviewActionResult>(config, `/v1/audio-stories/${id}/revisions/${revisionId}/recuse`, {
+        method: 'POST',
+        body: { reason },
+      }),
+
+    review: (id: string, revisionId: string, body: ReviewDecisionInput) =>
+      apiRequest<AudioReviewActionResult>(config, `/v1/audio-stories/${id}/revisions/${revisionId}/review`, {
+        method: 'POST',
+        body,
+      }),
+
+    publishRevision: (id: string, revisionId: string) =>
+      apiRequest<AudioPublishActionResult>(config, `/v1/audio-stories/${id}/revisions/${revisionId}/publish`, {
+        method: 'POST',
+      }),
+
+    scheduleRevision: (id: string, revisionId: string, publishAt: string) =>
+      apiRequest<AudioPublishActionResult>(
+        config,
+        `/v1/audio-stories/${id}/revisions/${revisionId}/schedule`,
+        { method: 'POST', body: { publishAt } },
+      ),
+
+    cancelSchedule: (id: string, revisionId: string, reason: string) =>
+      apiRequest<AudioPublishActionResult>(
+        config,
+        `/v1/audio-stories/${id}/revisions/${revisionId}/cancel-schedule`,
+        { method: 'POST', body: { reason } },
+      ),
+
+    unpublish: (id: string, reason: string) =>
+      apiRequest<AudioPublishActionResult>(config, `/v1/audio-stories/${id}/unpublish`, {
+        method: 'POST',
+        body: { reason },
+      }),
+
+    republish: (id: string) =>
+      apiRequest<AudioPublishActionResult>(config, `/v1/audio-stories/${id}/republish`, {
+        method: 'POST',
+      }),
+
+    archive: (id: string, reason: string) =>
+      apiRequest<AudioPublishActionResult>(config, `/v1/audio-stories/${id}/archive`, {
+        method: 'POST',
+        body: { reason },
+      }),
+
+    revoke: (id: string, reason: string, evidenceReference: string) =>
+      apiRequest<AudioPublishActionResult>(config, `/v1/audio-stories/${id}/revoke`, {
+        method: 'POST',
+        body: { reason, evidenceReference },
+      }),
+
+    restore: (id: string) =>
+      apiRequest<{ revisionId: string; status: string }>(config, `/v1/audio-stories/${id}/restore`, {
         method: 'POST',
       }),
 

@@ -1,5 +1,5 @@
 import { Badge } from '#/components/ui/badge'
-import type { Language, RevisionStatus, RiskTier, StoryStatus } from '#/lib/api/audio-stories'
+import type { CollectionStatus, Language, RevisionStatus, RiskTier, StoryStatus } from '#/lib/api/audio-stories'
 
 const storyLabels: Record<StoryStatus, string> = {
   draft: 'Draft',
@@ -60,6 +60,30 @@ export function RevisionStatusBadge({ status }: { status?: RevisionStatus }) {
   return (
     <Badge variant="outline" className={`rounded-full font-semibold ${revisionStyles[status]}`}>
       {revisionLabels[status]}
+    </Badge>
+  )
+}
+
+const collectionLabels: Record<CollectionStatus, string> = {
+  draft: 'Draft',
+  scheduled: 'Scheduled',
+  published: 'Published',
+  unpublished: 'Unpublished',
+  archived: 'Archived',
+}
+
+const collectionStyles: Record<CollectionStatus, string> = {
+  draft: 'bg-muted text-muted-foreground border-[var(--outline-muted)]',
+  scheduled: 'bg-primary/10 text-primary border-primary',
+  published: 'bg-[var(--leaf-bg)] text-[var(--success-leaf)] border-[var(--success-leaf)]',
+  unpublished: 'bg-muted text-muted-foreground border-[var(--outline-muted)]',
+  archived: 'bg-muted text-muted-foreground border-[var(--outline-muted)]',
+}
+
+export function CollectionStatusBadge({ status }: { status: CollectionStatus }) {
+  return (
+    <Badge variant="outline" className={`rounded-full font-semibold ${collectionStyles[status]}`}>
+      {collectionLabels[status]}
     </Badge>
   )
 }

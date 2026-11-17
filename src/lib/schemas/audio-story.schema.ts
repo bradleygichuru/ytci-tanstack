@@ -176,6 +176,156 @@ export type AudioTrackInput = z.infer<typeof audioTrackSchema>
 export type AudioTranscriptInput = z.infer<typeof audioTranscriptSchema>
 export type AudioRightsInput = z.infer<typeof audioRightsSchema>
 
+export const reviewDecisionSchema = z
+  .object({
+    decision: z.enum(['approve', 'request_changes', 'reject']),
+    notes: z.string().trim().max(4000, 'Review notes are too long').optional(),
+    externalReviewerName: z.string().trim().max(200, 'External reviewer name is too long').optional(),
+    externalReviewerAffiliation: z.string().trim().max(200, 'Affiliation is too long').optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.decision !== 'approve' && !value.notes) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['notes'],
+        message: value.decision === 'request_changes'
+          ? 'Explain what the author must change'
+          : 'Record why this revision is being rejected',
+      })
+    }
+    if (!value.externalReviewerName && value.externalReviewerAffiliation) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['externalReviewerName'],
+        message: 'Add the external reviewer name with the affiliation',
+      })
+    }
+  })
+
+export const reviewAssignmentSchema = z
+  .object({
+    reviewerId: requiredText('Choose a reviewer'),
+    secondReviewerId: z.string().trim().optional(),
+    reason: z.string().trim().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.secondReviewerId && value.secondReviewerId === value.reviewerId) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['secondReviewerId'],
+        message: 'The second reviewer must be a different person',
+      })
+    }
+  })
+
+export const audioScheduleSchema = z
+  .object({
+    publishAt: z
+      .string()
+      .trim()
+      .min(1, 'Choose a publish date and time')
+      .refine((value) => !Number.isNaN(Date.parse(value)), 'Enter a valid date and time'),
+  })
+  .superRefine((value, ctx) => {
+    const time = Date.parse(value.publishAt)
+    if (!Number.isNaN(time) && time <= Date.now()) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['publishAt'],
+        message: 'Schedule a time in the future',
+      })
+    }
+  })
+
+export const audioReasonSchema = z.object({
+  reason: requiredText('A reason is required'),
+})
+
+export const audioRevokeSchema = z.object({
+  reason: requiredText('A reason is required'),
+  evidenceReference: requiredText('Cite the evidence for revocation'),
+})
+
+export const audioCollectionCreateSchema = z.object({
+  slug: slugSchema,
+  title: requiredText('Title is required'),
+  description: z.string().trim().max(1000, 'Description is too long').optional(),
+  coverMediaId: z.string().trim().optional(),
+})
+
+export const audioCollectionUpdateSchema = z.object({
+  title: requiredText('Title is required'),
+  description: z.string().trim().max(1000, 'Description is too long').optional(),
+  displayOrder: z.number().int().min(0, 'Order cannot be negative'),
+  featured: z.boolean(),
+  coverMediaId: z.string().trim().optional(),
+})
+
+export const audioCollectionStoriesSchema = z.object({
+  storyIds: z.array(z.string().min(1)).refine(
+    (ids) => new Set(ids).size === ids.length,
+    'A story can only appear once in a collection',
+  ),
+})
+
+export type ReviewDecisionInput = z.infer<typeof reviewDecisionSchema>
+export type ReviewAssignmentInput = z.infer<typeof reviewAssignmentSchema>
+export type AudioScheduleInput = z.infer<typeof audioScheduleSchema>
+export type AudioCollectionCreateInput = z.infer<typeof audioCollectionCreateSchema>
+export type AudioCollectionUpdateInput = z.infer<typeof audioCollectionUpdateSchema>
+
+const EAT_TIME_ZONE = 'Africa/Nairobi'
+
+function eatParts(value: string): Record<string, string> {
+  const date = new Date(value)
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: EAT_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date)
+  return Object.fromEntries(parts.map((part) => [part.type, part.value]))
+}
+
+/** Render an instant in East Africa Time, e.g. `17 Nov 2026, 14:30 EAT`. */
+export function formatEatDateTime(value?: string): string {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '—'
+  return `${date.toLocaleString('en-GB', {
+    timeZone: EAT_TIME_ZONE,
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })} EAT`
+}
+
+/** Convert an instant to a `datetime-local` value in East Africa Time. */
+export function toEatDateTimeInput(value?: string): string {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const parts = eatParts(date.toISOString())
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`
+}
+
+/** Convert a `datetime-local` value entered as EAT into RFC3339. */
+export function eatDateTimeToIso(value: string): string | undefined {
+  const trimmed = value.trim()
+  if (!trimmed) return undefined
+  const normalized = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(trimmed) ? `${trimmed}:00` : trimmed
+  const date = new Date(`${normalized}+03:00`)
+  if (Number.isNaN(date.getTime())) return undefined
+  return date.toISOString()
+}
+
+
 export function fieldErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {}
   for (const issue of error.issues) {

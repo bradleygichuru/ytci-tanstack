@@ -29,6 +29,8 @@ import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedAudioStoriesStoryIdRouteImport } from './routes/_authenticated/audio-stories_.$storyId'
+import { Route as AuthenticatedAudioStoriesCollectionsRouteImport } from './routes/_authenticated/audio-stories_.collections'
+import { Route as AuthenticatedAudioStoriesReviewRouteImport } from './routes/_authenticated/audio-stories_.review'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAdminUsersSplatRouteImport } from './routes/api/admin/users/$'
 
@@ -135,6 +137,18 @@ const AuthenticatedAudioStoriesStoryIdRoute =
     path: '/audio-stories/$storyId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAudioStoriesCollectionsRoute =
+  AuthenticatedAudioStoriesCollectionsRouteImport.update({
+    id: '/audio-stories_/collections',
+    path: '/audio-stories/collections',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAudioStoriesReviewRoute =
+  AuthenticatedAudioStoriesReviewRouteImport.update({
+    id: '/audio-stories_/review',
+    path: '/audio-stories/review',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -166,6 +180,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/audio-stories/$storyId': typeof AuthenticatedAudioStoriesStoryIdRoute
+  '/audio-stories/collections': typeof AuthenticatedAudioStoriesCollectionsRoute
+  '/audio-stories/review': typeof AuthenticatedAudioStoriesReviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
 }
@@ -189,6 +205,8 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/audio-stories/$storyId': typeof AuthenticatedAudioStoriesStoryIdRoute
+  '/audio-stories/collections': typeof AuthenticatedAudioStoriesCollectionsRoute
+  '/audio-stories/review': typeof AuthenticatedAudioStoriesReviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
 }
@@ -214,6 +232,8 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/audio-stories_/$storyId': typeof AuthenticatedAudioStoriesStoryIdRoute
+  '/_authenticated/audio-stories_/collections': typeof AuthenticatedAudioStoriesCollectionsRoute
+  '/_authenticated/audio-stories_/review': typeof AuthenticatedAudioStoriesReviewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
 }
@@ -239,6 +259,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/audio-stories/$storyId'
+    | '/audio-stories/collections'
+    | '/audio-stories/review'
     | '/api/auth/$'
     | '/api/admin/users/$'
   fileRoutesByTo: FileRoutesByTo
@@ -262,6 +284,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/audio-stories/$storyId'
+    | '/audio-stories/collections'
+    | '/audio-stories/review'
     | '/api/auth/$'
     | '/api/admin/users/$'
   id:
@@ -286,6 +310,8 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/users'
     | '/_authenticated/audio-stories_/$storyId'
+    | '/_authenticated/audio-stories_/collections'
+    | '/_authenticated/audio-stories_/review'
     | '/api/auth/$'
     | '/api/admin/users/$'
   fileRoutesById: FileRoutesById
@@ -443,6 +469,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAudioStoriesStoryIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/audio-stories_/collections': {
+      id: '/_authenticated/audio-stories_/collections'
+      path: '/audio-stories/collections'
+      fullPath: '/audio-stories/collections'
+      preLoaderRoute: typeof AuthenticatedAudioStoriesCollectionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/audio-stories_/review': {
+      id: '/_authenticated/audio-stories_/review'
+      path: '/audio-stories/review'
+      fullPath: '/audio-stories/review'
+      preLoaderRoute: typeof AuthenticatedAudioStoriesReviewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -475,6 +515,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedAudioStoriesStoryIdRoute: typeof AuthenticatedAudioStoriesStoryIdRoute
+  AuthenticatedAudioStoriesCollectionsRoute: typeof AuthenticatedAudioStoriesCollectionsRoute
+  AuthenticatedAudioStoriesReviewRoute: typeof AuthenticatedAudioStoriesReviewRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -492,6 +534,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedAudioStoriesStoryIdRoute: AuthenticatedAudioStoriesStoryIdRoute,
+  AuthenticatedAudioStoriesCollectionsRoute:
+    AuthenticatedAudioStoriesCollectionsRoute,
+  AuthenticatedAudioStoriesReviewRoute: AuthenticatedAudioStoriesReviewRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

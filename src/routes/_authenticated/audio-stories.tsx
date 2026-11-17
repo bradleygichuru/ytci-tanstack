@@ -23,6 +23,7 @@ import {
   formatDate,
   formatRelative,
 } from '#/components/audio-stories/badges'
+import { AudioStoryTabs } from '#/components/audio-stories/AudioStoryTabs'
 import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
 import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { Button } from '#/components/ui/button'
@@ -246,6 +247,8 @@ function AudioStoriesPage() {
           </Button>
         )}
       </div>
+
+      <AudioStoryTabs />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative min-w-[220px] flex-1">

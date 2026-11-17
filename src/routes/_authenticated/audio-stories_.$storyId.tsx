@@ -1,12 +1,18 @@
 import { createFileRoute, redirect, Link, useBlocker, useRouteContext } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { toast } from 'sonner'
 import {
   ArrowLeft, ArrowClockwise, CheckCircle, Warning, Info, Lock, Plus, Trash,
   FloppyDisk, PaperPlaneTilt, Waveform, Play, UploadSimple,
+  UserPlus, UserMinus, SealCheck, XCircle, CalendarBlank, EyeSlash, Eye,
+  Archive, Prohibit, ArrowCounterClockwise,
 } from '@phosphor-icons/react'
 import { requirePermission } from '#/lib/authz'
-import { canAudioStory } from '#/lib/audio-story-permissions'
+import {
+  canAudioStory, canModerateAudioStories, canPublishAudioStories,
+  canArchiveAudioStories, canRevokeAudioStories, canRestoreAudioStories,
+} from '#/lib/audio-story-permissions'
 import { useApi } from '#/lib/api/use-api'
 import { ApiErrorResponse } from '#/lib/api/types'
 import {
@@ -14,17 +20,23 @@ import {
   CONTENT_NOTE_CATEGORIES, CONTENT_NOTE_LABELS,
 } from '#/lib/api/audio-stories'
 import type {
-  AudioReadiness, AudioRevision, AudioStory, AudioStoryCollection, AudioStoryEvent,
-  AudioTheme, AudioTrack, Language, RevisionStatus, RightsBasis, RiskTier, StoredRightsBasis, TranscriptParagraph,
+  AudioReadiness, AudioRevision, AudioRevisionReviews, AudioStory, AudioStoryCollection, AudioStoryEvent,
+  AudioTheme, AudioTrack, Language, ReviewDecision, RevisionStatus, RightsBasis, RiskTier,
+  StoredRightsBasis, TranscriptParagraph, AssignReviewerInput,
 } from '#/lib/api/audio-stories'
 import {
   audioRightsSchema, audioStoryDetailsSchema, audioTrackSchema, audioTranscriptSchema,
-  fieldErrors, formatCue, formatDuration, parseCue,
+  fieldErrors, formatCue, formatDuration, parseCue, formatEatDateTime,
 } from '#/lib/schemas/audio-story.schema'
 import {
   RevisionStatusBadge, RiskBadge, StoryStatusBadge, formatDate, formatRelative,
 } from '#/components/audio-stories/badges'
+import { AssignReviewerDialog } from '#/components/audio-stories/AssignReviewerDialog'
+import { ReviewDecisionDialog } from '#/components/audio-stories/ReviewDecisionDialog'
+import { ScheduleDialog } from '#/components/audio-stories/ScheduleDialog'
+import { ReasonDialog } from '#/components/audio-stories/ReasonDialog'
 import { FormDatePicker, FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
+import { ConfirmDialog } from '#/components/shared/ConfirmDialog'
 import { MediaUpload } from '#/components/shared/MediaUpload'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
@@ -35,7 +47,14 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '#/components/ui/dialog'
 
+interface AudioStoryEditorSearch {
+  tab?: 'review'
+}
+
 export const Route = createFileRoute('/_authenticated/audio-stories_/$storyId')({
+  validateSearch: (search: Record<string, unknown>): AudioStoryEditorSearch => (
+    search.tab === 'review' ? { tab: 'review' } : {}
+  ),
   beforeLoad: ({ context }) => {
     try {
       requirePermission({ user: { role: context.user?.role ?? '' } }, 'audioStories', ['read'])
@@ -53,7 +72,9 @@ const TABS = [
   { key: 'rights', label: 'Rights & review' },
 ] as const
 
-type TabKey = (typeof TABS)[number]['key']
+const REVIEW_TAB = { key: 'review', label: 'Review & publish' } as const
+
+type TabKey = (typeof TABS)[number]['key'] | typeof REVIEW_TAB['key']
 
 interface StoryFormState {
   title: string
@@ -223,11 +244,18 @@ function transcriptValue(track: TrackDraft): string {
 
 function AudioStoryEditorPage() {
   const { storyId } = Route.useParams()
+  const { tab: initialTab } = Route.useSearch()
   const api = useApi()
   const context = useRouteContext({ from: '/_authenticated' })
   const role = context.user?.role
+  const userId = context.user?.id
   const canEdit = canAudioStory(role, 'edit')
   const canSubmit = canAudioStory(role, 'submit')
+  const canReview = canModerateAudioStories(role)
+  const canPublish = canPublishAudioStories(role)
+  const canArchive = canArchiveAudioStories(role)
+  const canRevoke = canRevokeAudioStories(role)
+  const canRestore = canRestoreAudioStories(role)
 
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -239,7 +267,10 @@ function AudioStoryEditorPage() {
   const [readiness, setReadiness] = useState<AudioReadiness | null>(null)
   const [readinessLoading, setReadinessLoading] = useState(false)
   const [audit, setAudit] = useState<AudioStoryEvent[]>([])
-  const [tab, setTab] = useState<TabKey>('story')
+  const [tab, setTab] = useState<TabKey>(() => (canReview && initialTab === 'review' ? 'review' : 'story'))
+  const [reviews, setReviews] = useState<AudioRevisionReviews | null>(null)
+  const [reviewsLoading, setReviewsLoading] = useState(false)
+  const [reviewsError, setReviewsError] = useState<string | null>(null)
   const [storyErrors, setStoryErrors] = useState<Record<string, string>>({})
   const [revisionErrors, setRevisionErrors] = useState<Record<string, string>>({})
   const [savingStory, setSavingStory] = useState(false)
@@ -258,12 +289,31 @@ function AudioStoryEditorPage() {
   const [removeTrack, setRemoveTrack] = useState<TrackDraft | null>(null)
   const [removeReason, setRemoveReason] = useState('')
   const [removing, setRemoving] = useState(false)
+  const [assignOpen, setAssignOpen] = useState(false)
+  const [assignSaving, setAssignSaving] = useState(false)
+  const [decision, setDecision] = useState<ReviewDecision | null>(null)
+  const [decisionSaving, setDecisionSaving] = useState(false)
+  const [withdrawOpen, setWithdrawOpen] = useState(false)
+  const [actionBusy, setActionBusy] = useState(false)
+  const [auditRefreshing, setAuditRefreshing] = useState(false)
+  const [publishOpen, setPublishOpen] = useState(false)
+  const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [cancelScheduleOpen, setCancelScheduleOpen] = useState(false)
+  const [unpublishOpen, setUnpublishOpen] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
+  const [revokeOpen, setRevokeOpen] = useState(false)
+  const [restoreOpen, setRestoreOpen] = useState(false)
+  const [republishOpen, setRepublishOpen] = useState(false)
+  const [recuseOpen, setRecuseOpen] = useState(false)
   const storySnapshot = useRef<string>('')
   const placementSnapshot = useRef<string>('')
   const rightsSnapshot = useRef<string>('')
 
   const revision = detail?.revision ?? null
   const story = detail?.story ?? null
+  const reviewRevision = detail?.revision ?? detail?.liveRevision ?? null
+  const visibleTabs = canReview ? [...TABS, REVIEW_TAB] : [...TABS]
+  const ownDecision = userId ? reviews?.items.find((item) => item.reviewerId === userId) : undefined
   const revisionEditable = revision?.status === 'draft'
   const publishedWithoutOpen = Boolean(story?.status === 'published' && !revision)
   const storyDirty = Boolean(storyFormState && storySnapshot.current && JSON.stringify(storyFormState) !== storySnapshot.current)
@@ -346,6 +396,42 @@ function AudioStoryEditorPage() {
       setReadinessLoading(false)
     }
   }, [api, storyId])
+
+  const loadReviews = useCallback(async (revisionId: string) => {
+    setReviewsLoading(true)
+    setReviewsError(null)
+    try {
+      setReviews(await api.audioStories.reviews(storyId, revisionId))
+    } catch (error) {
+      setReviews(null)
+      setReviewsError(errorMessage(error, 'Failed to load the review record'))
+    } finally {
+      setReviewsLoading(false)
+    }
+  }, [api, storyId])
+
+  useEffect(() => {
+    if (!canReview || !reviewRevision?.id) {
+      setReviews(null)
+      setReviewsError(null)
+      return
+    }
+    void loadReviews(reviewRevision.id)
+  }, [canReview, reviewRevision?.id, loadReviews])
+
+  const refreshReviewData = async () => {
+    setAuditRefreshing(true)
+    try {
+      const auditResponse = await api.audioStories.audit(storyId)
+      setAudit(auditResponse.items)
+      if (reviewRevision?.id) await loadReviews(reviewRevision.id)
+      toast.success('Review history and audit refreshed')
+    } catch (error) {
+      toast.error(errorMessage(error, 'Failed to refresh the audit timeline'))
+    } finally {
+      setAuditRefreshing(false)
+    }
+  }
 
   const updateStoryField = <K extends keyof StoryFormState>(field: K, value: StoryFormState[K]) => {
     setStoryFormState((current) => (current ? { ...current, [field]: value } : current))
@@ -757,6 +843,210 @@ function AudioStoryEditorPage() {
     }
   }
 
+  const handleAssign = async (input: AssignReviewerInput): Promise<boolean> => {
+    if (!reviewRevision) return false
+    setAssignSaving(true)
+    try {
+      await api.audioStories.assignReviewer(storyId, reviewRevision.id, input)
+      toast.success(input.reason ? 'Reviewer reassigned. Existing decisions remain in the record.' : 'Reviewer assigned')
+      await load()
+      return true
+    } catch (error) {
+      showReviewActionError(error, 'Failed to assign the reviewer')
+      return false
+    } finally {
+      setAssignSaving(false)
+    }
+  }
+
+  const handleDecision = async (input: {
+    decision: ReviewDecision
+    notes?: string
+    externalReviewerName?: string
+    externalReviewerAffiliation?: string
+  }): Promise<boolean> => {
+    if (!reviewRevision) return false
+    setDecisionSaving(true)
+    try {
+      const result = await api.audioStories.review(storyId, reviewRevision.id, input)
+      if (result.needsSecondReviewer) {
+        toast.info('First approval recorded. A second distinct reviewer is required before this revision can be published.')
+      } else if (input.decision === 'approve') {
+        toast.success('Revision approved. It is ready to publish when readiness passes.')
+      } else if (input.decision === 'request_changes') {
+        toast.success('Changes requested. The revision is back in draft for the author.')
+      } else {
+        toast.success('Revision rejected and returned to draft.')
+      }
+      await load()
+      return true
+    } catch (error) {
+      showReviewActionError(error, 'Failed to record the review decision')
+      return false
+    } finally {
+      setDecisionSaving(false)
+    }
+  }
+
+  const handleRecuse = async ({ reason }: { reason: string }): Promise<boolean> => {
+    if (!reviewRevision) return false
+    setActionBusy(true)
+    try {
+      await api.audioStories.recuse(storyId, reviewRevision.id, reason)
+      toast.success('You have recused yourself from this review')
+      await load()
+      return true
+    } catch (error) {
+      showReviewActionError(error, 'Failed to recuse from the review')
+      return false
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const withdrawRevision = async ({ reason }: { reason: string }): Promise<boolean> => {
+    if (!revision) return false
+    setActionBusy(true)
+    try {
+      await api.audioStories.withdraw(storyId, revision.id, reason)
+      toast.success('Revision withdrawn from review and returned to draft')
+      await load()
+      return true
+    } catch (error) {
+      showReviewActionError(error, 'Failed to withdraw the revision')
+      return false
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const publishNow = async () => {
+    if (!revision) return
+    setActionBusy(true)
+    try {
+      const result = await api.audioStories.publishRevision(storyId, revision.id)
+      toast.success(result.contentVersion
+        ? `Published as content version v${result.contentVersion}`
+        : 'Revision published')
+      setPublishOpen(false)
+      await load()
+    } catch (error) {
+      showReviewActionError(error, 'Publishing failed')
+      if (error instanceof ApiErrorResponse && error.code === 'READINESS_BLOCKED') {
+        await refreshReadiness(revision.id)
+      }
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const scheduleRevision = async (publishAt: string): Promise<boolean> => {
+    if (!revision) return false
+    setActionBusy(true)
+    try {
+      await api.audioStories.scheduleRevision(storyId, revision.id, publishAt)
+      toast.success(`Publication scheduled for ${formatEatDateTime(publishAt)}`)
+      await load()
+      return true
+    } catch (error) {
+      showReviewActionError(error, 'Failed to schedule publication')
+      return false
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const cancelSchedule = async ({ reason }: { reason: string }): Promise<boolean> => {
+    if (!revision) return false
+    setActionBusy(true)
+    try {
+      await api.audioStories.cancelSchedule(storyId, revision.id, reason)
+      toast.success('Scheduled publication cancelled. The revision is approved and unpublished.')
+      await load()
+      return true
+    } catch (error) {
+      showReviewActionError(error, 'Failed to cancel the schedule')
+      return false
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const unpublishStory = async ({ reason }: { reason: string }): Promise<boolean> => {
+    setActionBusy(true)
+    try {
+      await api.audioStories.unpublish(storyId, reason)
+      toast.success('Story unpublished and hidden from the public site')
+      await load()
+      return true
+    } catch (error) {
+      showReviewActionError(error, 'Failed to unpublish the story')
+      return false
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const archiveStory = async ({ reason }: { reason: string }): Promise<boolean> => {
+    setActionBusy(true)
+    try {
+      await api.audioStories.archive(storyId, reason)
+      toast.success('Story archived')
+      await load()
+      return true
+    } catch (error) {
+      showReviewActionError(error, 'Failed to archive the story')
+      return false
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const revokeStory = async ({ reason, evidenceReference }: { reason: string; evidenceReference?: string }): Promise<boolean> => {
+    if (!evidenceReference) return false
+    setActionBusy(true)
+    try {
+      await api.audioStories.revoke(storyId, reason, evidenceReference)
+      toast.success('Story revoked. The live version is withdrawn from public access.')
+      await load()
+      return true
+    } catch (error) {
+      showReviewActionError(error, 'Failed to revoke the story')
+      return false
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const restoreStory = async () => {
+    setActionBusy(true)
+    try {
+      await api.audioStories.restore(storyId)
+      toast.success('Story restored. A new draft revision was cloned from the live version.')
+      setRestoreOpen(false)
+      setTab('story')
+      await load()
+    } catch (error) {
+      showReviewActionError(error, 'Failed to restore the story')
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
+  const republishStory = async () => {
+    setActionBusy(true)
+    try {
+      await api.audioStories.republish(storyId)
+      toast.success('Story republished')
+      setRepublishOpen(false)
+      await load()
+    } catch (error) {
+      showReviewActionError(error, 'Failed to republish the story')
+    } finally {
+      setActionBusy(false)
+    }
+  }
+
   const requestSaveStory = () => {
     if (story?.status === 'published') {
       setLiveSaveOpen(true)
@@ -883,6 +1173,12 @@ function AudioStoryEditorPage() {
               {!dirty && !readiness?.ready && <span className="text-[11px] text-muted-foreground">Blocked by readiness.</span>}
             </div>
           )}
+          {canSubmit && revision?.status === 'in_review' && (
+            <Button variant="outline" onClick={() => setWithdrawOpen(true)} disabled={actionBusy || conflict} className="rounded-full">
+              <XCircle className="h-4 w-4" />
+              Withdraw from review
+            </Button>
+          )}
         </div>
       </div>
 
@@ -956,7 +1252,7 @@ function AudioStoryEditorPage() {
             role="tablist"
             aria-label="Story editor sections"
             onKeyDown={(event) => {
-              const keys: TabKey[] = TABS.map((item) => item.key)
+              const keys: TabKey[] = visibleTabs.map((item) => item.key)
               const index = keys.indexOf(tab)
               let next: TabKey | undefined
               if (event.key === 'ArrowRight') next = keys[(index + 1) % keys.length]
@@ -969,7 +1265,7 @@ function AudioStoryEditorPage() {
               requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus())
             }}
           >
-            {TABS.map((item) => (
+            {visibleTabs.map((item) => (
               <button
                 key={item.key}
                 role="tab"
@@ -1359,6 +1655,282 @@ function AudioStoryEditorPage() {
               )}
             </div>
           </section>
+
+          {canReview && (
+            <section id="panel-review" role="tabpanel" aria-labelledby="tab-review" hidden={tab !== 'review'} className="space-y-4">
+              <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                  <SectionHead title="Review record" copy="Decisions are append-only and read-only once recorded." />
+                  <Button variant="outline" size="sm" onClick={() => void refreshReviewData()} disabled={auditRefreshing}>
+                    <ArrowClockwise className={`h-4 w-4 ${auditRefreshing ? 'animate-spin' : ''}`} />
+                    {auditRefreshing ? 'Refreshing…' : 'Refresh history'}
+                  </Button>
+                </div>
+
+                {!reviewRevision ? (
+                  <p className="text-sm text-muted-foreground">There is no revision to review yet.</p>
+                ) : (
+                  <>
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                      <ReviewMeta label="Revision" value={<RevisionStatusBadge status={reviewRevision.status} />} />
+                      <ReviewMeta label="Risk tier" value={<RiskBadge risk={reviewRevision.riskTier} />} />
+                      <ReviewMeta label="Submitted" value={formatDate(reviewRevision.submittedAt)} />
+                      <ReviewMeta label="Approved" value={formatDate(reviewRevision.approvedAt)} />
+                    </div>
+
+                    <div className="mt-4 rounded-lg border border-border bg-[var(--surface-2)] p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Assignment</p>
+                          <p className="mt-1 text-sm font-semibold text-foreground">
+                            {reviewRevision.assignedReviewerName || (reviewRevision.assignedReviewerId ? 'Reviewer assigned' : 'Awaiting reviewer assignment')}
+                          </p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {reviewRevision.secondReviewerId
+                              ? 'A second reviewer is also assigned.'
+                              : reviewRevision.riskTier === 'sensitive'
+                                ? 'Sensitive content needs two distinct approvals.'
+                                : 'Standard content needs one approval.'}
+                          </p>
+                        </div>
+                        {canReview && revision?.status === 'in_review' && (
+                          <div className="flex flex-wrap gap-2">
+                            <Button size="sm" variant="outline" onClick={() => setAssignOpen(true)}>
+                              <UserPlus className="h-4 w-4" />
+                              {reviewRevision.assignedReviewerId ? 'Reassign' : 'Assign reviewer'}
+                            </Button>
+                            {(reviewRevision.assignedReviewerId === userId || reviewRevision.secondReviewerId === userId) && (
+                              <Button size="sm" variant="ghost" onClick={() => setRecuseOpen(true)}>
+                                <UserMinus className="h-4 w-4" /> Recuse
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {reviewRevision.assignedReviewerId && reviewRevision.secondReviewerId && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Second reviewer: {reviewRevision.secondReviewerId}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-border px-4 py-3">
+                      <CheckCircle className="h-5 w-5 text-[var(--leaf)]" weight="fill" />
+                      <p className="text-sm text-foreground">
+                        <strong>{reviews?.approvals ?? 0} of {reviews?.requiredApprovals ?? (reviewRevision.riskTier === 'sensitive' ? 2 : 1)} required approvals</strong>
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          {reviewRevision.riskTier === 'restricted'
+                            ? 'Restricted material cannot be approved in this workflow.'
+                            : reviewRevision.riskTier === 'sensitive'
+                              ? 'Each approval must come from a distinct reviewer.'
+                              : 'One approval releases this revision for publishing.'}
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="mt-5">
+                      <h3 className="text-sm font-bold text-foreground">Decision history</h3>
+                      {reviewsLoading ? (
+                        <div className="mt-3 space-y-2">
+                          <Skeleton className="h-16 w-full" />
+                          <Skeleton className="h-16 w-full" />
+                        </div>
+                      ) : reviewsError ? (
+                        <div className="mt-3 rounded-lg border border-destructive/40 bg-[var(--error-container)] px-4 py-3" role="alert">
+                          <p className="text-sm text-destructive">{reviewsError}</p>
+                          <Button size="sm" variant="outline" className="mt-2" onClick={() => void loadReviews(reviewRevision.id)}>Retry</Button>
+                        </div>
+                      ) : !reviews || reviews.items.length === 0 ? (
+                        <p className="mt-2 text-sm text-muted-foreground">No decisions recorded for this revision yet.</p>
+                      ) : (
+                        <ol className="mt-3 space-y-3">
+                          {reviews.items.map((item) => (
+                            <li key={item.id} className="rounded-lg border border-border px-4 py-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <span className="text-sm font-semibold text-foreground">
+                                  {item.externalReviewerName
+                                    ? `${item.externalReviewerName}${item.externalReviewerAffiliation ? ` · ${item.externalReviewerAffiliation}` : ''}`
+                                    : item.reviewerName || 'Reviewer'}
+                                  {item.externalReviewerName && <span className="ml-1 text-xs font-normal text-muted-foreground">(external)</span>}
+                                </span>
+                                <DecisionBadge decision={item.decision} />
+                              </div>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {formatDate(item.createdAt)} · {formatRelative(item.createdAt)} · {item.riskTier} risk
+                              </p>
+                              {item.notes ? (
+                                <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">{item.notes}</p>
+                              ) : (
+                                <p className="mt-2 text-sm text-muted-foreground">No notes recorded.</p>
+                              )}
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </div>
+
+                    {revision?.status === 'in_review' && canReview && (
+                      <div className="mt-5 rounded-lg border border-border p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <h3 className="text-sm font-bold text-foreground">Record this reviewer’s decision</h3>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              Decisions lock when recorded. Notes are required for changes requested and rejections.
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => setDecision('approve')}
+                              disabled={Boolean(ownDecision) || reviewRevision.riskTier === 'restricted' || (Boolean(userId) && (reviewRevision.createdBy === userId || reviewRevision.attestedBy === userId))}
+                              title={reviewRevision.riskTier === 'restricted' ? 'Restricted material cannot be approved' : ownDecision ? 'You already recorded a decision' : undefined}
+                            >
+                              <SealCheck className="h-4 w-4" /> Approve
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setDecision('request_changes')} disabled={Boolean(ownDecision)}>
+                              <XCircle className="h-4 w-4" /> Request changes
+                            </Button>
+                            <Button size="sm" variant="destructive" onClick={() => setDecision('reject')} disabled={Boolean(ownDecision)}>
+                              <Prohibit className="h-4 w-4" /> Reject
+                            </Button>
+                          </div>
+                        </div>
+                        {ownDecision && (
+                          <p className="mt-3 rounded-md bg-[var(--surface-2)] px-3 py-2 text-xs text-muted-foreground">
+                            You already recorded <strong className="text-foreground">{DECISION_LABELS[ownDecision.decision]}</strong> on {formatDate(ownDecision.createdAt)}. Each reviewer records one decision per revision.
+                          </p>
+                        )}
+                        {reviewRevision.riskTier === 'restricted' && (
+                          <p className="mt-3 rounded-md bg-[var(--error-container)] px-3 py-2 text-xs text-destructive">
+                            Restricted content needs rights or legal action outside this workflow. Approval is blocked in the API.
+                          </p>
+                        )}
+                        {userId && (reviewRevision.createdBy === userId || reviewRevision.attestedBy === userId) && (
+                          <p className="mt-3 rounded-md bg-[var(--amber-bg)] px-3 py-2 text-xs text-[var(--amber-deep)]">
+                            Separation of duties: you uploaded or attested this revision, so another reviewer must decide.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {revision && revision.status !== 'in_review' && (
+                      <p className="mt-4 rounded-lg bg-[var(--surface-2)] px-4 py-3 text-xs text-muted-foreground">
+                        {revision.status === 'draft'
+                          ? 'This revision is in draft. Submit it for review before recording a decision.'
+                          : revision.status === 'approved'
+                            ? 'This revision is approved and waiting to be published.'
+                            : revision.status === 'scheduled'
+                              ? `Publication is scheduled for ${formatEatDateTime(revision.publishAt)}.`
+                              : revision.status === 'published'
+                                ? 'This is the live version. Its decision history is shown for the record.'
+                                : `This revision is ${revision.status}; decisions are closed.`}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {canPublish && (
+                <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+                  <SectionHead title="Publish & scheduling" copy="Publishing swaps the live version atomically after readiness passes." />
+                  <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-[var(--surface-2)] px-4 py-3">
+                    <Info className="h-4 w-4 text-muted-foreground" weight="fill" />
+                    <p className="text-xs text-muted-foreground">
+                      {readiness
+                        ? readiness.ready
+                          ? readiness.warnings.length
+                            ? `Ready with ${readiness.warnings.length} warning${readiness.warnings.length === 1 ? '' : 's'}.`
+                            : 'All readiness checks pass.'
+                          : `${readiness.blocking.length} blocking readiness item${readiness.blocking.length === 1 ? '' : 's'} must be resolved.`
+                        : 'Readiness is checked by the server before publishing.'}
+                    </p>
+                    <Button size="sm" variant="ghost" className="ml-auto" onClick={() => revision ? void refreshReadiness(revision.id) : undefined} disabled={!revision || readinessLoading}>
+                      <ArrowClockwise className={`h-4 w-4 ${readinessLoading ? 'animate-spin' : ''}`} /> Recheck
+                    </Button>
+                  </div>
+
+                  {revision?.status === 'approved' ? (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        onClick={() => setPublishOpen(true)}
+                        disabled={actionBusy || !readiness?.ready}
+                        title={!readiness?.ready ? 'Resolve blocking readiness items first' : undefined}
+                      >
+                        <SealCheck className="h-4 w-4" />
+                        Publish now
+                      </Button>
+                      <Button variant="outline" onClick={() => setScheduleOpen(true)} disabled={actionBusy || !readiness?.ready}>
+                        <CalendarBlank className="h-4 w-4" />
+                        Schedule publication
+                      </Button>
+                    </div>
+                  ) : revision?.status === 'scheduled' ? (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Badge variant="outline" className="rounded-full border-primary bg-primary/10 text-primary">
+                        Scheduled for {formatEatDateTime(revision.publishAt)}
+                      </Badge>
+                      <Button variant="outline" onClick={() => setCancelScheduleOpen(true)} disabled={actionBusy}>
+                        <XCircle className="h-4 w-4" /> Cancel schedule
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Publishing becomes available once a revision is approved. The server rechecks readiness, rights and collection state.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {(canPublish || canArchive || canRevoke || canRestore) && (
+                <div className="rounded-lg border border-border bg-card p-5" style={{ boxShadow: 'var(--card-shadow)' }}>
+                  <SectionHead title="Story lifecycle" copy="Story-level actions affect the live record, not just the open revision." />
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <StoryStatusBadge status={story?.status ?? 'draft'} />
+                    {story?.liveRevisionId && <span className="text-xs text-muted-foreground">Live revision attached</span>}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {canPublish && story && (story.status === 'published' || story.status === 'scheduled') && (
+                      <Button variant="outline" onClick={() => setUnpublishOpen(true)} disabled={actionBusy}>
+                        <EyeSlash className="h-4 w-4" /> Unpublish story
+                      </Button>
+                    )}
+                    {canPublish && story?.status === 'unpublished' && (
+                      <Button variant="outline" onClick={() => setRepublishOpen(true)} disabled={actionBusy}>
+                        <Eye className="h-4 w-4" /> Republish story
+                      </Button>
+                    )}
+                    {canArchive && story && story.status !== 'archived' && story.status !== 'revoked' && (
+                      <Button variant="outline" onClick={() => setArchiveOpen(true)} disabled={actionBusy}>
+                        <Archive className="h-4 w-4" /> Archive story
+                      </Button>
+                    )}
+                    {canRevoke && story && story.status !== 'revoked' && story.status !== 'archived' && (
+                      <Button variant="destructive" onClick={() => setRevokeOpen(true)} disabled={actionBusy}>
+                        <Prohibit className="h-4 w-4" /> Revoke story
+                      </Button>
+                    )}
+                    {canRestore && story?.status === 'revoked' && (
+                      <Button onClick={() => setRestoreOpen(true)} disabled={actionBusy}>
+                        <ArrowCounterClockwise className="h-4 w-4" /> Restore story
+                      </Button>
+                    )}
+                  </div>
+                  {story?.status === 'revoked' && (
+                    <p className="mt-3 rounded-md bg-[var(--error-container)] px-3 py-2 text-xs text-destructive">
+                      Revoked live content stays withdrawn. Restore creates a new draft revision cloned from the live version for a fresh review.
+                    </p>
+                  )}
+                  {story?.status === 'archived' && (
+                    <p className="mt-3 text-xs text-muted-foreground">Archived stories are read-only records in this admin.</p>
+                  )}
+                </div>
+              )}
+
+              <div className="rounded-lg border border-border px-4 py-3 text-xs text-muted-foreground">
+                <strong className="text-foreground">Separation of duties.</strong> The uploader and attester cannot review the same revision. Reassigning a reviewer changes decision authority; earlier decisions remain in the record. Every transition writes an audit event.
+              </div>
+            </section>
+          )}
         </div>
 
         <ReadinessRail
@@ -1484,6 +2056,158 @@ function AudioStoryEditorPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AssignReviewerDialog
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        storyTitle={storyFormState.title}
+        currentReviewerId={reviewRevision?.assignedReviewerId}
+        currentSecondReviewerId={reviewRevision?.secondReviewerId}
+        excludedUserIds={[reviewRevision?.createdBy, reviewRevision?.attestedBy].filter((id): id is string => Boolean(id))}
+        reassigning={Boolean(reviewRevision?.assignedReviewerId)}
+        saving={assignSaving}
+        onAssign={handleAssign}
+      />
+
+      <ReviewDecisionDialog
+        open={Boolean(decision)}
+        onOpenChange={(open) => { if (!open) setDecision(null) }}
+        decision={decision ?? 'approve'}
+        storyTitle={storyFormState.title}
+        riskTier={reviewRevision?.riskTier}
+        approvals={reviews?.approvals ?? 0}
+        requiredApprovals={reviews?.requiredApprovals ?? (reviewRevision?.riskTier === 'sensitive' ? 2 : 1)}
+        saving={decisionSaving}
+        onConfirm={handleDecision}
+      />
+
+      <ScheduleDialog
+        open={scheduleOpen}
+        onOpenChange={setScheduleOpen}
+        title="Schedule publication"
+        description={detail?.liveRevision
+          ? 'The approved revision publishes at the selected time. The live version stays public until then.'
+          : 'The approved revision publishes at the selected time. Nothing is public until then.'}
+        loading={actionBusy}
+        onSchedule={scheduleRevision}
+      />
+
+      <ReasonDialog
+        open={withdrawOpen}
+        onOpenChange={setWithdrawOpen}
+        title="Withdraw this revision from review?"
+        description="The revision returns to draft so you can make changes. The submission date stays in the audit history and the reviewer assignment is cleared."
+        confirmLabel="Withdraw revision"
+        reasonPlaceholder="Additional audio evidence is still required"
+        variant="destructive"
+        loading={actionBusy}
+        onConfirm={withdrawRevision}
+      />
+
+      <ReasonDialog
+        open={recuseOpen}
+        onOpenChange={setRecuseOpen}
+        title="Recuse yourself from this review?"
+        description="You will no longer be the assigned reviewer. The reason is written to the audit timeline and another reviewer can be assigned."
+        confirmLabel="Recuse from review"
+        reasonPlaceholder="Conflict of interest / previously involved in the production"
+        variant="destructive"
+        loading={actionBusy}
+        onConfirm={handleRecuse}
+      />
+
+      <ReasonDialog
+        open={cancelScheduleOpen}
+        onOpenChange={setCancelScheduleOpen}
+        title="Cancel scheduled publication?"
+        description="The revision returns to approved and the scheduled time is cleared. It stays unpublished until you publish or schedule again."
+        confirmLabel="Cancel schedule"
+        reasonPlaceholder="Editorial review reopened / schedule changed"
+        variant="destructive"
+        loading={actionBusy}
+        onConfirm={cancelSchedule}
+      />
+
+      <ReasonDialog
+        open={unpublishOpen}
+        onOpenChange={setUnpublishOpen}
+        title="Unpublish this story?"
+        description="The story is hidden from the public site immediately. The live revision is kept for a future republish and the reason is audited."
+        confirmLabel="Unpublish story"
+        reasonPlaceholder="Rights issue under review / factual correction required"
+        variant="destructive"
+        loading={actionBusy}
+        onConfirm={unpublishStory}
+      />
+
+      <ReasonDialog
+        open={archiveOpen}
+        onOpenChange={setArchiveOpen}
+        title="Archive this story?"
+        description="Archiving cancels any open revision and removes the story from public discovery. Only super admins can archive."
+        confirmLabel="Archive story"
+        reasonPlaceholder="Story retired / replaced by a new production"
+        variant="destructive"
+        loading={actionBusy}
+        onConfirm={archiveStory}
+      />
+
+      <ReasonDialog
+        open={revokeOpen}
+        onOpenChange={setRevokeOpen}
+        title="Revoke this story?"
+        description="Revocation withdraws the live version from public access and records the evidence for the decision. Only super admins can revoke."
+        confirmLabel="Revoke story"
+        reasonLabel="Revocation reason"
+        reasonPlaceholder="Consent withdrawn by narrator / legal takedown"
+        requireEvidence
+        evidenceLabel="Evidence reference"
+        evidencePlaceholder="Consent withdrawal letter ref. REL-2026-021"
+        variant="destructive"
+        loading={actionBusy}
+        onConfirm={revokeStory}
+      />
+
+      <ConfirmDialog
+        open={publishOpen}
+        onOpenChange={setPublishOpen}
+        title="Publish this revision?"
+        description={detail?.liveRevision
+          ? `The live version (v${detail.liveRevision.contentVersion}) will be superseded. The new revision becomes public immediately after the server rechecks rights, review and collection state.`
+          : 'The revision becomes the first public version after the server rechecks rights, review and collection state.'}
+        confirmLabel="Publish now"
+        cancelLabel="Cancel"
+        variant="default"
+        loading={actionBusy}
+        loadingLabel="Publishing…"
+        onConfirm={() => void publishNow()}
+      />
+
+      <ConfirmDialog
+        open={republishOpen}
+        onOpenChange={setRepublishOpen}
+        title="Republish this story?"
+        description="The story returns to public view using its existing live revision. The server checks that the collection is published and rights are current."
+        confirmLabel="Republish"
+        cancelLabel="Cancel"
+        variant="default"
+        loading={actionBusy}
+        loadingLabel="Republishing…"
+        onConfirm={() => void republishStory()}
+      />
+
+      <ConfirmDialog
+        open={restoreOpen}
+        onOpenChange={setRestoreOpen}
+        title="Restore this revoked story?"
+        description="A new draft revision is cloned from the live version for a fresh review. The story does not become public until that revision is approved and published."
+        confirmLabel="Restore as draft"
+        cancelLabel="Cancel"
+        variant="default"
+        loading={actionBusy}
+        loadingLabel="Restoring…"
+        onConfirm={() => void restoreStory()}
+      />
     </div>
   )
 }
@@ -1500,6 +2224,61 @@ function SectionHead({ title, copy }: { title: string; copy: string }) {
       <p className="mt-0.5 text-sm text-muted-foreground">{copy}</p>
     </div>
   )
+}
+
+function ReviewMeta({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="rounded-lg border border-border px-3 py-2">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+      <div className="mt-1 text-sm text-foreground">{value}</div>
+    </div>
+  )
+}
+
+const DECISION_LABELS: Record<ReviewDecision, string> = {
+  approve: 'Approved',
+  request_changes: 'Changes requested',
+  reject: 'Rejected',
+}
+
+const DECISION_STYLES: Record<ReviewDecision, string> = {
+  approve: 'border-[var(--success-leaf)] bg-[var(--leaf-bg)] text-[var(--success-leaf)]',
+  request_changes: 'border-[var(--amber-deep)] bg-[var(--amber-bg)] text-[var(--amber-deep)]',
+  reject: 'border-destructive bg-[var(--error-container)] text-destructive',
+}
+
+function DecisionBadge({ decision }: { decision: ReviewDecision }) {
+  return (
+    <Badge variant="outline" className={`rounded-full font-semibold ${DECISION_STYLES[decision]}`}>
+      {DECISION_LABELS[decision]}
+    </Badge>
+  )
+}
+
+function showReviewActionError(error: unknown, fallback: string) {
+  if (error instanceof ApiErrorResponse) {
+    if (error.code === 'SEPARATION_OF_DUTIES') {
+      toast.error('Separation of duties: the uploader or attester cannot review this revision.')
+      return
+    }
+    if (error.code === 'RESTRICTED_REVIEW') {
+      toast.error('Restricted material cannot be approved in this workflow.')
+      return
+    }
+    if (error.code === 'REVIEW_CONFLICT') {
+      toast.error('A decision has already been recorded by this reviewer for this revision.')
+      return
+    }
+    if (error.code === 'READINESS_BLOCKED') {
+      toast.error(error.message || 'Readiness checks block this action. Resolve the blocking items first.')
+      return
+    }
+    if (error.code === 'NOT_FOUND') {
+      toast.error('This story or revision no longer exists.')
+      return
+    }
+  }
+  toast.error(error instanceof Error ? error.message : fallback)
 }
 
 function ReadinessRail({

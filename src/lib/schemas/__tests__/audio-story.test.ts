@@ -6,6 +6,17 @@ import {
   audioStoryDetailsSchema,
   audioTrackSchema,
   audioTranscriptSchema,
+  reviewDecisionSchema,
+  reviewAssignmentSchema,
+  audioScheduleSchema,
+  audioReasonSchema,
+  audioRevokeSchema,
+  audioCollectionCreateSchema,
+  audioCollectionUpdateSchema,
+  audioCollectionStoriesSchema,
+  eatDateTimeToIso,
+  toEatDateTimeInput,
+  formatEatDateTime,
   formatCue,
   formatDuration,
   parseCue,
@@ -207,5 +218,91 @@ describe('cue helpers', () => {
     expect(formatCue(724)).toBe('12:04')
     expect(formatDuration(720)).toBe('12:00')
     expect(formatDuration(undefined)).toBe('—')
+  })
+})
+
+describe('reviewDecisionSchema', () => {
+  it('accepts an approval with optional notes', () => {
+    expect(reviewDecisionSchema.safeParse({ decision: 'approve' }).success).toBe(true)
+    expect(reviewDecisionSchema.safeParse({ decision: 'approve', notes: 'Careful handling of grief.' }).success).toBe(true)
+  })
+
+  it('requires notes for request changes and rejections', () => {
+    expect(reviewDecisionSchema.safeParse({ decision: 'request_changes' }).success).toBe(false)
+    expect(reviewDecisionSchema.safeParse({ decision: 'reject', notes: '   ' }).success).toBe(false)
+    expect(reviewDecisionSchema.safeParse({ decision: 'request_changes', notes: 'Replace the Kiswahili track.' }).success).toBe(true)
+  })
+
+  it('requires a name when an external affiliation is supplied', () => {
+    expect(reviewDecisionSchema.safeParse({
+      decision: 'approve',
+      externalReviewerAffiliation: 'Partner legal counsel',
+    }).success).toBe(false)
+    expect(reviewDecisionSchema.safeParse({
+      decision: 'approve',
+      externalReviewerName: 'Dr A. Otieno',
+      externalReviewerAffiliation: 'Partner legal counsel',
+    }).success).toBe(true)
+  })
+})
+
+describe('reviewAssignmentSchema', () => {
+  it('requires a primary reviewer and distinct second reviewer', () => {
+    expect(reviewAssignmentSchema.safeParse({ reviewerId: '' }).success).toBe(false)
+    expect(reviewAssignmentSchema.safeParse({ reviewerId: 'u-1', secondReviewerId: 'u-1' }).success).toBe(false)
+    expect(reviewAssignmentSchema.safeParse({ reviewerId: 'u-1', secondReviewerId: 'u-2' }).success).toBe(true)
+  })
+})
+
+describe('publish reason and schedule schemas', () => {
+  it('requires a reason for unpublish, archive and revoke', () => {
+    expect(audioReasonSchema.safeParse({ reason: '  ' }).success).toBe(false)
+    expect(audioReasonSchema.safeParse({ reason: 'Rights review' }).success).toBe(true)
+    expect(audioRevokeSchema.safeParse({ reason: 'Consent withdrawn' }).success).toBe(false)
+    expect(audioRevokeSchema.safeParse({ reason: 'Consent withdrawn', evidenceReference: 'REL-2026-021' }).success).toBe(true)
+  })
+
+  it('requires a future RFC3339 schedule time', () => {
+    const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    const past = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    expect(audioScheduleSchema.safeParse({ publishAt: future }).success).toBe(true)
+    expect(audioScheduleSchema.safeParse({ publishAt: past }).success).toBe(false)
+    expect(audioScheduleSchema.safeParse({ publishAt: 'not-a-date' }).success).toBe(false)
+  })
+
+  it('converts EAT datetime-local values to RFC3339 and back', () => {
+    expect(eatDateTimeToIso('2026-12-01T12:00')).toBe('2026-12-01T09:00:00.000Z')
+    expect(toEatDateTimeInput('2026-12-01T09:00:00.000Z')).toBe('2026-12-01T12:00')
+    expect(formatEatDateTime('2026-12-01T09:00:00.000Z')).toContain('12:00')
+    expect(formatEatDateTime('2026-12-01T09:00:00.000Z')).toContain('EAT')
+  })
+})
+
+describe('collection schemas', () => {
+  it('validates draft collection metadata', () => {
+    expect(audioCollectionCreateSchema.safeParse({
+      slug: 'voices-of-the-coast',
+      title: 'Voices of the Coast',
+      description: 'Coastal oral histories.',
+    }).success).toBe(true)
+    expect(audioCollectionCreateSchema.safeParse({
+      slug: 'Voices of the Coast',
+      title: 'Voices of the Coast',
+    }).success).toBe(false)
+  })
+
+  it('validates collection updates and ordered story ids', () => {
+    expect(audioCollectionUpdateSchema.safeParse({
+      title: 'Voices of the Coast',
+      displayOrder: 1,
+      featured: true,
+    }).success).toBe(true)
+    expect(audioCollectionUpdateSchema.safeParse({
+      title: 'Voices of the Coast',
+      displayOrder: -1,
+      featured: false,
+    }).success).toBe(false)
+    expect(audioCollectionStoriesSchema.safeParse({ storyIds: ['a-1', 'a-2'] }).success).toBe(true)
+    expect(audioCollectionStoriesSchema.safeParse({ storyIds: ['a-1', 'a-1'] }).success).toBe(false)
   })
 })
