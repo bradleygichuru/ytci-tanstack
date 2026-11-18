@@ -4,12 +4,29 @@ import type { Role } from 'better-auth/plugins/access'
 export type ResourceKey =
   | 'analytics' | 'destinations' | 'media' | 'lms'
   | 'conservation' | 'events' | 'aiConfig' | 'campaigns' | 'user' | 'challenges'
-  | 'comments'
+  | 'comments' | 'thenNow'
 
-export type Action = 'read' | 'create' | 'edit' | 'delete' | 'publish' | 'assign-role' | 'suspend-user' | 'update' | 'set-role' | 'ban' | 'get' | 'list'
+export type Action =
+  | 'read' | 'create' | 'edit' | 'delete' | 'publish' | 'assign-role'
+  | 'suspend-user' | 'update' | 'set-role' | 'ban' | 'get' | 'list'
+  | 'submit' | 'review' | 'unpublish' | 'archive' | 'revoke'
+  | 'manage_rights' | 'assign_reviewer' | 'override_separation'
+  | 'manage_recognition' | 'hard_delete_draft'
 
 export interface AuthSession {
   user: { role: string }
+}
+
+export function hasPermission(
+  roleName: string | undefined,
+  resource: ResourceKey,
+  actions: Action[],
+): boolean {
+  if (!roleName) return false
+  const roleMap = roles as Record<string, Role>
+  const role = roleMap[roleName]
+  if (!role) return false
+  return role.authorize({ [resource]: actions }).success
 }
 
 export function requirePermission(
@@ -20,13 +37,7 @@ export function requirePermission(
   if (!session) {
     throw new Error('Unauthorized')
   }
-  const roleMap = roles as Record<string, Role>
-  const role = roleMap[session.user.role]
-  if (!role) {
-    throw new Error('Forbidden')
-  }
-  const result = role.authorize({ [resource]: actions })
-  if (!result.success) {
+  if (!hasPermission(session.user.role, resource, actions)) {
     throw new Error('Forbidden')
   }
 }

@@ -12,8 +12,9 @@ import {
   ChatDots,
   SignOut,
   Robot,
+  FilmSlate,
 } from '@phosphor-icons/react'
-import { Link, useLocation, useRouter } from '@tanstack/react-router'
+import { Link, useLocation, useRouteContext, useRouter } from '@tanstack/react-router'
 import {
   Sidebar,
   SidebarContent,
@@ -27,32 +28,41 @@ import {
   SidebarMenuItem,
 } from '#/components/ui/sidebar'
 import { authClient } from '#/lib/auth-client'
+import { hasPermission, type ResourceKey } from '#/lib/authz'
 
-const navGroups = [
+type NavItem = {
+  icon: typeof ChartBar
+  label: string
+  path: string
+  resource?: ResourceKey
+}
+
+const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: 'Discovery',
     items: [
-      { icon: ChartBar, label: 'Analytics', path: '/analytics' },
-      { icon: MapTrifold, label: 'CMS', path: '/destinations' },
-      { icon: ImageIcon, label: 'Media Library', path: '/media' },
+      { icon: ChartBar, label: 'Analytics', path: '/analytics', resource: 'analytics' },
+      { icon: MapTrifold, label: 'CMS', path: '/destinations', resource: 'destinations' },
+      { icon: FilmSlate, label: 'Then & Now', path: '/then-now', resource: 'thenNow' },
+      { icon: ImageIcon, label: 'Media Library', path: '/media', resource: 'media' },
     ],
   },
   {
     label: 'Engagement',
     items: [
-      { icon: BookOpen, label: 'LMS', path: '/lms' },
-      { icon: Leaf, label: 'Conservation', path: '/conservation' },
-      { icon: Calendar, label: 'Events', path: '/events' },
+      { icon: BookOpen, label: 'LMS', path: '/lms', resource: 'lms' },
+      { icon: Leaf, label: 'Conservation', path: '/conservation', resource: 'conservation' },
+      { icon: Calendar, label: 'Events', path: '/events', resource: 'events' },
     ],
   },
   {
     label: 'Platform',
     items: [
-      { icon: Trophy, label: 'Challenges', path: '/challenges' },
-      { icon: ChatDots, label: 'Comments', path: '/comments' },
-      { icon: Megaphone, label: 'Campaigns', path: '/campaigns' },
-      { icon: Users, label: 'User Management', path: '/users' },
-      { icon: Robot, label: 'AI Config', path: '/ai-config' },
+      { icon: Trophy, label: 'Challenges', path: '/challenges', resource: 'challenges' },
+      { icon: ChatDots, label: 'Comments', path: '/comments', resource: 'comments' },
+      { icon: Megaphone, label: 'Campaigns', path: '/campaigns', resource: 'campaigns' },
+      { icon: Users, label: 'User Management', path: '/users', resource: 'user' },
+      { icon: Robot, label: 'AI Config', path: '/ai-config', resource: 'aiConfig' },
     ],
   },
 ]
@@ -65,7 +75,15 @@ export function AppSidebar() {
   const location = useLocation()
   const router = useRouter()
   const { data: session } = authClient.useSession()
+  const routeContext = useRouteContext({ from: '/_authenticated' })
   const user = session?.user
+  const role = (user as { role?: string } | undefined)?.role ?? routeContext.user?.role
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.resource || hasPermission(role, item.resource, ['read'])),
+    }))
+    .filter((group) => group.items.length > 0)
 
   return (
     <Sidebar
@@ -86,7 +104,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-3 pt-4 group-data-[collapsible=icon]:px-1">
-        {navGroups.map((group, gi) => (
+        {visibleGroups.map((group, gi) => (
           <SidebarGroup key={gi} className="mb-4">
             <SidebarGroupLabel className="px-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/50">
               {group.label}
@@ -97,7 +115,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
                       asChild
-                      isActive={location.pathname === item.path}
+                      isActive={location.pathname === item.path || location.pathname.startsWith(item.path + '/')}
                       tooltip={item.label}
                       className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                     >
