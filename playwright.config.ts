@@ -1,7 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const isIntegration = process.env.INTEGRATION_TEST === 'true'
-
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
@@ -10,7 +8,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
     trace: 'on-first-retry',
   },
   projects: [

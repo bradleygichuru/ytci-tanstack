@@ -27,8 +27,17 @@ import { Route as AuthenticatedLmsRouteImport } from './routes/_authenticated/lm
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedThenNowRouteRouteImport } from './routes/_authenticated/then-now/route'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedThenNowIndexRouteImport } from './routes/_authenticated/then-now/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthenticatedThenNowExperiencesIndexRouteImport } from './routes/_authenticated/then-now/experiences/index'
+import { Route as AuthenticatedThenNowExperiencesExperienceIdRouteImport } from './routes/_authenticated/then-now/experiences/$experienceId'
+import { Route as AuthenticatedThenNowExperiencesNewRouteImport } from './routes/_authenticated/then-now/experiences/new'
+import { Route as AuthenticatedThenNowReviewIndexRouteImport } from './routes/_authenticated/then-now/review/index'
+import { Route as AuthenticatedThenNowReviewRevisionIdRouteImport } from './routes/_authenticated/then-now/review/$revisionId'
+import { Route as AuthenticatedThenNowSitesSiteIdRouteImport } from './routes/_authenticated/then-now/sites/$siteId'
+import { Route as AuthenticatedThenNowSitesNewRouteImport } from './routes/_authenticated/then-now/sites/new'
 import { Route as ApiAdminUsersSplatRouteImport } from './routes/api/admin/users/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -123,16 +132,70 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedThenNowRouteRoute =
+  AuthenticatedThenNowRouteRouteImport.update({
+    id: '/then-now',
+    path: '/then-now',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   id: '/users',
   path: '/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedThenNowIndexRoute =
+  AuthenticatedThenNowIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedThenNowRouteRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedThenNowExperiencesIndexRoute =
+  AuthenticatedThenNowExperiencesIndexRouteImport.update({
+    id: '/experiences/',
+    path: '/experiences/',
+    getParentRoute: () => AuthenticatedThenNowRouteRoute,
+  } as any)
+const AuthenticatedThenNowExperiencesExperienceIdRoute =
+  AuthenticatedThenNowExperiencesExperienceIdRouteImport.update({
+    id: '/experiences/$experienceId',
+    path: '/experiences/$experienceId',
+    getParentRoute: () => AuthenticatedThenNowRouteRoute,
+  } as any)
+const AuthenticatedThenNowExperiencesNewRoute =
+  AuthenticatedThenNowExperiencesNewRouteImport.update({
+    id: '/experiences/new',
+    path: '/experiences/new',
+    getParentRoute: () => AuthenticatedThenNowRouteRoute,
+  } as any)
+const AuthenticatedThenNowReviewIndexRoute =
+  AuthenticatedThenNowReviewIndexRouteImport.update({
+    id: '/review/',
+    path: '/review/',
+    getParentRoute: () => AuthenticatedThenNowRouteRoute,
+  } as any)
+const AuthenticatedThenNowReviewRevisionIdRoute =
+  AuthenticatedThenNowReviewRevisionIdRouteImport.update({
+    id: '/review/$revisionId',
+    path: '/review/$revisionId',
+    getParentRoute: () => AuthenticatedThenNowRouteRoute,
+  } as any)
+const AuthenticatedThenNowSitesSiteIdRoute =
+  AuthenticatedThenNowSitesSiteIdRouteImport.update({
+    id: '/sites/$siteId',
+    path: '/sites/$siteId',
+    getParentRoute: () => AuthenticatedThenNowRouteRoute,
+  } as any)
+const AuthenticatedThenNowSitesNewRoute =
+  AuthenticatedThenNowSitesNewRouteImport.update({
+    id: '/sites/new',
+    path: '/sites/new',
+    getParentRoute: () => AuthenticatedThenNowRouteRoute,
+  } as any)
 const ApiAdminUsersSplatRoute = ApiAdminUsersSplatRouteImport.update({
   id: '/api/admin/users/$',
   path: '/api/admin/users/$',
@@ -145,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/then-now': typeof AuthenticatedThenNowRouteRouteWithChildren
   '/ai-config': typeof AuthenticatedAiConfigRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
@@ -159,7 +223,15 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/then-now/': typeof AuthenticatedThenNowIndexRoute
+  '/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
+  '/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
+  '/then-now/review/$revisionId': typeof AuthenticatedThenNowReviewRevisionIdRoute
+  '/then-now/sites/$siteId': typeof AuthenticatedThenNowSitesSiteIdRoute
+  '/then-now/sites/new': typeof AuthenticatedThenNowSitesNewRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
+  '/then-now/experiences/': typeof AuthenticatedThenNowExperiencesIndexRoute
+  '/then-now/review/': typeof AuthenticatedThenNowReviewIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -181,7 +253,15 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/then-now': typeof AuthenticatedThenNowIndexRoute
+  '/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
+  '/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
+  '/then-now/review/$revisionId': typeof AuthenticatedThenNowReviewRevisionIdRoute
+  '/then-now/sites/$siteId': typeof AuthenticatedThenNowSitesSiteIdRoute
+  '/then-now/sites/new': typeof AuthenticatedThenNowSitesNewRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
+  '/then-now/experiences': typeof AuthenticatedThenNowExperiencesIndexRoute
+  '/then-now/review': typeof AuthenticatedThenNowReviewIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -191,6 +271,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/then-now': typeof AuthenticatedThenNowRouteRouteWithChildren
   '/_authenticated/ai-config': typeof AuthenticatedAiConfigRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
@@ -205,7 +286,15 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_authenticated/then-now/': typeof AuthenticatedThenNowIndexRoute
+  '/_authenticated/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
+  '/_authenticated/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
+  '/_authenticated/then-now/review/$revisionId': typeof AuthenticatedThenNowReviewRevisionIdRoute
+  '/_authenticated/then-now/sites/$siteId': typeof AuthenticatedThenNowSitesSiteIdRoute
+  '/_authenticated/then-now/sites/new': typeof AuthenticatedThenNowSitesNewRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
+  '/_authenticated/then-now/experiences/': typeof AuthenticatedThenNowExperiencesIndexRoute
+  '/_authenticated/then-now/review/': typeof AuthenticatedThenNowReviewIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -215,6 +304,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/no-access'
     | '/reset-password'
+    | '/then-now'
     | '/ai-config'
     | '/analytics'
     | '/campaigns'
@@ -229,7 +319,15 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/api/auth/$'
+    | '/then-now/'
+    | '/then-now/experiences/$experienceId'
+    | '/then-now/experiences/new'
+    | '/then-now/review/$revisionId'
+    | '/then-now/sites/$siteId'
+    | '/then-now/sites/new'
     | '/api/admin/users/$'
+    | '/then-now/experiences/'
+    | '/then-now/review/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -251,7 +349,15 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/api/auth/$'
+    | '/then-now'
+    | '/then-now/experiences/$experienceId'
+    | '/then-now/experiences/new'
+    | '/then-now/review/$revisionId'
+    | '/then-now/sites/$siteId'
+    | '/then-now/sites/new'
     | '/api/admin/users/$'
+    | '/then-now/experiences'
+    | '/then-now/review'
   id:
     | '__root__'
     | '/'
@@ -260,6 +366,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/no-access'
     | '/reset-password'
+    | '/_authenticated/then-now'
     | '/_authenticated/ai-config'
     | '/_authenticated/analytics'
     | '/_authenticated/campaigns'
@@ -274,7 +381,15 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/users'
     | '/api/auth/$'
+    | '/_authenticated/then-now/'
+    | '/_authenticated/then-now/experiences/$experienceId'
+    | '/_authenticated/then-now/experiences/new'
+    | '/_authenticated/then-now/review/$revisionId'
+    | '/_authenticated/then-now/sites/$siteId'
+    | '/_authenticated/then-now/sites/new'
     | '/api/admin/users/$'
+    | '/_authenticated/then-now/experiences/'
+    | '/_authenticated/then-now/review/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -416,6 +531,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/then-now': {
+      id: '/_authenticated/then-now'
+      path: '/then-now'
+      fullPath: '/then-now'
+      preLoaderRoute: typeof AuthenticatedThenNowRouteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/users': {
       id: '/_authenticated/users'
       path: '/users'
@@ -423,12 +545,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/then-now/': {
+      id: '/_authenticated/then-now/'
+      path: '/'
+      fullPath: '/then-now/'
+      preLoaderRoute: typeof AuthenticatedThenNowIndexRouteImport
+      parentRoute: typeof AuthenticatedThenNowRouteRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/then-now/experiences/': {
+      id: '/_authenticated/then-now/experiences/'
+      path: '/experiences'
+      fullPath: '/then-now/experiences/'
+      preLoaderRoute: typeof AuthenticatedThenNowExperiencesIndexRouteImport
+      parentRoute: typeof AuthenticatedThenNowRouteRoute
+    }
+    '/_authenticated/then-now/experiences/$experienceId': {
+      id: '/_authenticated/then-now/experiences/$experienceId'
+      path: '/experiences/$experienceId'
+      fullPath: '/then-now/experiences/$experienceId'
+      preLoaderRoute: typeof AuthenticatedThenNowExperiencesExperienceIdRouteImport
+      parentRoute: typeof AuthenticatedThenNowRouteRoute
+    }
+    '/_authenticated/then-now/experiences/new': {
+      id: '/_authenticated/then-now/experiences/new'
+      path: '/experiences/new'
+      fullPath: '/then-now/experiences/new'
+      preLoaderRoute: typeof AuthenticatedThenNowExperiencesNewRouteImport
+      parentRoute: typeof AuthenticatedThenNowRouteRoute
+    }
+    '/_authenticated/then-now/review/': {
+      id: '/_authenticated/then-now/review/'
+      path: '/review'
+      fullPath: '/then-now/review/'
+      preLoaderRoute: typeof AuthenticatedThenNowReviewIndexRouteImport
+      parentRoute: typeof AuthenticatedThenNowRouteRoute
+    }
+    '/_authenticated/then-now/review/$revisionId': {
+      id: '/_authenticated/then-now/review/$revisionId'
+      path: '/review/$revisionId'
+      fullPath: '/then-now/review/$revisionId'
+      preLoaderRoute: typeof AuthenticatedThenNowReviewRevisionIdRouteImport
+      parentRoute: typeof AuthenticatedThenNowRouteRoute
+    }
+    '/_authenticated/then-now/sites/$siteId': {
+      id: '/_authenticated/then-now/sites/$siteId'
+      path: '/sites/$siteId'
+      fullPath: '/then-now/sites/$siteId'
+      preLoaderRoute: typeof AuthenticatedThenNowSitesSiteIdRouteImport
+      parentRoute: typeof AuthenticatedThenNowRouteRoute
+    }
+    '/_authenticated/then-now/sites/new': {
+      id: '/_authenticated/then-now/sites/new'
+      path: '/sites/new'
+      fullPath: '/then-now/sites/new'
+      preLoaderRoute: typeof AuthenticatedThenNowSitesNewRouteImport
+      parentRoute: typeof AuthenticatedThenNowRouteRoute
     }
     '/api/admin/users/$': {
       id: '/api/admin/users/$'
@@ -440,7 +618,40 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedThenNowRouteRouteChildren {
+  AuthenticatedThenNowIndexRoute: typeof AuthenticatedThenNowIndexRoute
+  AuthenticatedThenNowExperiencesExperienceIdRoute: typeof AuthenticatedThenNowExperiencesExperienceIdRoute
+  AuthenticatedThenNowExperiencesNewRoute: typeof AuthenticatedThenNowExperiencesNewRoute
+  AuthenticatedThenNowReviewRevisionIdRoute: typeof AuthenticatedThenNowReviewRevisionIdRoute
+  AuthenticatedThenNowSitesSiteIdRoute: typeof AuthenticatedThenNowSitesSiteIdRoute
+  AuthenticatedThenNowSitesNewRoute: typeof AuthenticatedThenNowSitesNewRoute
+  AuthenticatedThenNowExperiencesIndexRoute: typeof AuthenticatedThenNowExperiencesIndexRoute
+  AuthenticatedThenNowReviewIndexRoute: typeof AuthenticatedThenNowReviewIndexRoute
+}
+
+const AuthenticatedThenNowRouteRouteChildren: AuthenticatedThenNowRouteRouteChildren =
+  {
+    AuthenticatedThenNowIndexRoute: AuthenticatedThenNowIndexRoute,
+    AuthenticatedThenNowExperiencesExperienceIdRoute:
+      AuthenticatedThenNowExperiencesExperienceIdRoute,
+    AuthenticatedThenNowExperiencesNewRoute:
+      AuthenticatedThenNowExperiencesNewRoute,
+    AuthenticatedThenNowReviewRevisionIdRoute:
+      AuthenticatedThenNowReviewRevisionIdRoute,
+    AuthenticatedThenNowSitesSiteIdRoute: AuthenticatedThenNowSitesSiteIdRoute,
+    AuthenticatedThenNowSitesNewRoute: AuthenticatedThenNowSitesNewRoute,
+    AuthenticatedThenNowExperiencesIndexRoute:
+      AuthenticatedThenNowExperiencesIndexRoute,
+    AuthenticatedThenNowReviewIndexRoute: AuthenticatedThenNowReviewIndexRoute,
+  }
+
+const AuthenticatedThenNowRouteRouteWithChildren =
+  AuthenticatedThenNowRouteRoute._addFileChildren(
+    AuthenticatedThenNowRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
+  AuthenticatedThenNowRouteRoute: typeof AuthenticatedThenNowRouteRouteWithChildren
   AuthenticatedAiConfigRoute: typeof AuthenticatedAiConfigRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
@@ -457,6 +668,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedThenNowRouteRoute: AuthenticatedThenNowRouteRouteWithChildren,
   AuthenticatedAiConfigRoute: AuthenticatedAiConfigRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
