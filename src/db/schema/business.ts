@@ -440,22 +440,28 @@ export const bucketListItems = pgTable("bucket_list_items", {
 // ── App Opens ──
 export const appOpens = pgTable("app_opens", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  analyticsId: uuid("analytics_id"),
   platform: text("platform", { enum: ["ios", "android"] }),
   appVersion: text("app_version"),
   openedAt: timestamp("opened_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("app_opens_analytics_idx").on(table.analyticsId, table.openedAt),
+]);
 
 // ── Analytics Events ──
 export const analyticsEvents = pgTable("analytics_events", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  analyticsId: uuid("analytics_id"),
   event: text("event").notNull(),
   properties: jsonb("properties").default({}),
   platform: text("platform", { enum: ["ios", "android"] }),
   appVersion: text("app_version"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("analytics_events_analytics_idx").on(table.analyticsId, table.createdAt),
+]);
 
 // ── Report Jobs ──
 export const reportJobs = pgTable("report_jobs", {
