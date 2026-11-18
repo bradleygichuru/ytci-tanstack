@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 import { loginAs, loginAsAdmin } from './helpers/auth'
 
+test.describe.configure({ timeout: 90_000 })
+
 test.describe('Audio Stories admin', () => {
   test('stories, review and collections tabs render', async ({ page }) => {
     await loginAsAdmin(page)
@@ -30,6 +32,39 @@ test.describe('Audio Stories admin', () => {
     await expect(page.getByText('Coastal Voices').first()).toBeVisible({
       timeout: 20000,
     })
+  })
+
+  test('pilot sites are live in stories and collections', async ({ page }) => {
+    await loginAsAdmin(page)
+    await page.goto('/audio-stories')
+
+    for (const title of [
+      'Nabongo Cultural Centre',
+      'African Heritage House',
+      'Nairobi Commonwealth War Cemetery',
+      'Nairobi Railway Museum',
+    ]) {
+      await expect(page.getByText(title).first()).toBeVisible({ timeout: 20000 })
+    }
+
+    const tabs = page.getByRole('navigation', { name: 'Audio Stories sections' })
+    await tabs.getByRole('link', { name: 'Collections', exact: true }).click()
+    for (const name of [
+      'Western Kenya Heritage',
+      'Cultural Landmarks',
+      'Memory & Remembrance',
+      'Nairobi Heritage',
+    ]) {
+      await expect(page.getByText(name).first()).toBeVisible({ timeout: 20000 })
+    }
+
+    await page.goto('/audio-stories')
+    await page.getByRole('link', { name: /Nabongo Cultural Centre/ }).first().click()
+    await expect(
+      page.getByRole('heading', { name: /Nabongo Cultural Centre/ }),
+    ).toBeVisible({ timeout: 20000 })
+    await expect(page.getByText('Published').first()).toBeVisible()
+    await expect(page.getByText(/Western Kenya Heritage/).first()).toBeVisible()
   })
 
   test('story detail opens with metadata and status', async ({ page }) => {
