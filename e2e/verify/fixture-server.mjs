@@ -32,7 +32,9 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://${HOST}:${PORT}`)
 
   if (url.pathname === '/health') {
-    return send(res, 200, 'ok', { 'content-type': 'application/json' })
+    return send(res, 200, JSON.stringify({ ok: true }), {
+      'content-type': 'application/json; charset=utf-8',
+    })
   }
 
   const relative = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1))
