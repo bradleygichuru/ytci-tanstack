@@ -19,10 +19,6 @@ const FIXTURE_URL = 'http://127.0.0.1:3210'
 const DEFAULT_VERIFY_PORT = '3210'
 const FORBIDDEN_PORTS = new Set(['3000', '8081', '8082'])
 
-function readEnv(env: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
-  return env
-}
-
 export function readVerifyTarget(env: NodeJS.ProcessEnv = process.env): VerifyTarget {
   const mode = (env.VERIFY_MODE ?? 'fixture') as VerifyMode
   if (mode !== 'fixture' && mode !== 'live') {
