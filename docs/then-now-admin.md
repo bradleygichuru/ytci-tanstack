@@ -49,8 +49,8 @@ The Playwright spec needs the standard seeded users (`grace@example.com`, `edito
 Both read and write slices are wired. `src/lib/api/then-now.ts` owns the typed API surface, the API → `HeritageSite` / `Experience` mappers, and the write payload builders:
 
 - Reads: `listSites`, `getSite`, `listExperiences`, `getExperience`, `reviewQueue`, `getReview`, `listAudit`.
-- Site writes: `createSite`, `updateSite`, `publishSite`, `unpublishSite`, `archiveSite`.
-- Experience writes: `createExperience`, `updateExperience`, `submitExperience`, `assignReviewer`, `decideExperience`, `recordClientApproval`, `recordExternalReviewer`, `scheduleExperience`, `publishExperience`, `newRevision`, `changeExperienceStatus`.
+- Site writes: `createSite`, `updateSite`, `publishSite`, `unpublishSite`, `archiveSite`. Unpublish and archive carry the dialog reason; `updateSite` sends the loaded `updatedAt` as `If-Match`.
+- Experience writes: `createExperience`, `updateExperience`, `submitExperience`, `assignReviewer`, `unassignReviewer`, `decideExperience`, `recordClientApproval`, `recordExternalReviewer`, `scheduleExperience`, `cancelSchedule`, `publishExperience`, `newRevision`, `changeExperienceStatus`.
 
 `ThenNowProvider` calls `loadThenNowState()` after hydration. On success it replaces sites, experiences, and (when the audit read succeeds) audit, sets `source: 'api'`, and uses the API for every mutation. On a failed sites read or an empty site list it keeps the fixture state and `source: 'fixtures'`; a failed experiences read still keeps the API sites; a failed audit read keeps the previous audit. Fixture state is persisted to `localStorage`; API state is not, so a reload re-reads the server.
 
@@ -59,21 +59,19 @@ Write behaviour:
 - Every action is async. In API mode the store sends the documented request, merges the returned site or experience detail into state, then refreshes the audit log and the review queue. In fallback mode the existing local workflow runs unchanged, so the fixture demo keeps working offline.
 - A failed mutation throws before any state is written. API mode never applies the local workflow optimistically, so a 403/409 cannot leave the fixture demo or the API view half-mutated.
 - `requireOpenRevision()` compares the server's `openRevisionNumber` with the revision the editor loaded before a full-snapshot PATCH or lifecycle action. A mismatch raises a stale-revision error instead of overwriting newer work.
+- Site saves send the `updatedAt` the editor loaded as an `If-Match` precondition. A `409 STALE_SITE` becomes a recoverable `ThenNowStaleSiteError`; the site editor opens a conflict dialog that offers **Reload latest** (re-reads the server copy and discards the local form) or Cancel (keep editing). The error carries the current server site, so the dialog can show how recently it changed.
+- Unassign reviewer, cancel schedule, and reopening an approved revision to draft are wired to the Go endpoints. Reopening an approval requires review permission and a reason; the reason lands in the audit.
+- `unpublish`, `archive`, and `revoke` send the dialog reason to the API. The Go audit event stores it under `metadata.reason`, so the success toast can say it was recorded.
 - `thenNowErrorMessage()` maps `403`, `409`, `NOT_READY`, `FROZEN`, `SEPARATION`, `SECOND_REVIEWER`, `RESTRICTED`, `NOT_FOUND`, and `UNAUTHORIZED` to operator-facing copy. `NOT_READY` lists up to four readiness blockers from the server payload.
 - The editors show loading skeletons while the first API read settles and surface mutation failures as toasts without closing the dialog.
 - Review queue rows carry `revisionId` (not the experience id) and link to `/then-now/review/$revisionId`; the detail page loads through `getReview`. The queue and detail page have their own loading, empty, and retry states.
 
-Known gaps in the Go contract, handled without silently overwriting:
+Known gaps and deliberate limits in the Go contract:
 
-- **Unassign reviewer:** there is no endpoint. The button is disabled in API mode; reassign the revision to another administrator instead.
-- **Cancel schedule:** there is no endpoint. The button is disabled in API mode; rescheduling replaces the pending time.
-- **Return an approved revision to draft:** `/decisions` accepts `return` only for `in_review`. The button is disabled for approved revisions in API mode; request changes before approval, or publish and start a new revision.
-- **Unpublish/archive reasons:** the Go status endpoints take no reason, so the dialog reason is confirmation-only and is not written to the server audit. The success toast does not claim it was recorded in API mode.
-- **Site timestamps:** the Go site read does not expose `updated_at`, so mapped sites render "Just now". Add it to the API before relying on the Updated column.
-- **Site optimistic concurrency:** site PATCH has no version or `updated_at` precondition, so only experience revisions can be stale-checked client-side.
 - **Media:** R2 presign/complete and object-key storage remain out of scope. `VideoUploadDialog` still records metadata only; a simulated upload writes the local filename into `videoMaster`, which is a placeholder, not a valid R2 key. API-loaded experiences keep `renditionKeys`, `posterKey`, `captionKeys`, and `transcriptKey` through a save, and readiness now checks those keys when they are present, matching the Go gate. A locally "uploaded" file without real keys will therefore stay blocked at submit — that is intentional.
 - **Site publish body:** `publishSite` saves pending edits with a PATCH first, then calls `/publish`; the Go publish endpoint takes no body.
 - **Publish order:** publish the experience first, then the site. The Go site readiness gate requires a published experience.
+- **Site concurrency:** the precondition covers site PATCH. Experience edits use the open-revision check, and there is no If-Match on the experience PATCH itself.
 
 The experience editor loads `GET /experiences/{id}` on mount before allowing edits. The list read only returns a summary, and saving that summary back would replace the real snapshot with blanks.
 
@@ -92,4 +90,5 @@ What #293 needs:
 - **Review queue:** `/then-now/review` links use revision UUIDs from `GET /v1/then-now/review?filter=all`; do not derive the detail URL from the experience id. The detail page shows a skeleton, then the frozen revision; a stale revision id renders the retry state.
 - **Write assertions:** after save/submit/approve/publish, assert the status pill and the audit dialog. Approval does not auto-publish; the publish button is a separate step. Sensitive revisions still require the second reviewer before approve.
 - **Fallback:** with the API stopped (or pointed at a dead port) the same fixture assertions keep working. For mocked API runs, use `page.route('**/v1/then-now/**')` and return `{ items: [...] }`, `{ site, experiences, readiness }`, or the experience detail payloads; keep ids UUID-shaped so the route params are realistic. Mock mutation responses with the returned detail so the store can merge them.
-- **Do not assert:** fixture deep links such as `/then-now/experiences/railway-exp` only exist in fixture mode. In API mode resolve the experience id from the API list or mock the fixture ids. Unassign reviewer and cancel schedule are fixture-only until the Go endpoints exist.
+- **Do not assert:** fixture deep links such as `/then-now/experiences/railway-exp` only exist in fixture mode. In API mode resolve the experience id from the API list or mock the fixture ids.
+- **Conflict recovery:** to exercise the site precondition, load a site, save it once in another session (or with a second request), then save the editor again — expect `409 · Version conflict` and **Reload latest**. Mock `409 STALE_SITE` by returning `{ error: { code: 'STALE_SITE', message }, site: {...} }`.

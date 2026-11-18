@@ -418,8 +418,7 @@ function ReviewDetailPage() {
                       size="sm"
                       className="w-full"
                       onClick={unassign}
-                      disabled={serverBlocked || source === 'api'}
-                      title={source === 'api' ? 'Unassigning is not in the Go API yet. Assign the revision to another administrator instead.' : undefined}
+                      disabled={serverBlocked}
                     >
                       Unassign reviewer
                     </Button>
@@ -494,8 +493,7 @@ function ReviewDetailPage() {
                       variant="ghost"
                       className="w-full"
                       onClick={() => setReturnOpen(true)}
-                      disabled={source === 'api'}
-                      title={source === 'api' ? 'Returning an approved revision is not in the Go API yet.' : undefined}
+                      disabled={serverBlocked}
                     >
                       Return to draft
                     </Button>

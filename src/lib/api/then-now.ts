@@ -55,6 +55,8 @@ export interface ThenNowApiSite {
   standingPointNote: string
   imageKey: string
   publishedExperiences: number
+  /** RFC3339 site version, echoed back as the PATCH precondition. */
+  updatedAt: string
 }
 
 export interface ThenNowApiReadiness {
@@ -301,14 +303,29 @@ export function thenNowApi(config: ApiConfig) {
       apiRequest<ThenNowApiSiteDetail>(config, `/v1/then-now/sites/${id}`),
     createSite: (body: ThenNowSiteCreate) =>
       apiRequest<ThenNowApiSite>(config, '/v1/then-now/sites', { method: 'POST', body }),
-    updateSite: (id: string, body: ThenNowSitePatch) =>
-      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}`, { method: 'PATCH', body }),
+    /**
+     * `expectedUpdatedAt` is the `updatedAt` the editor loaded. The Go API
+     * compares it as a precondition and returns 409 `STALE_SITE` when another
+     * save got there first. Omit it to keep last-write-wins.
+     */
+    updateSite: (id: string, body: ThenNowSitePatch, expectedUpdatedAt?: string) =>
+      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}`, {
+        method: 'PATCH',
+        body,
+        headers: expectedUpdatedAt ? { 'If-Match': expectedUpdatedAt } : undefined,
+      }),
     publishSite: (id: string) =>
       apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}/publish`, { method: 'POST' }),
-    unpublishSite: (id: string) =>
-      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}/unpublish`, { method: 'POST' }),
-    archiveSite: (id: string) =>
-      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}/archive`, { method: 'POST' }),
+    unpublishSite: (id: string, reason?: string) =>
+      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}/unpublish`, {
+        method: 'POST',
+        body: reason ? { reason } : undefined,
+      }),
+    archiveSite: (id: string, reason?: string) =>
+      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}/archive`, {
+        method: 'POST',
+        body: reason ? { reason } : undefined,
+      }),
     listExperiences: (params?: ThenNowExperienceFilters) =>
       apiRequest<ThenNowApiExperienceList>(config, '/v1/then-now/experiences', { params }),
     getExperience: (id: string) =>
@@ -332,6 +349,11 @@ export function thenNowApi(config: ApiConfig) {
         method: 'POST',
         body: reviewerId ? { reviewerId } : {},
       }),
+    /** Clear the reviewer and return the frozen revision to the unassigned queue. */
+    unassignReviewer: (id: string) =>
+      apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/unassign`, {
+        method: 'POST',
+      }),
     decideExperience: (id: string, decision: ThenNowDecision, notes: string) =>
       apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/decisions`, {
         method: 'POST',
@@ -354,6 +376,13 @@ export function thenNowApi(config: ApiConfig) {
         method: 'POST',
         body: { scheduledAt, note },
       }),
+    /** Clear a pending schedule; the approved revision stays ready to publish. */
+    cancelSchedule: (id: string) =>
+      apiRequest<ThenNowApiExperienceDetail>(
+        config,
+        `/v1/then-now/experiences/${id}/schedule/cancel`,
+        { method: 'POST' },
+      ),
     publishExperience: (id: string) =>
       apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/publish`, {
         method: 'POST',
@@ -364,10 +393,10 @@ export function thenNowApi(config: ApiConfig) {
         `/v1/then-now/experiences/${id}/new-revision`,
         { method: 'POST' },
       ),
-    changeExperienceStatus: (id: string, action: ThenNowStatusAction) =>
+    changeExperienceStatus: (id: string, action: ThenNowStatusAction, reason?: string) =>
       apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/status`, {
         method: 'POST',
-        body: { action },
+        body: reason ? { action, reason } : { action },
       }),
     /**
      * There is no standalone revision read. `/review/{revisionId}` returns the
@@ -466,9 +495,8 @@ export function mapApiSite(site: ThenNowApiSite, experienceIds: string[] = []): 
     geofenceRadius: site.geofenceRadiusM ? String(site.geofenceRadiusM) : '150',
     standingPointNote: site.standingPointNote ?? '',
     image: site.imageKey ?? '',
-    // The Go site read does not expose updated_at yet; fall back to a neutral
-    // value so `relativeAge` renders "Just now" rather than a stale fixture date.
-    updatedAt: '',
+    // The Go site read returns updated_at; it doubles as the PATCH precondition.
+    updatedAt: site.updatedAt ?? '',
     experiences: experienceIds,
   }
 }
@@ -847,8 +875,29 @@ export class ThenNowStaleRevisionError extends Error {
   }
 }
 
+/** A stale site: another save changed `updated_at` after this editor loaded it. */
+export class ThenNowStaleSiteError extends Error {
+  constructor(public site: ThenNowApiSite | null) {
+    super(
+      'Another administrator saved this site after you loaded it. Reload the latest version and reapply your change.',
+    )
+    this.name = 'ThenNowStaleSiteError'
+  }
+}
+
 /**
- * Optimistic concurrency guard. The Go API has no `If-Match`, so compare the
+ * Convert the Go 409 `STALE_SITE` response into a recoverable error that
+ * carries the current server copy. Returns `null` for any other failure.
+ */
+export function asStaleSiteError(error: unknown): ThenNowStaleSiteError | null {
+  if (!(error instanceof ApiErrorResponse) || error.code !== 'STALE_SITE') return null
+  const payload = error.payload as { site?: ThenNowApiSite } | undefined
+  return new ThenNowStaleSiteError(payload?.site ?? null)
+}
+
+/**
+ * Optimistic concurrency guard for revisions. Experience PATCH has no
+ * `If-Match`; the site PATCH uses its own updated-at precondition. Compare the
  * server's open revision number with the revision the caller loaded before
  * sending a full-snapshot PATCH or a lifecycle action.
  */
@@ -880,6 +929,8 @@ const THEN_NOW_ERROR_MESSAGES: Record<string, string> = {
   NOTES_REQUIRED: 'Add a note explaining the decision.',
   INVALID_REVIEWER: 'Choose an administrator as the reviewer.',
   INVALID_SCHEDULE: 'Choose a future date and time in East Africa Time.',
+  STALE_SITE:
+    'Another administrator saved this site after you loaded it. Reload the latest version and reapply your change.',
 }
 
 /** Human-readable message for an API failure, including readiness blockers. */

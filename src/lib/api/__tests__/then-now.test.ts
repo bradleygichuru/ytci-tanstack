@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  asStaleSiteError,
   loadThenNowState,
   mapApiAuditEvent,
   mapApiExperience,
@@ -13,6 +14,7 @@ import {
   thenNowApi,
   thenNowErrorMessage,
   ThenNowStaleRevisionError,
+  ThenNowStaleSiteError,
   type ThenNowApi,
   type ThenNowApiExperienceDetail,
   type ThenNowApiSite,
@@ -59,6 +61,7 @@ const API_SITE: ThenNowApiSite = {
   standingPointNote: 'Main yard entrance.',
   imageKey: 'then-now/railway.jpg',
   publishedExperiences: 1,
+  updatedAt: '2026-11-17T09:42:00Z',
 }
 
 const SNAPSHOT: ThenNowApiSnapshot = {
@@ -196,8 +199,8 @@ describe('Then & Now API mapping', () => {
       image: 'then-now/railway.jpg',
       experiences: ['exp-1'],
     }))
-    // The Go read model has no updated_at; the mapper keeps it neutral.
-    expect(site.updatedAt).toBe('')
+    // The Go read model exposes updated_at; it is the site PATCH precondition.
+    expect(site.updatedAt).toBe('2026-11-17T09:42:00Z')
   })
 
   it('maps an experience detail from its open revision snapshot', () => {
@@ -313,6 +316,57 @@ describe('thenNowApi writes', () => {
     mockFetch(API_SITE)
     await api.archiveSite(API_SITE.id)
     expect(String(vi.mocked(fetch).mock.calls[2][0])).toContain(`/sites/${API_SITE.id}/archive`)
+  })
+
+  it('sends the site version precondition and unpublish/archive reasons', async () => {
+    const api = thenNowApi(config)
+
+    mockFetch(API_SITE)
+    await api.updateSite(API_SITE.id, { name: 'Renamed' }, API_SITE.updatedAt)
+    expect(vi.mocked(fetch).mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: expect.objectContaining({ 'If-Match': API_SITE.updatedAt }),
+      }),
+    )
+
+    mockFetch(API_SITE)
+    await api.unpublishSite(API_SITE.id, 'Seasonal closure')
+    expect(vi.mocked(fetch).mock.calls[1][1]?.body).toBe(
+      JSON.stringify({ reason: 'Seasonal closure' }),
+    )
+
+    mockFetch(API_SITE)
+    await api.archiveSite(API_SITE.id)
+    expect(vi.mocked(fetch).mock.calls[2][1]?.body).toBeUndefined()
+  })
+
+  it('clears an assignment, cancels a schedule, and keeps status reasons', async () => {
+    const api = thenNowApi(config)
+
+    mockFetch(DETAIL)
+    await api.unassignReviewer(DETAIL.id)
+    expect(String(vi.mocked(fetch).mock.calls[0][0])).toContain(
+      `/experiences/${DETAIL.id}/unassign`,
+    )
+
+    mockFetch(DETAIL)
+    await api.cancelSchedule(DETAIL.id)
+    expect(String(vi.mocked(fetch).mock.calls[1][0])).toContain(
+      `/experiences/${DETAIL.id}/schedule/cancel`,
+    )
+
+    mockFetch(DETAIL)
+    await api.changeExperienceStatus(DETAIL.id, 'archive', 'Record retired')
+    expect(vi.mocked(fetch).mock.calls[2][1]?.body).toBe(
+      JSON.stringify({ action: 'archive', reason: 'Record retired' }),
+    )
+
+    mockFetch(DETAIL)
+    await api.decideExperience(DETAIL.id, 'return', 'Rights line needs a rewrite.')
+    expect(vi.mocked(fetch).mock.calls[3][1]?.body).toBe(
+      JSON.stringify({ decision: 'return', notes: 'Rights line needs a rewrite.' }),
+    )
   })
 
   it('sends full snapshots on experience writes and lifecycle actions', async () => {
@@ -477,6 +531,18 @@ describe('optimistic concurrency and errors', () => {
   it('returns the detail when the revision still matches', async () => {
     const api = fakeApi({ getExperience: vi.fn().mockResolvedValue(DETAIL) })
     await expect(requireOpenRevision(api, DETAIL.id, 4)).resolves.toEqual(DETAIL)
+  })
+
+  it('turns a stale site 409 into a recoverable error with the server copy', () => {
+    const stale = new ApiErrorResponse(409, 'STALE_SITE', 'stale', undefined, {
+      error: { code: 'STALE_SITE', message: 'stale' },
+      site: { ...API_SITE, updatedAt: '2026-11-17T10:14:00Z' },
+    })
+    const error = asStaleSiteError(stale)
+    expect(error).toBeInstanceOf(ThenNowStaleSiteError)
+    expect(error?.site?.updatedAt).toBe('2026-11-17T10:14:00Z')
+    expect(asStaleSiteError(new ApiErrorResponse(409, 'SLUG_EXISTS', 'taken'))).toBeNull()
+    expect(thenNowErrorMessage(stale)).toContain('Reload the latest version')
   })
 
   it('turns common API failures into operator-facing messages', () => {

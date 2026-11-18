@@ -376,8 +376,6 @@ function ExperienceEditorPage() {
                 variant="outline"
                 size="sm"
                 onClick={cancelSchedule}
-                disabled={source === 'api'}
-                title={source === 'api' ? 'Cancelling a schedule is not in the Go API yet. Reschedule to replace it.' : undefined}
               >
                 Cancel schedule
               </Button>
@@ -387,13 +385,12 @@ function ExperienceEditorPage() {
                 Edit new revision
               </Button>
             )}
-            {(exp.draftStatus === 'in_review' || exp.draftStatus === 'approved') && can('edit') && (
+            {((exp.draftStatus === 'in_review' && can('edit')) ||
+              (exp.draftStatus === 'approved' && can('review'))) && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setReturnOpen(true)}
-                disabled={source === 'api' && exp.draftStatus === 'approved'}
-                title={source === 'api' && exp.draftStatus === 'approved' ? 'Returning an approved revision is not in the Go API yet.' : undefined}
               >
                 Return to draft
               </Button>
@@ -978,13 +975,9 @@ function ExperienceEditorPage() {
         onConfirm={(reason) => {
           void (async () => {
             try {
-              await actions.unpublishExperience(exp.id)
+              await actions.unpublishExperience(exp.id, reason)
               setUnpublishOpen(false)
-              toast.success(
-                source === 'api'
-                  ? 'Experience unpublished.'
-                  : `Experience unpublished. ${reason ? 'Reason recorded.' : ''}`,
-              )
+              toast.success('Experience unpublished. The reason is in the audit trail.')
             } catch (error) {
               toast.error(error instanceof Error ? error.message : 'Could not unpublish the experience.')
             }
@@ -1003,13 +996,9 @@ function ExperienceEditorPage() {
         onConfirm={(reason) => {
           void (async () => {
             try {
-              await actions.archiveExperience(exp.id)
+              await actions.archiveExperience(exp.id, reason)
               setArchiveOpen(false)
-              toast.success(
-                source === 'api'
-                  ? 'Experience archived.'
-                  : `Experience archived. ${reason ? 'Reason recorded.' : ''}`,
-              )
+              toast.success('Experience archived. The reason is in the audit trail.')
             } catch (error) {
               toast.error(error instanceof Error ? error.message : 'Could not archive the experience.')
             }
@@ -1028,13 +1017,9 @@ function ExperienceEditorPage() {
         onConfirm={(reason) => {
           void (async () => {
             try {
-              await actions.revokeExperience(exp.id)
+              await actions.revokeExperience(exp.id, reason)
               setRevokeOpen(false)
-              toast.success(
-                source === 'api'
-                  ? 'Experience revoked.'
-                  : `Experience revoked. ${reason ? 'Reason recorded.' : ''}`,
-              )
+              toast.success('Experience revoked. The reason and evidence are in the audit trail.')
             } catch (error) {
               toast.error(error instanceof Error ? error.message : 'Could not revoke the experience.')
             }

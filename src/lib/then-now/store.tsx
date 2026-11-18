@@ -11,6 +11,7 @@ import { useRouteContext } from '@tanstack/react-router'
 import { authClient } from '#/lib/auth-client'
 import { hasPermission, type Action } from '#/lib/authz'
 import {
+  asStaleSiteError,
   loadThenNowState,
   mapApiAuditEvent,
   mapApiExperience,
@@ -92,8 +93,8 @@ interface ThenNowActions {
   updateSite: (id: string, patch: Partial<HeritageSite>) => Promise<void>
   saveSite: (id: string, patch?: Partial<HeritageSite>) => Promise<void>
   publishSite: (id: string, patch?: Partial<HeritageSite>) => Promise<void>
-  unpublishSite: (id: string) => Promise<void>
-  archiveSite: (id: string) => Promise<void>
+  unpublishSite: (id: string, reason?: string) => Promise<void>
+  archiveSite: (id: string, reason?: string) => Promise<void>
   createExperience: (input: CreateExperienceInput) => Promise<string>
   updateExperience: (id: string, patch: Partial<Experience>) => Promise<void>
   saveExperience: (id: string, patch?: Partial<Experience>) => Promise<void>
@@ -107,9 +108,9 @@ interface ThenNowActions {
   publishExperience: (id: string) => Promise<void>
   scheduleExperience: (id: string, at: string, note: string) => Promise<void>
   cancelSchedule: (id: string) => Promise<void>
-  unpublishExperience: (id: string) => Promise<void>
-  archiveExperience: (id: string) => Promise<void>
-  revokeExperience: (id: string) => Promise<void>
+  unpublishExperience: (id: string, reason?: string) => Promise<void>
+  archiveExperience: (id: string, reason?: string) => Promise<void>
+  revokeExperience: (id: string, reason?: string) => Promise<void>
   newRevision: (id: string) => Promise<void>
   recordClientApproval: (id: string, approval: ClientApproval) => Promise<void>
   recordExternalReviewer: (id: string, reviewer: ExternalReviewer) => Promise<void>
@@ -509,6 +510,10 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
         applySite(site)
         await afterMutation()
       } catch (error) {
+        // A stale site is recoverable: the caller can reload the server copy
+        // instead of treating it as an opaque failure.
+        const stale = asStaleSiteError(error)
+        if (stale) throw stale
         throw toActionError(error)
       }
     }
@@ -592,7 +597,11 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
         if (sourceRef.current === 'api') {
           const current = getSite(id)
           await remoteSite(() =>
-            api.thenNow.updateSite(id, sitePatchPayload({ ...current, ...patch })),
+            api.thenNow.updateSite(
+              id,
+              sitePatchPayload({ ...current, ...patch }),
+              current.updatedAt || undefined,
+            ),
           )
           return
         }
@@ -609,7 +618,11 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
         if (sourceRef.current === 'api') {
           const current = getSite(id)
           await remoteSite(() =>
-            api.thenNow.updateSite(id, sitePatchPayload({ ...current, ...patch })),
+            api.thenNow.updateSite(
+              id,
+              sitePatchPayload({ ...current, ...patch }),
+              current.updatedAt || undefined,
+            ),
           )
           return
         }
@@ -633,7 +646,11 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
           }
           if (patch) {
             await remoteSite(() =>
-              api.thenNow.updateSite(id, sitePatchPayload({ ...current, ...patch })),
+              api.thenNow.updateSite(
+                id,
+                sitePatchPayload({ ...current, ...patch }),
+                current.updatedAt || undefined,
+              ),
             )
           }
           await remoteSite(() => api.thenNow.publishSite(id))
@@ -652,11 +669,11 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
           audit: updateAudit(prev, createAudit(actor, id, 'publish', 'Site published')),
         }))
       },
-      unpublishSite: async (id) => {
+      unpublishSite: async (id, reason) => {
         assertPermission('unpublish')
         assertOnline()
         if (sourceRef.current === 'api') {
-          await remoteSite(() => api.thenNow.unpublishSite(id))
+          await remoteSite(() => api.thenNow.unpublishSite(id, reason))
           return
         }
         setState((prev) => ({
@@ -664,14 +681,14 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
           sites: prev.sites.map((entry) =>
             entry.id === id ? { ...entry, status: 'unpublished', updatedAt: nowIso() } : entry,
           ),
-          audit: updateAudit(prev, createAudit(actor, id, 'unpublish', 'Site unpublished')),
+          audit: updateAudit(prev, createAudit(actor, id, 'unpublish', 'Site unpublished', reason)),
         }))
       },
-      archiveSite: async (id) => {
+      archiveSite: async (id, reason) => {
         assertPermission('archive')
         assertRemoteAllowed()
         if (sourceRef.current === 'api') {
-          await remoteSite(() => api.thenNow.archiveSite(id))
+          await remoteSite(() => api.thenNow.archiveSite(id, reason))
           return
         }
         setState((prev) => ({
@@ -679,7 +696,7 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
           sites: prev.sites.map((entry) =>
             entry.id === id ? { ...entry, status: 'archived', updatedAt: nowIso() } : entry,
           ),
-          audit: updateAudit(prev, createAudit(actor, id, 'archive', 'Site archived')),
+          audit: updateAudit(prev, createAudit(actor, id, 'archive', 'Site archived', reason)),
         }))
       },
       createExperience: async (input) => {
@@ -859,10 +876,8 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
       unassignReviewer: async (id) => {
         assertPermission('assign_reviewer')
         if (sourceRef.current === 'api') {
-          throw new ThenNowWorkflowError(
-            'Unassigning a reviewer is not available in the API yet. Assign the revision to another administrator instead.',
-            'state',
-          )
+          await remoteDetail(() => api.thenNow.unassignReviewer(id))
+          return
         }
         const current = getExperience(id)
         if (current.draftStatus !== 'in_review') {
@@ -871,7 +886,7 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
         patchExperience(
           id,
           { reviewer: 'Unassigned' },
-          { entity: id, type: 'assign', title: 'Reviewer unassigned', meta: `${actor} · ${formatEat(nowIso())}` },
+          { entity: id, type: 'unassign', title: 'Reviewer unassigned', meta: `${actor} · ${formatEat(nowIso())}` },
         )
       },
       approveRevision: async (id, note) => {
@@ -931,12 +946,9 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
         const current = getExperience(id)
         returnToDraft(current, actor, reason, nowIso())
         if (sourceRef.current === 'api') {
-          if (current.draftStatus === 'approved') {
-            throw new ThenNowWorkflowError(
-              'Returning an approved revision to draft is not available in the API yet. Record changes before approval, or publish and start a new revision.',
-              'state',
-            )
-          }
+          // Reopening an approval is a review action: the server keeps the
+          // approver/admin gate and records the reason in the audit trail.
+          if (current.draftStatus === 'approved') assertPermission('review')
           await requireOpenRevision(api.thenNow, id, current.draftRevision)
           await remoteDetail(() => api.thenNow.decideExperience(id, 'return', reason))
           return
@@ -984,59 +996,58 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
       },
       cancelSchedule: async (id) => {
         assertPermission('publish')
+        assertOnline()
         if (sourceRef.current === 'api') {
-          throw new ThenNowWorkflowError(
-            'Cancelling a schedule is not available in the API yet. Reschedule the revision to replace it.',
-            'state',
-          )
+          await remoteDetail(() => api.thenNow.cancelSchedule(id))
+          return
         }
         const current = getExperience(id)
         patchExperience(
           id,
           cancelSchedule(current),
-          { entity: id, type: 'schedule', title: 'Publish schedule cancelled', meta: `${actor} · ${formatEat(nowIso())}` },
+          { entity: id, type: 'schedule_cancel', title: 'Publish schedule cancelled', meta: `${actor} · ${formatEat(nowIso())}` },
         )
       },
-      unpublishExperience: async (id) => {
+      unpublishExperience: async (id, reason) => {
         assertPermission('unpublish')
         assertOnline()
         if (sourceRef.current === 'api') {
-          await remoteDetail(() => api.thenNow.changeExperienceStatus(id, 'unpublish'))
+          await remoteDetail(() => api.thenNow.changeExperienceStatus(id, 'unpublish', reason))
           return
         }
         const current = getExperience(id)
         patchExperience(
           id,
           unpublishExperience(current),
-          { entity: id, type: 'unpublish', title: 'Experience unpublished', meta: `${actor} · ${formatEat(nowIso())}` },
+          { entity: id, type: 'unpublish', title: 'Experience unpublished', meta: `${actor} · ${formatEat(nowIso())}`, note: reason },
         )
       },
-      archiveExperience: async (id) => {
+      archiveExperience: async (id, reason) => {
         assertPermission('archive')
         assertRemoteAllowed()
         if (sourceRef.current === 'api') {
-          await remoteDetail(() => api.thenNow.changeExperienceStatus(id, 'archive'))
+          await remoteDetail(() => api.thenNow.changeExperienceStatus(id, 'archive', reason))
           return
         }
         const current = getExperience(id)
         patchExperience(
           id,
           archiveExperience(current),
-          { entity: id, type: 'archive', title: 'Experience archived', meta: `${actor} · ${formatEat(nowIso())}` },
+          { entity: id, type: 'archive', title: 'Experience archived', meta: `${actor} · ${formatEat(nowIso())}`, note: reason },
         )
       },
-      revokeExperience: async (id) => {
+      revokeExperience: async (id, reason) => {
         assertPermission('revoke')
         assertRemoteAllowed()
         if (sourceRef.current === 'api') {
-          await remoteDetail(() => api.thenNow.changeExperienceStatus(id, 'revoke'))
+          await remoteDetail(() => api.thenNow.changeExperienceStatus(id, 'revoke', reason))
           return
         }
         const current = getExperience(id)
         patchExperience(
           id,
           revokeExperience(current),
-          { entity: id, type: 'revoke', title: 'Experience revoked', meta: `${actor} · ${formatEat(nowIso())}` },
+          { entity: id, type: 'revoke', title: 'Experience revoked', meta: `${actor} · ${formatEat(nowIso())}`, note: reason },
         )
       },
       newRevision: async (id) => {
