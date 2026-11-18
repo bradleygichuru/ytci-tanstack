@@ -9,6 +9,8 @@ import {
 import { useRouteContext } from '@tanstack/react-router'
 import { authClient } from '#/lib/auth-client'
 import { hasPermission, type Action } from '#/lib/authz'
+import { loadThenNowState } from '#/lib/api/then-now'
+import { useApi } from '#/lib/api/use-api'
 import { createFixtures } from './fixtures'
 import { formatEat, nowIso } from './format'
 import { siteReadiness } from './readiness'
@@ -95,6 +97,8 @@ interface ThenNowActions {
 interface ThenNowContextValue {
   state: ThenNowState
   scenario: Scenario
+  /** Where the current read model came from. Mutations stay local in this slice. */
+  source: 'fixtures' | 'api'
   role: string
   actor: string
   can: (action: Action) => boolean
@@ -144,9 +148,11 @@ function updateAudit(state: ThenNowState, event: AuditEvent): AuditEvent[] {
 export function ThenNowProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = authClient.useSession()
   const routeContext = useRouteContext({ from: '/_authenticated' })
+  const api = useApi()
   const role = ((session?.user as { role?: string } | undefined)?.role ?? routeContext.user?.role ?? 'moderator') as string
   const actor = session?.user?.name ?? routeContext.user?.name ?? session?.user?.email ?? routeContext.user?.email ?? 'Administrator'
   const [state, setState] = useState<ThenNowState>(() => createFixtures())
+  const [source, setSource] = useState<'fixtures' | 'api'>('fixtures')
   const [scenario, setScenarioState] = useState<Scenario>('default')
   const [hydrated, setHydrated] = useState(false)
 
@@ -156,14 +162,36 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
     setHydrated(true)
   }, [])
 
+  // Read path: prefer the Go API, fall back to fixtures when it is unavailable,
+  // unauthorised, or empty. Mutations and review writes stay local for now.
   useEffect(() => {
-    if (!hydrated || typeof window === 'undefined') return
+    let cancelled = false
+    loadThenNowState(api.thenNow)
+      .then((data) => {
+        if (cancelled || !data) return
+        setState((prev) => ({
+          sites: data.sites,
+          experiences: data.experiences,
+          audit: data.audit ?? prev.audit,
+        }))
+        setSource('api')
+      })
+      .catch(() => {
+        /* fixtures remain the fallback */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [api])
+
+  useEffect(() => {
+    if (!hydrated || source !== 'fixtures' || typeof window === 'undefined') return
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
     } catch {
       /* storage can be unavailable; fixtures remain in memory */
     }
-  }, [state, hydrated])
+  }, [state, hydrated, source])
 
   const can = useCallback(
     (action: Action) => hasPermission(role, 'thenNow', [action]),
@@ -221,6 +249,7 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
       reset: () => {
         const fixtures = createFixtures()
         setState(fixtures)
+        setSource('fixtures')
         setScenarioState('default')
         if (typeof window !== 'undefined') {
           try {
@@ -574,13 +603,14 @@ export function ThenNowProvider({ children }: { children: React.ReactNode }) {
     () => ({
       state,
       scenario,
+      source,
       role,
       actor,
       can,
       setScenario: setScenarioState,
       actions,
     }),
-    [state, scenario, role, actor, can, actions],
+    [state, scenario, source, role, actor, can, actions],
   )
 
   return <ThenNowContext.Provider value={value}>{children}</ThenNowContext.Provider>
