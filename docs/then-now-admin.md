@@ -1,6 +1,6 @@
 # Then & Now admin (v1)
 
-The Then & Now admin area lives at `/then-now` in the TanStack admin. Sites, experiences, and audit now read from the Go API (`/v1/then-now/*`) when it is reachable and non-empty; otherwise the fixture store remains the fallback. The approved interaction reference is the throwaway prototype on `prototype/then-now-admin` in `ytci-tanstack`; the workflow contract is [Then & Now — Admin Authoring, Review, and Publishing Workflow](https://github.com/bradleygichuru/ytci-mobile/blob/docs/then-now-admin-workflow/docs/specs/then-now-admin-workflow.md).
+The Then & Now admin area lives at `/then-now` in the TanStack admin. Sites, experiences, review, and audit read from the Go API (`/v1/then-now/*`) when it is reachable and non-empty; writes go to the same API. The fixture store remains the offline/demo fallback. The approved interaction reference is the throwaway prototype on `prototype/then-now-admin` in `ytci-tanstack`; the workflow contract is [Then & Now — Admin Authoring, Review, and Publishing Workflow](https://github.com/bradleygichuru/ytci-mobile/blob/docs/then-now-admin-workflow/docs/specs/then-now-admin-workflow.md).
 
 ## Routes
 
@@ -32,8 +32,8 @@ The route guard uses the `thenNow` RBAC resource. The store actions also enforce
 - The fixture state is seeded from `src/lib/then-now/fixtures.ts` and persisted to `localStorage` under `ytci.thenNow.fixtures.v1`.
 - The **Fixture state** control in the Then & Now header exposes default, empty, loading, error, offline, 409 conflict, and read-only states. **Reset data** restores the four sample sites.
 - Site photos in `public/then-now/` are illustrative placeholders, not cleared client assets.
-- Media upload is simulated (metadata only). The editor marks the 1080p/720p/540p files ready after a local file is chosen; no bytes leave the browser.
-- Readiness is computed locally by `src/lib/then-now/readiness.ts` as a stand-in for the server contract. The UI renders the result and never guesses publishability.
+- Media upload is simulated (metadata only). The editor marks the 1080p/720p/540p files ready after a local file is chosen; no bytes leave the browser. In API mode the Go readiness gate also requires R2 object keys, so a simulated upload alone does not clear submit.
+- Readiness is computed locally by `src/lib/then-now/readiness.ts` as a stand-in for the server contract. When an experience came from the API it also checks `renditionKeys`, `posterKey`, `captionKeys`, and `transcriptKey`, matching the Go gate. The UI renders the result and never guesses publishability.
 
 ## Tests
 
@@ -46,24 +46,36 @@ The Playwright spec needs the standard seeded users (`grace@example.com`, `edito
 
 ## Backend wiring status
 
-Track A (read slice) is wired. `src/lib/api/then-now.ts` owns the typed reads and the API → `HeritageSite` / `Experience` mappers:
+Both read and write slices are wired. `src/lib/api/then-now.ts` owns the typed API surface, the API → `HeritageSite` / `Experience` mappers, and the write payload builders:
 
-- `listSites`, `getSite`
-- `listExperiences`, `getExperience`
-- `reviewQueue`, `getReview` (a revision is read through `/review/{revisionId}`; there is no standalone revision read)
-- `listAudit`
+- Reads: `listSites`, `getSite`, `listExperiences`, `getExperience`, `reviewQueue`, `getReview`, `listAudit`.
+- Site writes: `createSite`, `updateSite`, `publishSite`, `unpublishSite`, `archiveSite`.
+- Experience writes: `createExperience`, `updateExperience`, `submitExperience`, `assignReviewer`, `decideExperience`, `recordClientApproval`, `recordExternalReviewer`, `scheduleExperience`, `publishExperience`, `newRevision`, `changeExperienceStatus`.
 
-`ThenNowProvider` calls `loadThenNowState()` once after hydration. On success it replaces sites, experiences, and (when the audit read succeeds) audit, and exposes `source: 'api'`. On a failed sites read or an empty site list it keeps the fixture state and `source: 'fixtures'`. A failed experiences read still keeps the API sites; a failed audit read keeps the fixture audit. Fixture state is still persisted to `localStorage`; API state is not, so a reload re-reads the server.
+`ThenNowProvider` calls `loadThenNowState()` after hydration. On success it replaces sites, experiences, and (when the audit read succeeds) audit, sets `source: 'api'`, and uses the API for every mutation. On a failed sites read or an empty site list it keeps the fixture state and `source: 'fixtures'`; a failed experiences read still keeps the API sites; a failed audit read keeps the previous audit. Fixture state is persisted to `localStorage`; API state is not, so a reload re-reads the server.
 
-Not wired yet (deliberately out of this slice):
+Write behaviour:
 
-- **Site writes:** create, save, publish, unpublish, archive (`POST`/`PATCH /sites`, `/publish`, `/unpublish`, `/archive`).
-- **Experience writes:** create, save, submit, assign reviewer, decisions, client approval, external reviewer, schedule, publish, new revision, status changes.
-- **Review pages:** `/then-now/review` and `/then-now/review/$revisionId` still render from the shared store, so they show API data only for experiences the read slice mapped. They need `reviewQueue` / `getReview` wired to their own loading and error states.
-- **Media:** R2 presign/complete and object-key storage. The editor still simulates upload locally.
-- **Mutation feedback:** API writes need request-in-flight, 403/409 (`ApiErrorResponse`) handling, and an audit refresh. Until then, fixture workflow actions mutate only the in-memory store, even when the read source is the API.
-- **Optimistic concurrency:** `PATCH` sends the full snapshot, so the UI needs a revision-number guard before saving.
-- **Site timestamps:** the Go site read does not expose `updated_at` yet; mapped sites use an empty `updatedAt` and render "Just now". Add it to the API before relying on the Updated column.
+- Every action is async. In API mode the store sends the documented request, merges the returned site or experience detail into state, then refreshes the audit log and the review queue. In fallback mode the existing local workflow runs unchanged, so the fixture demo keeps working offline.
+- A failed mutation throws before any state is written. API mode never applies the local workflow optimistically, so a 403/409 cannot leave the fixture demo or the API view half-mutated.
+- `requireOpenRevision()` compares the server's `openRevisionNumber` with the revision the editor loaded before a full-snapshot PATCH or lifecycle action. A mismatch raises a stale-revision error instead of overwriting newer work.
+- `thenNowErrorMessage()` maps `403`, `409`, `NOT_READY`, `FROZEN`, `SEPARATION`, `SECOND_REVIEWER`, `RESTRICTED`, `NOT_FOUND`, and `UNAUTHORIZED` to operator-facing copy. `NOT_READY` lists up to four readiness blockers from the server payload.
+- The editors show loading skeletons while the first API read settles and surface mutation failures as toasts without closing the dialog.
+- Review queue rows carry `revisionId` (not the experience id) and link to `/then-now/review/$revisionId`; the detail page loads through `getReview`. The queue and detail page have their own loading, empty, and retry states.
+
+Known gaps in the Go contract, handled without silently overwriting:
+
+- **Unassign reviewer:** there is no endpoint. The button is disabled in API mode; reassign the revision to another administrator instead.
+- **Cancel schedule:** there is no endpoint. The button is disabled in API mode; rescheduling replaces the pending time.
+- **Return an approved revision to draft:** `/decisions` accepts `return` only for `in_review`. The button is disabled for approved revisions in API mode; request changes before approval, or publish and start a new revision.
+- **Unpublish/archive reasons:** the Go status endpoints take no reason, so the dialog reason is confirmation-only and is not written to the server audit. The success toast does not claim it was recorded in API mode.
+- **Site timestamps:** the Go site read does not expose `updated_at`, so mapped sites render "Just now". Add it to the API before relying on the Updated column.
+- **Site optimistic concurrency:** site PATCH has no version or `updated_at` precondition, so only experience revisions can be stale-checked client-side.
+- **Media:** R2 presign/complete and object-key storage remain out of scope. `VideoUploadDialog` still records metadata only; a simulated upload writes the local filename into `videoMaster`, which is a placeholder, not a valid R2 key. API-loaded experiences keep `renditionKeys`, `posterKey`, `captionKeys`, and `transcriptKey` through a save, and readiness now checks those keys when they are present, matching the Go gate. A locally "uploaded" file without real keys will therefore stay blocked at submit — that is intentional.
+- **Site publish body:** `publishSite` saves pending edits with a PATCH first, then calls `/publish`; the Go publish endpoint takes no body.
+- **Publish order:** publish the experience first, then the site. The Go site readiness gate requires a published experience.
+
+The experience editor loads `GET /experiences/{id}` on mount before allowing edits. The list read only returns a summary, and saving that summary back would replace the real snapshot with blanks.
 
 ## Verification ownership (#293)
 
@@ -72,9 +84,12 @@ Not wired yet (deliberately out of this slice):
 What #293 needs:
 
 - **Seed:** run the Go seed (`DATABASE_URL=... go run ./cmd/seed-then-now`) so the four sites exist with UUID ids, then set `VITE_API_BASE_URL` to the Go server. Sites: Nairobi Railway Museum, Nairobi War Cemetery, African Heritage House, Nabongo Cultural Centre.
-- **Auth:** log in as `grace@example.com` (administrator) so the route context carries a Go-capable token; the existing `loginAs` helper can be reused.
+- **Auth:** log in as `grace@example.com` (administrator) so the route context carries a Go-capable token; the existing `loginAs` helper can be reused. Content-editor (`editor@example.com`) write checks cover create/save/submit; administrator checks cover decide/publish.
 - **Source selector:** the footer badge reads `Live API` (published status) or `Fixture data` (draft status). Assert it to prove which path ran.
 - **Sites list:** heading `Heritage sites`, search label `Search sites`, links named after the four sites, filters by county/access/status, and the Updated column.
 - **Site editor:** `/then-now/sites/$siteId` where `$siteId` is the API UUID; tabs by role `Identity`, `Policy`, `Location`, `Experiences`, `Sources`; expect the mapped experience title under Experiences.
-- **Fallback:** with the API stopped (or pointed at a dead port) the same fixture assertions keep working. For mocked API runs, use `page.route('**/v1/then-now/**')` and return `{ items: [...] }` / `{ site, experiences, readiness }` payloads; keep ids UUID-shaped so the route params are realistic.
-- **Do not assert:** fixture deep links such as `/then-now/experiences/railway-exp` only exist in fixture mode. In API mode resolve the experience id from the API list or mock the fixture ids. Also do not assert server-side writes through the UI until Track B lands.
+- **Create flows:** `/then-now/sites/new` and `/then-now/experiences/new` now await the API. Assert the new UUID appears in the list and the editor URL, not a fixture id.
+- **Review queue:** `/then-now/review` links use revision UUIDs from `GET /v1/then-now/review?filter=all`; do not derive the detail URL from the experience id. The detail page shows a skeleton, then the frozen revision; a stale revision id renders the retry state.
+- **Write assertions:** after save/submit/approve/publish, assert the status pill and the audit dialog. Approval does not auto-publish; the publish button is a separate step. Sensitive revisions still require the second reviewer before approve.
+- **Fallback:** with the API stopped (or pointed at a dead port) the same fixture assertions keep working. For mocked API runs, use `page.route('**/v1/then-now/**')` and return `{ items: [...] }`, `{ site, experiences, readiness }`, or the experience detail payloads; keep ids UUID-shaped so the route params are realistic. Mock mutation responses with the returned detail so the store can merge them.
+- **Do not assert:** fixture deep links such as `/then-now/experiences/railway-exp` only exist in fixture mode. In API mode resolve the experience id from the API list or mock the fixture ids. Unassign reviewer and cancel schedule are fixture-only until the Go endpoints exist.

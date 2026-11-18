@@ -92,13 +92,13 @@ function NewExperiencePage() {
     setStep((value) => Math.min(5, value + 1))
   }
 
-  const create = () => {
+  const create = async () => {
     if (!form.siteId || !form.title.trim()) {
       toast.error('Choose a site and add an experience title.')
       return
     }
     try {
-      const id = actions.createExperience({
+      const id = await actions.createExperience({
         ...form,
         videoMaster: videoFile?.name ?? form.videoMaster,
         videoSize: videoFile ? `${(videoFile.size / 1_000_000).toFixed(1)} MB` : form.videoSize,

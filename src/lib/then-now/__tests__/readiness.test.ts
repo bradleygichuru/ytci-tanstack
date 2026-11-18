@@ -142,6 +142,46 @@ describe('experienceReadiness', () => {
     expect(readiness.readyToPublish).toBe(true)
     expect(readiness.blockers).toEqual([])
   })
+
+  it('requires media object keys when the experience came from the API', () => {
+    const exp = makeExperience({
+      status: 'draft',
+      liveRevision: 0,
+      draftRevision: 1,
+      renditionKeys: {},
+      posterKey: '',
+      captionKeys: {},
+      transcriptKey: '',
+    })
+    const readiness = experienceReadiness(exp)
+    expect(readiness.readyToSubmit).toBe(false)
+    expect(readiness.blockers.map((item) => item.label)).toEqual(
+      expect.arrayContaining([
+        '1080p video file',
+        'Poster image',
+        'English captions',
+        'Transcript',
+      ]),
+    )
+  })
+
+  it('passes the Go media gate once object keys are present', () => {
+    const exp = makeExperience({
+      status: 'draft',
+      liveRevision: 0,
+      draftRevision: 1,
+      renditionKeys: { '1080': 'then-now/railway/1080.mp4' },
+      posterKey: 'then-now/railway/poster.jpg',
+      captionKeys: { en: 'then-now/railway/en.vtt' },
+      transcriptKey: 'then-now/railway/transcript.txt',
+      captions: { en: true, sw: false },
+      audioDescription: false,
+      renditions: { '1080': 'Ready', '720': 'Ready' },
+    })
+    const readiness = experienceReadiness(exp)
+    expect(readiness.blockers).toEqual([])
+    expect(readiness.readyToSubmit).toBe(true)
+  })
 })
 
 describe('siteReadiness', () => {

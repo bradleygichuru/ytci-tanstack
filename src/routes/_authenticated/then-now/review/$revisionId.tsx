@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import {
@@ -17,13 +17,17 @@ import { formatEat } from '#/lib/then-now/format'
 import {
   ACCESS_LABEL,
   SENSITIVITY_LABEL,
+  type Experience,
 } from '#/lib/then-now/types'
 import {
   AuditDialog,
   Callout,
   EmptyState,
+  ErrorState,
+  Kicker,
   PageHeader,
   PreviewDialog,
+  SkeletonTable,
   StatusPill,
 } from '#/components/then-now/shared'
 import {
@@ -41,8 +45,40 @@ export const Route = createFileRoute('/_authenticated/then-now/review/$revisionI
 function ReviewDetailPage() {
   const { revisionId } = Route.useParams()
   const navigate = useNavigate()
-  const { state, scenario, actor, can, actions } = useThenNow()
-  const exp = state.experiences[revisionId]
+  const { state, scenario, source, actor, can, actions, loadReview, refreshAudit } = useThenNow()
+  const [loaded, setLoaded] = useState<Experience | null>(null)
+  const [loadStatus, setLoadStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [reloadToken, setReloadToken] = useState(0)
+  const canReview = can('review')
+
+  useEffect(() => {
+    if (!canReview) return
+    let cancelled = false
+    setLoadStatus('loading')
+    setLoadError(null)
+    loadReview(revisionId)
+      .then((experience) => {
+        if (cancelled) return
+        if (!experience) {
+          setLoadStatus('error')
+          setLoadError('This revision is not available. Reload the review queue and choose a record.')
+          return
+        }
+        setLoaded(experience)
+        setLoadStatus('ready')
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return
+        setLoadStatus('error')
+        setLoadError(error instanceof Error ? error.message : 'Could not load the revision.')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [revisionId, canReview, loadReview, reloadToken])
+
+  const exp = loaded ? state.experiences[loaded.id] ?? loaded : null
   const site = exp ? state.sites.find((entry) => entry.id === exp.siteId) : undefined
   const [notes, setNotes] = useState('')
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -54,7 +90,7 @@ function ReviewDetailPage() {
   const [publishOpen, setPublishOpen] = useState(false)
   const [scheduleOpen, setScheduleOpen] = useState(false)
 
-  if (!can('review')) {
+  if (!canReview) {
     return (
       <div>
         <PageHeader kicker="Then & Now · Review" title="Review queue" back={{ to: '/then-now/review', label: 'Review queue' }} />
@@ -67,7 +103,28 @@ function ReviewDetailPage() {
     )
   }
 
-  if (!exp || (exp.draftStatus !== 'in_review' && exp.draftStatus !== 'approved')) {
+  if (loadStatus === 'loading') {
+    return (
+      <div>
+        <Kicker>Then & Now · Review</Kicker>
+        <h1 className="mt-1 font-sans text-3xl font-bold tracking-tight text-foreground">Loading revision…</h1>
+        <p className="mb-4 mt-1 text-sm text-muted-foreground">Reading the frozen revision, its diff, and the review evidence.</p>
+        <SkeletonTable rows={5} cols={2} />
+      </div>
+    )
+  }
+
+  if (loadStatus === 'error' || !exp) {
+    return (
+      <div>
+        <PageHeader kicker="Then & Now · Review" title="Revision unavailable" back={{ to: '/then-now/review', label: 'Review queue' }} />
+        <ErrorState onRetry={() => setReloadToken((value) => value + 1)} />
+        {loadError && <p className="mt-2 text-center text-xs text-muted-foreground">{loadError}</p>}
+      </div>
+    )
+  }
+
+  if (exp.draftStatus !== 'in_review' && exp.draftStatus !== 'approved') {
     return (
       <div>
         <PageHeader kicker="Then & Now · Review" title="Revision not in review" back={{ to: '/then-now/review', label: 'Review queue' }} />
@@ -91,9 +148,9 @@ function ReviewDetailPage() {
   const approveDisabled = decisionDisabled || !secondOk || exp.sensitivity === 'restricted'
   const events = state.audit.filter((event) => event.entity === exp.id || (site && event.entity === site.id))
 
-  const approve = () => {
+  const approve = async () => {
     try {
-      actions.approveRevision(exp.id, notes)
+      await actions.approveRevision(exp.id, notes)
       toast.success('Approved. Publishing is a separate step.')
       setNotes('')
     } catch (error) {
@@ -101,13 +158,13 @@ function ReviewDetailPage() {
     }
   }
 
-  const requestChanges = () => {
+  const requestChanges = async () => {
     if (!notes.trim()) {
       toast.error('Add a note explaining the decision.')
       return
     }
     try {
-      actions.requestChanges(exp.id, notes)
+      await actions.requestChanges(exp.id, notes)
       toast.success('Changes requested. The editor can revise and resubmit.', { duration: 5000 })
       navigate({ to: '/then-now/experiences/$experienceId', params: { experienceId: exp.id } })
     } catch (error) {
@@ -123,9 +180,9 @@ function ReviewDetailPage() {
     setRejectOpen(true)
   }
 
-  const confirmReject = () => {
+  const confirmReject = async () => {
     try {
-      actions.rejectRevision(exp.id, notes)
+      await actions.rejectRevision(exp.id, notes)
       setRejectOpen(false)
       toast.success('Revision rejected. The editor must materially revise.', { duration: 5000 })
       navigate({ to: '/then-now/experiences/$experienceId', params: { experienceId: exp.id } })
@@ -134,15 +191,38 @@ function ReviewDetailPage() {
     }
   }
 
-  const publish = () => {
+  const publish = async () => {
     try {
-      actions.publishExperience(exp.id)
+      await actions.publishExperience(exp.id)
       setPublishOpen(false)
       toast.success(`Published v${exp.draftRevision}. The live site is updated.`)
       navigate({ to: '/then-now/experiences/$experienceId', params: { experienceId: exp.id } })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not publish the revision.')
     }
+  }
+
+  const assignToMe = async () => {
+    try {
+      await actions.assignReviewer(exp.id, actor)
+      toast.success(`Assigned to ${actor}.`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not assign.')
+    }
+  }
+
+  const unassign = async () => {
+    try {
+      await actions.unassignReviewer(exp.id)
+      toast.success('Reviewer unassigned. The revision is back in the unassigned queue.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not unassign.')
+    }
+  }
+
+  const openAudit = () => {
+    setAuditOpen(true)
+    void refreshAudit()
   }
 
   return (
@@ -162,7 +242,7 @@ function ReviewDetailPage() {
         actions={
           <>
             <Button variant="outline" size="sm" onClick={() => setPreviewOpen(true)}><Eye className="h-4 w-4" weight="duotone" /> Preview</Button>
-            <Button variant="outline" size="sm" onClick={() => setAuditOpen(true)}><ClockCounterClockwise className="h-4 w-4" weight="duotone" /> Audit</Button>
+            <Button variant="outline" size="sm" onClick={openAudit}><ClockCounterClockwise className="h-4 w-4" weight="duotone" /> Audit</Button>
             <Button variant="ghost" size="sm" className="decision-jump" onClick={() => document.getElementById('decision-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>Decision</Button>
           </>
         }
@@ -211,7 +291,11 @@ function ReviewDetailPage() {
             </div>
             <div className="border-t border-border px-4 py-3">
               <Callout tone={approved ? 'green' : 'neutral'} title={approved ? 'Approved and frozen until publish.' : 'Frozen at submission.'}>
-                {approved ? 'Publishing is a separate step. Return to draft to make changes.' : 'Changes are not allowed in review. “Request changes” returns it to draft; “Return to draft” withdraws it with a reason.'}
+                {approved
+                  ? source === 'api'
+                    ? 'Publishing is a separate step. To revise an approved revision, publish and start a new revision.'
+                    : 'Publishing is a separate step. Return to draft to make changes.'
+                  : 'Changes are not allowed in review. “Request changes” returns it to draft; “Return to draft” withdraws it with a reason.'}
               </Callout>
             </div>
           </div>
@@ -329,10 +413,19 @@ function ReviewDetailPage() {
                 assignedToMe ? (
                   <>
                     <Callout tone="green" title="Assigned to you.">Review the frozen revision, then record a decision.</Callout>
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => { actions.unassignReviewer(exp.id); toast.success('Reviewer unassigned. The revision is back in the unassigned queue.') }} disabled={serverBlocked}>Unassign reviewer</Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={unassign}
+                      disabled={serverBlocked || source === 'api'}
+                      title={source === 'api' ? 'Unassigning is not in the Go API yet. Assign the revision to another administrator instead.' : undefined}
+                    >
+                      Unassign reviewer
+                    </Button>
                   </>
                 ) : (
-                  <Button variant="outline" size="sm" className="w-full" onClick={() => { try { actions.assignReviewer(exp.id, actor); toast.success(`Assigned to ${actor}.`) } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not assign.') } }} disabled={selfReview || serverBlocked}>
+                  <Button variant="outline" size="sm" className="w-full" onClick={assignToMe} disabled={selfReview || serverBlocked}>
                     <User className="h-4 w-4" weight="duotone" /> Assign to me
                   </Button>
                 )
@@ -397,7 +490,15 @@ function ReviewDetailPage() {
                   <>
                     <Button className="w-full" onClick={() => setPublishOpen(true)} disabled={serverBlocked}>Publish now</Button>
                     <Button variant="outline" className="w-full" onClick={() => setScheduleOpen(true)} disabled={serverBlocked}><ClockCounterClockwise className="h-4 w-4" weight="duotone" /> Schedule publish (EAT)</Button>
-                    <Button variant="ghost" className="w-full" onClick={() => setReturnOpen(true)}>Return to draft</Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => setReturnOpen(true)}
+                      disabled={source === 'api'}
+                      title={source === 'api' ? 'Returning an approved revision is not in the Go API yet.' : undefined}
+                    >
+                      Return to draft
+                    </Button>
                   </>
                 ) : (
                   <>
@@ -423,7 +524,7 @@ function ReviewDetailPage() {
           </div>
 
           <div className="rounded-lg border border-border bg-card p-3">
-            <Button variant="outline" size="sm" className="w-full" onClick={() => setAuditOpen(true)}><ClockCounterClockwise className="h-4 w-4" weight="duotone" /> Open audit timeline</Button>
+            <Button variant="outline" size="sm" className="w-full" onClick={openAudit}><ClockCounterClockwise className="h-4 w-4" weight="duotone" /> Open audit timeline</Button>
           </div>
         </aside>
       </div>
@@ -464,14 +565,16 @@ function ReviewDetailPage() {
         confirmLabel="Return to draft"
         variant="destructive"
         onConfirm={(reason) => {
-          try {
-            actions.returnToDraft(exp.id, reason)
-            setReturnOpen(false)
-            toast.success('Returned to draft. The live revision is unchanged.')
-            navigate({ to: '/then-now/experiences/$experienceId', params: { experienceId: exp.id } })
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Could not return to draft.')
-          }
+          void (async () => {
+            try {
+              await actions.returnToDraft(exp.id, reason)
+              setReturnOpen(false)
+              toast.success('Returned to draft. The live revision is unchanged.')
+              navigate({ to: '/then-now/experiences/$experienceId', params: { experienceId: exp.id } })
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not return to draft.')
+            }
+          })()
         }}
       />
 
@@ -492,13 +595,15 @@ function ReviewDetailPage() {
         open={scheduleOpen}
         onOpenChange={setScheduleOpen}
         onConfirm={(at, note) => {
-          try {
-            actions.scheduleExperience(exp.id, at, note)
-            setScheduleOpen(false)
-            toast.success(`Scheduled for ${formatEat(at)}.`)
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Could not schedule the revision.')
-          }
+          void (async () => {
+            try {
+              await actions.scheduleExperience(exp.id, at, note)
+              setScheduleOpen(false)
+              toast.success(`Scheduled for ${formatEat(at)}.`)
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not schedule the revision.')
+            }
+          })()
         }}
       />
 
@@ -506,9 +611,15 @@ function ReviewDetailPage() {
         open={externalOpen}
         onOpenChange={setExternalOpen}
         onConfirm={(reviewer) => {
-          actions.recordExternalReviewer(exp.id, reviewer)
-          setExternalOpen(false)
-          toast.success(reviewer.decision === 'approved' ? 'External reviewer recorded as approved.' : 'External reviewer requested changes.')
+          void (async () => {
+            try {
+              await actions.recordExternalReviewer(exp.id, reviewer)
+              setExternalOpen(false)
+              toast.success(reviewer.decision === 'approved' ? 'External reviewer recorded as approved.' : 'External reviewer requested changes.')
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not record the external reviewer.')
+            }
+          })()
         }}
       />
 
@@ -516,9 +627,15 @@ function ReviewDetailPage() {
         open={clientOpen}
         onOpenChange={setClientOpen}
         onConfirm={(approval) => {
-          actions.recordClientApproval(exp.id, approval)
-          setClientOpen(false)
-          toast.success('Client approval recorded.')
+          void (async () => {
+            try {
+              await actions.recordClientApproval(exp.id, approval)
+              setClientOpen(false)
+              toast.success('Client approval recorded.')
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not record the client approval.')
+            }
+          })()
         }}
       />
     </div>

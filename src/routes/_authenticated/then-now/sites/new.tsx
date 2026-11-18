@@ -86,7 +86,7 @@ function NewSitePage() {
     setStep((value) => Math.min(3, value + 1))
   }
 
-  const create = () => {
+  const create = async () => {
     const nextErrors = validateSiteDraft(form)
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
@@ -94,7 +94,7 @@ function NewSitePage() {
       return
     }
     try {
-      const id = actions.createSite(form)
+      const id = await actions.createSite(form)
       setDirty(false)
       toast.success('Site draft created.')
       // Let the dirty guard observe the cleared flag before the route change.

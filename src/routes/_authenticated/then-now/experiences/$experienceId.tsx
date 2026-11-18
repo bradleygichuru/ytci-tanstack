@@ -31,9 +31,12 @@ import {
   AuditDialog,
   Callout,
   DirtyGuard,
+  ErrorState,
+  Kicker,
   PageHeader,
   PreviewDialog,
   ReadinessRail,
+  SkeletonTable,
   StatusPill,
 } from '#/components/then-now/shared'
 import {
@@ -68,11 +71,16 @@ function ExperienceEditorPage() {
   const { experienceId } = Route.useParams()
   const { tab = 'story' } = Route.useSearch()
   const navigate = useNavigate()
-  const { state, scenario, can, actions, setScenario } = useThenNow()
+  const { state, scenario, source, apiStatus, can, actions, refresh, refreshAudit, loadExperience, setScenario } = useThenNow()
   const exp = state.experiences[experienceId]
   const site = exp ? state.sites.find((entry) => entry.id === exp.siteId) : undefined
 
   const [form, setForm] = useState<Experience | null>(exp ?? null)
+  const [detailStatus, setDetailStatus] = useState<'loading' | 'ready' | 'error'>(
+    source === 'api' ? 'loading' : 'ready',
+  )
+  const [detailError, setDetailError] = useState<string | null>(null)
+  const [reloadToken, setReloadToken] = useState(0)
   const [dirty, setDirty] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [auditOpen, setAuditOpen] = useState(false)
@@ -95,16 +103,66 @@ function ExperienceEditorPage() {
     setDirty(false)
   }, [exp])
 
+  // The list read only carries an experience summary. Load the full snapshot
+  // before editing so a save cannot replace real story/media fields with blanks.
+  useEffect(() => {
+    let cancelled = false
+    if (source !== 'api') {
+      setDetailStatus('ready')
+      setDetailError(null)
+      return
+    }
+    setDetailStatus('loading')
+    setDetailError(null)
+    loadExperience(experienceId)
+      .then((loaded) => {
+        if (cancelled) return
+        if (!loaded) {
+          setDetailStatus('error')
+          setDetailError('This experience is not available. Reload the experiences list.')
+          return
+        }
+        setDetailStatus('ready')
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return
+        setDetailStatus('error')
+        setDetailError(error instanceof Error ? error.message : 'Could not load the experience.')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [experienceId, source, loadExperience, reloadToken])
+
   const readiness = useMemo(
     () => (form ? experienceReadiness(form) : { blockers: [], warnings: [], readyToSubmit: false, readyToPublish: false }),
     [form],
   )
 
-  if (!exp || !form) {
+  if (!exp || !form || detailStatus === 'loading') {
+    if (apiStatus === 'loading' || detailStatus === 'loading') {
+      return (
+        <div>
+          <Kicker>Then &amp; Now · Experiences</Kicker>
+          <h1 className="mt-1 font-sans text-3xl font-bold tracking-tight text-foreground">Loading experience…</h1>
+          <p className="mb-4 mt-1 text-sm text-muted-foreground">Reading the revision, media keys, and readiness from the Go API.</p>
+          <SkeletonTable rows={5} cols={3} />
+        </div>
+      )
+    }
+    if (detailStatus === 'error') {
+      return (
+        <div>
+          <PageHeader kicker="Then & Now · Experiences" title="Experience unavailable" back={{ to: '/then-now/experiences', label: 'All experiences' }} />
+          <ErrorState onRetry={() => setReloadToken((value) => value + 1)} />
+          {detailError && <p className="mt-2 text-center text-xs text-muted-foreground">{detailError}</p>}
+        </div>
+      )
+    }
     return (
       <div>
         <PageHeader kicker="Then & Now · Experiences" title="Experience not found" back={{ to: '/then-now/experiences', label: 'All experiences' }} />
-        <Callout tone="red" title="This fixture is not available.">Return to the experiences list and choose a record.</Callout>
+        <Callout tone="red" title="This record is not available.">Return to the experiences list and choose a record.</Callout>
       </div>
     )
   }
@@ -172,14 +230,14 @@ function ExperienceEditorPage() {
     setDirty(true)
   }
 
-  const save = () => {
+  const save = async () => {
     if (!canEditContent) return
     if (scenario === 'conflict') {
       setConflictOpen(true)
       return
     }
     try {
-      actions.saveExperience(exp.id, form)
+      await actions.saveExperience(exp.id, form)
       setDirty(false)
       toast.success(scenario === 'offline' ? 'Saved locally; will sync when you’re back online.' : `Draft saved · v${exp.draftRevision}`)
     } catch (error) {
@@ -187,9 +245,9 @@ function ExperienceEditorPage() {
     }
   }
 
-  const confirmSubmit = () => {
+  const confirmSubmit = async () => {
     try {
-      actions.submitExperience(exp.id, form)
+      await actions.submitExperience(exp.id, form)
       setDirty(false)
       setSubmitOpen(false)
       toast.success(`Submitted v${exp.draftRevision} for review.`)
@@ -198,14 +256,55 @@ function ExperienceEditorPage() {
     }
   }
 
-  const confirmPublish = () => {
+  const confirmPublish = async () => {
     try {
-      actions.publishExperience(exp.id)
+      await actions.publishExperience(exp.id)
       setPublishOpen(false)
       setDirty(false)
       toast.success(`Published v${exp.draftRevision}. The live site is updated.`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not publish the revision.')
+    }
+  }
+
+  const refreshReadiness = async () => {
+    try {
+      const wasFixture = source !== 'api'
+      if (source === 'api') {
+        await loadExperience(exp.id)
+      } else {
+        await refresh()
+      }
+      toast.success(
+        wasFixture
+          ? 'Readiness refreshed from the fixture data.'
+          : 'Readiness refreshed from the server.',
+      )
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not refresh readiness.')
+    }
+  }
+
+  const openAudit = () => {
+    setAuditOpen(true)
+    void refreshAudit()
+  }
+
+  const cancelSchedule = async () => {
+    try {
+      await actions.cancelSchedule(exp.id)
+      toast.success('Publish schedule cancelled.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not cancel the schedule.')
+    }
+  }
+
+  const startRevision = async () => {
+    try {
+      await actions.newRevision(exp.id)
+      toast.success(`Draft v${exp.liveRevision + 1} created. Live v${exp.liveRevision} stays public.`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not create a new revision.')
     }
   }
 
@@ -273,17 +372,31 @@ function ExperienceEditorPage() {
               </>
             )}
             {exp.scheduledAt && can('publish') && (
-              <Button variant="outline" size="sm" onClick={() => { actions.cancelSchedule(exp.id); toast.success('Publish schedule cancelled.') }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={cancelSchedule}
+                disabled={source === 'api'}
+                title={source === 'api' ? 'Cancelling a schedule is not in the Go API yet. Reschedule to replace it.' : undefined}
+              >
                 Cancel schedule
               </Button>
             )}
             {exp.status === 'published' && exp.draftRevision <= exp.liveRevision && can('edit') && (
-              <Button variant="outline" size="sm" onClick={() => { actions.newRevision(exp.id); toast.success(`Draft v${exp.liveRevision + 1} created. Live v${exp.liveRevision} stays public.`) }}>
+              <Button variant="outline" size="sm" onClick={startRevision}>
                 Edit new revision
               </Button>
             )}
             {(exp.draftStatus === 'in_review' || exp.draftStatus === 'approved') && can('edit') && (
-              <Button variant="outline" size="sm" onClick={() => setReturnOpen(true)}>Return to draft</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReturnOpen(true)}
+                disabled={source === 'api' && exp.draftStatus === 'approved'}
+                title={source === 'api' && exp.draftStatus === 'approved' ? 'Returning an approved revision is not in the Go API yet.' : undefined}
+              >
+                Return to draft
+              </Button>
             )}
             {exp.status === 'published' && can('unpublish') && (
               <Button variant="outline" size="sm" onClick={() => setUnpublishOpen(true)} disabled={serverBlocked}>Unpublish</Button>
@@ -324,7 +437,9 @@ function ExperienceEditorPage() {
         <div className="mb-4">
           <Callout tone={exp.draftStatus === 'approved' ? 'green' : 'gold'} title={exp.draftStatus === 'approved' ? 'Approved and frozen until publish.' : 'Frozen for review.'}>
             {exp.draftStatus === 'approved'
-              ? 'Publishing is a separate step. Return to draft to make changes.'
+              ? source === 'api'
+                ? 'Publishing is a separate step. To revise an approved revision, publish and start a new revision.'
+                : 'Publishing is a separate step. Return to draft to make changes.'
               : 'Reviewers see this snapshot and a diff against live. Return to draft to make changes.'}
           </Callout>
         </div>
@@ -738,8 +853,8 @@ function ExperienceEditorPage() {
                                     : 'Ready to submit. Use Submit for review in the header.'}
               </p>
               <div className="flex flex-wrap gap-1">
-                <Button variant="ghost" size="sm" onClick={() => toast.success('Readiness refreshed from the fixture contract.')}>Refresh readiness</Button>
-                <Button variant="ghost" size="sm" onClick={() => setAuditOpen(true)}>
+                <Button variant="ghost" size="sm" onClick={refreshReadiness}>Refresh readiness</Button>
+                <Button variant="ghost" size="sm" onClick={openAudit}>
                   <ClockCounterClockwise className="h-4 w-4" weight="duotone" /> Audit
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setRevisionsOpen(true)}>
@@ -782,7 +897,11 @@ function ExperienceEditorPage() {
             renditions: { '1080': 'Ready', '720': 'Ready', '540': 'Ready' },
           } : prev)
           setDirty(true)
-          toast.success('Video attached. Save the draft to apply it.')
+          toast.success(
+            source === 'api'
+              ? 'Video metadata attached. Real R2 object keys are still required before the API readiness gate clears.'
+              : 'Video attached. Save the draft to apply it.',
+          )
         }}
       />
 
@@ -816,13 +935,15 @@ function ExperienceEditorPage() {
         open={scheduleOpen}
         onOpenChange={setScheduleOpen}
         onConfirm={(at, note) => {
-          try {
-            actions.scheduleExperience(exp.id, at, note)
-            setScheduleOpen(false)
-            toast.success(`Scheduled for ${formatEat(at)}.`)
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Could not schedule the revision.')
-          }
+          void (async () => {
+            try {
+              await actions.scheduleExperience(exp.id, at, note)
+              setScheduleOpen(false)
+              toast.success(`Scheduled for ${formatEat(at)}.`)
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not schedule the revision.')
+            }
+          })()
         }}
       />
 
@@ -835,13 +956,15 @@ function ExperienceEditorPage() {
         confirmLabel="Return to draft"
         variant="destructive"
         onConfirm={(reason) => {
-          try {
-            actions.returnToDraft(exp.id, reason)
-            setReturnOpen(false)
-            toast.success('Returned to draft. The live revision is unchanged.')
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Could not return to draft.')
-          }
+          void (async () => {
+            try {
+              await actions.returnToDraft(exp.id, reason)
+              setReturnOpen(false)
+              toast.success('Returned to draft. The live revision is unchanged.')
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not return to draft.')
+            }
+          })()
         }}
       />
 
@@ -853,9 +976,19 @@ function ExperienceEditorPage() {
         label="Reason"
         confirmLabel="Unpublish"
         onConfirm={(reason) => {
-          actions.unpublishExperience(exp.id)
-          setUnpublishOpen(false)
-          toast.success(`Experience unpublished. ${reason ? 'Reason recorded.' : ''}`)
+          void (async () => {
+            try {
+              await actions.unpublishExperience(exp.id)
+              setUnpublishOpen(false)
+              toast.success(
+                source === 'api'
+                  ? 'Experience unpublished.'
+                  : `Experience unpublished. ${reason ? 'Reason recorded.' : ''}`,
+              )
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not unpublish the experience.')
+            }
+          })()
         }}
       />
 
@@ -868,9 +1001,19 @@ function ExperienceEditorPage() {
         confirmLabel="Archive"
         variant="destructive"
         onConfirm={(reason) => {
-          actions.archiveExperience(exp.id)
-          setArchiveOpen(false)
-          toast.success(`Experience archived. ${reason ? 'Reason recorded.' : ''}`)
+          void (async () => {
+            try {
+              await actions.archiveExperience(exp.id)
+              setArchiveOpen(false)
+              toast.success(
+                source === 'api'
+                  ? 'Experience archived.'
+                  : `Experience archived. ${reason ? 'Reason recorded.' : ''}`,
+              )
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not archive the experience.')
+            }
+          })()
         }}
       />
 
@@ -883,9 +1026,19 @@ function ExperienceEditorPage() {
         confirmLabel="Revoke"
         variant="destructive"
         onConfirm={(reason) => {
-          actions.revokeExperience(exp.id)
-          setRevokeOpen(false)
-          toast.success(`Experience revoked. ${reason ? 'Reason recorded.' : ''}`)
+          void (async () => {
+            try {
+              await actions.revokeExperience(exp.id)
+              setRevokeOpen(false)
+              toast.success(
+                source === 'api'
+                  ? 'Experience revoked.'
+                  : `Experience revoked. ${reason ? 'Reason recorded.' : ''}`,
+              )
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not revoke the experience.')
+            }
+          })()
         }}
       />
 
@@ -893,9 +1046,15 @@ function ExperienceEditorPage() {
         open={clientOpen}
         onOpenChange={setClientOpen}
         onConfirm={(approval) => {
-          actions.recordClientApproval(exp.id, approval)
-          setClientOpen(false)
-          toast.success('Client approval recorded.')
+          void (async () => {
+            try {
+              await actions.recordClientApproval(exp.id, approval)
+              setClientOpen(false)
+              toast.success('Client approval recorded.')
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not record the client approval.')
+            }
+          })()
         }}
       />
 
@@ -903,9 +1062,15 @@ function ExperienceEditorPage() {
         open={externalOpen}
         onOpenChange={setExternalOpen}
         onConfirm={(reviewer) => {
-          actions.recordExternalReviewer(exp.id, reviewer)
-          setExternalOpen(false)
-          toast.success(reviewer.decision === 'approved' ? 'External reviewer recorded as approved.' : 'External reviewer requested changes.')
+          void (async () => {
+            try {
+              await actions.recordExternalReviewer(exp.id, reviewer)
+              setExternalOpen(false)
+              toast.success(reviewer.decision === 'approved' ? 'External reviewer recorded as approved.' : 'External reviewer requested changes.')
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not record the external reviewer.')
+            }
+          })()
         }}
       />
 
@@ -920,7 +1085,8 @@ function ExperienceEditorPage() {
           setForm(exp)
           setDirty(false)
           setConflictOpen(false)
-          toast.success('Reloaded the server revision v5. Your local edits were discarded.')
+          void loadExperience(exp.id)
+          toast.success('Reloaded the server revision. Your local edits were discarded.')
         }}
       >
         <Callout tone="red" title="Daniel M. saved a newer revision at 10:14.">

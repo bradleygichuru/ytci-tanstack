@@ -14,6 +14,8 @@ export class ApiErrorResponse extends Error {
     public code: string,
     message: string,
     public details?: Record<string, unknown>,
+    /** The full error response body, when the endpoint returns extra fields. */
+    public payload?: unknown,
   ) {
     super(message)
     this.name = 'ApiErrorResponse'
