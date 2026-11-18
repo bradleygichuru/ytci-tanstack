@@ -31,7 +31,7 @@ function ThenNowLayout() {
 }
 
 function ThenNowShell() {
-  const { state, scenario, setScenario, can } = useThenNow()
+  const { state, scenario, source, setScenario, can } = useThenNow()
   const location = useLocation()
   const pathname = location.pathname
   const reviewCount = Object.values(state.experiences).filter((exp) => exp.draftStatus === 'in_review').length
@@ -100,8 +100,15 @@ function ThenNowShell() {
       )}
 
       <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] text-muted-foreground">
-        <StatusBadge status="draft" label="Fixture data" />
-        <span>Then &amp; Now admin is running against local fixtures until the Go API slice lands.</span>
+        <StatusBadge
+          status={source === 'api' ? 'published' : 'draft'}
+          label={source === 'api' ? 'Live API' : 'Fixture data'}
+        />
+        <span>
+          {source === 'api'
+            ? 'Then & Now admin is reading sites, experiences, and audit from the Go API. Mutations still stay local until the write wiring lands.'
+            : 'Then & Now admin is running against local fixtures because the Go API is unavailable or has no sites yet.'}
+        </span>
       </div>
     </div>
   )

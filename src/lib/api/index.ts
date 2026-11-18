@@ -12,6 +12,7 @@ import { analyticsApi } from './analytics'
 import { usersApi } from './users'
 import { commentsApi } from './comments'
 import { marketplaceApi } from './marketplace'
+import { thenNowApi } from './then-now'
 
 export type { ApiConfig } from './client'
 
@@ -30,6 +31,7 @@ export function createApiClient(config: ApiConfig) {
     users: usersApi(config),
     comments: commentsApi(config),
     marketplace: marketplaceApi(config),
+    thenNow: thenNowApi(config),
   }
 }
 
