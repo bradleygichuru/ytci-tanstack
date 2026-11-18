@@ -4,13 +4,21 @@ import {
   mapApiAuditEvent,
   mapApiExperience,
   mapApiExperienceSummary,
+  mapApiReviewRow,
   mapApiSite,
+  requireOpenRevision,
+  siteCreatePayload,
+  sitePatchPayload,
+  snapshotFromExperience,
   thenNowApi,
+  thenNowErrorMessage,
+  ThenNowStaleRevisionError,
   type ThenNowApi,
   type ThenNowApiExperienceDetail,
   type ThenNowApiSite,
   type ThenNowApiSnapshot,
 } from '../then-now'
+import { ApiErrorResponse } from '../types'
 
 const config = { baseUrl: 'http://localhost:8080', token: 'test-jwt' }
 
@@ -263,6 +271,235 @@ describe('Then & Now API mapping', () => {
       meta: 'user-1 · 2026-11-17T09:42:00Z',
       note: 'Ready.',
     })
+  })
+})
+
+describe('thenNowApi writes', () => {
+  it('creates and updates a site through the documented paths', async () => {
+    mockFetch(API_SITE)
+    const api = thenNowApi(config)
+    await api.createSite({
+      name: 'Nairobi Railway Museum',
+      county: 'Nairobi',
+      siteType: 'historical',
+      accessMode: 'camera_video',
+      sensitivity: 'standard',
+    })
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe('http://localhost:8080/v1/then-now/sites')
+    expect(vi.mocked(fetch).mock.calls[0][1]).toEqual(expect.objectContaining({
+      method: 'POST',
+      body: expect.stringContaining('"siteType":"historical"'),
+    }))
+
+    mockFetch(API_SITE)
+    await api.updateSite(API_SITE.id, { name: 'Renamed' })
+    expect(vi.mocked(fetch).mock.calls[1][0]).toBe(
+      `http://localhost:8080/v1/then-now/sites/${API_SITE.id}`,
+    )
+    expect(vi.mocked(fetch).mock.calls[1][1]).toEqual(expect.objectContaining({ method: 'PATCH' }))
+  })
+
+  it('publishes, unpublishes, and archives a site', async () => {
+    const api = thenNowApi(config)
+    mockFetch(API_SITE)
+    await api.publishSite(API_SITE.id)
+    expect(String(vi.mocked(fetch).mock.calls[0][0])).toContain(`/sites/${API_SITE.id}/publish`)
+    expect(vi.mocked(fetch).mock.calls[0][1]).toEqual(expect.objectContaining({ method: 'POST' }))
+
+    mockFetch(API_SITE)
+    await api.unpublishSite(API_SITE.id)
+    expect(String(vi.mocked(fetch).mock.calls[1][0])).toContain(`/sites/${API_SITE.id}/unpublish`)
+
+    mockFetch(API_SITE)
+    await api.archiveSite(API_SITE.id)
+    expect(String(vi.mocked(fetch).mock.calls[2][0])).toContain(`/sites/${API_SITE.id}/archive`)
+  })
+
+  it('sends full snapshots on experience writes and lifecycle actions', async () => {
+    const api = thenNowApi(config)
+    const snapshot = snapshotFromExperience(mapApiExperience(DETAIL))
+
+    mockFetch(DETAIL)
+    await api.updateExperience(DETAIL.id, { title: DETAIL.title, snapshot })
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe(
+      `http://localhost:8080/v1/then-now/experiences/${DETAIL.id}`,
+    )
+    expect(vi.mocked(fetch).mock.calls[0][1]).toEqual(expect.objectContaining({ method: 'PATCH' }))
+    expect(vi.mocked(fetch).mock.calls[0][1]?.body).toContain('"renditionKeys"')
+
+    const calls: [() => Promise<unknown>, string][] = [
+      [() => api.submitExperience(DETAIL.id), `/experiences/${DETAIL.id}/submit`],
+      [() => api.assignReviewer(DETAIL.id), `/experiences/${DETAIL.id}/assign`],
+      [() => api.publishExperience(DETAIL.id), `/experiences/${DETAIL.id}/publish`],
+      [() => api.newRevision(DETAIL.id), `/experiences/${DETAIL.id}/new-revision`],
+    ]
+    for (const [call, path] of calls) {
+      mockFetch(DETAIL)
+      await call()
+      const request = vi.mocked(fetch).mock.calls.at(-1)
+      expect(String(request?.[0])).toContain(path)
+      expect(request?.[1]).toEqual(expect.objectContaining({ method: 'POST' }))
+    }
+  })
+
+  it('sends decisions, scheduling, rights records, and status actions', async () => {
+    const api = thenNowApi(config)
+    mockFetch(DETAIL)
+    await api.decideExperience(DETAIL.id, 'request_changes', 'Shorten card 02.')
+    expect(vi.mocked(fetch).mock.calls[0][1]?.body).toBe(
+      JSON.stringify({ decision: 'request_changes', notes: 'Shorten card 02.' }),
+    )
+
+    mockFetch(DETAIL)
+    await api.scheduleExperience(DETAIL.id, '2026-12-01T06:00:00.000Z', 'Morning release')
+    expect(String(vi.mocked(fetch).mock.calls[1][0])).toContain(`/experiences/${DETAIL.id}/schedule`)
+    expect(vi.mocked(fetch).mock.calls[1][1]?.body).toContain('"scheduledAt"')
+
+    mockFetch(DETAIL)
+    await api.changeExperienceStatus(DETAIL.id, 'revoke')
+    expect(vi.mocked(fetch).mock.calls[2][1]?.body).toBe(JSON.stringify({ action: 'revoke' }))
+
+    mockFetch(DETAIL)
+    await api.recordClientApproval(DETAIL.id, {
+      name: 'Njeri K.',
+      role: 'Client approver',
+      at: '2026-11-16T17:02:00+03:00',
+    })
+    expect(String(vi.mocked(fetch).mock.calls[3][0])).toContain(`/experiences/${DETAIL.id}/client-approval`)
+  })
+})
+
+describe('Then & Now write payloads', () => {
+  it('maps a site to the create body with lowercase enums', () => {
+    const site = mapApiSite(API_SITE)
+    const body = siteCreatePayload({
+      ...site,
+      type: 'Cultural',
+      latitude: '',
+      longitude: '36.822641',
+      geofenceRadius: '200',
+    })
+    expect(body).toEqual(expect.objectContaining({
+      name: 'Nairobi Railway Museum',
+      county: 'Nairobi',
+      siteType: 'cultural',
+      accessMode: 'camera_video',
+      sensitivity: 'standard',
+      longitude: 36.822641,
+      geofenceRadiusM: 200,
+    }))
+    expect(body.latitude).toBeUndefined()
+  })
+
+  it('keeps empty optional strings out of a create but allows clearing in a patch', () => {
+    const site = mapApiSite(API_SITE)
+    const create = siteCreatePayload({ ...site, sources: '', factCheck: '' })
+    expect(create.sources).toBeUndefined()
+    expect(create.factCheck).toBeUndefined()
+
+    const patch = sitePatchPayload({ ...site, sources: '', factCheck: '' })
+    expect(patch.sources).toBe('')
+    expect(patch.factCheck).toBe('')
+  })
+
+  it('round-trips snapshot fields the Go readiness gate needs', () => {
+    const exp = mapApiExperience(DETAIL)
+    const snapshot = snapshotFromExperience(exp)
+    expect(snapshot.primaryMode).toBe('camera_video')
+    expect(snapshot.rightsRecord).toBe('Client footage · cleared')
+    expect(snapshot.consentRecord).toBe('Community review recorded')
+    expect(snapshot.renditionKeys).toEqual({})
+    expect(snapshot.captionKeys).toEqual({})
+    expect(snapshot.textCards).toEqual(SNAPSHOT.textCards)
+  })
+
+  it('keeps existing media object keys through a load and save', () => {
+    const exp = mapApiExperience({
+      ...DETAIL,
+      openRevision: DETAIL.openRevision
+        ? {
+            ...DETAIL.openRevision,
+            snapshot: {
+              ...SNAPSHOT,
+              renditionKeys: { '1080': 'then-now/railway/1080.mp4' },
+              posterKey: 'then-now/railway/poster.jpg',
+              captionKeys: { en: 'then-now/railway/en.vtt' },
+              transcriptKey: 'then-now/railway/transcript.txt',
+            },
+          }
+        : null,
+    })
+    const snapshot = snapshotFromExperience(exp)
+    expect(snapshot.renditionKeys).toEqual({ '1080': 'then-now/railway/1080.mp4' })
+    expect(snapshot.posterKey).toBe('then-now/railway/poster.jpg')
+    expect(snapshot.captionKeys).toEqual({ en: 'then-now/railway/en.vtt' })
+    expect(snapshot.transcriptKey).toBe('then-now/railway/transcript.txt')
+  })
+
+  it('maps a review queue row without turning the revision id into an experience id', () => {
+    const row = mapApiReviewRow({
+      revisionId: 'rev-9',
+      experienceId: DETAIL.id,
+      siteId: API_SITE.id,
+      siteName: API_SITE.name,
+      title: DETAIL.title,
+      revisionNumber: 9,
+      submittedBy: 'Amina W.',
+      submittedAt: '2026-11-17T09:42:00Z',
+      sensitivity: 'sensitive',
+      reviewer: 'Daniel M.',
+    })
+    expect(row).toEqual({
+      revisionId: 'rev-9',
+      experienceId: DETAIL.id,
+      siteId: API_SITE.id,
+      siteName: API_SITE.name,
+      title: DETAIL.title,
+      revisionNumber: 9,
+      submittedBy: 'Amina W.',
+      submittedAt: '2026-11-17T09:42:00Z',
+      sensitivity: 'sensitive',
+      reviewer: 'Daniel M.',
+    })
+  })
+})
+
+describe('optimistic concurrency and errors', () => {
+  it('rejects a stale open revision before a full-snapshot save', async () => {
+    const api = fakeApi({
+      getExperience: vi.fn().mockResolvedValue({ ...DETAIL, openRevisionNumber: 6 }),
+    })
+    await expect(requireOpenRevision(api, DETAIL.id, 4)).rejects.toBeInstanceOf(
+      ThenNowStaleRevisionError,
+    )
+  })
+
+  it('returns the detail when the revision still matches', async () => {
+    const api = fakeApi({ getExperience: vi.fn().mockResolvedValue(DETAIL) })
+    await expect(requireOpenRevision(api, DETAIL.id, 4)).resolves.toEqual(DETAIL)
+  })
+
+  it('turns common API failures into operator-facing messages', () => {
+    expect(thenNowErrorMessage(new ApiErrorResponse(403, 'FORBIDDEN', 'forbidden'))).toContain(
+      'does not have permission',
+    )
+    expect(thenNowErrorMessage(new ApiErrorResponse(409, 'SEPARATION', 'separation'))).toBe(
+      'The uploader cannot review their own revision.',
+    )
+    const readiness = {
+      blockers: [{ section: 'media', label: 'Poster image' }],
+      warnings: [],
+      readyToSubmit: false,
+      readyToPublish: false,
+    }
+    const notReady = new ApiErrorResponse(
+      409,
+      'NOT_READY',
+      'readiness blockers prevent submission',
+      undefined,
+      { error: { code: 'NOT_READY', message: 'readiness blockers prevent submission' }, readiness },
+    )
+    expect(thenNowErrorMessage(notReady)).toContain('Blocked by: Poster image.')
   })
 })
 

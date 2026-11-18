@@ -17,12 +17,22 @@ export function experienceReadiness(exp: Experience): Readiness {
   if (!exp.promise.trim()) add(authoringBlockers, 'story', 'Promise')
   if (!exp.story.trim()) add(authoringBlockers, 'story', 'Story')
   if (!exp.videoMaster) add(authoringBlockers, 'media', 'Site video master')
-  if (!exp.renditions['1080'] || exp.renditions['1080'] === 'Missing') {
+  if (
+    !exp.renditions['1080'] ||
+    exp.renditions['1080'] === 'Missing' ||
+    (exp.renditionKeys !== undefined && !exp.renditionKeys['1080'])
+  ) {
     add(authoringBlockers, 'media', '1080p video file')
   }
-  if (!exp.poster) add(authoringBlockers, 'media', 'Poster image')
-  if (!exp.captions.en) add(authoringBlockers, 'accessibility', 'English captions')
-  if (!exp.transcript) add(authoringBlockers, 'accessibility', 'Transcript')
+  if (!exp.poster || (exp.posterKey !== undefined && !exp.posterKey)) {
+    add(authoringBlockers, 'media', 'Poster image')
+  }
+  if (!exp.captions.en || (exp.captionKeys !== undefined && !exp.captionKeys.en)) {
+    add(authoringBlockers, 'accessibility', 'English captions')
+  }
+  if (!exp.transcript || (exp.transcriptKey !== undefined && !exp.transcriptKey)) {
+    add(authoringBlockers, 'accessibility', 'Transcript')
+  }
   if (!exp.rights.trim()) add(authoringBlockers, 'rights', 'Rights record')
   if (!exp.consent.trim()) add(authoringBlockers, 'rights', 'Cultural authority / consent')
   if (exp.textCards.filter((card) => card.text.trim()).length < 2) {

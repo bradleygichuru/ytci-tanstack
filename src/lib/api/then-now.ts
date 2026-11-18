@@ -1,5 +1,6 @@
 import type { ApiConfig } from './client'
 import { apiRequest } from './client'
+import { ApiErrorResponse } from './types'
 import type {
   AccessMode,
   AuditEvent,
@@ -229,16 +230,145 @@ export interface ThenNowApiAuditList {
   items: ThenNowApiAuditEvent[]
 }
 
+/** Body accepted by `POST /v1/then-now/sites`. */
+export interface ThenNowSiteCreate {
+  name: string
+  slug?: string
+  county: string
+  locality?: string
+  siteType: 'historical' | 'cultural'
+  accessMode: AccessMode
+  sensitivity: Sensitivity
+  managingAuthority?: string
+  destinationId?: string
+  photographyPolicy?: string
+  culturalAuthority?: string
+  consentRecord?: string
+  consentDate?: string
+  siteRules?: string
+  safetyNotes?: string
+  shortDescription?: string
+  fullDescription?: string
+  sources?: string
+  factCheck?: string
+  publicRightsLine?: string
+  latitude?: number
+  longitude?: number
+  geofenceRadiusM?: number
+  standingPointNote?: string
+  imageKey?: string
+}
+
+/** Body accepted by `PATCH /v1/then-now/sites/{id}`. Every field is optional. */
+export type ThenNowSitePatch = Partial<ThenNowSiteCreate>
+
+/** Body accepted by `POST /v1/then-now/experiences`. */
+export interface ThenNowExperienceCreate {
+  siteId: string
+  title: string
+  snapshot: ThenNowApiSnapshot
+}
+
+/** Body accepted by `PATCH /v1/then-now/experiences/{id}`. */
+export interface ThenNowExperienceUpdate {
+  title?: string
+  snapshot: ThenNowApiSnapshot
+}
+
+export type ThenNowDecision = 'approve' | 'request_changes' | 'reject' | 'return'
+
+export type ThenNowStatusAction = 'unpublish' | 'archive' | 'revoke'
+
+/** A review queue row in the shape the admin table renders. */
+export interface ThenNowReviewRow {
+  revisionId: string
+  experienceId: string
+  siteId: string
+  siteName: string
+  title: string
+  revisionNumber: number
+  submittedBy: string
+  submittedAt: string
+  sensitivity: Sensitivity
+  reviewer: string
+}
+
 export function thenNowApi(config: ApiConfig) {
   return {
     listSites: (params?: ThenNowSiteFilters) =>
       apiRequest<ThenNowApiSiteList>(config, '/v1/then-now/sites', { params }),
     getSite: (id: string) =>
       apiRequest<ThenNowApiSiteDetail>(config, `/v1/then-now/sites/${id}`),
+    createSite: (body: ThenNowSiteCreate) =>
+      apiRequest<ThenNowApiSite>(config, '/v1/then-now/sites', { method: 'POST', body }),
+    updateSite: (id: string, body: ThenNowSitePatch) =>
+      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}`, { method: 'PATCH', body }),
+    publishSite: (id: string) =>
+      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}/publish`, { method: 'POST' }),
+    unpublishSite: (id: string) =>
+      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}/unpublish`, { method: 'POST' }),
+    archiveSite: (id: string) =>
+      apiRequest<ThenNowApiSite>(config, `/v1/then-now/sites/${id}/archive`, { method: 'POST' }),
     listExperiences: (params?: ThenNowExperienceFilters) =>
       apiRequest<ThenNowApiExperienceList>(config, '/v1/then-now/experiences', { params }),
     getExperience: (id: string) =>
       apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}`),
+    createExperience: (body: ThenNowExperienceCreate) =>
+      apiRequest<ThenNowApiExperienceDetail>(config, '/v1/then-now/experiences', {
+        method: 'POST',
+        body,
+      }),
+    updateExperience: (id: string, body: ThenNowExperienceUpdate) =>
+      apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}`, {
+        method: 'PATCH',
+        body,
+      }),
+    submitExperience: (id: string) =>
+      apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/submit`, {
+        method: 'POST',
+      }),
+    assignReviewer: (id: string, reviewerId?: string) =>
+      apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/assign`, {
+        method: 'POST',
+        body: reviewerId ? { reviewerId } : {},
+      }),
+    decideExperience: (id: string, decision: ThenNowDecision, notes: string) =>
+      apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/decisions`, {
+        method: 'POST',
+        body: { decision, notes },
+      }),
+    recordClientApproval: (id: string, approval: ClientApproval) =>
+      apiRequest<ThenNowApiExperienceDetail>(
+        config,
+        `/v1/then-now/experiences/${id}/client-approval`,
+        { method: 'POST', body: approval },
+      ),
+    recordExternalReviewer: (id: string, reviewer: ExternalReviewer) =>
+      apiRequest<ThenNowApiExperienceDetail>(
+        config,
+        `/v1/then-now/experiences/${id}/external-reviewer`,
+        { method: 'POST', body: reviewer },
+      ),
+    scheduleExperience: (id: string, scheduledAt: string, note: string) =>
+      apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/schedule`, {
+        method: 'POST',
+        body: { scheduledAt, note },
+      }),
+    publishExperience: (id: string) =>
+      apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/publish`, {
+        method: 'POST',
+      }),
+    newRevision: (id: string) =>
+      apiRequest<ThenNowApiExperienceDetail>(
+        config,
+        `/v1/then-now/experiences/${id}/new-revision`,
+        { method: 'POST' },
+      ),
+    changeExperienceStatus: (id: string, action: ThenNowStatusAction) =>
+      apiRequest<ThenNowApiExperienceDetail>(config, `/v1/then-now/experiences/${id}/status`, {
+        method: 'POST',
+        body: { action },
+      }),
     /**
      * There is no standalone revision read. `/review/{revisionId}` returns the
      * frozen revision inside the experience detail (open + live revisions).
@@ -446,6 +576,11 @@ export function mapApiExperience(detail: ThenNowApiExperienceDetail): Experience
     videoMaster: snapshot.videoMaster ?? '',
     videoSize: snapshot.videoSize ?? '',
     renditions,
+    renditionKeys: snapshot.renditionKeys ?? {},
+    posterKey: snapshot.posterKey ?? '',
+    captionKeys: snapshot.captionKeys ?? {},
+    transcriptKey: snapshot.transcriptKey ?? '',
+    audioDescriptionKey: snapshot.audioDescriptionKey ?? '',
     poster: snapshot.poster ?? false,
     captions: {
       en: Boolean(snapshot.captions?.en),
@@ -492,6 +627,21 @@ export function mapApiReviewItem(item: ThenNowApiReviewItem): Experience {
     draftRevision: item.revisionNumber,
     updatedAt: item.submittedAt,
     lastSavedAt: item.submittedAt,
+  }
+}
+
+export function mapApiReviewRow(item: ThenNowApiReviewItem): ThenNowReviewRow {
+  return {
+    revisionId: item.revisionId,
+    experienceId: item.experienceId,
+    siteId: item.siteId,
+    siteName: item.siteName,
+    title: item.title,
+    revisionNumber: item.revisionNumber,
+    submittedBy: item.submittedBy,
+    submittedAt: item.submittedAt,
+    sensitivity: asSensitivity(item.sensitivity),
+    reviewer: item.reviewer || 'Unassigned',
   }
 }
 
@@ -556,6 +706,197 @@ export async function loadThenNowState(api: ThenNowApi): Promise<ThenNowApiData 
       : null
 
   return { sites, experiences, audit }
+}
+
+function optionalNumber(value: string | undefined): number | undefined {
+  if (value === undefined || value.trim() === '') return undefined
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
+function siteTypePayload(type: SiteType): 'historical' | 'cultural' {
+  return type === 'Cultural' ? 'cultural' : 'historical'
+}
+
+/**
+ * Build the create-site body. Empty optional values are omitted so the Go
+ * handler stores NULL rather than an empty string.
+ */
+export function siteCreatePayload(
+  site: Partial<HeritageSite> & Pick<HeritageSite, 'name' | 'county' | 'type' | 'access' | 'sensitivity'>,
+): ThenNowSiteCreate {
+  const body: ThenNowSiteCreate = {
+    name: site.name.trim(),
+    county: site.county.trim(),
+    siteType: siteTypePayload(site.type),
+    accessMode: site.access,
+    sensitivity: site.sensitivity,
+  }
+  if (site.slug) body.slug = site.slug
+  if (site.locality) body.locality = site.locality
+  if (site.managingAuthority) body.managingAuthority = site.managingAuthority
+  if (site.destination) body.destinationId = site.destination
+  if (site.photography) body.photographyPolicy = site.photography
+  if (site.culturalAuthority) body.culturalAuthority = site.culturalAuthority
+  if (site.consent) body.consentRecord = site.consent
+  if (site.consentDate) body.consentDate = site.consentDate
+  if (site.siteRules) body.siteRules = site.siteRules
+  if (site.safety) body.safetyNotes = site.safety
+  if (site.shortDescription) body.shortDescription = site.shortDescription
+  if (site.fullDescription) body.fullDescription = site.fullDescription
+  if (site.sources) body.sources = site.sources
+  if (site.factCheck) body.factCheck = site.factCheck
+  if (site.publicRights) body.publicRightsLine = site.publicRights
+  if (site.standingPointNote) body.standingPointNote = site.standingPointNote
+  if (site.image) body.imageKey = site.image
+  const latitude = optionalNumber(site.latitude)
+  const longitude = optionalNumber(site.longitude)
+  const radius = optionalNumber(site.geofenceRadius)
+  if (latitude !== undefined) body.latitude = latitude
+  if (longitude !== undefined) body.longitude = longitude
+  if (radius !== undefined) body.geofenceRadiusM = Math.round(radius)
+  return body
+}
+
+/** Build a full site patch. `undefined` fields are omitted by JSON.stringify. */
+export function sitePatchPayload(site: Partial<HeritageSite>): ThenNowSitePatch {
+  const body: ThenNowSitePatch = {}
+  if (site.name !== undefined) body.name = site.name.trim()
+  if (site.slug) body.slug = site.slug
+  if (site.county !== undefined) body.county = site.county
+  if (site.locality !== undefined) body.locality = site.locality
+  if (site.type !== undefined) body.siteType = siteTypePayload(site.type)
+  if (site.access !== undefined) body.accessMode = site.access
+  if (site.sensitivity !== undefined) body.sensitivity = site.sensitivity
+  if (site.managingAuthority !== undefined) body.managingAuthority = site.managingAuthority
+  if (site.destination !== undefined) body.destinationId = site.destination
+  if (site.photography !== undefined) body.photographyPolicy = site.photography
+  if (site.culturalAuthority !== undefined) body.culturalAuthority = site.culturalAuthority
+  if (site.consent !== undefined) body.consentRecord = site.consent
+  if (site.consentDate !== undefined) body.consentDate = site.consentDate
+  if (site.siteRules !== undefined) body.siteRules = site.siteRules
+  if (site.safety !== undefined) body.safetyNotes = site.safety
+  if (site.shortDescription !== undefined) body.shortDescription = site.shortDescription
+  if (site.fullDescription !== undefined) body.fullDescription = site.fullDescription
+  if (site.sources !== undefined) body.sources = site.sources
+  if (site.factCheck !== undefined) body.factCheck = site.factCheck
+  if (site.publicRights !== undefined) body.publicRightsLine = site.publicRights
+  if (site.standingPointNote !== undefined) body.standingPointNote = site.standingPointNote
+  if (site.image !== undefined) body.imageKey = site.image
+  const latitude = optionalNumber(site.latitude)
+  const longitude = optionalNumber(site.longitude)
+  const radius = optionalNumber(site.geofenceRadius)
+  if (latitude !== undefined) body.latitude = latitude
+  if (longitude !== undefined) body.longitude = longitude
+  if (radius !== undefined) body.geofenceRadiusM = Math.round(radius)
+  return body
+}
+
+/**
+ * Convert the UI model to the immutable revision snapshot.
+ *
+ * The Go readiness gate checks object keys (`renditionKeys`, `posterKey`,
+ * `captionKeys`, `transcriptKey`), so an API-loaded experience carries them
+ * through a save instead of dropping them. Media upload is still simulated;
+ * see `docs/then-now-admin.md`.
+ */
+export function snapshotFromExperience(exp: Experience): ThenNowApiSnapshot {
+  return {
+    title: exp.title,
+    promise: exp.promise,
+    story: exp.story,
+    period: exp.period,
+    duration: exp.duration,
+    contentNotes: exp.contentNotes,
+    safetyNotes: exp.safetyNotes,
+    sources: exp.sources,
+    factCheck: exp.factCheck,
+    primaryMode: exp.mode,
+    languages: exp.languages,
+    rightsRecord: exp.rights,
+    rightsEvidence: exp.rightsEvidence,
+    rightsExpiry: exp.rightsExpiry,
+    consentRecord: exp.consent,
+    sensitivity: exp.sensitivity,
+    videoMaster: exp.videoMaster,
+    videoSize: exp.videoSize,
+    renditions: exp.renditions,
+    renditionKeys: exp.renditionKeys ?? {},
+    poster: exp.poster,
+    posterKey: exp.posterKey ?? '',
+    captions: exp.captions,
+    captionKeys: exp.captionKeys ?? {},
+    transcript: exp.transcript,
+    transcriptKey: exp.transcriptKey ?? '',
+    audioDescription: exp.audioDescription,
+    audioDescriptionKey: exp.audioDescriptionKey ?? '',
+    textCards: exp.textCards,
+  }
+}
+
+/** A stale open revision. The caller must reload instead of overwriting. */
+export class ThenNowStaleRevisionError extends Error {
+  constructor(
+    public expected: number,
+    public actual: number,
+  ) {
+    super(
+      `This experience has moved to v${actual} on the server. Reload before making changes so nothing is overwritten.`,
+    )
+    this.name = 'ThenNowStaleRevisionError'
+  }
+}
+
+/**
+ * Optimistic concurrency guard. The Go API has no `If-Match`, so compare the
+ * server's open revision number with the revision the caller loaded before
+ * sending a full-snapshot PATCH or a lifecycle action.
+ */
+export async function requireOpenRevision(
+  api: ThenNowApi,
+  id: string,
+  expected: number,
+): Promise<ThenNowApiExperienceDetail> {
+  const detail = await api.getExperience(id)
+  if (detail.openRevisionNumber !== expected) {
+    throw new ThenNowStaleRevisionError(expected, detail.openRevisionNumber)
+  }
+  return detail
+}
+
+const THEN_NOW_ERROR_MESSAGES: Record<string, string> = {
+  FORBIDDEN: 'Your account does not have permission to do that. The record was not changed.',
+  UNAUTHORIZED: 'Your session expired. Sign in again. Nothing was changed.',
+  NOT_FOUND: 'This record no longer exists on the server. Reload the list.',
+  SLUG_EXISTS: 'A site with that slug already exists. Change the name or slug and try again.',
+  FROZEN: 'This revision is frozen or no longer editable. Reload to see the latest state.',
+  INVALID_STATE: 'This action is no longer valid for the revision. Reload to see the latest state.',
+  NOT_READY: 'The readiness checks block this action.',
+  SEPARATION: 'The uploader cannot review their own revision.',
+  UNASSIGNED: 'Assign a reviewer before deciding.',
+  SECOND_REVIEWER: 'Record the second reviewer before approving a sensitive revision.',
+  RESTRICTED: 'Restricted content cannot be approved until a super-admin records a resolution.',
+  OPEN_REVISION: 'There is already an open revision. Reload to edit the current draft.',
+  NOTES_REQUIRED: 'Add a note explaining the decision.',
+  INVALID_REVIEWER: 'Choose an administrator as the reviewer.',
+  INVALID_SCHEDULE: 'Choose a future date and time in East Africa Time.',
+}
+
+/** Human-readable message for an API failure, including readiness blockers. */
+export function thenNowErrorMessage(error: unknown): string {
+  if (!(error instanceof ApiErrorResponse)) {
+    return error instanceof Error ? error.message : 'Something went wrong.'
+  }
+  const base = THEN_NOW_ERROR_MESSAGES[error.code] ?? error.message
+  if (error.code === 'NOT_READY') {
+    const payload = error.payload as { readiness?: ThenNowApiReadiness } | undefined
+    const labels = (payload?.readiness?.blockers ?? [])
+      .map((item) => item.label)
+      .filter(Boolean)
+      .slice(0, 4)
+    return labels.length > 0 ? `${base} Blocked by: ${labels.join(', ')}.` : base
+  }
+  return base
 }
 
 export { asAccessMode, asSensitivity, asSiteStatus, asSiteType }

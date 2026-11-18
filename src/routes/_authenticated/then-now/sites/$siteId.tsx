@@ -26,10 +26,12 @@ import {
   AuditDialog,
   Callout,
   DirtyGuard,
+  Kicker,
   PageHeader,
   PreviewDialog,
   ReadinessRail,
   SensitivityBadge,
+  SkeletonTable,
   StatCard,
   StatusPill,
 } from '#/components/then-now/shared'
@@ -56,7 +58,7 @@ function SiteEditorPage() {
   const { siteId } = Route.useParams()
   const { tab = 'identity' } = Route.useSearch()
   const navigate = useNavigate()
-  const { state, scenario, can, actions } = useThenNow()
+  const { state, scenario, source, apiStatus, can, actions, refresh, refreshAudit } = useThenNow()
   const site = state.sites.find((entry) => entry.id === siteId)
   const [form, setForm] = useState<HeritageSite | null>(site ?? null)
   const [dirty, setDirty] = useState(false)
@@ -78,10 +80,20 @@ function SiteEditorPage() {
   )
 
   if (!site || !form) {
+    if (apiStatus === 'loading') {
+      return (
+        <div>
+          <Kicker>Then &amp; Now · Sites</Kicker>
+          <h1 className="mt-1 font-sans text-3xl font-bold tracking-tight text-foreground">Loading site…</h1>
+          <p className="mb-4 mt-1 text-sm text-muted-foreground">Reading the site, its experiences, and readiness from the Go API.</p>
+          <SkeletonTable rows={4} cols={3} />
+        </div>
+      )
+    }
     return (
       <div>
         <PageHeader kicker="Then & Now · Sites" title="Site not found" back={{ to: '/then-now', label: 'All sites' }} />
-        <Callout tone="red" title="This fixture is not available.">
+        <Callout tone="red" title="This record is not available.">
           Return to the sites list and choose a record.
         </Callout>
       </div>
@@ -112,7 +124,7 @@ function SiteEditorPage() {
     }
   }
 
-  const save = () => {
+  const save = async () => {
     if (readOnly) return
     const nextErrors = validateSiteDraft(form)
     if (Object.keys(nextErrors).length > 0) {
@@ -125,30 +137,57 @@ function SiteEditorPage() {
       setSaveOpen(true)
       return
     }
-    actions.saveSite(site.id, form)
-    setDirty(false)
-    toast.success('Site draft saved.')
+    try {
+      await actions.saveSite(site.id, form)
+      setDirty(false)
+      toast.success('Site draft saved.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not save the site.')
+    }
   }
 
-  const confirmSave = () => {
-    actions.saveSite(site.id, form)
-    setDirty(false)
-    setSaveOpen(false)
-    toast.success('Public site updated.')
+  const confirmSave = async () => {
+    try {
+      await actions.saveSite(site.id, form)
+      setDirty(false)
+      setSaveOpen(false)
+      toast.success('Public site updated.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not save the site.')
+    }
   }
 
-  const publish = () => {
+  const publish = async () => {
     if (!readiness.readyToPublish) {
       toast.error('Resolve the site readiness blockers first.')
       return
     }
     try {
-      actions.publishSite(site.id, form)
+      await actions.publishSite(site.id, form)
       setDirty(false)
       toast.success('Site published.')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not publish the site.')
     }
+  }
+
+  const refreshReadiness = async () => {
+    try {
+      const wasFixture = source !== 'api'
+      await refresh()
+      toast.success(
+        wasFixture
+          ? 'Readiness refreshed from the fixture data.'
+          : 'Readiness refreshed from the server.',
+      )
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not refresh readiness.')
+    }
+  }
+
+  const openAudit = () => {
+    setAuditOpen(true)
+    void refreshAudit()
   }
 
   const stage = site.status === 'published'
@@ -426,8 +465,8 @@ function SiteEditorPage() {
                       : 'Resolve the blocking checks before publishing.'}
               </p>
               <div className="flex flex-wrap gap-1">
-                <Button variant="ghost" size="sm" onClick={() => toast.success('Readiness refreshed from the fixture contract.')}>Refresh readiness</Button>
-                <Button variant="ghost" size="sm" onClick={() => setAuditOpen(true)}>
+                <Button variant="ghost" size="sm" onClick={refreshReadiness}>Refresh readiness</Button>
+                <Button variant="ghost" size="sm" onClick={openAudit}>
                   <ClockCounterClockwise className="h-4 w-4" weight="duotone" /> Audit
                 </Button>
               </div>
@@ -476,10 +515,20 @@ function SiteEditorPage() {
         label="Reason"
         confirmLabel="Unpublish"
         onConfirm={(reason) => {
-          actions.unpublishSite(site.id)
-          setUnpublishOpen(false)
-          setDirty(false)
-          toast.success(`Site unpublished. ${reason ? 'Reason recorded.' : ''}`)
+          void (async () => {
+            try {
+              await actions.unpublishSite(site.id)
+              setUnpublishOpen(false)
+              setDirty(false)
+              toast.success(
+                source === 'api'
+                  ? 'Site unpublished.'
+                  : `Site unpublished. ${reason ? 'Reason recorded.' : ''}`,
+              )
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not unpublish the site.')
+            }
+          })()
         }}
       />
 
@@ -492,10 +541,20 @@ function SiteEditorPage() {
         confirmLabel="Archive"
         variant="destructive"
         onConfirm={(reason) => {
-          actions.archiveSite(site.id)
-          setArchiveOpen(false)
-          setDirty(false)
-          toast.success(`Site archived. ${reason ? 'Reason recorded.' : ''}`)
+          void (async () => {
+            try {
+              await actions.archiveSite(site.id)
+              setArchiveOpen(false)
+              setDirty(false)
+              toast.success(
+                source === 'api'
+                  ? 'Site archived.'
+                  : `Site archived. ${reason ? 'Reason recorded.' : ''}`,
+              )
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : 'Could not archive the site.')
+            }
+          })()
         }}
       />
     </div>

@@ -31,11 +31,12 @@ function ThenNowLayout() {
 }
 
 function ThenNowShell() {
-  const { state, scenario, source, setScenario, can } = useThenNow()
+  const { state, scenario, source, apiStatus, apiError, setScenario, can } = useThenNow()
   const location = useLocation()
   const pathname = location.pathname
   const reviewCount = Object.values(state.experiences).filter((exp) => exp.draftStatus === 'in_review').length
   const canReview = can('review')
+  const loading = scenario === 'loading' || apiStatus === 'loading'
 
   const tab = (active: boolean) =>
     `inline-flex min-h-9 items-center gap-1.5 border-b-2 px-3 text-sm font-semibold transition-colors ${
@@ -80,7 +81,7 @@ function ThenNowShell() {
 
       <ScenarioBanner />
 
-      {scenario === 'loading' ? (
+      {loading ? (
         <div>
           <Kicker>Then &amp; Now</Kicker>
           <h1 className="mt-1 font-sans text-3xl font-bold tracking-tight text-foreground">Loading…</h1>
@@ -106,8 +107,10 @@ function ThenNowShell() {
         />
         <span>
           {source === 'api'
-            ? 'Then & Now admin is reading sites, experiences, and audit from the Go API. Mutations still stay local until the write wiring lands.'
-            : 'Then & Now admin is running against local fixtures because the Go API is unavailable or has no sites yet.'}
+            ? 'Then & Now admin is reading and writing sites, experiences, review decisions, and audit through the Go API.'
+            : apiError
+              ? `Then & Now admin is running against local fixtures. The API read failed: ${apiError}`
+              : 'Then & Now admin is running against local fixtures because the Go API is unavailable or has no sites yet. Writes stay in this browser.'}
         </span>
       </div>
     </div>

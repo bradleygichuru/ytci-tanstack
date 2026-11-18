@@ -128,6 +128,15 @@ export interface Experience {
   videoMaster: string
   videoSize: string
   renditions: Record<string, RenditionStatus>
+  /**
+   * Object keys from the Go revision snapshot. Present only when the
+   * experience was loaded from the API; the fixture demo has no media keys.
+   */
+  renditionKeys?: Record<string, string>
+  posterKey?: string
+  captionKeys?: Record<string, string>
+  transcriptKey?: string
+  audioDescriptionKey?: string
   poster: boolean
   captions: { en: boolean; sw: boolean }
   transcript: boolean
