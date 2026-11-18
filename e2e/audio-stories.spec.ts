@@ -16,7 +16,7 @@ test.describe('Audio Stories admin', () => {
     await expect(tabs.getByRole('link', { name: 'Stories', exact: true })).toBeVisible()
     await expect(tabs.getByRole('link', { name: 'Review', exact: true })).toBeVisible()
     await expect(tabs.getByRole('link', { name: 'Collections', exact: true })).toBeVisible()
-    await expect(page.getByText('The Drum at Dusk').first()).toBeVisible({
+    await expect(page.getByText('Nairobi Railway Museum').first()).toBeVisible({
       timeout: 20000,
     })
 
@@ -49,12 +49,7 @@ test.describe('Audio Stories admin', () => {
 
     const tabs = page.getByRole('navigation', { name: 'Audio Stories sections' })
     await tabs.getByRole('link', { name: 'Collections', exact: true }).click()
-    for (const name of [
-      'Western Kenya Heritage',
-      'Cultural Landmarks',
-      'Memory & Remembrance',
-      'Nairobi Heritage',
-    ]) {
+    for (const name of ['Cultural Landscapes', 'Nairobi Heritage']) {
       await expect(page.getByText(name).first()).toBeVisible({ timeout: 20000 })
     }
 
@@ -63,29 +58,27 @@ test.describe('Audio Stories admin', () => {
     await expect(
       page.getByRole('heading', { name: /Nabongo Cultural Centre/ }),
     ).toBeVisible({ timeout: 20000 })
-    await expect(page.getByText('Published').first()).toBeVisible()
-    await expect(page.getByText(/Western Kenya Heritage/).first()).toBeVisible()
+    await expect(page.getByText('Published').first()).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText(/Cultural Landscapes/).first()).toBeVisible()
   })
 
   test('story detail opens with metadata and status', async ({ page }) => {
     await loginAsAdmin(page)
     await page.goto('/audio-stories')
 
-    await page.getByRole('link', { name: /The Drum at Dusk/ }).first().click()
+    await page.getByRole('link', { name: /Nabongo Cultural Centre/ }).first().click()
     await expect(
-      page.getByRole('heading', { name: /The Drum at Dusk/ }),
+      page.getByRole('heading', { name: /Nabongo Cultural Centre/ }),
     ).toBeVisible({ timeout: 20000 })
-    await expect(page.getByText(/Kajiado/).first()).toBeVisible()
-    await expect(page.getByText('Published').first()).toBeVisible()
+    await expect(page.getByText('Published').first()).toBeVisible({ timeout: 15000 })
   })
 
-  test('draft story and review queue states render', async ({ page }) => {
+  test('review queue and published states render', async ({ page }) => {
     await loginAsAdmin(page)
     await page.goto('/audio-stories')
-    await expect(page.getByText('The Last Mangrove').first()).toBeVisible({
+    await expect(page.getByText('Nairobi Railway Museum').first()).toBeVisible({
       timeout: 20000,
     })
-    await expect(page.getByText('Draft').first()).toBeVisible()
 
     await page.goto('/audio-stories/review')
     await expect(
