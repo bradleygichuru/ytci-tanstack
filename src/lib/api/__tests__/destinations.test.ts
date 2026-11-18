@@ -42,7 +42,7 @@ describe('destinationsApi', () => {
   it('create sends POST with body', async () => {
     const mock = mockFetch({ id: 'dest-1' })
     const api = destinationsApi(config)
-    const body = { name: 'Test', slug: 'test', county: 'Narok', category: 'wildlife', lat: -1, lng: 35 }
+    const body = { name: 'Test', slug: 'test', county: 'Narok', category: 'Wildlife', lat: -1, lng: 35 }
     const result = await api.create(body)
     expect(result.id).toBe('dest-1')
     expect(mock).toHaveBeenCalledWith(

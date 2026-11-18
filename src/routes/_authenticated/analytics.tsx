@@ -3,6 +3,8 @@ import { requirePermission } from '#/lib/authz'
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { useApi } from '#/lib/api/use-api'
+import type { HeritageCount } from '#/lib/api/analytics'
+import { heritageEventLabel, sanitizeHeritageData } from '#/lib/then-now/heritage'
 import type { ApiErrorResponse } from '#/lib/api/types'
 import { AnalyticsSkeleton } from '#/components/skeletons/analytics-skeleton'
 import {
@@ -143,7 +145,7 @@ function AlertBadge({ severity }: { severity: string }) {
   )
 }
 
-function DashboardTab({ data }: { data: AnalyticsData }) {
+function DashboardTab({ data, heritage }: { data: AnalyticsData; heritage: HeritageCount[] }) {
   return (
     <div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -244,6 +246,46 @@ function DashboardTab({ data }: { data: AnalyticsData }) {
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 rounded-lg border border-border bg-card" style={{ boxShadow: 'var(--card-shadow)' }}>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-6 py-4">
+          <div>
+            <h2 className="font-sans text-base font-bold text-foreground">Heritage usage</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Anonymous daily counts from Then &amp; Now. Cells below 5 are suppressed; sensitive sites are combined.
+            </p>
+          </div>
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Last 30 days</span>
+        </div>
+        {heritage.length === 0 ? (
+          <div className="px-6 py-8 text-center text-sm text-muted-foreground">
+            No heritage counts yet. Events appear after a site is published and readers open the portal or video.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[560px] text-sm">
+              <thead>
+                <tr className="border-b bg-[var(--surface-2)] text-left text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  <th className="px-6 py-3">Day</th>
+                  <th className="px-6 py-3">Event</th>
+                  <th className="px-6 py-3">Site</th>
+                  <th className="px-6 py-3 text-right">Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {heritage.slice(0, 20).map((item, index) => (
+                  <tr key={`${item.day}-${item.event}-${item.siteId}-${index}`} className="border-b last:border-0">
+                    <td className="px-6 py-3 text-muted-foreground">{item.day}</td>
+                    <td className="px-6 py-3 font-medium text-foreground">{heritageEventLabel(item.event)}</td>
+                    <td className="px-6 py-3 text-muted-foreground">{item.siteName || '—'}</td>
+                    <td className="px-6 py-3 text-right font-semibold text-foreground">{fmtNum(item.count)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -372,6 +414,7 @@ function ReportsTab({ data }: { data: AnalyticsData }) {
 function AnalyticsPage() {
   const api = useApi()
   const [data, setData] = useState<AnalyticsData | null>(null)
+  const [heritage, setHeritage] = useState<HeritageCount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'reports'>('dashboard')
@@ -380,10 +423,13 @@ function AnalyticsPage() {
   useEffect(() => {
     setLoading(true)
     setError(null)
-    api.analytics.summary().then((r) => {
-      setData(sanitizeAnalyticsData(r as Partial<AnalyticsData>))
-    }).catch((e: ApiErrorResponse) => {
-      setError(e.message)
+    Promise.allSettled([api.analytics.summary(), api.analytics.heritage()]).then(([summary, heritageResult]) => {
+      if (summary.status === 'fulfilled') {
+        setData(sanitizeAnalyticsData(summary.value as Partial<AnalyticsData>))
+      } else {
+        setError((summary.reason as ApiErrorResponse)?.message ?? 'Failed to load analytics')
+      }
+      setHeritage(heritageResult.status === 'fulfilled' ? sanitizeHeritageData(heritageResult.value.items) : [])
     }).finally(() => {
       setLoading(false)
     })
@@ -425,7 +471,7 @@ function AnalyticsPage() {
       )}
 
       {loading ? <AnalyticsSkeleton /> : data ? (
-        activeTab === 'dashboard' ? <DashboardTab data={data} /> : <ReportsTab data={data} />
+        activeTab === 'dashboard' ? <DashboardTab data={data} heritage={heritage} /> : <ReportsTab data={data} />
       ) : !error && null}
     </div>
   )

@@ -22,6 +22,17 @@ describe('analyticsApi', () => {
     }))
   })
 
+  it('heritage fetches anonymous aggregate counts', async () => {
+    mockFetch({ items: [{ day: '2026-11-18', scope: 'site', siteId: 's1', siteName: 'Railway Museum', event: 'portal_opened', count: 12 }] })
+    const api = analyticsApi(config)
+    const result = await api.heritage()
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0].count).toBe(12)
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/v1/analytics/heritage'), expect.objectContaining({
+      headers: expect.objectContaining({ Authorization: 'Bearer test-jwt' }),
+    }))
+  })
+
   it('exportReport sends POST', async () => {
     mockFetch({ reportId: 'r-1', status: 'pending', createdAt: new Date().toISOString() })
     const api = analyticsApi(config)

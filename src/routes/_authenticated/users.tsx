@@ -18,6 +18,7 @@ interface AuditItem { id: string; userId: string; userName: string; action: stri
 const roleColors: Record<string, { bg: string; text: string }> = {
   super_admin: { bg: '#154212', text: '#ffffff' },
   administrator: { bg: '#345a00', text: '#ffffff' },
+  content_editor: { bg: 'var(--amber-bg)', text: 'var(--amber-deep)' },
   moderator: { bg: 'var(--amber-bg)', text: 'var(--amber-deep)' },
   county_officer: { bg: 'var(--surface-2)', text: 'var(--on-surface)' },
   user: { bg: '#42493e', text: '#ffffff' },
@@ -40,7 +41,7 @@ export const Route = createFileRoute('/_authenticated/users')({
   },
   component: UsersPage })
 
-const ROLE_OPTIONS = ['super_admin', 'administrator', 'moderator', 'county_officer', 'user'] as const
+const ROLE_OPTIONS = ['super_admin', 'administrator', 'content_editor', 'moderator', 'county_officer', 'user'] as const
 type RoleFilter = (typeof ROLE_OPTIONS)[number] | null
 type StatusFilter = 'all' | 'active' | 'banned'
 const PAGE_SIZE = 50
