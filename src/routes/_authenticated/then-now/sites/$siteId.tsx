@@ -11,6 +11,7 @@ import {
 import { Button } from '#/components/ui/button'
 import { FormInput, FormSelect, FormTextarea } from '#/components/shared/FormField'
 import { useThenNow } from '#/lib/then-now/store'
+import { ThenNowStaleSiteError } from '#/lib/api/then-now'
 import { siteReadiness } from '#/lib/then-now/readiness'
 import { relativeAge, formatDateEat } from '#/lib/then-now/format'
 import { validateSiteDraft } from '#/lib/then-now/validation'
@@ -68,6 +69,8 @@ function SiteEditorPage() {
   const [saveOpen, setSaveOpen] = useState(false)
   const [unpublishOpen, setUnpublishOpen] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
+  const [conflictOpen, setConflictOpen] = useState(false)
+  const [conflictSite, setConflictSite] = useState<{ name: string; updatedAt: string } | null>(null)
 
   useEffect(() => {
     setForm(site ?? null)
@@ -124,6 +127,17 @@ function SiteEditorPage() {
     }
   }
 
+  const handleFailure = (error: unknown, fallback: string) => {
+    if (error instanceof ThenNowStaleSiteError) {
+      setConflictSite(
+        error.site ? { name: error.site.name, updatedAt: error.site.updatedAt } : null,
+      )
+      setConflictOpen(true)
+      return
+    }
+    toast.error(error instanceof Error ? error.message : fallback)
+  }
+
   const save = async () => {
     if (readOnly) return
     const nextErrors = validateSiteDraft(form)
@@ -142,7 +156,7 @@ function SiteEditorPage() {
       setDirty(false)
       toast.success('Site draft saved.')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not save the site.')
+      handleFailure(error, 'Could not save the site.')
     }
   }
 
@@ -153,7 +167,7 @@ function SiteEditorPage() {
       setSaveOpen(false)
       toast.success('Public site updated.')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not save the site.')
+      handleFailure(error, 'Could not save the site.')
     }
   }
 
@@ -167,7 +181,7 @@ function SiteEditorPage() {
       setDirty(false)
       toast.success('Site published.')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not publish the site.')
+      handleFailure(error, 'Could not publish the site.')
     }
   }
 
@@ -517,16 +531,12 @@ function SiteEditorPage() {
         onConfirm={(reason) => {
           void (async () => {
             try {
-              await actions.unpublishSite(site.id)
+              await actions.unpublishSite(site.id, reason)
               setUnpublishOpen(false)
               setDirty(false)
-              toast.success(
-                source === 'api'
-                  ? 'Site unpublished.'
-                  : `Site unpublished. ${reason ? 'Reason recorded.' : ''}`,
-              )
+              toast.success('Site unpublished. The reason is in the audit trail.')
             } catch (error) {
-              toast.error(error instanceof Error ? error.message : 'Could not unpublish the site.')
+              handleFailure(error, 'Could not unpublish the site.')
             }
           })()
         }}
@@ -543,20 +553,34 @@ function SiteEditorPage() {
         onConfirm={(reason) => {
           void (async () => {
             try {
-              await actions.archiveSite(site.id)
+              await actions.archiveSite(site.id, reason)
               setArchiveOpen(false)
               setDirty(false)
-              toast.success(
-                source === 'api'
-                  ? 'Site archived.'
-                  : `Site archived. ${reason ? 'Reason recorded.' : ''}`,
-              )
+              toast.success('Site archived. The reason is in the audit trail.')
             } catch (error) {
-              toast.error(error instanceof Error ? error.message : 'Could not archive the site.')
+              handleFailure(error, 'Could not archive the site.')
             }
           })()
         }}
       />
+      <ActionDialog
+        open={conflictOpen}
+        onOpenChange={setConflictOpen}
+        title="409 · Version conflict"
+        description="Another administrator saved this site after you loaded it. Your form was not written to the server."
+        confirmLabel="Reload latest"
+        onConfirm={() => {
+          setConflictOpen(false)
+          setDirty(false)
+          void refresh()
+          toast.success('Reloaded the latest site. Unsaved edits in the form were discarded.')
+        }}
+      >
+        <Callout tone="red" title={conflictSite?.name ?? site.name}>
+          Server copy updated {relativeAge(conflictSite?.updatedAt ?? site.updatedAt)}. Copy anything
+          you still need before reloading. Use “Cancel” to keep editing this form.
+        </Callout>
+      </ActionDialog>
     </div>
   )
 }
