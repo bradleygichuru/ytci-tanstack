@@ -1,44 +1,55 @@
-ALTER TABLE "campaigns" DROP CONSTRAINT "campaigns_created_by_users_id_fk";
+-- Fresh-database repair: this table exists in the Drizzle snapshot/TS schema but
+-- no generated migration ever created it, so replaying from 0000 failed here.
+CREATE TABLE IF NOT EXISTS "pending_media_uploads" (
+	"object_key" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"content_type" text NOT NULL,
+	"file_size" bigint NOT NULL,
+	"expires_at" timestamp DEFAULT now() + interval '5 minutes' NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL
+);
 --> statement-breakpoint
-ALTER TABLE "challenge_progress" DROP CONSTRAINT "challenge_progress_user_id_users_id_fk";
+ALTER TABLE "campaigns" DROP CONSTRAINT IF EXISTS "campaigns_created_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "challenge_progress" DROP CONSTRAINT "challenge_progress_moderated_by_users_id_fk";
+ALTER TABLE "challenge_progress" DROP CONSTRAINT IF EXISTS "challenge_progress_user_id_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "challenges" DROP CONSTRAINT "challenges_created_by_users_id_fk";
+ALTER TABLE "challenge_progress" DROP CONSTRAINT IF EXISTS "challenge_progress_moderated_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "conservation_activities" DROP CONSTRAINT "conservation_activities_created_by_users_id_fk";
+ALTER TABLE "challenges" DROP CONSTRAINT IF EXISTS "challenges_created_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "conservation_evidence" DROP CONSTRAINT "conservation_evidence_user_id_users_id_fk";
+ALTER TABLE "conservation_activities" DROP CONSTRAINT IF EXISTS "conservation_activities_created_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "conservation_evidence" DROP CONSTRAINT "conservation_evidence_moderated_by_users_id_fk";
+ALTER TABLE "conservation_evidence" DROP CONSTRAINT IF EXISTS "conservation_evidence_user_id_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "course_enrollments" DROP CONSTRAINT "course_enrollments_user_id_users_id_fk";
+ALTER TABLE "conservation_evidence" DROP CONSTRAINT IF EXISTS "conservation_evidence_moderated_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "courses" DROP CONSTRAINT "courses_created_by_users_id_fk";
+ALTER TABLE "course_enrollments" DROP CONSTRAINT IF EXISTS "course_enrollments_user_id_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "destinations" DROP CONSTRAINT "destinations_created_by_users_id_fk";
+ALTER TABLE "courses" DROP CONSTRAINT IF EXISTS "courses_created_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "events" DROP CONSTRAINT "events_created_by_users_id_fk";
+ALTER TABLE "destinations" DROP CONSTRAINT IF EXISTS "destinations_created_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "itineraries" DROP CONSTRAINT "itineraries_user_id_users_id_fk";
+ALTER TABLE "events" DROP CONSTRAINT IF EXISTS "events_created_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "media_assets" DROP CONSTRAINT "media_assets_moderated_by_users_id_fk";
+ALTER TABLE "itineraries" DROP CONSTRAINT IF EXISTS "itineraries_user_id_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "media_assets" DROP CONSTRAINT "media_assets_uploaded_by_users_id_fk";
+ALTER TABLE "media_assets" DROP CONSTRAINT IF EXISTS "media_assets_moderated_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "pending_media_uploads" DROP CONSTRAINT "pending_media_uploads_user_id_users_id_fk";
+ALTER TABLE "media_assets" DROP CONSTRAINT IF EXISTS "media_assets_uploaded_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "push_notifications" DROP CONSTRAINT "push_notifications_sent_by_users_id_fk";
+ALTER TABLE IF EXISTS "pending_media_uploads" DROP CONSTRAINT IF EXISTS "pending_media_uploads_user_id_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "report_jobs" DROP CONSTRAINT "report_jobs_requested_by_users_id_fk";
+ALTER TABLE "push_notifications" DROP CONSTRAINT IF EXISTS "push_notifications_sent_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "stories" DROP CONSTRAINT "stories_creator_id_users_id_fk";
+ALTER TABLE "report_jobs" DROP CONSTRAINT IF EXISTS "report_jobs_requested_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "stories" DROP CONSTRAINT "stories_moderated_by_users_id_fk";
+ALTER TABLE "stories" DROP CONSTRAINT IF EXISTS "stories_creator_id_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "story_comments" DROP CONSTRAINT "story_comments_author_id_users_id_fk";
+ALTER TABLE "stories" DROP CONSTRAINT IF EXISTS "stories_moderated_by_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "story_reports" DROP CONSTRAINT "story_reports_reported_by_users_id_fk";
+ALTER TABLE "story_comments" DROP CONSTRAINT IF EXISTS "story_comments_author_id_users_id_fk";
+--> statement-breakpoint
+ALTER TABLE "story_reports" DROP CONSTRAINT IF EXISTS "story_reports_reported_by_users_id_fk";
 --> statement-breakpoint
 ALTER TABLE "challenge_progress" ALTER COLUMN "user_id" DROP NOT NULL;--> statement-breakpoint
 ALTER TABLE "conservation_evidence" ALTER COLUMN "user_id" DROP NOT NULL;--> statement-breakpoint
