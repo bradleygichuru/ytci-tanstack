@@ -1,330 +1,281 @@
-# #376 admin integration / release verification
+# #376 admin integration / release verification — final run
 
-Admin half of the #376 integration run: one build, one app instance, all four
-track verify suites against the same disposable seed.
+Final admin verification of `release/ytc-explorer-rc1` for
+[ytci-mobile#376](https://github.com/bradleygichuru/ytci-mobile/issues/376).
+This run supersedes the earlier `b1ad619` report, which tested a build without
+the SSR fix (#62) and a contracts mock that shadowed the species literal routes.
+The old report is preserved as
+[`README-2026-11-19-b1ad619.md`](./README-2026-11-19-b1ad619.md).
 
-## Build
+**Verdict: gate not met.** 94 of 100 tests pass; one test still fails because
+the recognition awards write path has no contract read to exercise, and three
+harness tests are fixture-only skips. Species `/review`, `/sources` and
+`/rights`, the recognition 200 % specs, #60 and #61 now pass. No P0/P1 product
+failure was found.
+
+## Build and runtime
 
 | Item | Value |
 | --- | --- |
 | Branch | `release/ytc-explorer-rc1` |
-| Build commit | `b1ad619` (`merge: refresh release branch with master fixes`) |
-| Includes | four verify branches; recognition P0 #55, CVE fix #56, approver #57 |
-| Install | `bun install` — 29 packages, lock unchanged |
-| Command | `bun run build` |
-| Result | pass (`✓ built in 3.28s`) |
+| Commit | `246963f` (`Merge remote-tracking branch 'origin/master'`) |
+| Includes | SSR fix #62 (`e442b1e`), recognition 200 % fix #63 (`3edc869`), all verify specs |
+| Divergence | `git rev-list --count HEAD..origin/master` = **0** |
+| Install | `bun install` — 4 packages linked from the existing lock; `bun.lock` unchanged |
+| Install re-check | `Checked 593 installs across 706 packages (no changes)` |
+| Build | `VITE_CONTRACTS_API_URL=http://127.0.0.1:8130 bun run build` — pass (`✓ built in 5.03s`) |
+| Build re-check | post-suite rebuild at the same commit — pass (`✓ built in 4.67s`) |
+| App | `vite preview` (Nitro `node-server` from `.output`) on `http://127.0.0.1:3220` |
+| Contracts mock | `contracts-mock` built from ytci-go `7421e60` on `127.0.0.1:8131` |
+| Mock origin proxy | node origin-echo proxy on `127.0.0.1:8130` (the URL baked into the build) |
+| Database | existing disposable `ytci_verify_376_final` on `127.0.0.1:5432` |
+| Seed id | `VERIFY_SEED_ID=verify-376-adminfin` |
+| Auth | `verify-admin@example.test` and the five other verify users, password `password` |
+| Toolchain | bun 1.4.4, node v26.5.0, Playwright 1.62.0 |
 
-## Runtime
+`ytci-go` master is `7421e60`, the squash-merge of #54
+(`fix(contracts-mock): prefer literal routes over wildcards`). The brief named
+`3c0b2af`, which is #54's pre-merge branch commit; it is **not** an ancestor of
+master, so the mock was built from `7421e60`. `/health` reports 111 routes, and
+the three previously shadowed literals now return list payloads:
 
-| Item | Value |
+| Request through the proxy | Result |
 | --- | --- |
-| App | `vite preview` (built `.output`, Nitro node-server) on `http://127.0.0.1:3220` |
-| Contracts mock | `contracts-mock` binary on `127.0.0.1:8121` |
-| Mock origin proxy | node origin-echo proxy on `127.0.0.1:8120` (the URL baked into the build) |
-| Database | disposable `ytci_verify_376_final` on `127.0.0.1:5432` |
-| Seed id | `VERIFY_SEED_ID=verify-376-final` |
-| Auth | `VERIFY_ADMIN_PASSWORD=password`, disposable `BETTER_AUTH_SECRET` |
+| `GET /v1/admin/species/review` | `200`, `{ "items": [...] }` (484 B) |
+| `GET /v1/admin/species/sources` | `200`, `{ "items": [...] }` (540 B) |
+| `GET /v1/admin/species/rights` | `200`, `{ "items": [...] }` (470 B) |
 
-The mock answers `Access-Control-Allow-Origin: *`, which browsers reject for the
-app's credentialed fetches, so a pass-through proxy owns `:8120` and echoes the
-requesting origin. Unknown paths and mutations pass straight through. This is
-infrastructure only; no product code was changed for it.
+The proxy still owns `:8130` because the mock answers
+`Access-Control-Allow-Origin: *`, which browsers reject for the app's
+credentialed fetches. Unknown paths and mutations pass straight through. This is
+harness infrastructure only; no product code was changed for it.
 
-The database schema is a `pg_dump --schema-only` clone of the #375 verify
-database. A fresh `drizzle-kit migrate` cannot build this branch's schema: the
-journaled migration `0002_brown_hercules.sql` alters `pending_media_uploads`,
-which no migration creates (the table exists in `src/db/schema/business.ts` but
-not in `0000`). This drift is pre-existing on `master`, is recorded below, and
-does not affect the suites, which use the mock for business data and the
-database only for auth users/sessions.
+The database's Better Auth JWKS was encrypted with the secret in
+`.verify-scratch/env.final`. Starting the app without that secret makes
+`/api/auth/get-session` return `500` (`Failed to decrypt private key`) even
+though password sign-in succeeds. The run used the matching secret; this is a
+disposable-DB provisioning detail, not a product defect.
 
-## Seed
+## Test inventory
 
-Seeded before the run, against `ytci_verify_376_final` only:
+`bunx playwright test -c playwright.verify.config.ts --list` reports **100 tests
+in 12 files**, not 99. Recognition now has 36 tests rather than 35 because #63
+added `overview — KPI values stay inside their cards at 200% text`. The extra
+test is recorded here rather than dropped to match the expected count.
 
-```sh
-bun --env-file=.verify-scratch/env.final run scripts/seed-test-users.ts
-bun --env-file=.verify-scratch/env.final run .verify-scratch/seed-final.ts
+## Results — honest first pass
+
+Run 1 executed all 100 tests with one worker and `--retries=0` (28.6 min). Skips
+are not passes, and a serial-mode cascade is recorded as "did not run", not as
+a skip.
+
+| File | Tests | Passed | Failed | Skipped | Did not run | Expected fail |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `seed-guard.spec.ts` | 8 | 8 | 0 | 0 | 0 | 0 |
+| `smoke.spec.ts` | 3 | 0 | 0 | 3 | 0 | 0 |
+| `admin-analytics/export-erasure.spec.ts` | 4 | 4 | 0 | 0 | 0 | 0 |
+| `admin-analytics/overview.spec.ts` | 6 | 5 | 0 | 0 | 0 | 1 |
+| `admin-analytics/responsive.spec.ts` | 5 | 5 | 0 | 0 | 0 | 0 |
+| `admin-analytics/sections.spec.ts` | 12 | 11 | 0 | 0 | 0 | 1 |
+| `admin-mice/behaviour.spec.ts` | 9 | 9 | 0 | 0 | 0 | 0 |
+| `admin-mice/responsive.spec.ts` | 4 | 4 | 0 | 0 | 0 | 0 |
+| `admin-mice/screens.spec.ts` | 3 | 3 | 0 | 0 | 0 | 0 |
+| `admin-recognition/recognition.spec.ts` | 36 | 32 | 1 | 0 | 3 | 0 |
+| `admin-species/recapture.spec.ts` | 1 | 1 | 0 | 0 | 0 | 0 |
+| `admin-species/species.live.spec.ts` | 9 | 9 | 0 | 0 | 0 | 0 |
+| **Total** | **100** | **91** | **1** | **3** | **3** | **2** |
+
+The 3 skips are `smoke.spec.ts`, which is fixture-mode by design and skipped in
+live mode. They are not product evidence.
+
+The 2 expected failures are `test.fail()` annotations for the known P2 #375
+defects; they failed as annotated, which is why they are not counted as passes:
+
+- `overview — loading after stale clears the stale banner`
+- `suppressed: retention cell names a week the retention table renders`
+
+## Retry of the failing file
+
+`admin-recognition/recognition.spec.ts` was re-run once, alone, with
+`--retries=0` (7.6 min). It reproduced the same result: **32 passed, 1 failed,
+3 did not run**. Because the file is
+`test.describe.configure({ mode: 'serial' })`, the failure aborts the three
+tests after it. The three cascaded tests were then run directly and all passed:
+
+| Test | Result |
+| --- | --- |
+| `seasons — closing needs a reason and a typed confirmation` | pass (7.1 s) |
+| `role gating — content editor and reader are redirected to no-access` | pass (27.2 s) |
+| `role gating — moderator reads but sees no authoring controls` | pass (14.0 s) |
+
+## Final per-file status
+
+This is the disposition after the file retry and the targeted re-run of the
+three cascaded tests.
+
+| File | Tests | Passed | Failed | Skipped | Known-defect expected fail |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `seed-guard.spec.ts` | 8 | 8 | 0 | 0 | 0 |
+| `smoke.spec.ts` | 3 | 0 | 0 | 3 | 0 |
+| `admin-analytics/export-erasure.spec.ts` | 4 | 4 | 0 | 0 | 0 |
+| `admin-analytics/overview.spec.ts` | 6 | 5 | 0 | 0 | 1 |
+| `admin-analytics/responsive.spec.ts` | 5 | 5 | 0 | 0 | 0 |
+| `admin-analytics/sections.spec.ts` | 12 | 11 | 0 | 0 | 1 |
+| `admin-mice/behaviour.spec.ts` | 9 | 9 | 0 | 0 | 0 |
+| `admin-mice/responsive.spec.ts` | 4 | 4 | 0 | 0 | 0 |
+| `admin-mice/screens.spec.ts` | 3 | 3 | 0 | 0 | 0 |
+| `admin-recognition/recognition.spec.ts` | 36 | 35 | 1 | 0 | 0 |
+| `admin-species/recapture.spec.ts` | 1 | 1 | 0 | 0 | 0 |
+| `admin-species/species.live.spec.ts` | 9 | 9 | 0 | 0 | 0 |
+| **Total** | **100** | **94** | **1** | **3** | **2** |
+
+- **94 passed** is not "100 green". The one failure below is reproducible.
+- **2 expected-fail annotations** are known P2 #375 defects, not green tests.
+- **3 skips** are the fixture-only smoke tests, not product evidence.
+
+## Focus areas
+
+| Area | Result | Evidence |
+| --- | --- | --- |
+| #62 SSR query integration | **pass** | App log has 0 `isDehydrated` throws. Authenticated SSR: `/programme/species` 200 67 KB, `/programme/species/panthera-leo` 200 109 KB, `/programme/species/panthera-leo/languages` 200 96 KB (these were hard 500s on `b1ad619`). |
+| #63 recognition at 200 % text | **pass (3/3)** | `overview — 200% text does not force horizontal scrolling` (4.4 s), `overview — KPI values stay inside their cards at 200% text` (8.0 s), `overview — 200% text collapses the sidebar and keeps the nav on one line` (11.9 s). |
+| Species contract reads `/review`, `/sources`, `/rights` | **pass** | Fixed mock returns the correct list payloads for all three; all 10 species tests pass, including `recaptures the screens that need the derived data loaded` and `rights withdrawal names blast radius`. |
+| #60 species derived data | **pass — close** | The 4 focused tests pass: recapture (`4 shown` on translation), matrix translation/sources, rights blast radius (`1 sources`), and the full species file is 10/10. |
+| #61 audit CSV after Rights filter | **pass — close** | `audit filters and CSV export use the same filter` passes and downloads a filtered CSV (`1400-filtered-csv.png`). |
+| Recognition awards bulk retry | **fail** | See below. This is a contract/fixture coverage gap, not a product regression. |
+
+### Explicit re-verification for #60 and #61
+
+A targeted run of the four tests named in the two issues produced:
+
+```
+✓ recapture → recaptures the screens that need the derived data loaded (40.8s)
+✓ species admin → captures translation, sources, readiness and audit across the matrix (1.1m)
+✓ species admin → rights withdrawal names blast radius; non-revocable sources cannot be targeted (11.0s)
+✓ species admin → audit filters and CSV export use the same filter (12.4s)
+
+4 passed (2.2m)
 ```
 
-`seed-test-users.ts` creates `grace@example.com` (MICE) plus
-`moderator@example.com` / `editor@example.com` / `alice@example.com` (role
-gating, password `password`). `seed-final.ts` creates `verify-admin`,
-`verify-moderator`, `verify-viewer`, `verify-editor`, `verify-translator` and
-`verify-reviewer` at `@example.test` (password `password`). No write-path test
-touches Postgres business tables; recognition mutations go to the disposable
-mock.
+Both issues were filed against `b1ad619` and attributed to the app. The correct
+fixture proves both were mock-route shadowing: `/v1/admin/species/review`,
+`/sources` and `/rights` were being answered by the `/{id}` wildcard. Both are
+closed with this evidence after this commit.
 
-## Commands
+## The one remaining failure
+
+**Test:** `admin-recognition/recognition.spec.ts:507`
+`awards — bulk retry asks for scope and never duplicates XP`
+
+**Result:** timed out after 180 s waiting for
+`getByRole('button', { name: /retry failed/i })`; the locator resolves to a
+`disabled` button. Reproduced on the file retry.
+
+**Cause:** the awards ledger has no contract read in contracts 1.0.0.
+`src/lib/recognition/store.tsx` deliberately clears the demo awards when any
+recognition read succeeds:
+
+> `// Missions and the awards ledger have no contract read in 1.0.0. Their`
+> `// fixtures are demo data, so a reachable API clears them rather than mixing`
+> `// invented rows into a live screen.`
+
+The frozen mock has no `/v1/admin/recognition/awards` route, and ytci-go exposes
+no such admin read. With a reachable API, `state.awards` is empty, so
+`failed.length` is 0 and `Retry failed (0)` is disabled. The write path cannot
+be exercised until the contract exposes failed awards or the harness seeds the
+store directly.
+
+**Classification:** harness/contract coverage gap. The app's behaviour is
+consistent with its data source (no failed awards to retry). **No P0/P1 issue
+was filed**, because this is not a product failure and filing one would
+misattribute a fixture gap.
+
+**Reproducer:**
 
 ```sh
-# services
-.verify-scratch/contracts-mock -addr 127.0.0.1:8121
-node .verify-scratch/origin-proxy.mjs            # :8120 -> :8121
-bun --env-file=.verify-scratch/env.final run vite preview --port 3220 --host 127.0.0.1
-
-# one suite pass (all 99 tests, retries disabled for an honest first result)
-VERIFY_MODE=live VERIFY_SEED_ID=verify-376-final \
+VERIFY_MODE=live VERIFY_SEED_ID=verify-376-adminfin \
   VERIFY_BASE_URL=http://127.0.0.1:3220 VERIFY_ALLOW_PORT=1 \
   VERIFY_ADMIN_PASSWORD=password \
   DATABASE_URL=postgres://postgres@127.0.0.1:5432/ytci_verify_376_final \
   VERIFY_WRITE_PATHS=1 \
+  bunx playwright test -c playwright.verify.config.ts \
+    admin-recognition/recognition.spec.ts --retries=0 \
+    --grep "awards — bulk retry"
+```
+
+## Fresh-migrate drift (pre-existing, not changed)
+
+A fresh `drizzle-kit migrate` into a new database still cannot build the schema:
+
+1. `0000_long_captain_midlands.sql` needs PostGIS (`geometry` type); the
+   migration does not create the extension.
+2. After enabling PostGIS, `0002_brown_hercules.sql` fails at line 29:
+   `relation "pending_media_uploads" does not exist`. No journaled migration
+   creates that table.
+
+The run therefore used the existing disposable `ytci_verify_376_final` (69
+public tables, already migrated, 18 users including all six `verify-*` accounts).
+The business suites use the mock for data and Postgres only for auth
+users/sessions. No migration was edited. Raw output:
+`logs/final-2026-11-20/migrate-drift-0002.log`.
+
+## Commands
+
+```sh
+# mock, built from ytci-go master 7421e60 (contains #54)
+cd /home/brad/code/ytci-go-release-376
+go build -o /home/brad/code/ytci-release-admin/.verify-scratch/contracts-mock-7421e60 ./cmd/contracts-mock
+.verify-scratch/contracts-mock-7421e60 -addr 127.0.0.1:8131
+
+# CORS proxy 8130 -> 8131
+PROXY_PORT=8130 MOCK_UPSTREAM=http://127.0.0.1:8131 node .verify-scratch/origin-proxy.mjs
+
+# app
+VITE_CONTRACTS_API_URL=http://127.0.0.1:8130 bun run build
+set -a; . ./.verify-scratch/env.final; set +a
+bunx vite preview --port 3220 --host 127.0.0.1
+
+# full suite, honest first pass
+VERIFY_MODE=live VERIFY_SEED_ID=verify-376-adminfin \
+  VERIFY_BASE_URL=http://127.0.0.1:3220 VERIFY_ALLOW_PORT=1 \
+  VERIFY_ADMIN_PASSWORD=password \
+  DATABASE_URL=postgres://postgres@127.0.0.1:5432/ytci_verify_376_final \
+  VERIFY_WRITE_PATHS=1 EVIDENCE_DIR="$PWD/.verify-scratch/evidence-final2" \
   bunx playwright test -c playwright.verify.config.ts --retries=0
 ```
 
-## Results
+All servers were stopped after the run. No tag was created and nothing was
+merged to master.
 
-Six runner invocations were needed because the host restarted repeatedly
-mid-run: it killed the preview (exit 143), once wiped `.output` (rebuilt at the
-same commit, `✓ built in 9.84s`), and wedged the app under load. Run 1 is the
-honest first pass. Runs 2-6 re-ran every failing file and every test a
-serial-mode cascade had skipped, so the final column is the best evidence
-available, not a single green run.
+## Evidence
 
-### Final status on this build
+All paths are relative to this directory.
 
-| Surface | Tests | Passed | Failed | Skipped | Known-defect (expected fail) |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Harness (`seed-guard`, `smoke`) | 11 | 8 | 0 | 3 | 0 |
-| Analytics (#375) | 27 | 25 | 0 | 0 | 2 |
-| MICE (#364) | 16 | 16 | 0 | 0 | 0 |
-| Recognition (#368) | 35 | 33 | 2 | 0 | 0 |
-| Species (#372) | 10 | 5 | 5 | 0 | 0 |
-| **Total** | **99** | **87** | **7** | **3** | **2** |
-
-- The 3 skips are `smoke.spec.ts` only; it is fixture-mode by design and is
-  skipped in live mode. They are not product evidence.
-- The 2 known-defect tests are `test.fail()` annotations for P2 #375 (stale
-  flag survives Loading; suppressed retention labels W8 while the table stops
-  at W7). Both reproduced as expected; they are not green.
-- 7 failures: 6 product failures and 1 fixture gap (details below).
-- 87 passed is not "99 green". The gate is not met.
-
-### Run 1 — all 99 tests, `--retries=0`, one worker
-
-Raw output: `logs/run1.log`; per-file counts: `logs/run1-summary.json`.
-
-| File | Passed | Failed | Timed out | Skipped |
-| --- | ---: | ---: | ---: | ---: |
-| `seed-guard.spec.ts` | 8 | 0 | 0 | 0 |
-| `smoke.spec.ts` | 0 | 0 | 0 | 3 (expected, fixture-only) |
-| `admin-analytics/export-erasure.spec.ts` | 0 | 1 | 0 | 3 (serial cascade) |
-| `admin-analytics/overview.spec.ts` | 3 | 1 | 0 | 2 (serial cascade) |
-| `admin-analytics/responsive.spec.ts` | 0 | 1 | 0 | 4 (serial cascade) |
-| `admin-analytics/sections.spec.ts` | 4 | 0 | 1 | 7 (serial cascade) |
-| `admin-mice/behaviour.spec.ts` | 9 | 0 | 0 | 0 |
-| `admin-mice/responsive.spec.ts` | 3 | 0 | 1 | 0 |
-| `admin-mice/screens.spec.ts` | 1 | 0 | 2 | 0 |
-| `admin-recognition/recognition.spec.ts` | 15 | 1 | 0 | 19 (serial cascade) |
-| `admin-species/recapture.spec.ts` | 0 | 1 | 0 | 0 |
-| `admin-species/species.live.spec.ts` | 3 | 3 | 3 | 0 |
-| **Total** | **46** | **8** | **7** | **38** |
-
-The 35 serial-cascade skips were re-run in later passes (recognition with
-`--grep-invert`, then the three remaining tests directly; analytics responsive
-a third time; MICE screens/responsive again).
-
-### Run 2 — per-file re-runs
-
-| File | Result |
+| Path | Contents |
 | --- | --- |
-| `admin-analytics/export-erasure.spec.ts` | 4 passed |
-| `admin-analytics/overview.spec.ts` | 5 passed, 1 known P2 expected |
-| `admin-analytics/responsive.spec.ts` | 2 passed, 1 failed (`ERR_ABORTED` navigating to `/analytics/journeys`), 2 did not run |
-| `admin-analytics/sections.spec.ts` | 11 passed, 1 failed (beforeEach sign-in timed out at 120 s) |
-| `admin-mice/responsive.spec.ts` | 4 passed |
-| `admin-mice/screens.spec.ts` | 3 passed |
-| `admin-recognition/recognition.spec.ts` | 15 passed, 1 failed (200 % overflow), 19 cascaded |
-| `admin-species/recapture.spec.ts` | 1 failed (`4 shown` not found) |
-| `admin-species/species.live.spec.ts` | 5 passed, 4 failed |
+| `logs/final-2026-11-20/run1.log` | full 100-test first pass, including raw failure and timing |
+| `logs/final-2026-11-20/run1-rows.json` | per-test status for run 1 (parsed from the JSON reporter) |
+| `logs/final-2026-11-20/run2-recognition.log` | file retry: same failure, 3 did-not-run |
+| `logs/final-2026-11-20/run3-recognition-tails.log` | the 3 cascaded tests, all passed |
+| `logs/final-2026-11-20/run4-species-60-61.log` | explicit #60/#61 re-verification, 4 passed |
+| `logs/final-2026-11-20/probe-review.json`, `probe-sources.json`, `probe-rights.json` | fixed-mock list payloads |
+| `logs/final-2026-11-20/versions-and-toolchain.txt` | commits, versions, ports, mock health |
+| `logs/final-2026-11-20/install-postrun.log`, `build-repro.log` | post-run install/build re-check |
+| `logs/final-2026-11-20/migrate-drift-0002.log` | exact `pending_media_uploads` failure |
+| `logs/final-2026-11-20/app-3220.log` | preview log; no SSR `isDehydrated` throws |
+| `screenshots/final-2026-11-20/species-translation-4-shown.png` | translation queue with derived task count |
+| `screenshots/final-2026-11-20/species-sources-withdraw-blast-radius.png` | rights withdrawal blast radius |
+| `screenshots/final-2026-11-20/species-audit-filtered-csv.png` | audit CSV enabled and filtered |
 
-### Run 3-6 — coverage of cascaded tests
+Playwright's `test-results/` and `playwright-report/` trees are ignored and not
+committed.
 
-- Recognition, `--grep-invert "200% text does not force horizontal scrolling"`:
-  30 passed, 1 failed (`awards — bulk retry`, fixture gap), 3 cascaded.
-- Recognition, the 3 remaining tests (`seasons — closing`, both role-gating
-  tests): 3 passed.
-- Recognition, `awards — bulk retry` alone: failed again (button disabled for
-  the full 180 s).
-- Analytics responsive, full file: 5 passed.
-- Analytics `suppressed: retention cell names ...`: expected P2 failure, as
-  annotated.
+## Issue disposition
 
-### Reproducible product failures
-
-| # | Test | Result in run 1 | Result in re-run | Evidence |
-| --- | --- | --- | --- | --- |
-| 1 | recognition `overview — 200% text does not force horizontal scrolling` | failed, 25 px overflow | failed again, 25 px overflow | `screenshots/recognition-200percent-overflow.png` |
-| 2 | species `recaptures the screens that need the derived data loaded` (`4 shown` on translation) | failed | failed again | `screenshots/species-translation.png` |
-| 3 | species `captures overview, catalogue, editor and languages across the matrix` | timed out at `page.goto` | failed: H1 never visible, error boundary | error page `Something went wrong!` |
-| 4 | species `rights withdrawal names blast radius ...` (`1 sources`) | failed | failed again | sources screen |
-| 5 | species `audit filters and CSV export use the same filter` | timed out waiting for download | failed again: Export CSV disabled after Rights filter | audit screen |
-| 6 | species `editor dirty guard keeps the draft on cancel` | H1 timeout | H1 timeout, error boundary | editor screen |
-
-### Root cause found: SSR query integration is broken
-
-`app.log` shows **95** occurrences of:
-
-```
-Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
-    at @tanstack/react-router-ssr-query
-```
-
-Stack saved in `logs/ssr-isdehydrated.txt`. Installed versions:
-
-| Package | Version |
+| Issue | Disposition |
 | --- | --- |
-| `@tanstack/react-router` | 1.170.41 |
-| `@tanstack/router-core` (forced override) | 1.171.34 |
-| `@tanstack/react-router-ssr-query` | 1.167.1 |
-| `router-ssr-query-core` | 1.169.1 |
-
-`router-ssr-query-core` calls `serverSsr.isDehydrated()`, which router-core
-1.171.34 does not implement. The CVE fix (#56) pinned react-router/router-core
-but left ssr-query at its older resolution; the mismatch throws on every SSR
-query notification. Species routes hit an error boundary
-(`Something went wrong!`) under Playwright, and the same defect is the likely
-cause of the species data not appearing.
-
-### Fixture gap (not a product failure)
-
-`recognition awards — bulk retry asks for scope and never duplicates XP`: the
-`Retry failed` button is disabled because the frozen mock's awards ledger
-returns **0 awards / engine off** on that screen, while the overview fixture
-reports 7 failed deliveries. Verified directly in the browser: the awards
-ledger renders `0`, `UNDELIVERED 0`, `FAILED GROUPS 0`, and the button is
-disabled with no timeout. The test cannot exercise the write path until the
-mock provides failed awards under the same conditions as the overview.
-
-### Filed issues
-
-| Issue | Severity | Failure |
-| --- | --- | --- |
-| [ytci-tanstack#58](https://github.com/bradleygichuru/ytci-tanstack/issues/58) | P0 | SSR query integration throws (`isDehydrated`); species error boundary |
-| [ytci-tanstack#59](https://github.com/bradleygichuru/ytci-tanstack/issues/59) | P1 | recognition 200 % overflow (25 px) |
-| [ytci-tanstack#60](https://github.com/bradleygichuru/ytci-tanstack/issues/60) | P1 | species translation/sources missing derived data |
-| [ytci-tanstack#61](https://github.com/bradleygichuru/ytci-tanstack/issues/61) | P1 | species audit CSV disabled after Rights filter |
-
-Results commented on [ytci-mobile#376](https://github.com/bradleygichuru/ytci-mobile/issues/376#issuecomment-7019406241).
-
-### Environment flakes (not counted as defects)
-
-These failed in run 1 and passed on re-run, with the failure mode being a
-timeout/abort rather than an assertion about product behaviour:
-
-- analytics export queue, stale rollup, 900 px viewport (rollup stuck on
-  "Loading the rollup" for 60 s; passed in run 2);
-- analytics retention section (120 s timeout; passed in run 2);
-- MICE screens at 1400/1180/900 (180 s timeouts; all 3 passed in run 2);
-- MICE responsive 1400/900 (180 s timeout; all 4 passed in run 2);
-- species catalogue search/bulk assignment (browser launch timeout; passed in
-  run 2).
-
-## Screenshots
-
-`docs/verification/release/376/admin/screenshots/` holds the key captured
-screens: MICE overview/registrations/check-in/agenda, analytics
-overview/funnels/retention, species overview/catalogue/translation/readiness,
-recognition overview/rules, the 200 % overflow evidence, and the awards ledger
-showing the fixture gap. Playwright's own `test-results/` (traces, videos) and
-`playwright-report/` trees are not committed. Raw runner output is in `logs/`.
-
-## Second-pass corrections (fresh instance, same build)
-
-A later verification pass on the same code (`b1ad619`; branch HEAD was
-`14d7272`, docs only) rebuilt from scratch and reproduced the failures. It
-corrects the attribution above. Evidence: `logs/install.log`,
-`logs/build2.log`, `logs/ssr-isdehydrated-rc-final.txt`,
-`logs/retry-union.json`, `logs/retries/`, `screenshots/*-http500.png`.
-
-### Build and install verified again
-
-- `bun install`: exit 0, "Checked 593 installs across 706 packages (no
-  changes)", `bun.lock` unchanged.
-- `bun run build`: exit 0, client/server/nitro bundles emitted,
-  `.output/nitro.json` written (32.72 s / 18.26 s / 9.91 s).
-- One fresh `vite preview` on `:3220`, mock upstream `:8121`, origin proxy
-  `:8120`, DB `ytci_verify_376_final`, seed `verify-376-final`.
-- Recognition 200 % overflow reproduced a third time: 25 px against a 2 px
-  threshold (`logs/retries/confirm-recognition-200.log`). Awards bulk retry
-  reproduced again: the `Retry failed` control is absent/disabled.
-
-### The release branch is one commit behind master
-
-`origin/master` contains `e442b1e` (#62), which pins
-`@tanstack/react-router-ssr-query` 1.167.3 / `router-ssr-query-core` 1.169.3 and
-`@tanstack/react-query` 5.108.1, removing the `isDehydrated` call. The release
-branch is **exactly one commit behind** that fix (`git rev-list --count
-HEAD..origin/master` = 1). Testing `b1ad619` therefore tests the known-broken
-SSR path.
-
-Measured on this build (authenticated requests):
-
-| Route | HTTP | Body | SSR error |
-| --- | ---: | ---: | --- |
-| `/programme/species` | 200 | 9.7 KB shell | 1 throw |
-| `/programme/species/panthera-leo` | **500** | error page | 1 throw |
-| `/programme/species/panthera-leo/languages` | **500** | error page | 1 throw |
-| `/analytics` | 200 | 62.9 KB | 0 throws |
-
-So the two species editor screens are hard 500s, not merely a client error
-boundary. Other species routes return a shell and hydrate with a React #419
-server-suspense error. Merging master (or cherry-picking #62) is the release
-action; it was **not** done here.
-
-### Translation/sources/audit failures are a contracts-mock defect
-
-The mock shipped in `.verify-scratch` was stale (77 routes at `/__fixtures`;
-the `ytci-go` checkout at `61562a7` serves 111). More importantly,
-`fixtures/routes.go` matches first-match-wins and registers
-`GET /v1/admin/species/{id}` **before** `/review`, `/sources` and `/rights`, so
-the wildcard shadows all three literals:
-
-```
-GET /v1/admin/species/review        -> species/detail fixture (200)
-GET /v1/admin/species/sources       -> species/detail fixture (200)
-GET /v1/admin/species/rights        -> species/detail fixture (200)
-GET /v1/admin/species/zzz-nonsense  -> species/detail fixture (200)
-```
-
-The app therefore receives a species object where it expects `{ items: [...] }`:
-the translation queue loses its review task (3 tasks instead of 4), and sources
-and rights render from the wrong payload. **This is harness infrastructure, not
-app code.**
-
-Diagnostic (no product code changed): a copy of `ytci-go-release-376@61562a7`
-with the three literal routes moved above `/{id}` was rebuilt and served on
-`:8121`. `/review`, `/sources` and `/rights` then returned their proper list
-fixtures. Re-running the species files against it:
-
-| Species result with correct fixtures | Count |
-| --- | ---: |
-| Passed | 8 (1 of them after a retry) |
-| Failed | 2 — both at the routes that 500 without #62 |
-| Skipped | 0 |
-
-`recaptures the screens` passed, and `audit filters and CSV export use the same
-filter` passed, so **#61 is not reproducible with the correct fixture**. The
-recapture and rights failures above are mock attribution errors, not product
-failures. Raw evidence: `logs/retries/diag2-species.log`.
-
-### Corrected retry union
-
-| Disposition | Tests |
-| --- | ---: |
-| Passed (best result across passes) | 87 |
-| Failed for a product reason | 1 (recognition 200 % overflow) |
-| Failed only because the build lacks #62 (500) | 2 |
-| Failed only because of the mock defect | 2 |
-| Timed out (species audit: mock/500; recognition awards: fixture gap) | 2 |
-| Known-defect `test.fail()` annotations that now pass | 2 |
-| Skipped, fixture mode only (`smoke.spec.ts`) | 3 |
-
-No single invocation was green, and 87/99 best-of-pass is not a green gate.
-
-## Known environment follow-ups
-
-- Fresh-database `bun run db:migrate` fails at `0002_brown_hercules.sql`
-  (`relation "pending_media_uploads" does not exist`) because no journaled
-  migration creates the table. Present on `master`; worked around here with a
-  schema clone of `ytci_verify_375`/`ytci_verify_release376`.
+| [ytci-tanstack#60](https://github.com/bradleygichuru/ytci-tanstack/issues/60) | Re-verified against the fixed mock; all named tests pass; closed with evidence. |
+| [ytci-tanstack#61](https://github.com/bradleygichuru/ytci-tanstack/issues/61) | Re-verified; audit CSV downloads after the Rights filter; closed with evidence. |
+| [ytci-tanstack#62](https://github.com/bradleygichuru/ytci-tanstack/issues/62) | Fixed on this branch; SSR errors are gone. |
+| [ytci-tanstack#63](https://github.com/bradleygichuru/ytci-tanstack/issues/63) | Fixed; all three recognition 200 % tests pass. |
+| New P0/P1 | None filed. The remaining failure is a contract/fixture coverage gap. |
