@@ -1,6 +1,6 @@
 # Verification harness — admin
 
-Status: draft scaffold (ticket #377)
+Status: gate for #376 (ticket #377)
 Runner: Playwright 1.62
 Default port: **3210**
 
@@ -41,7 +41,18 @@ VERIFY_MODE=live \
 VERIFY_SEED_ID=verify-local-377 \
 VERIFY_BASE_URL=http://127.0.0.1:3210 \
 VERIFY_ADMIN_PASSWORD='<seeded password>' \
+VITE_CONTRACTS_API_URL=http://127.0.0.1:8099 \
+VITE_FLAG_MICE=true VITE_FLAG_SPECIES=true VITE_FLAG_RECOGNITION=true \
+VITE_FLAG_ANALYTICS=true \
   bunx vite dev --port 3210
+```
+
+Seed the users the track specs sign in as before running:
+
+```sh
+bun run scripts/seed-test-users.ts        # MICE: grace@example.com, alice@example.com, moderator@example.com
+VERIFY_ADMIN_PASSWORD='<same password>' \
+  bun run scripts/seed-verify-372.ts      # species: verify-admin/-editor/-translator/-reviewer@example.test
 ```
 
 Then, in a second shell:
@@ -87,23 +98,46 @@ e2e/verify/
   helpers/auth.ts
   fixture-server.mjs
   fixture/index.html
-  admin-mice/<screen>.<state>.spec.ts          #364  blocked
-  admin-recognition/<screen>.<state>.spec.ts   #368  blocked
-  admin-species/<screen>.<state>.spec.ts       #372  blocked
-  admin-analytics/<screen>.<state>.spec.ts     #375  blocked
+  admin-mice/                      #364  live: screens, behaviour, responsive
+  admin-recognition/               #368  live: screened states + governance
+  admin-species/                   #372  live: matrix, behaviour, recapture
+  admin-analytics/                 #375  live: overview, sections, responsive
 ```
 
-Track specs land on their owner ticket. The path is reserved by the mobile
-repo's flow inventory.
+`playwright.verify.config.ts` runs two projects. `verify-harness` covers the
+harness specs in both modes. `verify-live` is added only for
+`VERIFY_MODE=live` and collects `admin-*/**/*.spec.ts`, so the product suites
+never execute against the static fixture. Add new track specs under a folder
+matching `admin-<track>/` or they will not be collected.
 
 ## CI
 
-`.github/workflows/verify.yml` is a **draft**. It is not required in branch
-protection. PRs run unit/contract only; the integration branch and the nightly
-schedule run the fixture smoke. Playwright reports, traces, screenshots, and
-videos upload as artifacts (`playwright-report/verify`, `test-results/verify`).
-Live mode is not wired in CI because it needs a disposable Postgres instance
-and seed.
+`.github/workflows/verify.yml` is the gate for #376, not a draft. Branch
+protection lists `Unit and contract` and `Playwright fixture smoke`; neither has
+`continue-on-error`, so a red suite blocks the merge.
+
+| Job | Runs | What it proves |
+|---|---|---|
+| `Unit and contract` | every PR/push | `vitest` + `tsc` are clean |
+| `Playwright fixture smoke` | every PR/push/nightly | the harness starts, navigates and guards the coordination rules |
+| `Playwright live (seeded)` | when the live secrets exist | the MICE (#364), recognition (#368), species (#372) and analytics (#375) suites drive the real app on a disposable seed |
+
+A fixture-only run is **not** product evidence. The live job is skipped — never
+silently replaced by fixture mode — unless all of these repository secrets are
+set:
+
+| Secret | Purpose |
+|---|---|
+| `VERIFY_DATABASE_URL` | disposable Postgres DSN; must contain `verify` |
+| `VERIFY_BETTER_AUTH_SECRET` | Better Auth secret for the throwaway app |
+| `VERIFY_ADMIN_PASSWORD` | password for the seeded verification users |
+
+The live job starts a PostGIS service, applies migrations, seeds the
+verification users (`seed-test-users.ts`, `seed-verify-372.ts`), starts the Go
+contracts mock on `:8099`, starts the admin app on `:3210` with the MICE and
+species flags on, and runs `bun run test:e2e:verify:live`. Playwright reports,
+traces, screenshots, and videos upload as artifacts
+(`playwright-report/verify`, `test-results/verify`).
 
 ## Evidence
 

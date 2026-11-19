@@ -33,8 +33,7 @@
     "test:e2e:verify:live": "VERIFY_MODE=live bunx playwright test -c playwright.verify.config.ts",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
-    "test:e2e:then-now-api": "bunx playwright test e2e/then-now-api.spec.ts",
-    "test:e2e:verify": "bunx playwright test --config playwright.verify.config.ts"
+    "test:e2e:then-now-api": "bunx playwright test e2e/then-now-api.spec.ts"
   },
   "dependencies": {
     "@better-auth/expo": "^1.6.25",
