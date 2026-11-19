@@ -169,6 +169,7 @@ const server = createServer(async (req, res) => {
     // The body may be rewritten below, so upstream framing headers are stale.
     delete out["content-length"];
     delete out["content-encoding"];
+    delete out["transfer-encoding"];
 
     if ((out["content-type"] ?? "").includes("application/json") && body.length) {
       try {
