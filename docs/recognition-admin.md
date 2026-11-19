@@ -36,7 +36,7 @@ The shared sidebar has one Recognition entry (`src/lib/navigation/sections.ts`) 
 | 5   | Missions: families, condition, reward, badge, completions                          | `recognition/missions.tsx`                    | Edit/create; completion ledger and correction; pause/resume symmetry                                                                                                     |
 | 6   | Seasons: open/scheduled/closed, board size, close + snapshot                       | `recognition/seasons.tsx`                     | Two-person close; typed season key; full snapshot dialog; no countdown                                                                                                   |
 | 7   | Leaderboard: season scope, ranks, search, suppression, retract/restore/freeze      | `recognition/leaderboard.tsx`                 | Ranks recomputed on every mutation; retracted rows retained with restore; closed boards read-only; danger styling reserved for Retract                                   |
-| 8   | Awards: state tabs, retry, manual credit, version                                  | `recognition/awards.tsx`                      | Failures grouped by cause and explained once; bulk retry preview with count and rule versions; correction requires a support reference; reversal writes a negative entry |
+| 8   | Awards: state tabs, retry, manual credit, version                                  | `recognition/awards.tsx`                      | Failures grouped by cause and explained once; bulk retry preview with count and rule versions; correction requires a support reference and a second approver; reversal writes a negative entry |
 | 9   | Moderation: age/SLA, kind-specific decisions, evidence                             | `recognition/reports.tsx`                     | Case view linked to board / ledger / audit; decision and reopen reasons; disqualification only with `recognition.disqualify`                                             |
 | 10  | Backfill: bound rule/window, frozen dry-run, per-row include, CSV, request/approve | `recognition/backfill.tsx`                    | Approver sees the rows; withdraw request keeps the dry-run; parameters-changed notice                                                                                    |
 | 11  | Audit: one log, category filters                                                   | `recognition/audit.tsx`                       | Export respects the active filter; actor, role and absolute time on every row                                                                                            |
@@ -76,6 +76,29 @@ Writes now call the contract and refetch on success. `createRule`,
 `closeSeason` post to the action endpoints. A toast appears only after a 2xx
 response, and a rejected write leaves the UI unchanged and shows the error.
 
+### XP adjustments and the second approver
+
+Manual credit and reversal use `POST /v1/admin/recognition/adjustments` with the
+chosen approver's user id in the required `X-Second-Approver` header. The
+correction dialog loads the approver list from the admin user directory, keeps
+only active accounts that hold `recognition.approve_adjustment` (derived from the
+frozen role contract), and excludes the signed-in actor. Submit stays disabled
+until an approver is selected; an empty directory explains why nothing can be
+submitted.
+
+The API verifies the header and rejects bad values with 403. The client maps
+each code to actionable copy instead of a generic failure:
+
+| Code                        | What the operator sees                                                                    |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| `SECOND_APPROVER_REQUIRED`  | Pick an active approver who is not you; self-approval is refused.                         |
+| `SECOND_APPROVER_UNKNOWN`   | The selected account no longer exists; reload the list and pick another.                  |
+| `SECOND_APPROVER_INACTIVE`  | The selected account is suspended/inactive; pick another active approver.                 |
+| `SECOND_APPROVER_FORBIDDEN` | The selected account lacks `recognition.approve_adjustment`; pick another approver.       |
+
+Both credit and reversal send the header. A rejected adjustment leaves the
+ledger unchanged and never toasts success; a successful one refetches the audit
+stream so both the adjuster and approver are visible.
 
 ## Contract gaps (no contract change made)
 
@@ -100,7 +123,8 @@ explicitly refused rather than simulated:
    Either add `id` to `Season` or accept the season key on those endpoints.
 5. **Awards ledger read** (`GET /v1/admin/recognition/awards`) and **retry**
    (`POST /v1/admin/recognition/awards/{id}/retry`). The ledger is empty in live
-   mode; corrections go through the real adjustments endpoint.
+   mode; corrections go through the real adjustments endpoint with the required
+   `X-Second-Approver` header.
 6. **Mission administration** (`GET/POST /v1/admin/recognition/missions`). The
    screen is empty in live mode and populated only by demo data.
 7. **Leaderboard administration** (`GET /v1/admin/recognition/leaderboard/{season}`,
@@ -136,7 +160,15 @@ bun run build                 # SSR build includes the recognition routes
 (contract-only rows on success, labelled sample fallback when every read fails,
 mixed never reported as API) and the write contract (creates call the API and
 refetch, rejected writes leave the UI unchanged and never toast, season actions
-send the UUID and refuse without one).
+send the UUID and refuse without one, corrections send the approver and refetch
+the audit, a rejected correction never mutates the ledger).
+
+`src/lib/recognition/__tests__/api.test.ts` asserts the `X-Second-Approver`
+header on both credit and reversal and maps each 403 approver code to its
+operator copy. `src/lib/recognition/__tests__/approvers.test.ts` proves the
+picker only lists active holders of `recognition.approve_adjustment` and removes
+the signed-in actor. `src/components/recognition/__tests__/dialogs.test.tsx`
+proves submit is disabled without an approver.
 
 Playwright device screens were not run for this stream, per the execution
 instruction. The recognition verify spec is live-mode only and skips in the

@@ -1036,7 +1036,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Compensating XP entry with a reason and a second approver */
+        /**
+         * Compensating XP entry with a reason and a second approver
+         * @description Records an immutable compensating XP entry. Enforces the "no self-approval" actor separation: X-Second-Approver must name an active user, distinct from the caller, that holds recognition.approve_adjustment. Both the adjuster and the approver are recorded in recognition.audit. Rejections use 403 with code SECOND_APPROVER_REQUIRED (missing or same as the caller), SECOND_APPROVER_UNKNOWN, SECOND_APPROVER_INACTIVE, or SECOND_APPROVER_FORBIDDEN (lacks the approval permission).
+         */
         post: operations["adminCreateXpAdjustment"];
         delete?: never;
         options?: never;
@@ -5082,7 +5085,10 @@ export interface operations {
     adminCreateXpAdjustment: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                /** @description User id of the second approver. Must differ from the authenticated caller and hold recognition.approve_adjustment. */
+                "X-Second-Approver": string;
+            };
             path?: never;
             cookie?: never;
         };

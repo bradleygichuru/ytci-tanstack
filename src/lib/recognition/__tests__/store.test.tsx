@@ -333,6 +333,82 @@ describe('recognition store writes', () => {
     expect(vi.mocked(notify.saved)).toHaveBeenCalledWith('Season published')
   })
 
+  it('records a correction with the chosen approver and refetches the audit', async () => {
+    const value = await mount()
+    act(() => value.setScenario('demo'))
+    await waitFor(() => expect(ctx?.state.awards.length).toBeGreaterThan(0))
+    const award = (ctx as unknown as RecognitionContextValue).state.awards[0]
+    api.createAdjustment.mockResolvedValue({ id: 'xp-1' })
+    api.listAudit.mockClear()
+
+    await act(async () => {
+      await (ctx as unknown as RecognitionContextValue).actions.correctAward(award.id, {
+        action: 'credit',
+        supportRef: 'SUP-2026-1188',
+        note: 'Checked the check-in evidence and confirmed the award is valid.',
+        approverId: 'super-2',
+      })
+    })
+
+    expect(api.createAdjustment).toHaveBeenCalledWith(
+      expect.objectContaining({ subjectRef: award.reader, reason: 'adjustment', amount: award.xp }),
+      'super-2'
+    )
+    expect(api.listAudit).toHaveBeenCalledTimes(1)
+    expect(vi.mocked(notify.saved)).toHaveBeenCalledWith('Correction recorded')
+    const corrected = (ctx as unknown as RecognitionContextValue).state.awards.find(
+      (entry) => entry.id === award.id
+    )
+    expect(corrected?.corrected?.supportRef).toBe('SUP-2026-1188')
+  })
+
+  it('does not report success or mutate the ledger when the adjustment is rejected', async () => {
+    const value = await mount()
+    act(() => value.setScenario('demo'))
+    await waitFor(() => expect(ctx?.state.awards.length).toBeGreaterThan(0))
+    const awardsBefore = (ctx as unknown as RecognitionContextValue).state.awards
+    const award = awardsBefore[0]
+    api.createAdjustment.mockRejectedValue(
+      new Error('The selected approver cannot approve adjustments.')
+    )
+
+    await expect(
+      act(async () => {
+        await (ctx as unknown as RecognitionContextValue).actions.correctAward(award.id, {
+          action: 'reversal',
+          supportRef: 'SUP-2026-1188',
+          note: 'Checked the evidence and confirmed the reversal.',
+          approverId: 'super-2',
+        })
+      })
+    ).rejects.toThrow(/cannot approve adjustments/)
+
+    expect(api.listAudit).toHaveBeenCalledTimes(1)
+    expect((ctx as unknown as RecognitionContextValue).state.awards).toBe(awardsBefore)
+    expect(vi.mocked(notify.saved)).not.toHaveBeenCalled()
+  })
+
+  it('refuses to call the adjustment API without an approver', async () => {
+    const value = await mount()
+    act(() => value.setScenario('demo'))
+    await waitFor(() => expect(ctx?.state.awards.length).toBeGreaterThan(0))
+    const award = (ctx as unknown as RecognitionContextValue).state.awards[0]
+
+    await expect(
+      act(async () => {
+        await (ctx as unknown as RecognitionContextValue).actions.correctAward(award.id, {
+          action: 'credit',
+          supportRef: 'SUP-2026-1188',
+          note: 'Checked the check-in evidence and confirmed the award is valid.',
+          approverId: '',
+        })
+      })
+    ).rejects.toThrow(/Choose a second approver/)
+
+    expect(api.createAdjustment).not.toHaveBeenCalled()
+    expect(vi.mocked(notify.saved)).not.toHaveBeenCalled()
+  })
+
   it('publishes only a simulated contract draft', async () => {
     api.listRules.mockResolvedValue([{ ...contractRule, status: 'draft' }])
     const value = await mount()
