@@ -19,7 +19,9 @@ export const Route = createFileRoute('/_authenticated/analytics/funnels')({
 
 function FunnelsPage() {
   const { data } = useAnalytics()
-  const rows = funnelRows(data?.funnels ?? [])
+  // The table and the step bars read the same journey rollup. The `funnels`
+  // read is a separate aggregation and must not back the summary row (#387).
+  const rows = funnelRows(data?.journeys ?? [])
   const keys = new Set(rows.map((row) => row.journey))
   const initial: JourneyKey =
     (keys.has('event_registration') ? 'event_registration' : (rows[0]?.journey as JourneyKey)) ??
@@ -31,10 +33,10 @@ function FunnelsPage() {
   return (
     <SectionFrame
       section="funnels"
-      dataset="funnels"
+      dataset="journeys"
       kicker="Analytics · funnels"
       title="Funnels"
-      sub="Conversion for the nine journeys. Step detail is drawn from the same journey rollup, and the largest-drop caption is computed from the rows on screen."
+      sub="Conversion for the nine journeys. The summary table, the step bars and the largest-drop caption all read the same journey rollup for the same range, so entered, completed and conversion use one population."
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <Panel

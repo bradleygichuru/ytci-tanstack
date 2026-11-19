@@ -27,7 +27,6 @@ import {
   type ContentView,
   type DataQuality,
   type DatasetKey,
-  type FunnelMetric,
   type JourneyKey,
   type JourneyStepMetric,
   type MetricCell,
@@ -282,28 +281,24 @@ export function topJourneys(steps: JourneyStepMetric[], limit = 5): JourneySumma
   return journeySummaries(steps).slice(0, limit)
 }
 
-export function funnelRows(funnels: FunnelMetric[]): FunnelRow[] {
-  return funnels
-    .map((row) => {
-      const entered = row.entered
-      const completed = row.completed
-      const computed =
-        entered != null && completed != null && entered > 0 ? completed / entered : null
-      return {
-        journey: row.journey,
-        label: JOURNEY_LABELS[row.journey as JourneyKey] ?? humanise(row.journey),
-        entered,
-        completed,
-        conversion: row.conversion ?? computed,
-        suppressed: row.suppressed || entered == null || completed == null,
-      }
-    })
-    .sort((a, b) => {
-      if (a.conversion == null && b.conversion == null) return a.label.localeCompare(b.label)
-      if (a.conversion == null) return 1
-      if (b.conversion == null) return -1
-      return b.conversion - a.conversion
-    })
+/**
+ * Funnel summary rows for the Funnels screen.
+ *
+ * The table and the step bars must describe one population. Both read the same
+ * journey rollup: `entered` is the first step and `completed` is the last step
+ * of the series `funnelSteps` renders, so the row's conversion can never
+ * disagree with the bars or the largest-drop caption (#387). The separate
+ * `funnels` read is not used here because it is a different aggregation.
+ */
+export function funnelRows(steps: JourneyStepMetric[]): FunnelRow[] {
+  return journeySummaries(steps).map((summary) => ({
+    journey: summary.journey,
+    label: summary.label,
+    entered: summary.started,
+    completed: summary.completed,
+    conversion: summary.completion,
+    suppressed: summary.suppressed,
+  }))
 }
 
 export function funnelSteps(steps: JourneyStepMetric[], journey: string): FunnelStepView[] {

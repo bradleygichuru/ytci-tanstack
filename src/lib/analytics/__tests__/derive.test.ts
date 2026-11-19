@@ -6,8 +6,10 @@ import {
   dailyCaption,
   dailySeries,
   funnelCaption,
+  funnelRows,
   funnelSteps,
   journeySummaries,
+  largestDrop,
   qualitySummary,
   retentionGrid,
   retentionTone,
@@ -141,6 +143,34 @@ describe('journeys and funnels', () => {
     const caption = funnelCaption(view, 'Event registration → check-in')
     expect(caption).toContain('between registration started and checked in')
     expect(caption).toContain('450 readers')
+  })
+
+  it('keeps the funnel summary table and the step bars on one denominator', () => {
+    const row = funnelRows(steps).find((entry) => entry.journey === 'event_registration')
+    const bars = funnelSteps(steps, 'event_registration')
+    expect(row).toBeDefined()
+    expect(bars.length).toBeGreaterThan(1)
+
+    const entered = bars[0].reached
+    const completed = bars[bars.length - 1].reached
+    expect(row?.entered).toBe(entered)
+    expect(row?.completed).toBe(completed)
+    expect(row?.conversion).toBeCloseTo((completed as number) / (entered as number))
+    // The bars use the table's entered count as their denominator, too.
+    for (const bar of bars) {
+      expect(bar.share).toBeCloseTo((bar.reached as number) / (entered as number))
+    }
+
+    // The largest-drop caption is derived from the same series.
+    const drop = largestDrop(bars)
+    expect(drop).toEqual({
+      from: 'Registration started',
+      to: 'Checked in',
+      dropped: 450,
+    })
+    expect(funnelCaption(bars, row!.label)).toBe(
+      `The largest drop in ${row!.label} is between registration started and checked in (450 readers).`,
+    )
   })
 })
 

@@ -61,7 +61,7 @@ test('journey filter carried to overview is labelled not applied', async ({ page
   await expect(page.getByRole('button', { name: 'Reset filters' })).toBeEnabled()
 })
 
-test('funnels: step bars, largest-drop caption and suppression markers render', async ({ page }) => {
+test('funnels: step bars and largest-drop caption render from the journey rollup', async ({ page }) => {
   await openAnalytics(page, 'funnels')
 
   const text = await bodyText(page)
@@ -71,27 +71,38 @@ test('funnels: step bars, largest-drop caption and suppression markers render', 
   expect(text).toContain('The largest drop in Event registration → check-in is between detail viewed and registered (310 readers).')
   expect(text).toContain('1,240')
   expect(text).toContain('930')
-  // A suppressed row is never shown as zero.
-  expect(text).toContain('Suppressed cell: fewer readers than the suppression threshold.')
+  // A journey with no rolled-up steps is absent, never shown as a zero.
   expect(text).not.toMatch(/Course completion\s+0\b/)
 })
 
-test(
-  'funnels: summary and step bars reconcile to one population',
-  {
-    annotation: {
-      type: 'known-defect',
-      description:
-        'P1 #375: the funnel summary renders completed=810/65% while the step bars on the same screen render 930/75%.',
-    },
-  },
-  async ({ page }) => {
-    test.fail()
-    await openAnalytics(page, 'funnels')
-    const text = await bodyText(page)
-    expect(text).toMatch(/Event registration → check-in\t1,240\t930\t75\.0%/)
-  },
-)
+test('funnels: summary and step bars reconcile to one population (#387)', async ({ page }) => {
+  await openAnalytics(page, 'funnels')
+
+  // The table row is the journey rollup: entered = first step, completed =
+  // last step. It must match the bars, not the separate funnels aggregation.
+  const text = await bodyText(page)
+  expect(text).toMatch(/Event registration → check-in\t1,240\t930\t75\.0%/)
+  expect(text).not.toMatch(/Event registration → check-in\t1,240\t810\t65\.0%/)
+
+  const bars = page.getByRole('progressbar')
+  await expect(bars).toHaveCount(2)
+  const barLabels = await bars.evaluateAll((nodes) =>
+    nodes.map((node) => ({
+      label: node.getAttribute('aria-label'),
+      now: node.getAttribute('aria-valuenow'),
+      text: node.getAttribute('aria-valuetext'),
+    })),
+  )
+  expect(barLabels).toEqual([
+    { label: 'Detail viewed reached', now: '100', text: '100% of entrants' },
+    { label: 'Registered reached', now: '75', text: '75% of entrants' },
+  ])
+
+  // The largest-drop caption reads the same series (1240 - 930 = 310).
+  await expect(
+    page.getByText(/The largest drop in Event registration → check-in is between detail viewed and registered/),
+  ).toContainText('310 readers')
+})
 
 test('retention: elapsed cohorts only and an accessible description without future weeks', async ({ page }) => {
   await openAnalytics(page, 'retention')
