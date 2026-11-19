@@ -173,7 +173,7 @@ export const PERMISSIONS = [
 /** Roles granted each permission by the contract (before per-object scoping). */
 export const PERMISSION_ROLES: Readonly<Record<Permission, readonly Role[]>> = {
   "platform.contracts.read": ["user", "county_officer", "content_editor", "species_expert", "translator", "language_reviewer", "rights_reviewer", "moderator", "organizer", "administrator", "super_admin"],
-  "platform.admin_access": ["moderator", "administrator", "super_admin"],
+  "platform.admin_access": ["content_editor", "species_expert", "translator", "language_reviewer", "rights_reviewer", "moderator", "administrator", "super_admin"],
   "platform.roles.read": ["administrator", "super_admin"],
   "platform.roles.manage": ["super_admin"],
   "events.read": ["user", "county_officer", "content_editor", "moderator", "organizer", "administrator", "super_admin"],
