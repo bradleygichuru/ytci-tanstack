@@ -284,10 +284,7 @@ function BackfillPage() {
                 <Button
                   size="sm"
                   disabled={!engineOn || included.length === 0 || paramsChanged}
-                  onClick={() => {
-                    actions.requestBackfill(batch.id)
-                    setActiveBatchId(batch.id)
-                  }}
+                  title="The frozen contract has no backfill-approval request operation. Nothing is saved locally."
                 >
                   Request approval
                 </Button>

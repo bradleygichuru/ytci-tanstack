@@ -224,13 +224,8 @@ function SeasonsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                actions.setBoardFrozen(
-                                  season.key,
-                                  false,
-                                  'Investigation concluded; placements resumed.'
-                                )
-                              }
+                              disabled
+                              title="The frozen contract has no board-unfreeze operation. Nothing is changed locally."
                             >
                               Unfreeze
                             </Button>

@@ -111,11 +111,18 @@ explicitly refused rather than simulated:
    volume.
 9. **Bulk award retry** with a server-side preview. The client preview groups the
    current filter and calls the same idempotent retry path per award.
+10. **Backfill approval request / withdrawal** (`POST /backfill/{id}/request`,
+    `/withdraw`). The contract creates and approves batches but has no request
+    or withdraw operation; those controls are disabled.
+11. **Moderation reopen** (`POST /moderation/{id}/reopen`). A decided case cannot
+    be reopened; the control is disabled.
+12. **Board unfreeze** (`POST /seasons/{id}/unfreeze`). Freeze exists, unfreeze
+    does not; the control is disabled.
 
 Adding any of these is an additive contract change in `ytci-go`, a vendored YAML
 update, regeneration and fixture/test coverage. The change-control candidates
-are 1–4; they are the operations the current UI deliberately disables instead of
-pretending to save.
+are 1–4 and 10–12; they are the operations the current UI deliberately disables
+instead of pretending to save.
 
 ## Tests
 

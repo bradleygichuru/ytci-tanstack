@@ -878,39 +878,13 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
 
 
   const setBoardFrozen = useCallback(
-    (key: string, frozen: boolean, reason: string) => {
-      if (reason.trim().length < 5) throw new Error('Give the board decision a reason.')
-      const season = stateRef.current.seasons.find((entry) => entry.key === key)
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              seasons: prev.seasons.map((entry) =>
-                entry.key === key && !frozen && entry.status === 'frozen'
-                  ? { ...entry, status: 'active' }
-                  : entry
-              ),
-              boards: {
-                ...prev.boards,
-                [key]: { ...prev.boards[key], frozen },
-              },
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: frozen ? 'Board frozen' : 'Board unfrozen',
-              entity: season?.nameEn ?? key,
-              detail: reason,
-              category: 'safety',
-              at: nowIso(),
-            }
-          )
-        )
-      )
+    (_key: string, _frozen: boolean, _reason: string): void => {
+      // Freezing a board goes through POST /seasons/{id}/freeze. There is no
+      // unfreeze operation in the frozen contract, so this never pretends to
+      // reverse one.
+      throw contractGap('board unfreeze')
     },
-    [actor.name, actor.role]
+    []
   )
 
   const closeSeason = useCallback(
@@ -1280,31 +1254,11 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
   )
 
   const reopenCase = useCallback(
-    (id: string, reason: string) => {
+    (_id: string, reason: string): void => {
       if (reason.trim().length < 10) throw new Error('Give the reopen a reason of at least 10 characters.')
-      setState((prev) => {
-        const entry = prev.moderation.find((item) => item.id === id)
-        return withNote(
-          {
-            ...prev,
-            moderation: prev.moderation.map((item) =>
-              item.id === id ? { ...item, status: 'open', resolution: `reopened: ${reason}` } : item
-            ),
-          },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: 'Moderation case reopened',
-            entity: entry ? `${id} · ${entry.subject}` : id,
-            detail: reason,
-            category: 'moderation',
-            at: nowIso(),
-          }
-        )
-      })
+      throw contractGap('moderation reopen')
     },
-    [actor.name, actor.role]
+    []
   )
 
   const dryRunBackfill = useCallback(
@@ -1342,33 +1296,10 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const requestBackfill = useCallback(
-    (id: string) => {
-      setState((prev) => {
-        const batch = prev.backfill.find((entry) => entry.id === id)
-        if (!batch) return prev
-        const included = batch.rows.filter((row) => row.include)
-        return withNote(
-          {
-            ...prev,
-            backfill: prev.backfill.map((entry) =>
-              entry.id === id ? { ...entry, status: 'requested' } : entry
-            ),
-          },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: 'Backfill approval requested',
-            entity: `${batch.id} · ${batch.ruleKey} · v${batch.ruleVersion}`,
-            detail: `${included.length} of ${batch.rows.length} rows · ${included.reduce((sum, row) => sum + row.xp, 0)} XP · awaiting a second approver`,
-            category: 'awards',
-            at: nowIso(),
-          }
-        )
-      })
-      notify.success('Approval requested')
+    (_id: string): void => {
+      throw contractGap('backfill approval request')
     },
-    [actor.name, actor.role]
+    []
   )
 
   const approveBackfill = useCallback(
@@ -1394,32 +1325,11 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
   )
 
   const withdrawBackfill = useCallback(
-    (id: string, reason: string) => {
+    (_id: string, reason: string): void => {
       if (reason.trim().length < 10) throw new Error('Explain the withdrawal with at least 10 characters.')
-      setState((prev) => {
-        const batch = prev.backfill.find((entry) => entry.id === id)
-        return withNote(
-          {
-            ...prev,
-            backfill: prev.backfill.map((entry) =>
-              entry.id === id ? { ...entry, status: 'withdrawn', note: reason } : entry
-            ),
-          },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: 'Backfill request withdrawn',
-            entity: batch ? `${batch.id} · ${batch.ruleKey}` : id,
-            detail: `${reason} · the dry-run stays available`,
-            category: 'awards',
-            at: nowIso(),
-          }
-        )
-      })
-      notify.saved('Backfill withdrawn')
+      throw contractGap('backfill withdrawal')
     },
-    [actor.name, actor.role]
+    []
   )
 
   const setKillSwitch = useCallback(
