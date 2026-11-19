@@ -196,6 +196,17 @@ ledger renders `0`, `UNDELIVERED 0`, `FAILED GROUPS 0`, and the button is
 disabled with no timeout. The test cannot exercise the write path until the
 mock provides failed awards under the same conditions as the overview.
 
+### Filed issues
+
+| Issue | Severity | Failure |
+| --- | --- | --- |
+| [ytci-tanstack#58](https://github.com/bradleygichuru/ytci-tanstack/issues/58) | P0 | SSR query integration throws (`isDehydrated`); species error boundary |
+| [ytci-tanstack#59](https://github.com/bradleygichuru/ytci-tanstack/issues/59) | P1 | recognition 200 % overflow (25 px) |
+| [ytci-tanstack#60](https://github.com/bradleygichuru/ytci-tanstack/issues/60) | P1 | species translation/sources missing derived data |
+| [ytci-tanstack#61](https://github.com/bradleygichuru/ytci-tanstack/issues/61) | P1 | species audit CSV disabled after Rights filter |
+
+Results commented on [ytci-mobile#376](https://github.com/bradleygichuru/ytci-mobile/issues/376#issuecomment-7019406241).
+
 ### Environment flakes (not counted as defects)
 
 These failed in run 1 and passed on re-run, with the failure mode being a
