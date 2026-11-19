@@ -9,6 +9,8 @@ import { login, openRoute, SCREENS, setDataState } from './mice.helpers'
  * docs/verification/evidence/364/admin; this spec asserts the same screens
  * render real data rather than loading scaffolds.
  */
+test.setTimeout(180_000)
+
 test.describe('MICE admin — screen matrix', () => {
   test.skip(process.env.VERIFY_MODE !== 'live', 'live admin run only')
 

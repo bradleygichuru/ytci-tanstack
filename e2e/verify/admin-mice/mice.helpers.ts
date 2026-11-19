@@ -26,21 +26,17 @@ export const SCREENS = [
 ] as const
 
 /**
- * The login form is a controlled React form. Filling the input in one go can
- * race hydration, so type like a person and wait for the session redirect.
+ * Sign in through the contract endpoint, then load the app. The login form is
+ * a controlled React form and its hydration race makes it a poor fixture for
+ * every spec; authentication itself is covered by the shell e2e suite.
  */
 export async function login(page: Page, email = ADMIN_EMAIL) {
-  await page.goto('/login', { waitUntil: 'networkidle' })
-  await page.waitForTimeout(1200)
-  const emailInput = page.locator('input[type=email]').first()
-  const passwordInput = page.locator('input[type=password]').first()
-  await emailInput.click()
-  await emailInput.pressSequentially(email, { delay: 8 })
-  await passwordInput.click()
-  await passwordInput.pressSequentially(ADMIN_PASSWORD, { delay: 8 })
-  await page.getByRole('button', { name: /^Sign In$/ }).last().click()
+  const response = await page.request.post('/api/auth/sign-in/email', {
+    data: { email, password: ADMIN_PASSWORD },
+  })
+  expect(response.ok(), `sign-in for ${email}`).toBeTruthy()
+  await page.goto('/programme/events', { waitUntil: 'domcontentloaded' })
   await expect(page).not.toHaveURL(/\/login/, { timeout: 25_000 })
-  await page.waitForTimeout(1200)
 }
 
 /** Navigate and wait for the route's loading scaffold to clear. */
