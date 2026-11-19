@@ -1,0 +1,50 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [verify-live] › e2e/verify/admin-species/recapture.spec.ts:76:3 › species recapture › recaptures the screens that need the derived data loaded (50.2s)
+
+
+  1) [verify-live] › e2e/verify/admin-species/recapture.spec.ts:76:3 › species recapture › recaptures the screens that need the derived data loaded 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('4 shown').first()
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 30000ms
+      - waiting for getByText('4 shown').first()
+
+
+      43 |   await page.emulateMedia({ colorScheme: 'light' })
+      44 |   await page.goto(`${BASE}${route}`)
+    > 45 |   await expect(page.getByText(ready).first()).toBeVisible({ timeout: 30_000 })
+         |                                               ^
+      46 |   await page.waitForTimeout(600)
+      47 |   await shot(page, screen, '1400-light-default')
+      48 |   for (const width of [1180, 900]) {
+        at matrix (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/recapture.spec.ts:45:47)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/recapture.spec.ts:81:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [verify-live] › e2e/verify/admin-species/recapture.spec.ts:76:3 › species recapture › recaptures the screens that need the derived data loaded 

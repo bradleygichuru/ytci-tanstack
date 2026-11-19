@@ -1,0 +1,140 @@
+{
+  "seed-guard.spec.ts": {
+    "counts": {
+      "passed": 8,
+      "failed": 0,
+      "timedOut": 0,
+      "skipped": 0
+    },
+    "total": 8,
+    "residual": []
+  },
+  "smoke.spec.ts": {
+    "counts": {
+      "passed": 0,
+      "failed": 0,
+      "timedOut": 0,
+      "skipped": 3
+    },
+    "total": 3,
+    "residual": [
+      "skipped: serves and asserts the fixture page (full.json)",
+      "skipped: health endpoint answers (full.json)",
+      "skipped: unknown paths are 404, not a fallback to the dev app (full.json)"
+    ]
+  },
+  "admin-analytics/export-erasure.spec.ts": {
+    "counts": {
+      "passed": 4,
+      "failed": 0,
+      "timedOut": 0,
+      "skipped": 0
+    },
+    "total": 4,
+    "residual": []
+  },
+  "admin-analytics/overview.spec.ts": {
+    "counts": {
+      "passed": 5,
+      "failed": 1,
+      "timedOut": 0,
+      "skipped": 0
+    },
+    "total": 6,
+    "residual": [
+      "failed: loading after stale clears the stale banner (confirm-overview-stale.json)"
+    ]
+  },
+  "admin-analytics/responsive.spec.ts": {
+    "counts": {
+      "passed": 5,
+      "failed": 0,
+      "timedOut": 0,
+      "skipped": 0
+    },
+    "total": 5,
+    "residual": []
+  },
+  "admin-analytics/sections.spec.ts": {
+    "counts": {
+      "passed": 11,
+      "failed": 1,
+      "timedOut": 0,
+      "skipped": 0
+    },
+    "total": 12,
+    "residual": [
+      "failed: suppressed: retention cell names a week the retention table renders (confirm-sections-retention.json)"
+    ]
+  },
+  "admin-mice/behaviour.spec.ts": {
+    "counts": {
+      "passed": 9,
+      "failed": 0,
+      "timedOut": 0,
+      "skipped": 0
+    },
+    "total": 9,
+    "residual": []
+  },
+  "admin-mice/responsive.spec.ts": {
+    "counts": {
+      "passed": 4,
+      "failed": 0,
+      "timedOut": 0,
+      "skipped": 0
+    },
+    "total": 4,
+    "residual": []
+  },
+  "admin-mice/screens.spec.ts": {
+    "counts": {
+      "passed": 3,
+      "failed": 0,
+      "timedOut": 0,
+      "skipped": 0
+    },
+    "total": 3,
+    "residual": []
+  },
+  "admin-recognition/recognition.spec.ts": {
+    "counts": {
+      "passed": 33,
+      "failed": 1,
+      "timedOut": 1,
+      "skipped": 0
+    },
+    "total": 35,
+    "residual": [
+      "failed: overview — 200% text does not force horizontal scrolling (confirm-recognition-200.json)",
+      "timedOut: awards — bulk retry asks for scope and never duplicates XP (round3-recognition-rest.json)"
+    ]
+  },
+  "admin-species/recapture.spec.ts": {
+    "counts": {
+      "passed": 0,
+      "failed": 1,
+      "timedOut": 0,
+      "skipped": 0
+    },
+    "total": 1,
+    "residual": [
+      "failed: recaptures the screens that need the derived data loaded (confirm-species-recapture.json)"
+    ]
+  },
+  "admin-species/species.live.spec.ts": {
+    "counts": {
+      "passed": 5,
+      "failed": 3,
+      "timedOut": 1,
+      "skipped": 0
+    },
+    "total": 9,
+    "residual": [
+      "failed: captures overview, catalogue, editor and languages across the matrix (round2-species-live.json)",
+      "failed: rights withdrawal names blast radius; non-revocable sources cannot be targeted (round2-species-live.json)",
+      "timedOut: audit filters and CSV export use the same filter (round2-species-live.json)",
+      "failed: editor dirty guard keeps the draft on cancel (round2-species-live.json)"
+    ]
+  }
+}

@@ -1,0 +1,630 @@
+
+ ╭────────── [Build Info] ────────────╮
+ │                                    │
+ │  - Build Directory: .output        │
+ │  - Date: 11/19/2026, 10:07:59 PM   │
+ │  - Nitro Version: 3.0.260610-beta  │
+ │  - Nitro Preset: node-server       │
+ │                                    │
+ ╰────────────────────────────────────╯
+
+  ➜  Local:   http://127.0.0.1:3220/
+[2m2026-11-19T19:08:37.913Z[0m [33mWARN[0m [1m[Better Auth]:[0m Rate limiting could not determine a client IP and is falling back to a single shared per-path bucket. Ensure your runtime forwards a trusted client IP header, then set `advanced.ipAddress.ipAddressHeaders` or `advanced.ipAddress.trustedProxies` so the address can be resolved.
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+(node:234081) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+error: "vite" exited with code 143
+
+ ╭────────── [Build Info] ────────────╮
+ │                                    │
+ │  - Build Directory: .output        │
+ │  - Date: 11/19/2026, 10:07:59 PM   │
+ │  - Nitro Version: 3.0.260610-beta  │
+ │  - Nitro Preset: node-server       │
+ │                                    │
+ ╰────────────────────────────────────╯
+
+  ➜  Local:   http://127.0.0.1:3220/
+[2m2026-11-19T19:17:38.426Z[0m [33mWARN[0m [1m[Better Auth]:[0m Rate limiting could not determine a client IP and is falling back to a single shared per-path bucket. Ensure your runtime forwards a trusted client IP header, then set `advanced.ipAddress.ipAddressHeaders` or `advanced.ipAddress.trustedProxies` so the address can be resolved.
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+(node:241639) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error: aborted
+    at abortIncoming (node:_http_server:912:17)
+    ... 2 lines matching cause stack trace ...
+    at TCP.<anonymous> (node:net:355:12) {
+  cause: Error: aborted
+      at abortIncoming (node:_http_server:912:17)
+      at socketOnClose (node:_http_server:905:3)
+      at Socket.emit (node:events:521:24)
+      at TCP.<anonymous> (node:net:355:12) {
+    code: 'ECONNRESET'
+  },
+  status: 500,
+  statusText: undefined,
+  headers: undefined,
+  data: undefined,
+  body: undefined,
+  unhandled: true
+}
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }

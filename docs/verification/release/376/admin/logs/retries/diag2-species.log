@@ -1,0 +1,180 @@
+
+Running 10 tests using 1 worker
+
+  ✓   1 [verify-live] › e2e/verify/admin-species/recapture.spec.ts:76:3 › species recapture › recaptures the screens that need the derived data loaded (34.6s)
+  ✘   2 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix (1.0m)
+  ✘   3 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix (retry #1) (1.0m)
+  ✓   4 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:149:3 › species admin › captures translation, sources, readiness and audit across the matrix (1.8m)
+  ✓   5 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:154:3 › species admin › catalogue search, selection and bulk assignment (42.9s)
+  ✘   6 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:188:3 › species admin › stale is derived and blocks publish (30.1s)
+  ✓   7 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:188:3 › species admin › stale is derived and blocks publish (retry #1) (19.9s)
+  ✓   8 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:205:3 › species admin › rights withdrawal names blast radius; non-revocable sources cannot be targeted (9.6s)
+  ✓   9 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:223:3 › species admin › readiness blockers link to records; second review is actionable; publish is gated (10.9s)
+  ✓  10 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:239:3 › species admin › audit filters and CSV export use the same filter (11.7s)
+  ✘  11 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel (30.9s)
+  ✘  12 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel (retry #1) (30.4s)
+  ✓  13 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:276:3 › species admin › role gating: translator and reviewer see their own actions only (20.1s)
+
+
+  1) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix 
+
+    TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('heading', { level: 1 }).first() to be visible
+
+
+      66 | async function settle(page: Page) {
+      67 |   await page.waitForLoadState('domcontentloaded')
+    > 68 |   await page.getByRole('heading', { level: 1 }).first().waitFor({ timeout: 20_000 })
+         |                                                         ^
+      69 |   // The species screens fetch details client-side after the shell renders.
+      70 |   await page.waitForTimeout(1800)
+      71 | }
+        at settle (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:68:57)
+        at captureScreens (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:106:7)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:146:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('heading', { level: 1 }).first() to be visible
+
+
+      66 | async function settle(page: Page) {
+      67 |   await page.waitForLoadState('domcontentloaded')
+    > 68 |   await page.getByRole('heading', { level: 1 }).first().waitFor({ timeout: 20_000 })
+         |                                                         ^
+      69 |   // The species screens fetch details client-side after the shell renders.
+      70 |   await page.waitForTimeout(1800)
+      71 | }
+        at settle (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:68:57)
+        at captureScreens (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:106:7)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:146:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel 
+
+    TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('heading', { level: 1 }).first() to be visible
+
+
+      66 | async function settle(page: Page) {
+      67 |   await page.waitForLoadState('domcontentloaded')
+    > 68 |   await page.getByRole('heading', { level: 1 }).first().waitFor({ timeout: 20_000 })
+         |                                                         ^
+      69 |   // The species screens fetch details client-side after the shell renders.
+      70 |   await page.waitForTimeout(1800)
+      71 | }
+        at settle (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:68:57)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:263:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('heading', { level: 1 }).first() to be visible
+
+
+      66 | async function settle(page: Page) {
+      67 |   await page.waitForLoadState('domcontentloaded')
+    > 68 |   await page.getByRole('heading', { level: 1 }).first().waitFor({ timeout: 20_000 })
+         |                                                         ^
+      69 |   // The species screens fetch details client-side after the shell renders.
+      70 |   await page.waitForTimeout(1800)
+      71 | }
+        at settle (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:68:57)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:263:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live-retry1/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live-retry1/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live-retry1/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:188:3 › species admin › stale is derived and blocks publish 
+
+    Test timeout of 30000ms exceeded while setting up "page".
+
+    Error Context: test-results/verify/admin-species-species.live-4bbde--derived-and-blocks-publish-verify-live/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-4bbde--derived-and-blocks-publish-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-4bbde--derived-and-blocks-publish-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel 
+  1 flaky
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:188:3 › species admin › stale is derived and blocks publish 
+  7 passed (8.2m)

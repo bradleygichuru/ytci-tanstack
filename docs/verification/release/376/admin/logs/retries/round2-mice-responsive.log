@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ✓  1 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:32:5 › MICE admin — responsive › 1400: no document overflow and every table reaches its action column (1.9m)
+  ✓  2 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:32:5 › MICE admin — responsive › 900: no document overflow and every table reaches its action column (1.2m)
+  ✓  3 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:84:3 › MICE admin — responsive › 200% text: KPIs and the overview grid reflow without overlap (7.5s)
+  ✓  4 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:134:3 › MICE admin — responsive › 900: the agenda header stacks its actions below the title (7.2s)
+
+  4 passed (3.4m)

@@ -1,0 +1,8 @@
+
+Running 3 tests using 1 worker
+
+  ✓  1 [verify-live] › e2e/verify/admin-mice/screens.spec.ts:21:3 › MICE admin — screen matrix › every screen renders real data at 1400 (47.1s)
+  ✓  2 [verify-live] › e2e/verify/admin-mice/screens.spec.ts:43:3 › MICE admin — screen matrix › 1180 and 900 keep each screen readable and populated (1.4m)
+  ✓  3 [verify-live] › e2e/verify/admin-mice/screens.spec.ts:56:3 › MICE admin — screen matrix › default, empty, error and stale are distinct states (18.9s)
+
+  3 passed (2.6m)

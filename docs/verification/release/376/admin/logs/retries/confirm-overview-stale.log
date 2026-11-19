@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:101:1 › loading after stale clears the stale banner (30.5s)
+
+  1 passed (32.2s)

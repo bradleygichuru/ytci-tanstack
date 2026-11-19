@@ -1,0 +1,5 @@
+[0.04ms] ".env.local"
+bun install v1.4.4 (38afee6c8)
+
+Checked 593 installs across 706 packages (no changes) [790.00ms]
+INSTALL_EXIT=0

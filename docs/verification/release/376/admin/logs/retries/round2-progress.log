@@ -1,0 +1,20 @@
+=== analytics-export (e2e/verify/admin-analytics/export-erasure.spec.ts) 21:05:26 ===
+analytics-export exit=0
+=== analytics-overview (e2e/verify/admin-analytics/overview.spec.ts) 21:05:58 ===
+analytics-overview exit=0
+=== analytics-responsive (e2e/verify/admin-analytics/responsive.spec.ts) 21:06:50 ===
+analytics-responsive exit=1
+=== analytics-sections (e2e/verify/admin-analytics/sections.spec.ts) 21:08:41 ===
+analytics-sections exit=1
+=== mice-responsive (e2e/verify/admin-mice/responsive.spec.ts) 21:14:13 ===
+=== mice-responsive (e2e/verify/admin-mice/responsive.spec.ts) 21:25:54 ===
+mice-responsive exit=0
+=== mice-screens (e2e/verify/admin-mice/screens.spec.ts) 21:29:22 ===
+mice-screens exit=0
+=== recognition (e2e/verify/admin-recognition/recognition.spec.ts) 21:31:56 ===
+recognition exit=1
+=== species-recapture (e2e/verify/admin-species/recapture.spec.ts) 21:33:26 ===
+species-recapture exit=1
+=== species-live (e2e/verify/admin-species/species.live.spec.ts) 21:34:13 ===
+species-live exit=1
+round2b complete 21:39:49

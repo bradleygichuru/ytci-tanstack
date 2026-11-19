@@ -1,0 +1,16 @@
+count: 53
+distinct stack (fresh :3220 instance, build b1ad619):
+
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+    at Set.forEach (<anonymous>)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1452:33
+    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+    at #notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1448:17)
+    at QueryObserver.updateResult (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:1430:15) { componentStack: [Getter] }
+(node:234081) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)

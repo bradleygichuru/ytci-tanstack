@@ -229,6 +229,99 @@ recognition overview/rules, the 200 % overflow evidence, and the awards ledger
 showing the fixture gap. Playwright's own `test-results/` (traces, videos) and
 `playwright-report/` trees are not committed. Raw runner output is in `logs/`.
 
+## Second-pass corrections (fresh instance, same build)
+
+A later verification pass on the same code (`b1ad619`; branch HEAD was
+`14d7272`, docs only) rebuilt from scratch and reproduced the failures. It
+corrects the attribution above. Evidence: `logs/install.log`,
+`logs/build2.log`, `logs/ssr-isdehydrated-rc-final.txt`,
+`logs/retry-union.json`, `logs/retries/`, `screenshots/*-http500.png`.
+
+### Build and install verified again
+
+- `bun install`: exit 0, "Checked 593 installs across 706 packages (no
+  changes)", `bun.lock` unchanged.
+- `bun run build`: exit 0, client/server/nitro bundles emitted,
+  `.output/nitro.json` written (32.72 s / 18.26 s / 9.91 s).
+- One fresh `vite preview` on `:3220`, mock upstream `:8121`, origin proxy
+  `:8120`, DB `ytci_verify_376_final`, seed `verify-376-final`.
+- Recognition 200 % overflow reproduced a third time: 25 px against a 2 px
+  threshold (`logs/retries/confirm-recognition-200.log`). Awards bulk retry
+  reproduced again: the `Retry failed` control is absent/disabled.
+
+### The release branch is one commit behind master
+
+`origin/master` contains `e442b1e` (#62), which pins
+`@tanstack/react-router-ssr-query` 1.167.3 / `router-ssr-query-core` 1.169.3 and
+`@tanstack/react-query` 5.108.1, removing the `isDehydrated` call. The release
+branch is **exactly one commit behind** that fix (`git rev-list --count
+HEAD..origin/master` = 1). Testing `b1ad619` therefore tests the known-broken
+SSR path.
+
+Measured on this build (authenticated requests):
+
+| Route | HTTP | Body | SSR error |
+| --- | ---: | ---: | --- |
+| `/programme/species` | 200 | 9.7 KB shell | 1 throw |
+| `/programme/species/panthera-leo` | **500** | error page | 1 throw |
+| `/programme/species/panthera-leo/languages` | **500** | error page | 1 throw |
+| `/analytics` | 200 | 62.9 KB | 0 throws |
+
+So the two species editor screens are hard 500s, not merely a client error
+boundary. Other species routes return a shell and hydrate with a React #419
+server-suspense error. Merging master (or cherry-picking #62) is the release
+action; it was **not** done here.
+
+### Translation/sources/audit failures are a contracts-mock defect
+
+The mock shipped in `.verify-scratch` was stale (77 routes at `/__fixtures`;
+the `ytci-go` checkout at `61562a7` serves 111). More importantly,
+`fixtures/routes.go` matches first-match-wins and registers
+`GET /v1/admin/species/{id}` **before** `/review`, `/sources` and `/rights`, so
+the wildcard shadows all three literals:
+
+```
+GET /v1/admin/species/review        -> species/detail fixture (200)
+GET /v1/admin/species/sources       -> species/detail fixture (200)
+GET /v1/admin/species/rights        -> species/detail fixture (200)
+GET /v1/admin/species/zzz-nonsense  -> species/detail fixture (200)
+```
+
+The app therefore receives a species object where it expects `{ items: [...] }`:
+the translation queue loses its review task (3 tasks instead of 4), and sources
+and rights render from the wrong payload. **This is harness infrastructure, not
+app code.**
+
+Diagnostic (no product code changed): a copy of `ytci-go-release-376@61562a7`
+with the three literal routes moved above `/{id}` was rebuilt and served on
+`:8121`. `/review`, `/sources` and `/rights` then returned their proper list
+fixtures. Re-running the species files against it:
+
+| Species result with correct fixtures | Count |
+| --- | ---: |
+| Passed | 8 (1 of them after a retry) |
+| Failed | 2 — both at the routes that 500 without #62 |
+| Skipped | 0 |
+
+`recaptures the screens` passed, and `audit filters and CSV export use the same
+filter` passed, so **#61 is not reproducible with the correct fixture**. The
+recapture and rights failures above are mock attribution errors, not product
+failures. Raw evidence: `logs/retries/diag2-species.log`.
+
+### Corrected retry union
+
+| Disposition | Tests |
+| --- | ---: |
+| Passed (best result across passes) | 87 |
+| Failed for a product reason | 1 (recognition 200 % overflow) |
+| Failed only because the build lacks #62 (500) | 2 |
+| Failed only because of the mock defect | 2 |
+| Timed out (species audit: mock/500; recognition awards: fixture gap) | 2 |
+| Known-defect `test.fail()` annotations that now pass | 2 |
+| Skipped, fixture mode only (`smoke.spec.ts`) | 3 |
+
+No single invocation was green, and 87/99 best-of-pass is not a green gate.
+
 ## Known environment follow-ups
 
 - Fresh-database `bun run db:migrate` fails at `0002_brown_hercules.sql`

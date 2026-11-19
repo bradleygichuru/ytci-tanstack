@@ -1,0 +1,47 @@
+
+Running 5 tests using 1 worker
+
+  ✓  1 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:25:1 › 900px: every section stays inside the viewport (59.0s)
+  ✓  2 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1400px: overview and the densest tables stay inside the viewport (36.1s)
+  ✘  3 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1180px: overview and the densest tables stay inside the viewport (12.3s)
+  -  4 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:43:1 › dark theme keeps the surface readable and scoped
+  -  5 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:56:1 › 200% text: headings and the rollup stamp stay visible
+
+
+  1) [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1180px: overview and the densest tables stay inside the viewport 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+      - navigating to "http://127.0.0.1:3220/analytics/journeys", waiting until "domcontentloaded"
+
+
+       at admin-analytics/support.ts:68
+
+      66 | export async function openAnalytics(page: Page, screen: AnalyticsScreen | string): Promise<void> {
+      67 |   const path = (ANALYTICS_ROUTES as Record<string, string>)[screen] ?? screen
+    > 68 |   await page.goto(path, { waitUntil: 'domcontentloaded' })
+         |              ^
+      69 |   await waitForRollup(page)
+      70 | }
+      71 |
+        at openAnalytics (/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/support.ts:68:14)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/responsive.spec.ts:37:13
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-responsive-3de68-es-stay-inside-the-viewport-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-analytics-responsive-3de68-es-stay-inside-the-viewport-verify-live/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-responsive-3de68-es-stay-inside-the-viewport-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-analytics-responsive-3de68-es-stay-inside-the-viewport-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1180px: overview and the densest tables stay inside the viewport 
+  2 did not run
+  2 passed (1.8m)
