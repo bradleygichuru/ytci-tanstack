@@ -8,6 +8,13 @@
   "scripts": {
     "dev": "bun --env-file=.env.local run vite dev --port 3000",
     "generate-routes": "tsr generate",
+    "typecheck": "tsc --noEmit",
+    "generate:contracts": "bunx openapi-typescript openapi/contracts.v1.yaml -o src/lib/contracts/generated/contracts.ts",
+    "generate:roles": "node scripts/generate-roles.mjs",
+    "generate:contracts:check": "bash scripts/check-generated-contracts.sh",
+    "dev:mock": "bash scripts/contracts-mock.sh",
+    "test:shell": "vitest run src/lib/contracts src/lib/navigation src/lib/__tests__/flags.test.ts src/lib/__tests__/toast.test.ts src/components/shell",
+    "test:shell:smoke": "vitest run --config vitest.shell.config.ts",
     "build": "vite build",
     "preview": "vite preview",
     "db:smoke": "bun --env-file=.env.local run scripts/db-smoke.ts",
@@ -48,6 +55,7 @@
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.577.0",
     "nitro": "^3.0.260610-beta",
+    "openapi-fetch": "^0.17.0",
     "pg": "^8.22.0",
     "radix-ui": "^1.6.7",
     "react": "^19.2.0",
@@ -76,9 +84,11 @@
     "@vitejs/plugin-react": "^6.0.1",
     "drizzle-kit": "^0.31.10",
     "jsdom": "^29.1.1",
+    "openapi-typescript": "^7.13.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "yaml": "^2.9.1"
   },
   "trustedDependencies": [
     "esbuild",
