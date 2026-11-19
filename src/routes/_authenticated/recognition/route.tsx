@@ -11,6 +11,7 @@ import { canAccessAdmin, normaliseRole } from '#/lib/contracts/roles'
 import { hasContractPermission } from '#/lib/contracts/session'
 import { getFlags } from '#/lib/flags'
 import { RecognitionProvider, useRecognition } from '#/lib/recognition/store'
+import { countLabel } from '#/lib/recognition/format'
 import {
   EngineOffBanner,
   FixtureStateControl,
@@ -94,8 +95,8 @@ function RecognitionShell() {
               : 'Awards are server-authoritative. Operator overlays (retraction, mission pause, award retry) are written to the same audit log and labelled.'}
         </span>
         <span className="ml-auto">
-          {state.rules.filter((rule) => rule.status === 'published').length} published rules ·{' '}
-          {state.awards.length} sample awards · {apiStatus === 'loading' ? 'refreshing…' : 'reads settled'}
+          {countLabel(state.rules.filter((rule) => rule.status === 'published').length, 'published rule')} ·{' '}
+          {countLabel(state.awards.length, 'award')} · {apiStatus === 'loading' ? 'refreshing…' : 'reads settled'}
         </span>
       </div>
     </div>

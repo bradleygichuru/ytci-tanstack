@@ -1,0 +1,73 @@
+# Draft verification workflow — ticket #377.
+#
+# NOT a required check. Branch protection must not list these jobs yet.
+#
+# Scope:
+#   pull_request  -> unit/contract only (fast, no backend)
+#   integration   -> Playwright fixture smoke on port 3210
+#   nightly       -> Playwright fixture smoke on port 3210
+#   manual        -> Playwright fixture smoke on port 3210
+#
+# Live mode (real admin app + Postgres + Go API) is deliberately not wired
+# here. It needs a disposable database and seed; see docs/verification/README.md.
+# Do not point CI at a shared database.
+name: Verification (draft)
+
+on:
+  pull_request:
+    branches: [master, integration]
+  push:
+    branches: [integration]
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit-contract:
+    name: Unit and contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install --frozen-lockfile
+      - name: Unit tests
+        continue-on-error: true
+        run: bun run test:unit -- --passWithNoTests
+      - name: Typecheck
+        continue-on-error: true
+        run: bunx tsc --noEmit
+
+  playwright:
+    name: Playwright fixture smoke
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install --frozen-lockfile
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+      - name: Run fixture smoke on port 3210
+        env:
+          VERIFY_MODE: fixture
+          VERIFY_PORT: "3210"
+          CI: "true"
+        run: bun run test:e2e:verify
+      - name: Upload Playwright artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-verify-${{ github.run_id }}
+          path: |
+            playwright-report/verify
+            test-results/verify
+          if-no-files-found: warn
+          retention-days: 14

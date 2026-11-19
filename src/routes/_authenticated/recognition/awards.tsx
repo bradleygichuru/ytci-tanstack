@@ -5,7 +5,7 @@ import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Can } from '#/components/shell/Gates'
 import { useRecognition } from '#/lib/recognition/store'
-import { formatTime, formatXp, relativeAge } from '#/lib/recognition/format'
+import { countLabel, formatTime, formatXp, relativeAge } from '#/lib/recognition/format'
 import {
   awardInTab,
   awardStatusLabel,
@@ -347,7 +347,7 @@ function AwardsPage() {
           </table>
         </div>
         <div className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-          Showing {filtered.length} in this view · {state.awards.length} sample awards · 842/day in production
+          Showing {filtered.length} in this view · {countLabel(state.awards.length, 'award')} · 842/day in production
         </div>
       </div>
 

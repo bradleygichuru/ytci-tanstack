@@ -77,6 +77,15 @@ export function formatXp(value: number): string {
   return `${sign}${formatNumber(value)} XP`
 }
 
+/**
+ * Count-aware noun without a plural library: `countLabel(1, 'rule')` is
+ * "1 rule", `countLabel(0, 'rule')` is "0 rules". Pass an explicit plural for
+ * nouns that do not take a bare "s".
+ */
+export function countLabel(count: number, singular: string, plural = `${singular}s`): string {
+  return `${formatNumber(count)} ${count === 1 ? singular : plural}`
+}
+
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR

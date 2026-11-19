@@ -37,6 +37,46 @@ const EMPTY_FORM: BadgeForm = {
   publicEligible: true,
 }
 
+const ART_TONES = [
+  { bg: 'var(--primary-container)', fg: '#ffffff' },
+  { bg: 'var(--secondary-container)', fg: 'var(--on-secondary-container)' },
+  { bg: 'var(--leaf)', fg: '#ffffff' },
+  { bg: 'var(--tertiary-container)', fg: '#ffffff' },
+]
+
+/**
+ * Deterministic artwork stand-in until the badge asset pipeline lands. It uses
+ * only catalogue fields, so the preview never claims an asset that does not
+ * exist and stays stable for a given key.
+ */
+function BadgeArt({ name, badgeKey, size = 40 }: { name: string; badgeKey: string; size?: number }) {
+  const tone = ART_TONES[badgeKey.length % ART_TONES.length]
+  const initials =
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('') || '?'
+  return (
+    <span
+      data-testid="badge-art"
+      aria-hidden
+      className="inline-flex shrink-0 items-center justify-center rounded-lg border border-black/10 font-sans font-bold shadow-sm"
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: tone.bg,
+        color: tone.fg,
+        fontSize: size * 0.34,
+        letterSpacing: '0.02em',
+      }}
+    >
+      {initials}
+    </span>
+  )
+}
+
 function BadgesPage() {
   const { state, loads, actions, can } = useRecognition()
   const [search, setSearch] = useState('')
@@ -57,6 +97,9 @@ function BadgesPage() {
             .includes(query)
       ),
     [state.badges, query]
+  )
+  const unpublishRisks = state.badges.filter(
+    (badge) => badge.status === 'published' && badge.usedBy > 0
   )
 
   if (loads.badges === 'loading' && state.badges.length === 0) {
@@ -147,6 +190,16 @@ function BadgesPage() {
         missions
       </ScopeNote>
 
+      {unpublishRisks.length > 0 ? (
+        <Notice tone="gold" title="Unpublish warning">
+          {unpublishRisks.length === 1
+            ? '1 published badge is referenced by an active rule or mission.'
+            : `${unpublishRisks.length} published badges are referenced by active rules or missions.`}{' '}
+          Unpublishing one would orphan those awards; repoint the references first. The frozen contract has no
+          unpublish endpoint, so this surface only warns and never removes a live badge.
+        </Notice>
+      ) : null}
+
       {publishError ? (
         <Notice tone="red" title="Badge not published">
           {publishError}
@@ -165,10 +218,15 @@ function BadgesPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-sm">
-            <caption className="sr-only">Badge catalogue with bilingual names, criteria and privacy</caption>
+          <table className="w-full min-w-[1060px] text-sm">
+            <caption className="sr-only">
+              Badge catalogue with artwork preview, bilingual names, criteria and privacy
+            </caption>
             <thead>
               <tr className="border-b bg-[var(--surface-2)] text-left text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                <th scope="col" className="px-4 py-3">
+                  Artwork
+                </th>
                 <th scope="col" className="px-4 py-3">
                   Badge
                 </th>
@@ -202,6 +260,9 @@ function BadgesPage() {
                 const sw = staged?.nameSw ?? badge.nameSw
                 return (
                   <tr key={badge.badgeKey} className="border-b last:border-0 hover:bg-[var(--surface-2)]">
+                    <td className="px-4 py-3">
+                      <BadgeArt name={en} badgeKey={badge.badgeKey} />
+                    </td>
                     <td className="px-4 py-3">
                       <span className="font-semibold text-foreground">{en}</span>
                       <span className="block font-mono text-[11px] text-muted-foreground">
@@ -272,7 +333,7 @@ function BadgesPage() {
               })}
               {visible.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={9} className="px-4 py-8 text-center text-sm text-muted-foreground">
                     No badges match. Clear the search to see the catalogue.
                   </td>
                 </tr>
@@ -304,6 +365,37 @@ function BadgesPage() {
         error={error}
         size="lg"
       >
+        <div
+          data-testid="badge-preview"
+          className="mb-3 flex items-center gap-3 rounded-lg border border-border bg-[var(--surface-2)] p-3"
+        >
+          <BadgeArt
+            name={form.nameEn || form.badgeKey || 'New badge'}
+            badgeKey={form.badgeKey || 'new_badge'}
+            size={56}
+          />
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              Artwork preview
+            </p>
+            <p className="truncate text-sm font-bold text-foreground">
+              {form.nameEn || 'English name'}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">
+              {form.nameSw || 'Kiswahili name'} · {form.family || 'Family'}
+            </p>
+            <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">
+              {form.criteria || 'Criteria not set'}
+            </p>
+          </div>
+        </div>
+        {editing?.status === 'published' && editing.usedBy > 0 ? (
+          <p className="mb-3 rounded-md border border-[var(--amber)] bg-[var(--amber-bg)] px-3 py-2 text-xs font-semibold text-[var(--amber-deep)]">
+            Unpublish warning: {editing.usedBy} active rule or mission
+            {editing.usedBy === 1 ? '' : 's'} use this badge. Repoint them before unpublishing; this edit
+            stages a new version instead of removing the live badge.
+          </p>
+        ) : null}
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1.5">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

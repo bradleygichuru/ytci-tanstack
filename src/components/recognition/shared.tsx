@@ -115,10 +115,10 @@ export function RecognitionNav() {
   return (
     <nav
       aria-label="Recognition sections"
-      className="flex flex-wrap items-center gap-x-1 gap-y-0.5 border-b border-border pb-1"
+      className="flex flex-nowrap items-center gap-x-1 gap-y-0.5 overflow-x-auto border-b border-border pb-1"
     >
       {NAV_GROUPS.map((group, index) => (
-        <div key={group.group} className="flex flex-wrap items-center gap-1">
+        <div key={group.group} className="flex shrink-0 items-center gap-1 whitespace-nowrap">
           {index > 0 ? <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true" /> : null}
           <span className="px-1 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
             {group.group}
@@ -216,12 +216,15 @@ export function ScenarioBanner() {
       </Notice>
     )
   }
-  if (apiStatus === 'error' || source === 'sample') {
+  // The banner is a provenance claim, so it may only appear when every read
+  // actually fell back to the sample overlay. A partial (mixed) read still
+  // renders contract rows and must not be labelled as sample data.
+  if (source === 'sample' && apiStatus === 'error' && scenario === 'default') {
     return (
       <Notice tone="gold" title="Sample data is showing.">
         {apiError
           ? `The contracts API did not answer (${apiError}). Actions that need the API will fail with an explanation; overlay actions are labelled in the audit log.`
-          : 'Start the contracts mock on :8099 to read live contract rows. Operator overlays stay local to this browser.'}
+          : 'The contracts API is unreachable, so this view uses the deterministic sample. Operator overlays stay local to this browser.'}
       </Notice>
     )
   }
@@ -439,103 +442,111 @@ export function BoardRows({
 }) {
   const active = rows.filter((row) => row.status === 'active')
   const retracted = rows.filter((row) => row.status === 'retracted')
+
   return (
-    <>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[820px] text-sm">
-          <caption className="sr-only">
-            Leaderboard entries with rank, XP, level and verified activity
-          </caption>
-          <thead>
-            <tr className="border-b bg-[var(--surface-2)] text-left text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-right">
-                Rank
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Display name
-              </th>
-              <th scope="col" className="px-4 py-3">
-                County
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                XP
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Level
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                Verified sites
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                Trails
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                Action
-              </th>
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[820px] text-sm">
+        <caption className="sr-only">
+          Leaderboard entries with rank, XP, level and verified activity
+        </caption>
+        <thead>
+          <tr className="border-b bg-[var(--surface-2)] text-left text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            <th scope="col" className="px-4 py-3 text-right">
+              Rank
+            </th>
+            <th scope="col" className="px-4 py-3">
+              Display name
+            </th>
+            <th scope="col" className="px-4 py-3">
+              County
+            </th>
+            <th scope="col" className="px-4 py-3 text-right">
+              XP
+            </th>
+            <th scope="col" className="px-4 py-3">
+              Level
+            </th>
+            <th scope="col" className="px-4 py-3 text-right">
+              Verified sites
+            </th>
+            <th scope="col" className="px-4 py-3 text-right">
+              Trails
+            </th>
+            <th scope="col" className="px-4 py-3 text-right">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {active.map((row) => (
+            <tr key={row.displayName} className="border-b last:border-0 hover:bg-[var(--surface-2)]">
+              <td className="px-4 py-3 text-right font-mono text-xs font-bold">{row.rank}</td>
+              <td className="px-4 py-3">
+                <span className="font-semibold text-foreground">{row.displayName}</span>
+                {row.isSelf ? (
+                  <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                    You
+                  </span>
+                ) : null}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">{row.county ?? '—'}</td>
+              <td className="px-4 py-3 text-right font-mono text-xs">{row.xp.toLocaleString('en-KE')}</td>
+              <td className="px-4 py-3">{row.level}</td>
+              <td className="px-4 py-3 text-right">{row.verifiedSites}</td>
+              <td className="px-4 py-3 text-right">{row.trailCompletions}</td>
+              <td className="px-4 py-3 text-right">
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onRetract(row)}
+                  disabled={closed || Boolean(retractDisabledReason)}
+                  title={closed ? 'A closed season cannot be retracted.' : retractDisabledReason}
+                  aria-label={`Manage ${row.displayName}`}
+                >
+                  Manage
+                </Button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {active.map((row) => (
-              <tr key={row.displayName} className="border-b last:border-0 hover:bg-[var(--surface-2)]">
-                <td className="px-4 py-3 text-right font-mono text-xs font-bold">{row.rank}</td>
-                <td className="px-4 py-3">
-                  <span className="font-semibold text-foreground">{row.displayName}</span>
-                  {row.isSelf ? (
-                    <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                      You
-                    </span>
-                  ) : null}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{row.county ?? '—'}</td>
-                <td className="px-4 py-3 text-right font-mono text-xs">{row.xp.toLocaleString('en-KE')}</td>
-                <td className="px-4 py-3">{row.level}</td>
-                <td className="px-4 py-3 text-right">{row.verifiedSites}</td>
-                <td className="px-4 py-3 text-right">{row.trailCompletions}</td>
-                <td className="px-4 py-3 text-right">
-                  <Button
-                    variant="destructive"
-                    size="xs"
-                    onClick={() => onRetract(row)}
-                    disabled={closed || Boolean(retractDisabledReason)}
-                    title={closed ? 'A closed season cannot be retracted.' : retractDisabledReason}
-                  >
-                    Retract
-                  </Button>
-                </td>
-              </tr>
-            ))}
-            {active.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                  No active entries on this board.
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
-      {retracted.length > 0 ? (
-        <div className="border-t border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
-          <span className="font-semibold uppercase tracking-wide">Retracted</span>
-          <span className="mx-2">·</span>
-          {retracted.map((row, index) => (
-            <span key={row.displayName}>
-              {index > 0 ? <span className="mx-2">·</span> : null}
-              {row.displayName}
-              <span className="mx-1 text-[10px]">({row.retractedReason})</span>
-              <button
-                type="button"
-                onClick={() => onRestore(row)}
-                disabled={closed}
-                className="font-semibold text-primary underline underline-offset-2 disabled:opacity-50"
-              >
-                Restore
-              </button>
-            </span>
           ))}
-        </div>
-      ) : null}
-    </>
+          {retracted.map((row) => (
+            <tr key={row.displayName} className="border-b bg-muted/40 text-muted-foreground last:border-0">
+              <td className="px-4 py-3 text-right font-mono text-xs">—</td>
+              <td className="px-4 py-3">
+                <span className="font-semibold">{row.displayName}</span>
+                <span className="ml-2 rounded border border-border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+                  Retracted
+                </span>
+                <span className="mt-0.5 block text-[11px]">{row.retractedReason}</span>
+              </td>
+              <td className="px-4 py-3">{row.county ?? '—'}</td>
+              <td className="px-4 py-3 text-right font-mono text-xs">{row.xp.toLocaleString('en-KE')}</td>
+              <td className="px-4 py-3">{row.level}</td>
+              <td className="px-4 py-3 text-right">{row.verifiedSites}</td>
+              <td className="px-4 py-3 text-right">{row.trailCompletions}</td>
+              <td className="px-4 py-3 text-right">
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onRestore(row)}
+                  disabled={closed}
+                  title={closed ? 'A closed season cannot be restored.' : undefined}
+                  aria-label={`Restore ${row.displayName}`}
+                >
+                  Restore
+                </Button>
+              </td>
+            </tr>
+          ))}
+          {active.length === 0 && retracted.length === 0 ? (
+            <tr>
+              <td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                No entries on this board.
+              </td>
+            </tr>
+          ) : null}
+        </tbody>
+      </table>
+    </div>
   )
 }
 

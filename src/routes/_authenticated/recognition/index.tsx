@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowRight, CheckCircle, Clock, Power, ShieldCheck, Warning } from '@phosphor-icons/react'
 import { Button } from '#/components/ui/button'
 import { useRecognition } from '#/lib/recognition/store'
-import { formatNumber, relativeAge } from '#/lib/recognition/format'
+import { countLabel, formatNumber, relativeAge } from '#/lib/recognition/format'
 import { AdminPage, DataState, ScopeNote, StatCard } from '#/components/recognition/shared'
 import { MODERATION_KIND_LABEL } from '#/lib/recognition/logic'
 
@@ -88,8 +88,8 @@ function RecognitionOverviewPage() {
       }
     >
       <ScopeNote>
-        {engineOn ? 'Engine on' : 'Engine off'} · {state.awards.length} sample awards ·{' '}
-        {publishedRules.length} published rules
+        {engineOn ? 'Engine on' : 'Engine off'} · {countLabel(state.awards.length, 'award')} ·{' '}
+        {countLabel(publishedRules.length, 'published rule')}
       </ScopeNote>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -212,7 +212,7 @@ function RecognitionOverviewPage() {
               <h2 className="font-sans text-base font-bold text-foreground">Kill switches</h2>
               <Link
                 to="/recognition/kill-switches"
-                className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                className="text-xs font-semibold text-link underline-offset-2 hover:underline"
               >
                 Manage
               </Link>
@@ -244,7 +244,7 @@ function RecognitionOverviewPage() {
               <h2 className="font-sans text-base font-bold text-foreground">Recent audit</h2>
               <Link
                 to="/recognition/audit"
-                className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                className="text-xs font-semibold text-link underline-offset-2 hover:underline"
               >
                 All
               </Link>
@@ -374,14 +374,14 @@ function QuickLink({
   return (
     <Link
       to={to}
-      className="group rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+      className="group rounded-lg border border-border bg-card p-4 transition-colors hover:border-link"
     >
-      <div className="flex items-center gap-2 text-primary">
+      <div className="flex items-center gap-2 text-link">
         {icon}
-        <span className="text-sm font-bold text-foreground group-hover:text-primary">{title}</span>
+        <span className="text-sm font-bold text-foreground group-hover:text-link">{title}</span>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">{body}</p>
-      <span className="mt-2 inline-flex text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
+      <span className="mt-2 inline-flex text-[10px] font-bold uppercase tracking-[0.14em] text-link">
         Open →
       </span>
     </Link>
