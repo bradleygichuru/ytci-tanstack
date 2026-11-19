@@ -26,13 +26,17 @@ import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedLmsRouteImport } from './routes/_authenticated/lms'
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
+import { Route as AuthenticatedRecognitionRouteRouteImport } from './routes/_authenticated/recognition/route'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedThenNowRouteRouteImport } from './routes/_authenticated/then-now/route'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedProgrammeIndexRouteImport } from './routes/_authenticated/programme/index'
 import { Route as AuthenticatedProgrammeSurfaceRouteImport } from './routes/_authenticated/programme/$surface'
+import { Route as AuthenticatedRecognitionIndexRouteImport } from './routes/_authenticated/recognition/index'
 import { Route as AuthenticatedThenNowIndexRouteImport } from './routes/_authenticated/then-now/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthenticatedRecognitionRulesIndexRouteImport } from './routes/_authenticated/recognition/rules/index'
+import { Route as AuthenticatedRecognitionRulesRuleIdRouteImport } from './routes/_authenticated/recognition/rules/$ruleId'
 import { Route as AuthenticatedThenNowExperiencesIndexRouteImport } from './routes/_authenticated/then-now/experiences/index'
 import { Route as AuthenticatedThenNowExperiencesExperienceIdRouteImport } from './routes/_authenticated/then-now/experiences/$experienceId'
 import { Route as AuthenticatedThenNowExperiencesNewRouteImport } from './routes/_authenticated/then-now/experiences/new'
@@ -129,6 +133,12 @@ const AuthenticatedMediaRoute = AuthenticatedMediaRouteImport.update({
   path: '/media',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedRecognitionRouteRoute =
+  AuthenticatedRecognitionRouteRouteImport.update({
+    id: '/recognition',
+    path: '/recognition',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -157,6 +167,12 @@ const AuthenticatedProgrammeSurfaceRoute =
     path: '/programme/$surface',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedRecognitionIndexRoute =
+  AuthenticatedRecognitionIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedRecognitionRouteRoute,
+  } as any)
 const AuthenticatedThenNowIndexRoute =
   AuthenticatedThenNowIndexRouteImport.update({
     id: '/',
@@ -168,6 +184,18 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRecognitionRulesIndexRoute =
+  AuthenticatedRecognitionRulesIndexRouteImport.update({
+    id: '/rules/',
+    path: '/rules/',
+    getParentRoute: () => AuthenticatedRecognitionRouteRoute,
+  } as any)
+const AuthenticatedRecognitionRulesRuleIdRoute =
+  AuthenticatedRecognitionRulesRuleIdRouteImport.update({
+    id: '/rules/$ruleId',
+    path: '/rules/$ruleId',
+    getParentRoute: () => AuthenticatedRecognitionRouteRoute,
+  } as any)
 const AuthenticatedThenNowExperiencesIndexRoute =
   AuthenticatedThenNowExperiencesIndexRouteImport.update({
     id: '/experiences/',
@@ -222,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/recognition': typeof AuthenticatedRecognitionRouteRouteWithChildren
   '/then-now': typeof AuthenticatedThenNowRouteRouteWithChildren
   '/ai-config': typeof AuthenticatedAiConfigRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
@@ -239,13 +268,16 @@ export interface FileRoutesByFullPath {
   '/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/programme/': typeof AuthenticatedProgrammeIndexRoute
+  '/recognition/': typeof AuthenticatedRecognitionIndexRoute
   '/then-now/': typeof AuthenticatedThenNowIndexRoute
+  '/recognition/rules/$ruleId': typeof AuthenticatedRecognitionRulesRuleIdRoute
   '/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
   '/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
   '/then-now/review/$revisionId': typeof AuthenticatedThenNowReviewRevisionIdRoute
   '/then-now/sites/$siteId': typeof AuthenticatedThenNowSitesSiteIdRoute
   '/then-now/sites/new': typeof AuthenticatedThenNowSitesNewRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
+  '/recognition/rules/': typeof AuthenticatedRecognitionRulesIndexRoute
   '/then-now/experiences/': typeof AuthenticatedThenNowExperiencesIndexRoute
   '/then-now/review/': typeof AuthenticatedThenNowReviewIndexRoute
 }
@@ -271,13 +303,16 @@ export interface FileRoutesByTo {
   '/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/programme': typeof AuthenticatedProgrammeIndexRoute
+  '/recognition': typeof AuthenticatedRecognitionIndexRoute
   '/then-now': typeof AuthenticatedThenNowIndexRoute
+  '/recognition/rules/$ruleId': typeof AuthenticatedRecognitionRulesRuleIdRoute
   '/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
   '/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
   '/then-now/review/$revisionId': typeof AuthenticatedThenNowReviewRevisionIdRoute
   '/then-now/sites/$siteId': typeof AuthenticatedThenNowSitesSiteIdRoute
   '/then-now/sites/new': typeof AuthenticatedThenNowSitesNewRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
+  '/recognition/rules': typeof AuthenticatedRecognitionRulesIndexRoute
   '/then-now/experiences': typeof AuthenticatedThenNowExperiencesIndexRoute
   '/then-now/review': typeof AuthenticatedThenNowReviewIndexRoute
 }
@@ -289,6 +324,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/recognition': typeof AuthenticatedRecognitionRouteRouteWithChildren
   '/_authenticated/then-now': typeof AuthenticatedThenNowRouteRouteWithChildren
   '/_authenticated/ai-config': typeof AuthenticatedAiConfigRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
@@ -306,13 +342,16 @@ export interface FileRoutesById {
   '/_authenticated/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authenticated/programme/': typeof AuthenticatedProgrammeIndexRoute
+  '/_authenticated/recognition/': typeof AuthenticatedRecognitionIndexRoute
   '/_authenticated/then-now/': typeof AuthenticatedThenNowIndexRoute
+  '/_authenticated/recognition/rules/$ruleId': typeof AuthenticatedRecognitionRulesRuleIdRoute
   '/_authenticated/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
   '/_authenticated/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
   '/_authenticated/then-now/review/$revisionId': typeof AuthenticatedThenNowReviewRevisionIdRoute
   '/_authenticated/then-now/sites/$siteId': typeof AuthenticatedThenNowSitesSiteIdRoute
   '/_authenticated/then-now/sites/new': typeof AuthenticatedThenNowSitesNewRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
+  '/_authenticated/recognition/rules/': typeof AuthenticatedRecognitionRulesIndexRoute
   '/_authenticated/then-now/experiences/': typeof AuthenticatedThenNowExperiencesIndexRoute
   '/_authenticated/then-now/review/': typeof AuthenticatedThenNowReviewIndexRoute
 }
@@ -324,6 +363,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/no-access'
     | '/reset-password'
+    | '/recognition'
     | '/then-now'
     | '/ai-config'
     | '/analytics'
@@ -341,13 +381,16 @@ export interface FileRouteTypes {
     | '/programme/$surface'
     | '/api/auth/$'
     | '/programme/'
+    | '/recognition/'
     | '/then-now/'
+    | '/recognition/rules/$ruleId'
     | '/then-now/experiences/$experienceId'
     | '/then-now/experiences/new'
     | '/then-now/review/$revisionId'
     | '/then-now/sites/$siteId'
     | '/then-now/sites/new'
     | '/api/admin/users/$'
+    | '/recognition/rules/'
     | '/then-now/experiences/'
     | '/then-now/review/'
   fileRoutesByTo: FileRoutesByTo
@@ -373,13 +416,16 @@ export interface FileRouteTypes {
     | '/programme/$surface'
     | '/api/auth/$'
     | '/programme'
+    | '/recognition'
     | '/then-now'
+    | '/recognition/rules/$ruleId'
     | '/then-now/experiences/$experienceId'
     | '/then-now/experiences/new'
     | '/then-now/review/$revisionId'
     | '/then-now/sites/$siteId'
     | '/then-now/sites/new'
     | '/api/admin/users/$'
+    | '/recognition/rules'
     | '/then-now/experiences'
     | '/then-now/review'
   id:
@@ -390,6 +436,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/no-access'
     | '/reset-password'
+    | '/_authenticated/recognition'
     | '/_authenticated/then-now'
     | '/_authenticated/ai-config'
     | '/_authenticated/analytics'
@@ -407,13 +454,16 @@ export interface FileRouteTypes {
     | '/_authenticated/programme/$surface'
     | '/api/auth/$'
     | '/_authenticated/programme/'
+    | '/_authenticated/recognition/'
     | '/_authenticated/then-now/'
+    | '/_authenticated/recognition/rules/$ruleId'
     | '/_authenticated/then-now/experiences/$experienceId'
     | '/_authenticated/then-now/experiences/new'
     | '/_authenticated/then-now/review/$revisionId'
     | '/_authenticated/then-now/sites/$siteId'
     | '/_authenticated/then-now/sites/new'
     | '/api/admin/users/$'
+    | '/_authenticated/recognition/rules/'
     | '/_authenticated/then-now/experiences/'
     | '/_authenticated/then-now/review/'
   fileRoutesById: FileRoutesById
@@ -550,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMediaRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/recognition': {
+      id: '/_authenticated/recognition'
+      path: '/recognition'
+      fullPath: '/recognition'
+      preLoaderRoute: typeof AuthenticatedRecognitionRouteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -585,6 +642,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProgrammeSurfaceRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/recognition/': {
+      id: '/_authenticated/recognition/'
+      path: '/'
+      fullPath: '/recognition/'
+      preLoaderRoute: typeof AuthenticatedRecognitionIndexRouteImport
+      parentRoute: typeof AuthenticatedRecognitionRouteRoute
+    }
     '/_authenticated/then-now/': {
       id: '/_authenticated/then-now/'
       path: '/'
@@ -598,6 +662,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/recognition/rules/': {
+      id: '/_authenticated/recognition/rules/'
+      path: '/rules'
+      fullPath: '/recognition/rules/'
+      preLoaderRoute: typeof AuthenticatedRecognitionRulesIndexRouteImport
+      parentRoute: typeof AuthenticatedRecognitionRouteRoute
+    }
+    '/_authenticated/recognition/rules/$ruleId': {
+      id: '/_authenticated/recognition/rules/$ruleId'
+      path: '/rules/$ruleId'
+      fullPath: '/recognition/rules/$ruleId'
+      preLoaderRoute: typeof AuthenticatedRecognitionRulesRuleIdRouteImport
+      parentRoute: typeof AuthenticatedRecognitionRouteRoute
     }
     '/_authenticated/then-now/experiences/': {
       id: '/_authenticated/then-now/experiences/'
@@ -658,6 +736,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRecognitionRouteRouteChildren {
+  AuthenticatedRecognitionIndexRoute: typeof AuthenticatedRecognitionIndexRoute
+  AuthenticatedRecognitionRulesRuleIdRoute: typeof AuthenticatedRecognitionRulesRuleIdRoute
+  AuthenticatedRecognitionRulesIndexRoute: typeof AuthenticatedRecognitionRulesIndexRoute
+}
+
+const AuthenticatedRecognitionRouteRouteChildren: AuthenticatedRecognitionRouteRouteChildren =
+  {
+    AuthenticatedRecognitionIndexRoute: AuthenticatedRecognitionIndexRoute,
+    AuthenticatedRecognitionRulesRuleIdRoute:
+      AuthenticatedRecognitionRulesRuleIdRoute,
+    AuthenticatedRecognitionRulesIndexRoute:
+      AuthenticatedRecognitionRulesIndexRoute,
+  }
+
+const AuthenticatedRecognitionRouteRouteWithChildren =
+  AuthenticatedRecognitionRouteRoute._addFileChildren(
+    AuthenticatedRecognitionRouteRouteChildren,
+  )
+
 interface AuthenticatedThenNowRouteRouteChildren {
   AuthenticatedThenNowIndexRoute: typeof AuthenticatedThenNowIndexRoute
   AuthenticatedThenNowExperiencesExperienceIdRoute: typeof AuthenticatedThenNowExperiencesExperienceIdRoute
@@ -691,6 +789,7 @@ const AuthenticatedThenNowRouteRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedRecognitionRouteRoute: typeof AuthenticatedRecognitionRouteRouteWithChildren
   AuthenticatedThenNowRouteRoute: typeof AuthenticatedThenNowRouteRouteWithChildren
   AuthenticatedAiConfigRoute: typeof AuthenticatedAiConfigRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
@@ -710,6 +809,8 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedRecognitionRouteRoute:
+    AuthenticatedRecognitionRouteRouteWithChildren,
   AuthenticatedThenNowRouteRoute: AuthenticatedThenNowRouteRouteWithChildren,
   AuthenticatedAiConfigRoute: AuthenticatedAiConfigRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,

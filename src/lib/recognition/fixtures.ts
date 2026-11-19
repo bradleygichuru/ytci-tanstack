@@ -1,0 +1,425 @@
+/**
+ * Recognition operator sample data.
+ *
+ * The frozen contracts mock is intentionally thin: it has one rule, two badges,
+ * one season and no award-ledger or mission read model. Screens therefore start
+ * from this rich, deterministic sample (mirroring the approved prototype) and
+ * overlay contract rows when the API returns them. The dataset marker on every
+ * screen says which source is showing.
+ */
+import type {
+  AuditEntry,
+  Award,
+  BackfillBatch,
+  Badge,
+  BoardRow,
+  KillSwitch,
+  Mission,
+  ModerationCase,
+  Rule,
+  Season,
+} from './types'
+
+const DAY = '2026-11-18T00:00:00+03:00'
+
+export const SAMPLE_RULES: Rule[] = [
+  {
+    id: '11111111-1111-4111-8111-111111111111',
+    ruleKey: 'event.attendance',
+    version: 1,
+    name: 'Event attendance',
+    status: 'retired',
+    sourceType: 'event',
+    event: 'ke.event.attended.v1',
+    verify: 'QR or staff check-in',
+    xpAmount: 25,
+    badgeKey: 'event_attended',
+    effectiveFrom: '2026-04-01',
+    effectiveTo: '2026-09-30',
+    createdBy: 'content-editor-1',
+    publishedBy: 'administrator-1',
+    updatedAt: '2026-05-12T09:20:00+03:00',
+    weeklyCap: null,
+  },
+  {
+    id: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+    ruleKey: 'event.attendance',
+    version: 2,
+    name: 'Event attendance',
+    status: 'published',
+    sourceType: 'event',
+    event: 'ke.event.attended.v1',
+    verify: 'QR or staff check-in',
+    xpAmount: 50,
+    badgeKey: 'event_attended',
+    effectiveFrom: '2026-10-01',
+    effectiveTo: null,
+    createdBy: 'content-editor-1',
+    publishedBy: 'administrator-1',
+    updatedAt: '2026-11-17T16:40:00+03:00',
+    weeklyCap: null,
+  },
+  {
+    id: '22222222-2222-4222-8222-222222222222',
+    ruleKey: 'heritage.visit',
+    version: 2,
+    name: 'Verified heritage visit',
+    status: 'published',
+    sourceType: 'heritage_visit',
+    event: 'ke.heritage.visit.verified.v1',
+    verify: 'Verified site visit',
+    xpAmount: 100,
+    badgeKey: 'heritage_keeper',
+    effectiveFrom: '2026-07-01',
+    effectiveTo: null,
+    createdBy: 'content-editor-2',
+    publishedBy: 'administrator-2',
+    updatedAt: '2026-11-18T07:02:00+03:00',
+    weeklyCap: null,
+  },
+  {
+    id: '33333333-3333-4333-8333-333333333333',
+    ruleKey: 'heritage.visit',
+    version: 1,
+    name: 'Verified heritage visit',
+    status: 'retired',
+    sourceType: 'heritage_visit',
+    event: 'ke.heritage.visit.verified.v1',
+    verify: 'Verified site visit',
+    xpAmount: 75,
+    badgeKey: 'heritage_keeper',
+    effectiveFrom: '2026-01-15',
+    effectiveTo: '2026-06-30',
+    createdBy: 'content-editor-2',
+    publishedBy: 'administrator-1',
+    updatedAt: '2026-02-03T11:15:00+03:00',
+    weeklyCap: null,
+  },
+  {
+    id: '44444444-4444-4444-8444-444444444444',
+    ruleKey: 'audio.story',
+    version: 2,
+    name: 'Audio Story completion',
+    status: 'published',
+    sourceType: 'audio_story',
+    event: 'ke.audio.story.completed.v1',
+    verify: 'Server-recorded completion',
+    xpAmount: 25,
+    badgeKey: 'listener',
+    effectiveFrom: '2026-09-01',
+    effectiveTo: null,
+    createdBy: 'content-editor-1',
+    publishedBy: 'administrator-2',
+    updatedAt: '2026-11-12T14:30:00+03:00',
+    weeklyCap: 5,
+  },
+  {
+    id: '55555555-5555-4555-8555-555555555555',
+    ruleKey: 'trail.completed',
+    version: 1,
+    name: 'Trail completed',
+    status: 'published',
+    sourceType: 'trail',
+    event: 'ke.trail.completed.v1',
+    verify: 'Trail checkpoints verified',
+    xpAmount: 75,
+    badgeKey: 'trailblazer',
+    effectiveFrom: '2026-05-01',
+    effectiveTo: null,
+    createdBy: 'content-editor-2',
+    publishedBy: 'administrator-1',
+    updatedAt: '2026-11-06T10:05:00+03:00',
+    weeklyCap: null,
+  },
+  {
+    id: '66666666-6666-4666-8666-666666666666',
+    ruleKey: 'community.story',
+    version: 1,
+    name: 'Community story approved',
+    status: 'draft',
+    sourceType: 'community_story',
+    event: 'ke.community.story.approved.v1',
+    verify: 'Moderator approval',
+    xpAmount: 50,
+    badgeKey: 'storyteller',
+    effectiveFrom: '2026-12-01',
+    effectiveTo: null,
+    createdBy: 'content-editor-2',
+    publishedBy: null,
+    updatedAt: '2026-11-16T08:45:00+03:00',
+    weeklyCap: null,
+  },
+]
+
+export const SAMPLE_BADGES: Badge[] = [
+  { badgeKey: 'first_steps', nameEn: 'First Steps', nameSw: 'Hatua za Kwanza', family: 'Explorer', criteria: 'First verified action', privacyClass: 'public', hidden: false, publicEligible: true, status: 'published', version: 1, updatedAt: '2026-04-02T09:00:00+03:00', usedBy: 0 },
+  { badgeKey: 'event_attended', nameEn: 'First Event', nameSw: 'Hafla ya Kwanza', family: 'Events', criteria: 'First verified event check-in', privacyClass: 'public', hidden: false, publicEligible: true, status: 'published', version: 2, updatedAt: '2026-09-18T09:10:00+03:00', usedBy: 1 },
+  { badgeKey: 'mice_explorer', nameEn: 'MICE Explorer', nameSw: 'Mtafiti wa MICE', family: 'Events', criteria: '3 MICE events across 2 classes', privacyClass: 'public', hidden: false, publicEligible: true, status: 'published', version: 1, updatedAt: '2026-08-21T12:00:00+03:00', usedBy: 1 },
+  { badgeKey: 'trail_and_tale', nameEn: 'Trail and Tale', nameSw: 'Njia na Hadithi', family: 'Hidden', criteria: 'Heritage visit + Audio Story at the same site', privacyClass: 'private', hidden: true, publicEligible: false, status: 'published', version: 1, updatedAt: '2026-07-11T15:30:00+03:00', usedBy: 0 },
+  { badgeKey: 'heritage_keeper', nameEn: 'Heritage Keeper', nameSw: 'Mlinzi wa Urithi', family: 'Heritage', criteria: '5 verified heritage visits', privacyClass: 'public', hidden: false, publicEligible: true, status: 'published', version: 3, updatedAt: '2026-10-04T10:20:00+03:00', usedBy: 1 },
+  { badgeKey: 'county_cartographer', nameEn: 'County Cartographer', nameSw: 'Mchoraji wa Kaunti', family: 'Discovery', criteria: 'Verified activity in 5 counties', privacyClass: 'public', hidden: false, publicEligible: true, status: 'published', version: 1, updatedAt: '2026-06-14T08:00:00+03:00', usedBy: 1 },
+  { badgeKey: 'conservation_ally', nameEn: 'Conservation Ally', nameSw: 'Mshirika wa Uhifadhi', family: 'Conservation', criteria: '3 verified conservation activities', privacyClass: 'public', hidden: false, publicEligible: true, status: 'published', version: 1, updatedAt: '2026-05-29T09:40:00+03:00', usedBy: 1 },
+  { badgeKey: 'scholar_ridge', nameEn: 'Scholar of the Ridge', nameSw: 'Mwanachuoni wa Kilima', family: 'Learning', criteria: '2 courses and 1 passed quiz', privacyClass: 'public', hidden: false, publicEligible: true, status: 'published', version: 1, updatedAt: '2026-03-19T13:10:00+03:00', usedBy: 1 },
+  { badgeKey: 'listener', nameEn: 'Listener', nameSw: 'Msikilizaji', family: 'Listening', criteria: '5 Audio Stories completed', privacyClass: 'public', hidden: false, publicEligible: true, status: 'published', version: 2, updatedAt: '2026-10-22T11:05:00+03:00', usedBy: 1 },
+  { badgeKey: 'trailblazer', nameEn: 'Trailblazer', nameSw: 'Mwanzilishi wa Njia', family: 'Trails', criteria: 'First verified trail', privacyClass: 'public', hidden: false, publicEligible: true, status: 'published', version: 1, updatedAt: '2026-05-02T07:25:00+03:00', usedBy: 1 },
+  { badgeKey: 'storyteller', nameEn: 'Storyteller', nameSw: 'Msimuliaji', family: 'Community', criteria: 'First approved community story', privacyClass: 'public', hidden: false, publicEligible: true, status: 'draft', version: 1, updatedAt: '2026-11-16T08:45:00+03:00', usedBy: 0 },
+]
+
+function completion(id: string, reader: string, completedAt: string): Mission['completionsLedger'][number] {
+  return { id, reader, completedAt, status: 'credited' }
+}
+
+export const SAMPLE_MISSIONS: Mission[] = [
+  {
+    id: 'm1', trackKey: 'county_explorer', family: 'Discovery', nameEn: 'County Explorer', nameSw: 'Mgunduzi wa Kaunti',
+    condition: '3 verified counties in a season', xpReward: 150, badgeKey: 'county_cartographer',
+    status: 'active', target: 3, completions: 184,
+    completionsLedger: [
+      completion('mc1', 'Reader #1188', '2026-11-18T08:04:00+03:00'),
+      completion('mc2', 'Reader #2044', '2026-11-17T16:30:00+03:00'),
+      completion('mc3', 'Reader #3011', '2026-11-16T11:12:00+03:00'),
+    ],
+  },
+  {
+    id: 'm2', trackKey: 'mice_explorer', family: 'Events', nameEn: 'MICE Explorer', nameSw: 'Mtafiti wa MICE',
+    condition: '3 MICE events across 2 classes', xpReward: 200, badgeKey: 'mice_explorer',
+    status: 'active', target: 3, completions: 62,
+    completionsLedger: [
+      completion('mc4', 'Reader #2291', '2026-11-18T09:02:00+03:00'),
+      completion('mc5', 'Reader #1104', '2026-11-15T14:20:00+03:00'),
+    ],
+  },
+  {
+    id: 'm3', trackKey: 'conservation_sprint', family: 'Conservation', nameEn: 'Conservation Sprint', nameSw: 'Mbio za Uhifadhi',
+    condition: '3 verified activities in a season', xpReward: 150, badgeKey: 'conservation_ally',
+    status: 'active', target: 3, completions: 241,
+    completionsLedger: [
+      completion('mc6', 'Reader #3388', '2026-11-18T08:41:00+03:00'),
+      completion('mc7', 'Reader #0917', '2026-11-17T10:50:00+03:00'),
+      completion('mc8', 'Reader #4120', '2026-11-16T09:30:00+03:00'),
+      completion('mc9', 'Reader #2806', '2026-11-14T17:05:00+03:00'),
+    ],
+  },
+  {
+    id: 'm4', trackKey: 'learning_path', family: 'Learning', nameEn: 'Learning Path', nameSw: 'Njia ya Kujifunza',
+    condition: '2 courses + 1 passed quiz', xpReward: 200, badgeKey: 'scholar_ridge',
+    status: 'paused', target: 3, completions: 97,
+    completionsLedger: [
+      completion('mc10', 'Reader #1188', '2026-11-12T12:40:00+03:00'),
+      completion('mc11', 'Reader #2044', '2026-11-09T15:15:00+03:00'),
+    ],
+  },
+  {
+    id: 'm5', trackKey: 'listener', family: 'Listening', nameEn: 'Listener', nameSw: 'Msikilizaji',
+    condition: '5 Audio Stories completed', xpReward: 100, badgeKey: 'listener',
+    status: 'active', target: 5, completions: 318,
+    completionsLedger: [
+      completion('mc12', 'Reader #3011', '2026-11-18T08:52:00+03:00'),
+      completion('mc13', 'Reader #2291', '2026-11-18T07:44:00+03:00'),
+      completion('mc14', 'Reader #1104', '2026-11-17T19:10:00+03:00'),
+    ],
+  },
+]
+
+export const SAMPLE_SEASONS: Season[] = [
+  {
+    key: '2026-q3', nameEn: 'Coast', nameSw: 'Pwani', startsAt: '2026-07-01T00:00:00+03:00', endsAt: '2026-09-30T23:59:59+03:00',
+    status: 'closed', badgeKey: 'season_q3_2026', xpAward: 500,
+    missionFamilies: ['Discovery', 'Conservation', 'Listening'], boardSize: 9,
+    preparedBy: 'content-editor-2', closedAt: '2026-09-30T23:59:00+03:00', closedBy: 'administrator-1',
+  },
+  {
+    key: '2026-q4', nameEn: 'Ridges', nameSw: 'Milima', startsAt: '2026-10-01T00:00:00+03:00', endsAt: '2026-12-31T23:59:59+03:00',
+    status: 'active', badgeKey: 'season_q4_2026', xpAward: 500,
+    missionFamilies: ['Discovery', 'Events', 'Conservation', 'Learning', 'Listening'], boardSize: 12,
+    preparedBy: 'content-editor-1', closedAt: null, closedBy: null,
+  },
+  {
+    key: '2027-q1', nameEn: 'Roots', nameSw: 'Mizizi', startsAt: '2027-01-01T00:00:00+03:00', endsAt: '2027-03-31T23:59:59+03:00',
+    status: 'upcoming', badgeKey: 'season_q1_2027', xpAward: 500,
+    missionFamilies: ['Discovery', 'Events', 'Conservation'], boardSize: 0,
+    preparedBy: 'content-editor-2', closedAt: null, closedBy: null,
+  },
+]
+
+function row(
+  rank: number,
+  displayName: string,
+  county: string,
+  level: string,
+  xp: number,
+  verifiedSites: number,
+  trailCompletions: number,
+): BoardRow {
+  return { rank, displayName, county, level, xp, verifiedSites, trailCompletions, status: 'active' }
+}
+
+export const SAMPLE_BOARDS: Record<string, BoardRow[]> = {
+  '2026-q4': [
+    row(1, 'Njeri M.', 'Nairobi', 'Keeper', 4820, 18, 6),
+    row(2, 'Kiptoo S.', 'Nakuru', 'Guardian', 4410, 15, 5),
+    row(3, 'Halima N.', 'Mombasa', 'Guardian', 4180, 14, 5),
+    row(4, 'Brian O.', 'Nairobi', 'Guardian', 3960, 13, 4),
+    row(5, 'Fatuma A.', 'Kilifi', 'Scout', 3510, 11, 4),
+    row(6, 'Joseph K.', 'Nyeri', 'Scout', 3240, 10, 3),
+    row(7, 'Grace W.', 'Kisumu', 'Scout', 2980, 9, 3),
+    row(8, 'Samuel O.', 'Machakos', 'Scout', 2740, 8, 2),
+    row(9, 'Amina H.', 'Kwale', 'Scout', 2510, 8, 2),
+    row(10, 'Tunde K.', 'Lamu', 'Scout', 2290, 7, 2),
+    row(11, 'Mwikali N.', 'Kitui', 'Walker', 2040, 6, 2),
+    row(12, 'Otieno J.', 'Siaya', 'Walker', 1810, 5, 1),
+  ],
+  '2026-q3': [
+    row(1, 'Halima N.', 'Mombasa', 'Scout', 3120, 9, 3),
+    row(2, 'Kiptoo S.', 'Nakuru', 'Scout', 2980, 8, 3),
+    row(3, 'Fatuma A.', 'Kilifi', 'Scout', 2740, 7, 2),
+    row(4, 'Joseph K.', 'Nyeri', 'Scout', 2510, 7, 2),
+    row(5, 'Grace W.', 'Kisumu', 'Scout', 2290, 6, 2),
+    row(6, 'Tunde K.', 'Lamu', 'Walker', 2040, 5, 2),
+    row(7, 'Mwikali N.', 'Kitui', 'Walker', 1810, 5, 1),
+    row(8, 'Otieno J.', 'Siaya', 'Walker', 1620, 4, 1),
+    row(9, 'Samuel O.', 'Machakos', 'Walker', 1440, 4, 1),
+  ],
+  '2027-q1': [],
+}
+
+export const SAMPLE_AWARDS: Award[] = [
+  { id: 'f1', reader: 'Reader #2291', ruleKey: 'event.attendance', ruleVersion: 2, xp: 50, event: 'Conservation Expo · 5 Nov', status: 'failed', attempts: 5, at: `${DAY}T09:02:00+03:00`, cause: 'outbox_retry_exhausted' },
+  { id: 'f2', reader: 'Reader #1104', ruleKey: 'audio.story', ruleVersion: 2, xp: 25, event: 'Audio story · 14 Nov', status: 'failed', attempts: 3, at: `${DAY}T08:57:00+03:00`, cause: 'profile_locked' },
+  { id: 'f3', reader: 'Reader #3388', ruleKey: 'event.attendance', ruleVersion: 2, xp: 50, event: 'Coast meeting · 3 Nov', status: 'failed', attempts: 5, at: `${DAY}T08:41:00+03:00`, cause: 'outbox_retry_exhausted' },
+  { id: 'f4', reader: 'Reader #0917', ruleKey: 'audio.story', ruleVersion: 2, xp: 25, event: 'Audio story · 9 Nov', status: 'failed', attempts: 0, at: `${DAY}T08:30:00+03:00`, cause: 'duplicate_suppressed' },
+  { id: 'f5', reader: 'Reader #4120', ruleKey: 'trail.completed', ruleVersion: 1, xp: 75, event: 'Karura trail · 16 Nov', status: 'failed', attempts: 5, at: `${DAY}T08:12:00+03:00`, cause: 'outbox_retry_exhausted' },
+  { id: 'f6', reader: 'Reader #2806', ruleKey: 'event.attendance', ruleVersion: 2, xp: 50, event: 'Expo workshop · 5 Nov', status: 'failed', attempts: 5, at: `${DAY}T07:58:00+03:00`, cause: 'outbox_retry_exhausted' },
+  { id: 'f7', reader: 'Reader #3001', ruleKey: 'audio.story', ruleVersion: 2, xp: 25, event: 'Audio story · 6 Nov', status: 'failed', attempts: 3, at: `${DAY}T07:44:00+03:00`, cause: 'profile_locked' },
+  { id: 'q1', reader: 'Reader #1188', ruleKey: 'heritage.visit', ruleVersion: 2, xp: 100, event: 'Fort Jesus · 18 Nov', status: 'queued', attempts: 1, at: `${DAY}T09:04:00+03:00`, cause: 'pending_outbox' },
+  { id: 'q2', reader: 'Reader #3011', ruleKey: 'event.attendance', ruleVersion: 2, xp: 50, event: 'Conference Day 1 · 18 Nov', status: 'queued', attempts: 1, at: `${DAY}T08:52:00+03:00`, cause: 'pending_outbox' },
+  { id: 'd1', reader: 'Reader #2044', ruleKey: 'audio.story', ruleVersion: 2, xp: 25, event: 'Rift Valley stories · 18 Nov', status: 'delivered', attempts: 1, at: `${DAY}T08:41:00+03:00`, cause: 'none' },
+  { id: 'd2', reader: 'Reader #1712', ruleKey: 'heritage.visit', ruleVersion: 2, xp: 100, event: 'Kaya Kinondo · 17 Nov', status: 'delivered', attempts: 1, at: '2026-11-17T16:20:00+03:00', cause: 'none' },
+  { id: 'd3', reader: 'Reader #3892', ruleKey: 'trail.completed', ruleVersion: 1, xp: 75, event: 'Ngong trail · 16 Nov', status: 'delivered', attempts: 1, at: '2026-11-16T12:05:00+03:00', cause: 'none' },
+  { id: 's1', reader: 'Reader #2210', ruleKey: 'event.attendance', ruleVersion: 2, xp: 0, event: 'Expo · 5 Nov', status: 'suppressed', attempts: 1, at: `${DAY}T09:01:00+03:00`, cause: 'duplicate_suppressed' },
+  { id: 's2', reader: 'Reader #2210', ruleKey: 'event.attendance', ruleVersion: 2, xp: 0, event: 'Expo · 5 Nov', status: 'suppressed', attempts: 1, at: `${DAY}T09:02:00+03:00`, cause: 'duplicate_suppressed' },
+  { id: 's3', reader: 'Reader #3311', ruleKey: 'audio.story', ruleVersion: 2, xp: 0, event: 'Audio story · 4 Nov', status: 'suppressed', attempts: 1, at: `${DAY}T08:47:00+03:00`, cause: 'weekly_cap' },
+]
+
+export const SAMPLE_MODERATION: ModerationCase[] = [
+  {
+    id: 'M-201', kind: 'display_name', subject: '“TrailKing”', subjectRef: 'entry-ref-trailking',
+    reason: 'Reported by a reader for impersonating an official account',
+    reporter: 'Private · reader #4182',
+    evidence: 'Name differs from the account the reader follows; profile created 18 Nov.',
+    status: 'open', decision: 'none', decidedAt: null, resolution: null,
+    createdAt: '2026-11-18T07:00:00+03:00',
+  },
+  {
+    id: 'M-202', kind: 'leaderboard_cheat', subject: 'Entry · Kiptoo S.', subjectRef: 'entry-ref-kiptoo',
+    reason: 'Repeated QR scan at one event',
+    reporter: 'Private · staff #12',
+    evidence: '6 scans of the same ticket within 3 minutes on 18 Nov 08:52.',
+    status: 'triaged', decision: 'none', decidedAt: null, resolution: null,
+    createdAt: '2026-11-18T04:00:00+03:00',
+  },
+  {
+    id: 'M-199', kind: 'display_name', subject: '“TrailRunner”', subjectRef: 'entry-ref-trailrunner',
+    reason: 'Impersonation', reporter: 'Private · reader #3911',
+    evidence: 'Duplicate of a verified organiser name.',
+    status: 'decided', decision: 'dismiss', decidedAt: '2026-11-17T11:30:00+03:00',
+    resolution: 'Rejected with reason: impersonation', createdAt: '2026-11-17T09:10:00+03:00',
+  },
+]
+
+export const SAMPLE_BACKFILL: BackfillBatch[] = [
+  {
+    id: 'BF-2026-014', ruleKey: 'event.attendance', ruleVersion: 2,
+    windowLabel: '19 Oct – 18 Nov 2026', from: '2026-10-19T00:00:00+03:00', to: '2026-11-18T23:59:59+03:00',
+    status: 'completed', scanned: 1280, unit: 'check-ins',
+    rows: [], requestedBy: 'content-editor-1', approvedBy: 'administrator-2',
+    createdAt: '2026-11-18T05:20:00+03:00', approvedAt: '2026-11-18T06:10:00+03:00',
+  },
+  {
+    id: 'BF-2026-013', ruleKey: 'audio.story', ruleVersion: 2,
+    windowLabel: '19 Oct – 18 Nov 2026', from: '2026-10-19T00:00:00+03:00', to: '2026-11-18T23:59:59+03:00',
+    status: 'completed', scanned: 2980, unit: 'completions',
+    rows: [], requestedBy: 'content-editor-1', approvedBy: 'administrator-1',
+    createdAt: '2026-11-11T10:02:00+03:00', approvedAt: '2026-11-11T14:22:00+03:00',
+  },
+  {
+    id: 'BF-2026-015', ruleKey: 'trail.completed', ruleVersion: 1,
+    windowLabel: '1 Oct – 18 Nov 2026', from: '2026-10-01T00:00:00+03:00', to: '2026-11-18T23:59:59+03:00',
+    status: 'requested', scanned: 386, unit: 'trail completions',
+    rows: [
+      { id: 'bfr1', reader: '#0917', event: 'Karura trail · 16 Nov 2026', xp: 75, versionAtEvent: 'v1', include: true },
+      { id: 'bfr2', reader: '#4120', event: 'Ngong trail · 8 Nov 2026', xp: 75, versionAtEvent: 'v1', include: true },
+      { id: 'bfr3', reader: '#2291', event: 'Karura trail · 2 Nov 2026', xp: 75, versionAtEvent: 'v1', include: true },
+      { id: 'bfr4', reader: '#3388', event: 'Ngong trail · 28 Oct 2026', xp: 75, versionAtEvent: 'v1', include: false },
+      { id: 'bfr5', reader: '#1104', event: 'Karura trail · 21 Oct 2026', xp: 75, versionAtEvent: 'v1', include: true },
+      { id: 'bfr6', reader: '#2044', event: 'Ngong trail · 14 Oct 2026', xp: 75, versionAtEvent: 'v1', include: true },
+    ],
+    requestedBy: 'content-editor-2', approvedBy: null,
+    createdAt: '2026-11-18T08:20:00+03:00', approvedAt: null,
+  },
+]
+
+export const SAMPLE_BACKFILL_ROWS: Record<string, BackfillBatch['rows']> = {
+  'event.attendance': [
+    { id: 'bfa1', reader: '#2291', event: 'Conservation Expo · 5 Nov 2026', xp: 50, versionAtEvent: 'v2', include: true },
+    { id: 'bfa2', reader: '#1104', event: 'Karura cleanup · 22 Oct 2026', xp: 50, versionAtEvent: 'v2', include: true },
+    { id: 'bfa3', reader: '#3388', event: 'Coast meeting · 3 Nov 2026', xp: 50, versionAtEvent: 'v2', include: true },
+    { id: 'bfa4', reader: '#0917', event: 'Expo workshop · 5 Nov 2026', xp: 50, versionAtEvent: 'v2', include: true },
+    { id: 'bfa5', reader: '#4120', event: 'Rift expo · 1 Nov 2026', xp: 50, versionAtEvent: 'v2', include: false },
+  ],
+  'heritage.visit': [
+    { id: 'bfh1', reader: '#2044', event: 'Fort Jesus · 12 Nov 2026', xp: 100, versionAtEvent: 'v2', include: true },
+    { id: 'bfh2', reader: '#2810', event: 'Kaya Kinondo · 9 Nov 2026', xp: 100, versionAtEvent: 'v2', include: true },
+    { id: 'bfh3', reader: '#3011', event: 'Olorgesailie · 2 Nov 2026', xp: 75, versionAtEvent: 'v1', include: true },
+  ],
+  'audio.story': [
+    { id: 'bfs1', reader: '#2291', event: 'Rift Valley stories · 17 Nov 2026', xp: 25, versionAtEvent: 'v2', include: true },
+    { id: 'bfs2', reader: '#1104', event: 'Coast stories · 14 Nov 2026', xp: 25, versionAtEvent: 'v2', include: true },
+    { id: 'bfs3', reader: '#3388', event: 'Ridges stories · 9 Nov 2026', xp: 25, versionAtEvent: 'v2', include: true },
+  ],
+  'trail.completed': [
+    { id: 'bft1', reader: '#0917', event: 'Karura trail · 16 Nov 2026', xp: 75, versionAtEvent: 'v1', include: true },
+    { id: 'bft2', reader: '#4120', event: 'Ngong trail · 8 Nov 2026', xp: 75, versionAtEvent: 'v1', include: true },
+  ],
+  'community.story': [
+    { id: 'bfc1', reader: '#2044', event: 'Community story · 12 Nov 2026', xp: 50, versionAtEvent: 'v1', include: true },
+  ],
+}
+
+export const SAMPLE_KILL_SWITCHES: KillSwitch[] = [
+  {
+    key: 'global', label: 'Recognition engine', enabled: true,
+    description: 'Blocks new awards. Reads continue, so progress, badges and the admin ledger stay available.',
+    blocks: 'Awards, rule publishing, simulation, backfill and award retry.',
+    reason: 'recognition dark launch', updatedBy: 'administrator-1', updatedAt: '2026-11-18T06:10:00+03:00',
+  },
+  {
+    key: 'public_leaderboard', label: 'Public leaderboard', enabled: true,
+    description: 'Hides the public board and rank badges. Freezing placements is a separate control on the board.',
+    blocks: 'The public board page and public rank badges.',
+    reason: 'board reviewed for the season', updatedBy: 'administrator-1', updatedAt: '2026-11-12T09:00:00+03:00',
+  },
+  {
+    key: 'source:audio', label: 'Audio reward source', enabled: true,
+    description: 'Stops new awards for Audio Story completion. 25 XP · capped at 5 per week.',
+    blocks: 'New Audio Story awards only. Earned XP and badges remain.',
+    reason: 'cap bug fixed', updatedBy: 'administrator-2', updatedAt: '2026-11-18T06:10:00+03:00',
+  },
+  {
+    key: 'source:event', label: 'Event attendance source', enabled: true,
+    description: 'Stops new awards for check-ins. QR or staff check-in only.',
+    blocks: 'New event attendance awards only. RSVPs never awarded.',
+    reason: 'verified check-in is the only source', updatedBy: 'administrator-1', updatedAt: '2026-10-01T08:00:00+03:00',
+  },
+]
+
+export const SAMPLE_AUDIT: AuditEntry[] = [
+  { id: 'a1', actor: 'System', role: 'Outbox worker', action: 'Award delivery failed', entity: 'Reader #2291 · event.attendance', detail: '5 attempts · 50 XP queued, not credited', category: 'awards', at: '2026-11-18T09:02:00+03:00' },
+  { id: 'a2', actor: 'Amina Hassan', role: 'Programme admin', action: 'Rule simulated', entity: 'event.attendance · staged v3', detail: '1,204 evaluated · 212 would award · 0 negatives', category: 'rules', at: '2026-11-18T08:48:00+03:00' },
+  { id: 'a3', actor: 'Brian Otieno', role: 'Content editor', action: 'Rule draft saved', entity: 'community.story · v1', detail: 'Staged definition · not published', category: 'rules', at: '2026-11-18T08:40:00+03:00' },
+  { id: 'a4', actor: 'Amina Hassan + Brian Otieno', role: 'Two approvers', action: 'Backfill approved', entity: 'BF-2026-014 · 82 awards', detail: 'event.attendance · v2 · 19 Oct–18 Nov', category: 'awards', at: '2026-11-18T06:10:00+03:00' },
+  { id: 'a5', actor: 'System', role: 'Scheduler', action: 'Nightly rollup completed', entity: 'Recognition + events', detail: '18 published events · 3 in review', category: 'system', at: '2026-11-18T04:12:00+03:00' },
+  { id: 'a6', actor: 'Amina Hassan', role: 'Programme admin', action: 'Audio reward source turned on', entity: 'Kill switch · source:audio', detail: 'Reason: cap bug fixed', category: 'safety', at: '2026-11-18T06:10:00+03:00' },
+  { id: 'a7', actor: 'Amina Hassan', role: 'Programme admin', action: 'Display name rejected', entity: '“TrailRunner”', detail: 'Reason: impersonation of a verified organiser', category: 'moderation', at: '2026-11-17T22:31:00+03:00' },
+  { id: 'a8', actor: 'Brian Otieno', role: 'Content editor', action: 'Season board frozen', entity: 'Season 2026-q3', detail: 'Snapshot taken before close', category: 'events', at: '2026-09-30T22:10:00+03:00' },
+]
