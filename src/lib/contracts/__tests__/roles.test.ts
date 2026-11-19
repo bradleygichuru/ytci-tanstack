@@ -79,11 +79,17 @@ describe('canonical role model', () => {
     expect(isRole('publisher')).toBe(false)
   })
 
-  it('exposes the new content roles the contract added', () => {
-    for (const role of ['species_expert', 'translator', 'language_reviewer', 'rights_reviewer']) {
+  it('admits content and review roles to the admin shell', () => {
+    for (const role of [
+      'content_editor',
+      'species_expert',
+      'translator',
+      'language_reviewer',
+      'rights_reviewer',
+    ]) {
       expect(isRole(role)).toBe(true)
       expect(permissionsForRole(role as Role).length).toBeGreaterThan(0)
-      expect(canAccessAdmin(role as Role)).toBe(false)
+      expect(canAccessAdmin(role as Role)).toBe(true)
     }
   })
 
