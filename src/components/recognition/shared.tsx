@@ -318,13 +318,22 @@ export function StatCard({
           : ''
   return (
     <div
+      data-slot="stat-card"
       className={cn(
-        'rounded-lg border border-border bg-card p-4 shadow-sm',
+        // A long single-word value (for example "Suppressed" at 200% text)
+        // must not widen the grid track past the page. `min-w-0` lets the card
+        // shrink inside its track; the value below is allowed to break.
+        'min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm',
         accent !== 'none' && `border-t-2 ${border}`
       )}
     >
       <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-      <p className="mt-1 font-sans text-3xl font-bold tracking-tight text-foreground">{value}</p>
+      <p
+        data-slot="stat-card-value"
+        className="mt-1 font-sans text-3xl font-bold tracking-tight text-foreground [overflow-wrap:anywhere]"
+      >
+        {value}
+      </p>
       {foot ? <div className="mt-1 text-xs text-muted-foreground">{foot}</div> : null}
     </div>
   )

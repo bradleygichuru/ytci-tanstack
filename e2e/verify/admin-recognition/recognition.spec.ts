@@ -207,6 +207,43 @@ test('overview — 200% text does not force horizontal scrolling', async () => {
   expect(overflow, 'horizontal overflow at 200% text').toBeLessThanOrEqual(2)
 })
 
+// #59 regression: the fourth KPI value ("Suppressed") is a single unbreakable
+// word. At 200 % text it forced its grid track wider than the page, which is
+// the 25 px document overflow. Every KPI value must stay inside its card and
+// every card inside the viewport.
+test('overview — KPI values stay inside their cards at 200% text', async () => {
+  await page.setViewportSize({ width: 1400, height: 900 })
+  await open(page, '/recognition', 'Recognition overview')
+  await page.addStyleTag({ content: 'html { font-size: 32px !important; }' })
+  await page.waitForTimeout(300)
+
+  const overflows = await page.locator('[data-slot="stat-card"]').evaluateAll((cards) =>
+    cards.map((card) => {
+      const value = card.querySelector('[data-slot="stat-card-value"]')
+      if (!value) return { label: card.textContent ?? '', overflow: Number.POSITIVE_INFINITY }
+      const cardBox = card.getBoundingClientRect()
+      const valueBox = value.getBoundingClientRect()
+      return {
+        label: value.textContent ?? '',
+        overflow: Math.max(
+          value.scrollWidth - value.clientWidth,
+          Math.round(valueBox.right - cardBox.right),
+          Math.round(cardBox.right - document.documentElement.clientWidth),
+        ),
+      }
+    })
+  )
+
+  expect(overflows.length).toBeGreaterThan(0)
+  for (const entry of overflows) {
+    expect(entry.overflow, `KPI "${entry.label}" overflows its card`).toBeLessThanOrEqual(1)
+  }
+
+  await page.addStyleTag({ content: 'html { font-size: 16px !important; }' })
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForTimeout(300)
+})
+
 // #389 regression: the 200 % plate must fold the sidebar to the icon rail and
 // keep the section nav on one scrollable line instead of four wrapped rows.
 test('overview — 200% text collapses the sidebar and keeps the nav on one line', async () => {
