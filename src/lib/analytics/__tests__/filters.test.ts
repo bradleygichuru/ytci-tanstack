@@ -63,7 +63,7 @@ describe('filter contract', () => {
     expect(journeys.scope).toContain('Course completion')
 
     const programme = summariseFilters('programme', DEFAULT_FILTERS, window)
-    expect(programme.scope).toContain('not filter-aware')
+    expect(programme.scope).toContain('Domain-table view')
   })
 
   it('flags a set filter that a section cannot apply', () => {

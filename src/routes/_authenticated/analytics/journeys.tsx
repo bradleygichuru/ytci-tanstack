@@ -18,8 +18,13 @@ export const Route = createFileRoute('/_authenticated/analytics/journeys')({
 
 function JourneysPage() {
   const { data, filters } = useAnalytics()
-  const journeys = journeySummaries(data?.journeys ?? [])
   const selected = filters.journey
+  // The contract applies the journey filter server-side. Filtering here too
+  // keeps the mock honest: its fixtures ignore query parameters.
+  const scoped = (data?.journeys ?? []).filter(
+    (step) => selected === 'all' || step.journey === selected,
+  )
+  const journeys = journeySummaries(scoped)
   const selectedSteps = selected === 'all' ? [] : funnelSteps(data?.journeys ?? [], selected)
 
   return (
