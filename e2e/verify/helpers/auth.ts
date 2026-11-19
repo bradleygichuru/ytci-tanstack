@@ -20,12 +20,29 @@ export async function loginAs(page: Page, email: string): Promise<void> {
     )
   }
 
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await page.locator('input[type="email"]').fill(email)
-  await page.locator('input[type="password"]').fill(VERIFY_PASSWORD)
-  await page.getByRole('button', { name: /sign in/i }).click()
+  // The login form is a React onSubmit handler. If the click lands before the
+  // route hydrates, the browser performs a native GET to `/login?` and the
+  // controlled fields look empty to the handler. Type after networkidle and
+  // retry once on that native-submit signature.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await page.goto('/login', { waitUntil: 'networkidle' })
+    const emailInput = page.locator('#login-email')
+    await emailInput.waitFor({ state: 'visible', timeout: 20_000 })
+    await emailInput.pressSequentially(email, { delay: 5 })
+    await page.locator('#login-password').pressSequentially(VERIFY_PASSWORD, { delay: 5 })
+    await page.getByRole('button', { name: /sign in/i }).click()
 
-  await expect(page).not.toHaveURL(/\/login/, { timeout: 30_000 })
+    try {
+      await expect(page).not.toHaveURL(/\/login/, { timeout: 30_000 })
+      break
+    } catch (error) {
+      if (attempt === 1) {
+        const alert = await page.getByRole('alert').allInnerTexts().catch(() => [])
+        throw new Error(`login failed for ${email}: ${alert.join(' / ') || String(error)}`)
+      }
+    }
+  }
+
   await page.waitForLoadState('networkidle').catch(() => {
     // Streaming/devtools sockets can keep the network busy; the URL assertion
     // above is the real gate.
