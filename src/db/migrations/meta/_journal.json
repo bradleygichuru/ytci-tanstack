@@ -19,183 +19,225 @@
     {
       "idx": 2,
       "version": "7",
+      "when": 1785269746851,
+      "tag": "0001_comments",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
       "when": 1785289194572,
       "tag": "0002_brown_hercules",
       "breakpoints": true
     },
     {
-      "idx": 3,
+      "idx": 4,
       "version": "7",
       "when": 1785416620854,
       "tag": "0003_whole_pestilence",
       "breakpoints": true
     },
     {
-      "idx": 4,
+      "idx": 5,
       "version": "7",
       "when": 1785471022703,
       "tag": "0004_dusty_pride",
       "breakpoints": true
     },
     {
-      "idx": 5,
+      "idx": 6,
       "version": "7",
       "when": 1785499478501,
       "tag": "0005_talented_justice",
       "breakpoints": true
     },
     {
-      "idx": 6,
+      "idx": 7,
       "version": "7",
       "when": 1785504288271,
       "tag": "0006_wise_punisher",
       "breakpoints": true
     },
     {
-      "idx": 7,
+      "idx": 8,
       "version": "7",
       "when": 1785506785951,
       "tag": "0007_rapid_ben_parker",
       "breakpoints": true
     },
     {
-      "idx": 8,
+      "idx": 9,
       "version": "7",
       "when": 1785508898370,
       "tag": "0008_normal_skullbuster",
       "breakpoints": true
     },
     {
-      "idx": 9,
+      "idx": 10,
       "version": "7",
       "when": 1785587983389,
       "tag": "0009_add_conservation_evidence_metrics",
       "breakpoints": true
     },
     {
-      "idx": 10,
+      "idx": 11,
       "version": "7",
       "when": 1754088000000,
       "tag": "0010_backfill_display_name",
       "breakpoints": true
     },
     {
-      "idx": 11,
+      "idx": 12,
       "version": "7",
       "when": 1785704486757,
       "tag": "0011_left_hedge_knight",
       "breakpoints": true
     },
     {
-      "idx": 12,
+      "idx": 13,
       "version": "7",
       "when": 1785850679689,
       "tag": "0012_typical_proudstar",
       "breakpoints": true
     },
     {
-      "idx": 13,
+      "idx": 14,
       "version": "7",
       "when": 1785958390342,
       "tag": "0013_giant_firedrake",
       "breakpoints": true
     },
     {
-      "idx": 14,
+      "idx": 15,
       "version": "7",
       "when": 1785980576203,
       "tag": "0014_broken_tenebrous",
       "breakpoints": true
     },
     {
-      "idx": 15,
+      "idx": 16,
       "version": "7",
       "when": 1786038753093,
       "tag": "0015_fat_dragon_man",
       "breakpoints": true
     },
     {
-      "idx": 16,
+      "idx": 17,
       "version": "7",
       "when": 1786053227765,
       "tag": "0016_brainy_namorita",
       "breakpoints": true
     },
     {
-      "idx": 17,
+      "idx": 18,
       "version": "7",
       "when": 1794590178205,
       "tag": "0017_marketplace",
       "breakpoints": true
     },
     {
-      "idx": 18,
+      "idx": 19,
       "version": "7",
       "when": 1795000054986,
       "tag": "0018_then_now",
       "breakpoints": true
     },
     {
-      "idx": 19,
+      "idx": 20,
       "version": "7",
       "when": 1794772535083,
       "tag": "0019_alerts",
       "breakpoints": true
     },
     {
-      "idx": 20,
+      "idx": 21,
       "version": "7",
       "when": 1794774314051,
       "tag": "0020_alert_os_permission",
       "breakpoints": true
     },
     {
-      "idx": 21,
+      "idx": 22,
       "version": "7",
       "when": 1794775534914,
       "tag": "0021_alert_program_important",
       "breakpoints": true
     },
     {
-      "idx": 22,
+      "idx": 23,
       "version": "7",
       "when": 1794775811669,
       "tag": "0022_alert_mapping_mixed",
       "breakpoints": true
     },
     {
-      "idx": 23,
+      "idx": 24,
       "version": "7",
       "when": 1794776441586,
       "tag": "0023_alert_defaults",
       "breakpoints": true
     },
     {
-      "idx": 24,
+      "idx": 25,
       "version": "7",
       "when": 1794777951813,
       "tag": "0024_alert_preference_backfill",
       "breakpoints": true
     },
     {
-      "idx": 25,
+      "idx": 26,
       "version": "7",
       "when": 1794816579965,
       "tag": "0025_program_push",
       "breakpoints": true
     },
     {
-      "idx": 26,
+      "idx": 27,
       "version": "7",
       "when": 1794818428556,
       "tag": "0026_text_user_ids",
       "breakpoints": true
     },
     {
-      "idx": 27,
+      "idx": 28,
       "version": "7",
       "when": 1794845765366,
       "tag": "0027_program_delivery_receipts",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1795053908648,
+      "tag": "0028_mice_event_contracts",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1795053909648,
+      "tag": "0029_recognition_contracts",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1795053910648,
+      "tag": "0030_species_contracts",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1795053911648,
+      "tag": "0031_analytics_contracts",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1795053912648,
+      "tag": "0032_platform_contracts",
       "breakpoints": true
     }
   ]
