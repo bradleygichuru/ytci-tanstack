@@ -1,6 +1,9 @@
 {
   "name": "ytci-tanstack",
   "private": true,
+  "overrides": {
+    "@tanstack/router-core": "1.171.34"
+  },
   "type": "module",
   "imports": {
     "#/*": "./src/*"
@@ -8,6 +11,14 @@
   "scripts": {
     "dev": "bun --env-file=.env.local run vite dev --port 3000",
     "generate-routes": "tsr generate",
+    "typecheck": "tsc --noEmit",
+    "typecheck:gate": "node scripts/typecheck-gate.mjs",
+    "generate:contracts": "bunx openapi-typescript openapi/contracts.v1.yaml -o src/lib/contracts/generated/contracts.ts",
+    "generate:roles": "node scripts/generate-roles.mjs",
+    "generate:contracts:check": "bash scripts/check-generated-contracts.sh",
+    "dev:mock": "bash scripts/contracts-mock.sh",
+    "test:shell": "vitest run src/lib/contracts src/lib/navigation src/lib/__tests__/flags.test.ts src/lib/__tests__/toast.test.ts src/components/shell",
+    "test:shell:smoke": "vitest run --config vitest.shell.config.ts",
     "build": "vite build",
     "preview": "vite preview",
     "db:smoke": "bun --env-file=.env.local run scripts/db-smoke.ts",
@@ -23,6 +34,8 @@
     "test:e2e:then-now": "bunx playwright test e2e/then-now-admin.spec.ts",
     "test:e2e:all": "bunx playwright test e2e/auth.spec.ts e2e/user-management.spec.ts e2e/crud-ui.spec.ts e2e/crud-integration.spec.ts e2e/comments-moderation.spec.ts e2e/then-now-admin.spec.ts",
     "test:e2e:ui": "bunx playwright test --ui",
+    "test:e2e:verify": "bunx playwright test -c playwright.verify.config.ts",
+    "test:e2e:verify:live": "VERIFY_MODE=live bunx playwright test -c playwright.verify.config.ts",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e:then-now-api": "bunx playwright test e2e/then-now-api.spec.ts"
@@ -35,12 +48,12 @@
     "@tanstack/match-sorter-utils": "latest",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-form": "latest",
-    "@tanstack/react-query": "latest",
+    "@tanstack/react-query": "5.108.1",
     "@tanstack/react-query-devtools": "latest",
-    "@tanstack/react-router": "latest",
+    "@tanstack/react-router": "1.170.41",
     "@tanstack/react-router-devtools": "latest",
-    "@tanstack/react-router-ssr-query": "latest",
-    "@tanstack/react-start": "latest",
+    "@tanstack/react-router-ssr-query": "1.167.3",
+    "@tanstack/react-start": "1.168.60",
     "@tanstack/react-table": "latest",
     "better-auth": "^1.5.3",
     "class-variance-authority": "^0.7.1",
@@ -49,6 +62,7 @@
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^0.577.0",
     "nitro": "^3.0.260610-beta",
+    "openapi-fetch": "^0.17.0",
     "pg": "^8.22.0",
     "radix-ui": "^1.6.7",
     "react": "^19.2.0",
@@ -77,9 +91,11 @@
     "@vitejs/plugin-react": "^6.0.1",
     "drizzle-kit": "^0.31.10",
     "jsdom": "^29.1.1",
+    "openapi-typescript": "^7.13.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "yaml": "^2.9.1"
   },
   "trustedDependencies": [
     "esbuild",

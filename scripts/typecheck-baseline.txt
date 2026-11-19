@@ -1,0 +1,22 @@
+# Pre-existing tsc errors accepted by scripts/typecheck-gate.mjs (#377).
+# Format: <file> <code> <message>, one line per occurrence. Remove a line
+# when the error is fixed; never add one without recording why in
+# docs/execution-shell.md.
+e2e/lms-seed.spec.ts TS2353 Object literal may only specify known properties, and 'hasValue' does not exist in type '{ has?: Locator | undefined; hasNot?: Locator | undefined; hasNotText?: string | RegExp | undefined; hasText?: string | RegExp | undefined; visible?: boolean | undefined; }'.
+e2e/lms-seed.spec.ts TS2353 Object literal may only specify known properties, and 'hasValue' does not exist in type '{ has?: Locator | undefined; hasNot?: Locator | undefined; hasNotText?: string | RegExp | undefined; hasText?: string | RegExp | undefined; visible?: boolean | undefined; }'.
+e2e/lms-seed.spec.ts TS2353 Object literal may only specify known properties, and 'hasValue' does not exist in type '{ has?: Locator | undefined; hasNot?: Locator | undefined; hasNotText?: string | RegExp | undefined; hasText?: string | RegExp | undefined; visible?: boolean | undefined; }'.
+e2e/lms-seed.spec.ts TS7006 Parameter 'page' implicitly has an 'any' type.
+scripts/db-smoke.ts TS18048 'url' is possibly 'undefined'.
+scripts/db-smoke.ts TS2365 Operator '<' cannot be applied to types '{}' and 'number'.
+src/db/schema/business.ts TS6133 'relations' is declared but its value is never read.
+src/db/schema/business.ts TS7022 'storyComments' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+src/db/schema/business.ts TS7024 Function implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.
+src/lib/hooks/use-moderation-action.ts TS2538 Type 'null' cannot be used as an index type.
+src/lib/hooks/use-moderation-action.ts TS2538 Type 'null' cannot be used as an index type.
+src/lib/hooks/use-moderation-action.ts TS2538 Type 'null' cannot be used as an index type.
+src/lib/hooks/use-moderation-action.ts TS2538 Type 'null' cannot be used as an index type.
+src/lib/hooks/use-moderation-action.ts TS2538 Type 'null' cannot be used as an index type.
+src/lib/schemas/campaign.schema.ts TS2769 No overload matches this call.
+src/router.tsx TS6133 'QueryClient' is declared but its value is never read.
+src/router.tsx TS6133 'ReactNode' is declared but its value is never read.
+src/router.tsx TS6133 'TanstackQueryProvider' is declared but its value is never read.
