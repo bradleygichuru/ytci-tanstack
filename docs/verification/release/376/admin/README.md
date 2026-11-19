@@ -65,9 +65,9 @@ test is recorded here rather than dropped to match the expected count.
 
 ## Results — honest first pass
 
-Run 1 executed all 100 tests with one worker and `--retries=0` (28.6 min). Skips
-are not passes, and a serial-mode cascade is recorded as "did not run", not as
-a skip.
+Run 1 attempted all 100 tests with one worker and `--retries=0` (28.6 min).
+Skips are not passes, and a serial-mode cascade is recorded as "did not run",
+not as a skip.
 
 | File | Tests | Passed | Failed | Skipped | Did not run | Expected fail |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -141,7 +141,7 @@ three cascaded tests.
 | #63 recognition at 200 % text | **pass (3/3)** | `overview — 200% text does not force horizontal scrolling` (4.4 s), `overview — KPI values stay inside their cards at 200% text` (8.0 s), `overview — 200% text collapses the sidebar and keeps the nav on one line` (11.9 s). |
 | Species contract reads `/review`, `/sources`, `/rights` | **pass** | Fixed mock returns the correct list payloads for all three; all 10 species tests pass, including `recaptures the screens that need the derived data loaded` and `rights withdrawal names blast radius`. |
 | #60 species derived data | **pass — close** | The 4 focused tests pass: recapture (`4 shown` on translation), matrix translation/sources, rights blast radius (`1 sources`), and the full species file is 10/10. |
-| #61 audit CSV after Rights filter | **pass — close** | `audit filters and CSV export use the same filter` passes and downloads a filtered CSV (`1400-filtered-csv.png`). |
+| #61 audit CSV after Rights filter | **pass — close** | `audit filters and CSV export use the same filter` passes and downloads a filtered CSV (`species-audit-filtered-csv.png`). |
 | Recognition awards bulk retry | **fail** | See below. This is a contract/fixture coverage gap, not a product regression. |
 
 ### Explicit re-verification for #60 and #61
