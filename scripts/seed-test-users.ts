@@ -19,7 +19,15 @@ async function dbQuery<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
   throw new Error('unreachable')
 }
 
-type UserRole = 'super_admin' | 'administrator' | 'content_editor' | 'moderator' | 'county_officer' | 'user'
+type UserRole =
+  | 'super_admin'
+  | 'administrator'
+  | 'content_editor'
+  | 'moderator'
+  | 'county_officer'
+  | 'translator'
+  | 'language_reviewer'
+  | 'user'
 
 interface SeedUser {
   email: string
@@ -42,6 +50,8 @@ const seedUsers: SeedUser[] = [
   { email: 'grace@example.com', password: 'password', name: 'Grace Akinyi', role: 'administrator', profile: { displayName: 'Grace Akinyi', county: 'Mombasa', ageRange: '25-34', languages: 'English, Swahili' } },
   { email: 'moderator@example.com', password: 'password', name: 'Moderator User', role: 'moderator' },
   { email: 'editor@example.com', password: 'password', name: 'Amina Wanjiku', role: 'content_editor', profile: { displayName: 'Amina Wanjiku', county: 'Nairobi', ageRange: '25-34', languages: 'English, Swahili' } },
+  { email: 'translator@example.com', password: 'password', name: 'Tatu Mwangi', role: 'translator', profile: { displayName: 'Tatu Mwangi', county: 'Kilifi', ageRange: '25-34', languages: 'English, Swahili' } },
+  { email: 'reviewer@example.com', password: 'password', name: 'Rehema Achieng', role: 'language_reviewer', profile: { displayName: 'Rehema Achieng', county: 'Siaya', ageRange: '35-44', languages: 'English, Swahili, Luo' } },
   { email: 'officer@example.com', password: 'password', name: 'James Ouma', role: 'county_officer', profile: { displayName: 'James Ouma', county: 'Narok', ageRange: '35-44', languages: 'English, Swahili, Maa' } },
   { email: 'suspended@example.com', password: 'password', name: 'Suspended User', role: 'moderator', ban: { reason: 'Test suspension', expiresInterval: "1 year" } },
   { email: 'alice@example.com', password: 'password', name: 'Alice Njeri', role: 'user', profile: { displayName: 'Alice Njeri', county: 'Kiambu', ageRange: '18-24', languages: 'English, Swahili' } },
