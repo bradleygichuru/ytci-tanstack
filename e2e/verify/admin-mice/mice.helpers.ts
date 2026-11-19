@@ -18,7 +18,7 @@ export const SCREENS = [
   ['venues', '/programme/events/venues', /Curated venue records/],
   ['agenda-speakers', '/programme/events/agenda', /Sessions/],
   ['registrations', '/programme/events/registrations', /Capacity/],
-  ['check-in', '/programme/events/check-in', /Check-in Counter/],
+  ['check-in', '/programme/events/check-in', /Check-in\s*Counter/],
   ['organisers', '/programme/events/organisers', /Organizer verification/],
   ['reports', '/programme/events/reports', /48-hour triage target/],
   ['review-queue', '/programme/events/review', /Review queue/],
