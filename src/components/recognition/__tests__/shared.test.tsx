@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
-import { BoardRows, RuleDiff } from '#/components/recognition/shared'
+import { BoardRows, RuleDiff, StatCard } from '#/components/recognition/shared'
 import type { BoardRow } from '#/lib/recognition/types'
 
 afterEach(cleanup)
@@ -25,6 +25,24 @@ describe('RuleDiff', () => {
   it('explains an empty diff instead of rendering empty rows', () => {
     render(<RuleDiff rows={[]} />)
     expect(screen.getByText(/no staged changes yet/i)).toBeInTheDocument()
+  })
+})
+
+describe('StatCard', () => {
+  // #59: at 200% text the single word "Suppressed" is wider than its KPI
+  // track and pushed the recognition page 25px into horizontal scroll. The
+  // card must be able to shrink and the value must be allowed to break.
+  it('lets a long unbroken value wrap inside a shrinkable card', () => {
+    render(<StatCard label="Public board" value="Suppressed" foot="Below threshold" />)
+    const card = screen.getByText('Public board').closest('[data-slot="stat-card"]')
+    const value = screen.getByText('Suppressed')
+
+    expect(card).not.toBeNull()
+    expect(card).toHaveClass('min-w-0')
+    expect(value).toHaveAttribute('data-slot', 'stat-card-value')
+    // `anywhere` also shrinks the value's intrinsic min-content width, which
+    // is what lets the KPI grid track stay inside the page.
+    expect(value.className).toContain('[overflow-wrap:anywhere]')
   })
 })
 
