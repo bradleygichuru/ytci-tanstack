@@ -28,9 +28,16 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <header
-      className={cn('flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-end sm:justify-between', className)}
+      className={cn(
+        // Content-driven wrap: the action group drops below the title when the
+        // two cannot share a line, whatever the cause (narrow viewport or 200%
+        // text). A `sm:` breakpoint keeps them in one row even when the text
+        // itself no longer fits.
+        'flex flex-wrap items-end justify-between gap-3 border-b border-border pb-4',
+        className,
+      )}
     >
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1 basis-[min(100%,24rem)]">
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-xl font-bold tracking-tight text-foreground">{title}</h1>
           {badge}
@@ -44,7 +51,11 @@ export function PageHeader({
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {actions ? (
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          {actions}
+        </div>
+      ) : null}
     </header>
   )
 }

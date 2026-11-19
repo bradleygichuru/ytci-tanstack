@@ -228,7 +228,10 @@ function CheckInPage() {
           counter opens 90 minutes before the first session.
         </Notice>
       ) : (
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <div
+          data-testid="mice-checkin-grid"
+          className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr))]"
+        >
           <SectionCard
             title="Find a registration"
             description="Name or ticket code. Press Enter to check in the first match."
