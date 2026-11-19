@@ -115,10 +115,10 @@ export function RecognitionNav() {
   return (
     <nav
       aria-label="Recognition sections"
-      className="flex flex-wrap items-center gap-x-1 gap-y-0.5 border-b border-border pb-1"
+      className="flex flex-nowrap items-center gap-x-1 gap-y-0.5 overflow-x-auto border-b border-border pb-1"
     >
       {NAV_GROUPS.map((group, index) => (
-        <div key={group.group} className="flex flex-wrap items-center gap-1">
+        <div key={group.group} className="flex shrink-0 items-center gap-1 whitespace-nowrap">
           {index > 0 ? <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true" /> : null}
           <span className="px-1 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
             {group.group}

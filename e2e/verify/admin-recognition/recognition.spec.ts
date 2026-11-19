@@ -171,6 +171,91 @@ test('overview — 200% text does not force horizontal scrolling', async () => {
   expect(overflow, 'horizontal overflow at 200% text').toBeLessThanOrEqual(2)
 })
 
+// #389 regression: the 200 % plate must fold the sidebar to the icon rail and
+// keep the section nav on one scrollable line instead of four wrapped rows.
+test('overview — 200% text collapses the sidebar and keeps the nav on one line', async () => {
+  await page.setViewportSize({ width: 1400, height: 900 })
+  await open(page, '/recognition', 'Recognition overview')
+  await page.addStyleTag({ content: 'html { font-size: 32px !important; }' })
+  await page.waitForTimeout(600)
+
+  const gap = await page
+    .locator('[data-slot="sidebar-gap"]')
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().width)
+  expect(gap, 'sidebar rail width at 200% text').toBeLessThanOrEqual(90)
+
+  const nav = page.getByRole('navigation', { name: 'Recognition sections' })
+  const navBox = await nav.evaluate((el) => ({
+    height: el.getBoundingClientRect().height,
+    overflow: el.scrollHeight - el.clientHeight,
+  }))
+  expect(navBox.height, 'section nav stays one row at 200% text').toBeLessThan(120)
+  expect(navBox.overflow, 'section nav does not wrap into stacked rows').toBeLessThanOrEqual(2)
+
+  await shot(page, 'overview-1400-light-200text-rail')
+  await page.addStyleTag({ content: 'html { font-size: 16px !important; }' })
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForTimeout(300)
+})
+
+// #389 regression: every shell link that opens a switch or audit surface must
+// clear 4.5:1 on the dark surface (WCAG 1.4.3).
+test('overview — shell links clear 4.5:1 in dark mode', async () => {
+  await page.setViewportSize({ width: 1400, height: 900 })
+  await open(page, '/recognition', 'Recognition overview')
+  await setTheme(page, 'dark')
+
+  const ratios = await page.evaluate(() => {
+    const parse = (value: string) => {
+      const match = value.match(/rgba?\(([^)]+)\)/)
+      if (!match) return null
+      const [r, g, b, a = '1'] = match[1].split(',').map((part) => part.trim())
+      return { r: Number(r), g: Number(g), b: Number(b), a: Number(a) }
+    }
+    const luminance = ({ r, g, b }: { r: number; g: number; b: number }) => {
+      const channel = (value: number) => {
+        const s = value / 255
+        return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+      }
+      return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+    }
+    const background = (start: Element | null) => {
+      let node = start
+      while (node) {
+        const parsed = parse(getComputedStyle(node).backgroundColor)
+        if (parsed && parsed.a > 0.9) return parsed
+        node = node.parentElement
+      }
+      return { r: 15, g: 26, b: 30, a: 1 }
+    }
+    const ratio = (el: Element) => {
+      const fg = parse(getComputedStyle(el).color)
+      if (!fg) return 0
+      const bg = background(el)
+      const light = Math.max(luminance(fg), luminance(bg))
+      const dark = Math.min(luminance(fg), luminance(bg))
+      return (light + 0.05) / (dark + 0.05)
+    }
+
+    const links = Array.from(document.querySelectorAll('main a')).filter((el) =>
+      ['Manage', 'All', 'Open →'].some((label) => (el.textContent ?? '').trim() === label)
+    )
+    return links.map((el) => ({
+      label: (el.textContent ?? '').trim(),
+      ratio: ratio(el),
+    }))
+  })
+
+  expect(ratios.length, 'shell links are present').toBeGreaterThanOrEqual(3)
+  for (const entry of ratios) {
+    expect(entry.ratio, `${entry.label} contrast in dark mode`).toBeGreaterThanOrEqual(4.5)
+  }
+
+  await shot(page, 'overview-1400-dark-links')
+  await setTheme(page, 'light')
+})
+
 // ---------------------------------------------------------------------------
 // Data states.
 // ---------------------------------------------------------------------------

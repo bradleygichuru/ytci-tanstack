@@ -129,9 +129,9 @@ export function AppSidebar() {
                 tooltip={item.label}
                 className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               >
-                <Link to={item.path} style={{ color: 'var(--sidebar-foreground)' }}>
+                <Link to={item.path} className="min-w-0" style={{ color: 'var(--sidebar-foreground)' }}>
                   <item.icon className="h-[18px] w-[18px]" weight="duotone" />
-                  <span className="text-sm font-semibold">{item.label}</span>
+                  <span className="truncate text-sm font-semibold">{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

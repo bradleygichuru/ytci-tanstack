@@ -183,6 +183,9 @@
 
   --card-shadow-hover: 0px 8px 24px rgba(0, 0, 0, 0.12);
 
+  --link: var(--primary-container);
+  --link-hover: var(--primary);
+
   --forest: var(--primary-container);
 
   --forest-deep: var(--primary);
@@ -316,6 +319,12 @@
   --leaf-bg: rgba(183, 227, 158, 0.14);
   --destructive: #8f1d1d;
 
+  /* Links are the only route into the switch and audit surfaces. The light
+     forest tokens are invisible on a near-black surface, so dark mode uses the
+     fixed green pair (8.6:1 and 10.9:1 on --surface). */
+  --link: #a1d494;
+  --link-hover: #bcf0ae;
+
   --bg-base: #0a1418;
 
   --sea-ink: #d7ece8;
@@ -412,6 +421,8 @@
 
   --color-ring: var(--ring);
 
+  --color-link: var(--link);
+
   --color-chart-1: var(--chart-1);
 
   --color-chart-2: var(--chart-2);
@@ -502,7 +513,7 @@ a {
 
   a {
 
-    color: var(--primary-container);
+    color: var(--link);
 
     text-decoration-color: var(--outline-muted);
 
@@ -514,7 +525,7 @@ a {
 
   a:hover {
 
-    color: var(--primary);
+    color: var(--link-hover);
 
   }
 
