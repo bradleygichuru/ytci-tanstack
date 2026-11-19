@@ -97,12 +97,12 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       {
         key: 'recognition',
         label: 'Recognition',
-        path: '/programme/recognition',
+        path: '/recognition',
         icon: Sparkle,
         permission: 'recognition.read',
         requiresAdmin: true,
         flag: 'recognition',
-        status: 'shell',
+        status: 'live',
         owner: 'stream:recognition',
       },
       {
