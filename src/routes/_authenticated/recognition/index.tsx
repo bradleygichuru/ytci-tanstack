@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowRight, CheckCircle, Clock, Power, ShieldCheck, Warning } from '@phosphor-icons/react'
 import { Button } from '#/components/ui/button'
 import { useRecognition } from '#/lib/recognition/store'
-import { formatNumber, relativeAge } from '#/lib/recognition/format'
+import { countLabel, formatNumber, relativeAge } from '#/lib/recognition/format'
 import { AdminPage, DataState, ScopeNote, StatCard } from '#/components/recognition/shared'
 import { MODERATION_KIND_LABEL } from '#/lib/recognition/logic'
 
@@ -88,8 +88,8 @@ function RecognitionOverviewPage() {
       }
     >
       <ScopeNote>
-        {engineOn ? 'Engine on' : 'Engine off'} · {state.awards.length} sample awards ·{' '}
-        {publishedRules.length} published rules
+        {engineOn ? 'Engine on' : 'Engine off'} · {countLabel(state.awards.length, 'award')} ·{' '}
+        {countLabel(publishedRules.length, 'published rule')}
       </ScopeNote>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

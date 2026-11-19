@@ -361,8 +361,34 @@ test('rule editor — weekly cap and anti-abuse explanation', async () => {
   await shot(page, 'rule-editor-1400-light-default')
 })
 
-test('badges — bilingual publish gate and badge locking copy', async () => {
+// #391 regression: provenance copy may only claim sample data when every read
+// fell back, and the badge catalogue carries artwork plus an unpublish warning.
+test('overview — provenance banner matches the footer source marker', async () => {
+  await page.setViewportSize({ width: 1400, height: 900 })
+  await open(page, '/recognition', 'Recognition overview')
+  const body = await page.locator('main').innerText()
+  expect(body).toMatch(/Contract API/)
+  expect(body).not.toMatch(/Sample data is showing/)
+  expect(body).not.toMatch(/:8099|:8109|localhost:/)
+  await shot(page, 'overview-1400-light-provenance')
+})
+
+test('badges — artwork preview and unpublish warning', async () => {
   await open(page, '/recognition/badges', 'Badge catalogue')
+  await expect(page.getByTestId('badge-art').first()).toBeVisible()
+  await expect(page.getByText('Unpublish warning').first()).toBeVisible({ timeout: 15_000 })
+  await shot(page, 'badges-1400-light-art')
+
+  const edit = page.getByRole('button', { name: /^edit$/i }).first()
+  await edit.click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByTestId('badge-preview')).toBeVisible({ timeout: 15_000 })
+  await expect(dialog.getByText(/artwork preview/i)).toBeVisible()
+  await shot(page, 'badges-1400-light-preview')
+  await dialog.getByRole('button', { name: /^cancel$/i }).click()
+})
+
+test('badges — bilingual publish gate and badge locking copy', async () => {  await open(page, '/recognition/badges', 'Badge catalogue')
   const body = await page.locator('main').innerText()
   expect(body).toMatch(/every badge needs an EN and SW name/i)
   expect(body).toMatch(/EN \+ SW|EN only/)

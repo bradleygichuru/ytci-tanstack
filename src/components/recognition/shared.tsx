@@ -186,7 +186,7 @@ export function FixtureStateControl() {
 }
 
 export function ScenarioBanner() {
-  const { scenario, source, apiError, apiStatus, setScenario } = useRecognition()
+  const { scenario, source, apiError, setScenario } = useRecognition()
   if (scenario === 'stale') {
     return (
       <Notice tone="gold" title="Showing last-known recognition data.">
@@ -217,12 +217,15 @@ export function ScenarioBanner() {
       </Notice>
     )
   }
-  if (apiStatus === 'error' || source === 'sample') {
+  // The banner is a provenance claim, so it may only appear when every read
+  // actually fell back to the sample overlay. A partial (mixed) read still
+  // renders contract rows and must not be labelled as sample data.
+  if (source === 'sample' && scenario === 'default') {
     return (
       <Notice tone="gold" title="Sample data is showing.">
         {apiError
           ? `The contracts API did not answer (${apiError}). Actions that need the API will fail with an explanation; overlay actions are labelled in the audit log.`
-          : 'Start the contracts mock on :8099 to read live contract rows. Operator overlays stay local to this browser.'}
+          : 'The contracts API is unreachable, so this view uses the deterministic sample. Operator overlays stay local to this browser.'}
       </Notice>
     )
   }
