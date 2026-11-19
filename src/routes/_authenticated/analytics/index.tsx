@@ -79,7 +79,7 @@ function OverviewPage() {
               actions={
                 <Link
                   to="/analytics/journeys"
-                  className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                  className="rounded-sm text-xs font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                 >
                   View all 9
                 </Link>
@@ -109,7 +109,7 @@ function OverviewPage() {
             actions={
               <Link
                 to="/analytics/quality"
-                className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                className="rounded-sm text-xs font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
               >
                 Open data quality
               </Link>

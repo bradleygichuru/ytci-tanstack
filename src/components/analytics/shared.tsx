@@ -67,6 +67,9 @@ import {
   type Scenario,
 } from '#/lib/analytics/types'
 
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background'
+
 export const ANALYTICS_NAV: {
   group: string
   items: { to: string; label: string; key: AnalyticsSectionKey }[]
@@ -186,7 +189,7 @@ export function AnalyticsNav() {
           {index > 0 ? (
             <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden="true" />
           ) : null}
-          <span className="px-1 text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+          <span className="px-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
             {group.group}
           </span>
           {group.items.map((item) => (
@@ -196,6 +199,7 @@ export function AnalyticsNav() {
               aria-current={active === item.key ? 'page' : undefined}
               className={cn(
                 'inline-flex min-h-8 items-center rounded-md px-2 text-xs font-semibold transition-colors',
+                FOCUS_RING,
                 active === item.key
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground',

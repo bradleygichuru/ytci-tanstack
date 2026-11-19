@@ -76,7 +76,7 @@ function ProgrammePage() {
             <Link
               key={surface.label}
               to={surface.to}
-              className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-[var(--surface-2)]"
+              className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
             >
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--leaf-bg)]">
                 <surface.icon className="size-4 text-[var(--success-leaf)]" weight="duotone" />
