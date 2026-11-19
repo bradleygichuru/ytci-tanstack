@@ -1,0 +1,702 @@
+[
+  {
+    "file": "seed-guard.spec.ts",
+    "title": "fixture mode defaults to the owned fixture port",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "seed-guard.spec.ts",
+    "title": "fixture mode refuses an external base URL",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "seed-guard.spec.ts",
+    "title": "live mode requires a seed id",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "seed-guard.spec.ts",
+    "title": "live mode refuses a non-disposable seed id",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "seed-guard.spec.ts",
+    "title": "live mode refuses the admin dev server port",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "seed-guard.spec.ts",
+    "title": "live mode refuses a non-local deployment",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "seed-guard.spec.ts",
+    "title": "live mode refuses a shared database URL",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "seed-guard.spec.ts",
+    "title": "live mode accepts an owned port and disposable seed",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "smoke.spec.ts",
+    "title": "serves and asserts the fixture page",
+    "status": "skipped",
+    "expected": "skipped",
+    "err": ""
+  },
+  {
+    "file": "smoke.spec.ts",
+    "title": "health endpoint answers",
+    "status": "skipped",
+    "expected": "skipped",
+    "err": ""
+  },
+  {
+    "file": "smoke.spec.ts",
+    "title": "unknown paths are 404, not a fallback to the dev app",
+    "status": "skipped",
+    "expected": "skipped",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/export-erasure.spec.ts",
+    "title": "administrator can queue an analytics export",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/export-erasure.spec.ts",
+    "title": "moderator can read analytics but cannot export or erase",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/export-erasure.spec.ts",
+    "title": "administrator can submit a data-subject erasure request",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/export-erasure.spec.ts",
+    "title": "a role without admin access cannot reach analytics",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/overview.spec.ts",
+    "title": "overview default: one rollup population across KPIs, chart and stamp",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/overview.spec.ts",
+    "title": "date range is applied to the read and named in the scope line",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/overview.spec.ts",
+    "title": "empty rollup and failed rollup are distinct states",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/overview.spec.ts",
+    "title": "stale rollup keeps last-known data and disables export",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/overview.spec.ts",
+    "title": "loading state is not announced before the first read",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/overview.spec.ts",
+    "title": "loading after stale clears the stale banner",
+    "status": "failed",
+    "expected": "failed",
+    "err": "Error: expect(locator).toHaveCount(expected) failed\n\nLocator:  getByText('Showing last-known analytics.')\nExpected: 0\nReceived: 1\nTimeout:  15000ms\n\nCall log:\n  - Expect \"toHaveCount\" with timeout 15000ms\n  - waiting for getByText('Showing last-known analytics.')\n    33 × locator resolved to 1 element\n       - unexpected value \"1\"\n\n\n  114 |     await expect(page.getByText('Showing last-known analy"
+  },
+  {
+    "file": "admin-analytics/responsive.spec.ts",
+    "title": "900px: every section stays inside the viewport",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/responsive.spec.ts",
+    "title": "1400px: overview and the densest tables stay inside the viewport",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/responsive.spec.ts",
+    "title": "1180px: overview and the densest tables stay inside the viewport",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/responsive.spec.ts",
+    "title": "dark theme keeps the surface readable and scoped",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/responsive.spec.ts",
+    "title": "200% text: headings and the rollup stamp stay visible",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "journeys: nine definitions, one rollup source, filter scoped to this read",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "journey filter carried to overview is labelled not applied",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "funnels: step bars and largest-drop caption render from the journey rollup",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "funnels: summary and step bars reconcile to one population (#387)",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "retention: elapsed cohorts only and an accessible description without future weeks",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "adoption: reach, depth and repeat keep their denominators visible",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "search gaps: contract gap is explicit, never a fabricated zero",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "content: live rows when present, otherwise a labelled sample overlay",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "programme: domain-table impact is never proxied from telemetry",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "quality: pipeline checks, rollup health, definitions and erasure entry",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "suppressed: real withheld cells, em dashes and no revealing total",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-analytics/sections.spec.ts",
+    "title": "suppressed: retention cell names a week the retention table renders",
+    "status": "failed",
+    "expected": "failed",
+    "err": "Error: expect(received).not.toContain(expected) // indexOf\n\nExpected substring: not \"W8\"\nReceived string:        \"YTC Explorer\n\nADMIN PORTAL\n\nDISCOVERY\nAnalytics\nCMS\nThen & Now\nMedia Library\nENGAGEMENT\nLMS\nConservation\nEvents\nMarketplace\nPROGRAMME\nEvents operations\nRecognition\nSpecies\nPLATFORM\nChallenges\nComments\nCampaigns\nUser Management\nAI Config\nV\n\nVerify Admin\n\nverify-admin@example.test\n\nSetti"
+  },
+  {
+    "file": "admin-mice/behaviour.spec.ts",
+    "title": "agenda detects a room double-booking and explains it",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/behaviour.spec.ts",
+    "title": "a waitlisted registration can be offered the freed place and promoted",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/behaviour.spec.ts",
+    "title": "registrations expose the ticket, access needs and an honest empty waitlist",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/behaviour.spec.ts",
+    "title": "check-in counts reconcile, roster stays hidden, undo and record both work",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/behaviour.spec.ts",
+    "title": "console check-in reconciles the counts and undo reverses it",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/behaviour.spec.ts",
+    "title": "check-in override requires a reason before it can be recorded",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/behaviour.spec.ts",
+    "title": "audit log filters, expands and records a local check-in action",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/behaviour.spec.ts",
+    "title": "event rows show lifecycle and organizer state; the editor carries revision state",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/behaviour.spec.ts",
+    "title": "role gating: a reader is redirected, a moderator keeps read access",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/responsive.spec.ts",
+    "title": "1400: no document overflow and every table reaches its action column",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/responsive.spec.ts",
+    "title": "900: no document overflow and every table reaches its action column",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/responsive.spec.ts",
+    "title": "200% text: KPIs and the overview grid reflow without overlap",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/responsive.spec.ts",
+    "title": "900: the agenda header stacks its actions below the title",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/screens.spec.ts",
+    "title": "every screen renders real data at 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/screens.spec.ts",
+    "title": "1180 and 900 keep each screen readable and populated",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-mice/screens.spec.ts",
+    "title": "default, empty, error and stale are distinct states",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "overview — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "rules — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "badges — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "missions — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "seasons — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "leaderboard — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "awards — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "reports — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "backfill — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "audit — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "kill-switches — default 1400",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "overview — 1180 and 900 widths",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "overview — dark theme",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "leaderboard — retraction sits behind a row menu and restore is reachable",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "awards — dark theme and 900 width",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "overview — 200% text does not force horizontal scrolling",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "overview — KPI values stay inside their cards at 200% text",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "overview — 200% text collapses the sidebar and keeps the nav on one line",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "overview — shell links clear 4.5:1 in dark mode",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "overview — empty, error, stale and read-only states",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "badges — empty and stale states",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "rules — simulation and second approver gate",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "rule editor — weekly cap and anti-abuse explanation",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "overview — provenance banner matches the footer source marker",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "badges — artwork preview and unpublish warning",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "badges — bilingual publish gate and badge locking copy",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "seasons — two-person close and snapshot copy",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "awards — grouping by cause, idempotent retry, manual credit",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "moderation — decisions require a reason and are audited",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "backfill — frozen parameters and approver separation",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "kill switches — typed OFF confirmation and dependency summary",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "moderation — a decision needs a reason and is recorded",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "awards — bulk retry asks for scope and never duplicates XP",
+    "status": "timedOut",
+    "expected": "passed",
+    "err": "Test timeout of 180000ms exceeded. Error: locator.click: Target page, context or browser has been closed\nCall log:\n  - waiting for getByRole('button', { name: /retry failed/i }).first()\n    - locator resolved to <button disabled data-size=\"sm\" data-slot=\"button\" data-variant=\"outline\" class=\"inline-flex shrink-0 items-center justify-center text-sm font-medium whitespace-nowrap transition-all outli"
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "seasons — closing needs a reason and a typed confirmation",
+    "status": "skipped",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "role gating — content editor and reader are redirected to no-access",
+    "status": "skipped",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-recognition/recognition.spec.ts",
+    "title": "role gating — moderator reads but sees no authoring controls",
+    "status": "skipped",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/recapture.spec.ts",
+    "title": "recaptures the screens that need the derived data loaded",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/species.live.spec.ts",
+    "title": "captures overview, catalogue, editor and languages across the matrix",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/species.live.spec.ts",
+    "title": "captures translation, sources, readiness and audit across the matrix",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/species.live.spec.ts",
+    "title": "catalogue search, selection and bulk assignment",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/species.live.spec.ts",
+    "title": "stale is derived and blocks publish",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/species.live.spec.ts",
+    "title": "rights withdrawal names blast radius; non-revocable sources cannot be targeted",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/species.live.spec.ts",
+    "title": "readiness blockers link to records; second review is actionable; publish is gated",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/species.live.spec.ts",
+    "title": "audit filters and CSV export use the same filter",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/species.live.spec.ts",
+    "title": "editor dirty guard keeps the draft on cancel",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  },
+  {
+    "file": "admin-species/species.live.spec.ts",
+    "title": "role gating: translator and reviewer see their own actions only",
+    "status": "passed",
+    "expected": "passed",
+    "err": ""
+  }
+]

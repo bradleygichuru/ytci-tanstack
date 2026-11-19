@@ -1,0 +1,8 @@
+
+Running 3 tests using 1 worker
+
+  ✓  1 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:522:1 › seasons — closing needs a reason and a typed confirmation (7.1s)
+  ✓  2 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:540:1 › role gating — content editor and reader are redirected to no-access (27.2s)
+  ✓  3 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:555:1 › role gating — moderator reads but sees no authoring controls (14.0s)
+
+  3 passed (1.1m)

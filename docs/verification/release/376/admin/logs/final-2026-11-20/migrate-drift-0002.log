@@ -1,0 +1,19 @@
+# fresh migrate check at 246963f, 2026-11-19T21:36:00Z
+# postgis enabled; applying 0000, 0001_comments, 0001_worthless_plazm, then 0002
+== psql -f 0002_brown_hercules.sql
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+psql:src/db/migrations/0002_brown_hercules.sql:29: ERROR:  relation "pending_media_uploads" does not exist
+exit=3

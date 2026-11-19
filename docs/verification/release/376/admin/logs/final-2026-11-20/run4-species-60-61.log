@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ✓  1 [verify-live] › e2e/verify/admin-species/recapture.spec.ts:76:3 › species recapture › recaptures the screens that need the derived data loaded (40.8s)
+  ✓  2 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:149:3 › species admin › captures translation, sources, readiness and audit across the matrix (1.1m)
+  ✓  3 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:205:3 › species admin › rights withdrawal names blast radius; non-revocable sources cannot be targeted (11.0s)
+  ✓  4 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:239:3 › species admin › audit filters and CSV export use the same filter (12.4s)
+
+  4 passed (2.2m)

@@ -1,0 +1,16 @@
+app HEAD: 246963f3715a17c59165f836ddcdaec845812fd5 (release/ytc-explorer-rc1)
+app origin/master: 3edc869ac87b7d1d5a783fa923e94a267c7c2117
+app commits behind origin/master: 0
+ytci-go mock HEAD: 7421e6028aa66f3371f28806a3386970037b53b0
+ytci-go mock log: 7421e60 fix(contracts-mock): prefer literal routes over wildcards (#54)
+bun: 1.4.4
+node: v26.5.0
+playwright: Version 1.62.0
+database: ytci_verify_376_final
+ports: app 3220, origin proxy 8130, mock 8131
+MOCK HEALTH: {"contract":"1.0.0","fixtureStates":["default","empty","error","stale"],"ok":true,"routes":111}
+literal-route probes:
+  /v1/admin/species/review -> 200 484B {  "items": [    {      "id": "181818
+  /v1/admin/species/sources -> 200 540B {  "items": [    {      "id": "151515
+  /v1/admin/species/rights -> 200 470B {  "items": [    {      "id": "202020
+SSR isDehydrated errors in app log: 0

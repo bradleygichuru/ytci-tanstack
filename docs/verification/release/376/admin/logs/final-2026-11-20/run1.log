@@ -1,0 +1,4041 @@
+
+Running 100 tests using 1 worker
+
+  ✓    1 [verify-harness] › e2e/verify/seed-guard.spec.ts:16:3 › disposable target guard › fixture mode defaults to the owned fixture port (25ms)
+  ✓    2 [verify-harness] › e2e/verify/seed-guard.spec.ts:22:3 › disposable target guard › fixture mode refuses an external base URL (13ms)
+  ✓    3 [verify-harness] › e2e/verify/seed-guard.spec.ts:29:3 › disposable target guard › live mode requires a seed id (8ms)
+  ✓    4 [verify-harness] › e2e/verify/seed-guard.spec.ts:36:3 › disposable target guard › live mode refuses a non-disposable seed id (6ms)
+  ✓    5 [verify-harness] › e2e/verify/seed-guard.spec.ts:43:3 › disposable target guard › live mode refuses the admin dev server port (2ms)
+  ✓    6 [verify-harness] › e2e/verify/seed-guard.spec.ts:53:3 › disposable target guard › live mode refuses a non-local deployment (5ms)
+  ✓    7 [verify-harness] › e2e/verify/seed-guard.spec.ts:61:3 › disposable target guard › live mode refuses a shared database URL (3ms)
+  ✓    8 [verify-harness] › e2e/verify/seed-guard.spec.ts:71:3 › disposable target guard › live mode accepts an owned port and disposable seed (5ms)
+  -    9 [verify-harness] › e2e/verify/smoke.spec.ts:12:3 › verification harness fixture › serves and asserts the fixture page
+  -   10 [verify-harness] › e2e/verify/smoke.spec.ts:32:3 › verification harness fixture › health endpoint answers
+  -   11 [verify-harness] › e2e/verify/smoke.spec.ts:37:3 › verification harness fixture › unknown paths are 404, not a fallback to the dev app
+  ✓   12 [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:17:1 › administrator can queue an analytics export (10.5s)
+  ✓   13 [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:42:1 › moderator can read analytics but cannot export or erase (25.7s)
+  ✓   14 [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:58:1 › administrator can submit a data-subject erasure request (10.9s)
+  ✓   15 [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:85:1 › a role without admin access cannot reach analytics (4.4s)
+  ✓   16 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:22:1 › overview default: one rollup population across KPIs, chart and stamp (10.5s)
+  ✓   17 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:47:1 › date range is applied to the read and named in the scope line (13.3s)
+  ✓   18 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:63:1 › empty rollup and failed rollup are distinct states (12.9s)
+  ✓   19 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:84:1 › stale rollup keeps last-known data and disables export (11.0s)
+  ✓   20 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:95:1 › loading state is not announced before the first read (4.9s)
+  ✘   21 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:101:1 › loading after stale clears the stale banner (26.2s)
+  ✓   22 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:25:1 › 900px: every section stays inside the viewport (1.4m)
+  ✓   23 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1400px: overview and the densest tables stay inside the viewport (1.0m)
+  ✓   24 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1180px: overview and the densest tables stay inside the viewport (55.6s)
+  ✓   25 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:43:1 › dark theme keeps the surface readable and scoped (8.1s)
+  ✓   26 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:56:1 › 200% text: headings and the rollup stamp stay visible (7.3s)
+  ✓   27 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:21:1 › journeys: nine definitions, one rollup source, filter scoped to this read (8.6s)
+  ✓   28 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:51:1 › journey filter carried to overview is labelled not applied (11.3s)
+  ✓   29 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:64:1 › funnels: step bars and largest-drop caption render from the journey rollup (11.0s)
+  ✓   30 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:78:1 › funnels: summary and step bars reconcile to one population (#387) (13.3s)
+  ✓   31 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:107:1 › retention: elapsed cohorts only and an accessible description without future weeks (7.8s)
+  ✓   32 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:125:1 › adoption: reach, depth and repeat keep their denominators visible (7.0s)
+  ✓   33 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:145:1 › search gaps: contract gap is explicit, never a fabricated zero (7.0s)
+  ✓   34 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:162:1 › content: live rows when present, otherwise a labelled sample overlay (6.5s)
+  ✓   35 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:174:1 › programme: domain-table impact is never proxied from telemetry (3.3s)
+  ✓   36 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:194:1 › quality: pipeline checks, rollup health, definitions and erasure entry (6.8s)
+  ✓   37 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:210:1 › suppressed: real withheld cells, em dashes and no revealing total (7.8s)
+  ✘   38 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:225:1 › suppressed: retention cell names a week the retention table renders (7.7s)
+  ✓   39 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:14:3 › MICE admin — implemented behaviour › agenda detects a room double-booking and explains it (12.0s)
+  ✓   40 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:50:3 › MICE admin — implemented behaviour › a waitlisted registration can be offered the freed place and promoted (16.6s)
+  ✓   41 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:100:3 › MICE admin — implemented behaviour › registrations expose the ticket, access needs and an honest empty waitlist (14.9s)
+  ✓   42 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:115:3 › MICE admin — implemented behaviour › check-in counts reconcile, roster stays hidden, undo and record both work (20.4s)
+  ✓   43 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:146:3 › MICE admin — implemented behaviour › console check-in reconciles the counts and undo reverses it (17.8s)
+  ✓   44 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:170:3 › MICE admin — implemented behaviour › check-in override requires a reason before it can be recorded (19.5s)
+  ✓   45 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:186:3 › MICE admin — implemented behaviour › audit log filters, expands and records a local check-in action (27.3s)
+  ✓   46 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:208:3 › MICE admin — implemented behaviour › event rows show lifecycle and organizer state; the editor carries revision state (24.5s)
+  ✓   47 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:224:3 › MICE admin — implemented behaviour › role gating: a reader is redirected, a moderator keeps read access (11.1s)
+  ✓   48 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:32:5 › MICE admin — responsive › 1400: no document overflow and every table reaches its action column (1.6m)
+  ✓   49 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:32:5 › MICE admin — responsive › 900: no document overflow and every table reaches its action column (1.9m)
+  ✓   50 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:84:3 › MICE admin — responsive › 200% text: KPIs and the overview grid reflow without overlap (16.2s)
+  ✓   51 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:134:3 › MICE admin — responsive › 900: the agenda header stacks its actions below the title (17.1s)
+  ✓   52 [verify-live] › e2e/verify/admin-mice/screens.spec.ts:21:3 › MICE admin — screen matrix › every screen renders real data at 1400 (1.2m)
+  ✓   53 [verify-live] › e2e/verify/admin-mice/screens.spec.ts:43:3 › MICE admin — screen matrix › 1180 and 900 keep each screen readable and populated (2.0m)
+  ✓   54 [verify-live] › e2e/verify/admin-mice/screens.spec.ts:56:3 › MICE admin — screen matrix › default, empty, error and stale are distinct states (19.8s)
+  ✓   55 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › overview — default 1400 (4.6s)
+  ✓   56 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › rules — default 1400 (4.4s)
+  ✓   57 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › badges — default 1400 (4.7s)
+  ✓   58 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › missions — default 1400 (4.4s)
+  ✓   59 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › seasons — default 1400 (6.0s)
+  ✓   60 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › leaderboard — default 1400 (7.0s)
+  ✓   61 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › awards — default 1400 (4.8s)
+  ✓   62 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › reports — default 1400 (4.5s)
+  ✓   63 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › backfill — default 1400 (4.7s)
+  ✓   64 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › audit — default 1400 (4.1s)
+  ✓   65 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › kill-switches — default 1400 (4.2s)
+  ✓   66 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:137:1 › overview — 1180 and 900 widths (8.0s)
+  ✓   67 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:147:1 › overview — dark theme (4.2s)
+  ✓   68 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:157:1 › leaderboard — retraction sits behind a row menu and restore is reachable (5.9s)
+  ✓   69 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:187:1 › awards — dark theme and 900 width (7.8s)
+  ✓   70 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:197:1 › overview — 200% text does not force horizontal scrolling (4.4s)
+  ✓   71 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:214:1 › overview — KPI values stay inside their cards at 200% text (8.0s)
+  ✓   72 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:249:1 › overview — 200% text collapses the sidebar and keeps the nav on one line (11.9s)
+  ✓   73 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:277:1 › overview — shell links clear 4.5:1 in dark mode (6.4s)
+  ✓   74 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:339:1 › overview — empty, error, stale and read-only states (14.9s)
+  ✓   75 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:362:1 › badges — empty and stale states (8.9s)
+  ✓   76 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:379:1 › rules — simulation and second approver gate (3.7s)
+  ✓   77 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:387:1 › rule editor — weekly cap and anti-abuse explanation (8.9s)
+  ✓   78 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:406:1 › overview — provenance banner matches the footer source marker (5.8s)
+  ✓   79 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:419:1 › badges — artwork preview and unpublish warning (4.5s)
+  ✓   80 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:434:1 › badges — bilingual publish gate and badge locking copy (3.9s)
+  ✓   81 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:442:1 › seasons — two-person close and snapshot copy (3.8s)
+  ✓   82 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:451:1 › awards — grouping by cause, idempotent retry, manual credit (4.0s)
+  ✓   83 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:460:1 › moderation — decisions require a reason and are audited (4.5s)
+  ✓   84 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:468:1 › backfill — frozen parameters and approver separation (4.0s)
+  ✓   85 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:477:1 › kill switches — typed OFF confirmation and dependency summary (3.7s)
+  ✓   86 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:489:1 › moderation — a decision needs a reason and is recorded (5.5s)
+  ✘   87 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:507:1 › awards — bulk retry asks for scope and never duplicates XP (3.0m)
+  -   88 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:522:1 › seasons — closing needs a reason and a typed confirmation
+  -   89 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:540:1 › role gating — content editor and reader are redirected to no-access
+  -   90 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:555:1 › role gating — moderator reads but sees no authoring controls
+  ✓   91 [verify-live] › e2e/verify/admin-species/recapture.spec.ts:76:3 › species recapture › recaptures the screens that need the derived data loaded (33.3s)
+  ✓   92 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix (1.1m)
+  ✓   93 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:149:3 › species admin › captures translation, sources, readiness and audit across the matrix (53.0s)
+  ✓   94 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:154:3 › species admin › catalogue search, selection and bulk assignment (12.1s)
+  ✓   95 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:188:3 › species admin › stale is derived and blocks publish (17.6s)
+  ✓   96 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:205:3 › species admin › rights withdrawal names blast radius; non-revocable sources cannot be targeted (9.2s)
+  ✓   97 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:223:3 › species admin › readiness blockers link to records; second review is actionable; publish is gated (11.3s)
+  ✓   98 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:239:3 › species admin › audit filters and CSV export use the same filter (11.0s)
+  ✓   99 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel (11.0s)
+  ✓  100 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:276:3 › species admin › role gating: translator and reviewer see their own actions only (21.2s)
+
+
+  1) [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:507:1 › awards — bulk retry asks for scope and never duplicates XP 
+
+    Test timeout of 180000ms exceeded.
+
+    Error: locator.click: Target page, context or browser has been closed
+    Call log:
+      - waiting for getByRole('button', { name: /retry failed/i }).first()
+        - locator resolved to <button disabled data-size="sm" data-slot="button" data-variant="outline" class="inline-flex shrink-0 items-center justify-center text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-…>…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        342 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+
+
+      509 |   await open(page, '/recognition/awards', 'Awards ledger')
+      510 |   await page.waitForTimeout(1200)
+    > 511 |   await page.getByRole('button', { name: /retry failed/i }).first().click()
+          |                                                                     ^
+      512 |   const dialog = page.getByRole('dialog')
+      513 |   await expect(dialog.getByText(/Retry \d+ failed award/i)).toBeVisible({ timeout: 15_000 })
+      514 |   await shot(page, 'awards-1400-light-retry-preview')
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-recognition/recognition.spec.ts:511:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/error-context.md
+
+    Error Context: test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:507:1 › awards — bulk retry asks for scope and never duplicates XP 
+  3 skipped
+  3 did not run
+  93 passed (28.6m)
+{
+  "config": {
+    "argv": [
+      "/home/brad/.nvm/versions/node/v26.5.0/bin/node",
+      "/home/brad/code/ytci-release-admin/node_modules/.bin/playwright",
+      "test",
+      "-c",
+      "playwright.verify.config.ts",
+      "--retries=0",
+      "--reporter=list,json"
+    ],
+    "configFile": "/home/brad/code/ytci-release-admin/playwright.verify.config.ts",
+    "rootDir": "/home/brad/code/ytci-release-admin/e2e/verify",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/brad/code/ytci-release-admin/test-results/verify",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "verify-harness",
+        "name": "verify-harness",
+        "testDir": "/home/brad/code/ytci-release-admin/e2e/verify",
+        "testIgnore": [
+          "admin-*/**"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/brad/code/ytci-release-admin/test-results/verify",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "verify-live",
+        "name": "verify-live",
+        "testDir": "/home/brad/code/ytci-release-admin/e2e/verify",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-*/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "seed-guard.spec.ts",
+      "file": "seed-guard.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "disposable target guard",
+          "file": "seed-guard.spec.ts",
+          "line": 15,
+          "column": 6,
+          "specs": [
+            {
+              "title": "fixture mode defaults to the owned fixture port",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 25,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.399Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a8cdf66bbb876dbfa0d9-d29e0419640ef2eead68",
+              "file": "seed-guard.spec.ts",
+              "line": 16,
+              "column": 3
+            },
+            {
+              "title": "fixture mode refuses an external base URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.491Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a8cdf66bbb876dbfa0d9-4555c9f62781b8baea9e",
+              "file": "seed-guard.spec.ts",
+              "line": 22,
+              "column": 3
+            },
+            {
+              "title": "live mode requires a seed id",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.537Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a8cdf66bbb876dbfa0d9-4084fec28886272169f2",
+              "file": "seed-guard.spec.ts",
+              "line": 29,
+              "column": 3
+            },
+            {
+              "title": "live mode refuses a non-disposable seed id",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.610Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a8cdf66bbb876dbfa0d9-ab22ce5e4f7198b733a3",
+              "file": "seed-guard.spec.ts",
+              "line": 36,
+              "column": 3
+            },
+            {
+              "title": "live mode refuses the admin dev server port",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.656Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a8cdf66bbb876dbfa0d9-a809b2472825d10a3e98",
+              "file": "seed-guard.spec.ts",
+              "line": 43,
+              "column": 3
+            },
+            {
+              "title": "live mode refuses a non-local deployment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.672Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a8cdf66bbb876dbfa0d9-a1ebd67ece73d23e8eaa",
+              "file": "seed-guard.spec.ts",
+              "line": 53,
+              "column": 3
+            },
+            {
+              "title": "live mode refuses a shared database URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.695Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a8cdf66bbb876dbfa0d9-b25a4f21b3f6cf7bef46",
+              "file": "seed-guard.spec.ts",
+              "line": 61,
+              "column": 3
+            },
+            {
+              "title": "live mode accepts an owned port and disposable seed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.717Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a8cdf66bbb876dbfa0d9-ebbe34c80c8dfd6bbc2d",
+              "file": "seed-guard.spec.ts",
+              "line": 71,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke.spec.ts",
+      "file": "smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "verification harness fixture",
+          "file": "smoke.spec.ts",
+          "line": 11,
+          "column": 6,
+          "specs": [
+            {
+              "title": "serves and asserts the fixture page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Static fixture smoke runs in fixture mode only.",
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/smoke.spec.ts",
+                        "line": 9,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.749Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Static fixture smoke runs in fixture mode only.",
+                          "location": {
+                            "file": "/home/brad/code/ytci-release-admin/e2e/verify/smoke.spec.ts",
+                            "line": 9,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4219922fea2e2bd3c691-e630ad5d0283c3ba7ab2",
+              "file": "smoke.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "health endpoint answers",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Static fixture smoke runs in fixture mode only.",
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/smoke.spec.ts",
+                        "line": 9,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.749Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Static fixture smoke runs in fixture mode only.",
+                          "location": {
+                            "file": "/home/brad/code/ytci-release-admin/e2e/verify/smoke.spec.ts",
+                            "line": 9,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4219922fea2e2bd3c691-43ed8b14cb8025067a59",
+              "file": "smoke.spec.ts",
+              "line": 32,
+              "column": 3
+            },
+            {
+              "title": "unknown paths are 404, not a fallback to the dev app",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "Static fixture smoke runs in fixture mode only.",
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/smoke.spec.ts",
+                        "line": 9,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "verify-harness",
+                  "projectName": "verify-harness",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T20:54:48.750Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "Static fixture smoke runs in fixture mode only.",
+                          "location": {
+                            "file": "/home/brad/code/ytci-release-admin/e2e/verify/smoke.spec.ts",
+                            "line": 9,
+                            "column": 6
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4219922fea2e2bd3c691-d3c8fcb535a745f85c7d",
+              "file": "smoke.spec.ts",
+              "line": 37,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "admin-analytics/export-erasure.spec.ts",
+      "file": "admin-analytics/export-erasure.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "administrator can queue an analytics export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10457,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:54:49.650Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1421ab50b4b5d5948c57-0f3a4da46a9a15a54efb",
+          "file": "admin-analytics/export-erasure.spec.ts",
+          "line": 17,
+          "column": 1
+        },
+        {
+          "title": "moderator can read analytics but cannot export or erase",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25715,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:55:00.379Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1421ab50b4b5d5948c57-9ad40194c263685433a3",
+          "file": "admin-analytics/export-erasure.spec.ts",
+          "line": 42,
+          "column": 1
+        },
+        {
+          "title": "administrator can submit a data-subject erasure request",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10861,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:55:26.193Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1421ab50b4b5d5948c57-c3eca5829f7cba90d01f",
+          "file": "admin-analytics/export-erasure.spec.ts",
+          "line": 58,
+          "column": 1
+        },
+        {
+          "title": "a role without admin access cannot reach analytics",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4440,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:55:37.170Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1421ab50b4b5d5948c57-ede1d0ccf146de476ac1",
+          "file": "admin-analytics/export-erasure.spec.ts",
+          "line": 85,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "admin-analytics/overview.spec.ts",
+      "file": "admin-analytics/overview.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "overview default: one rollup population across KPIs, chart and stamp",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10468,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:55:41.690Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c91d2f376a9d36eb97f7-12ecc4af979c940741d5",
+          "file": "admin-analytics/overview.spec.ts",
+          "line": 22,
+          "column": 1
+        },
+        {
+          "title": "date range is applied to the read and named in the scope line",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13340,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:55:52.224Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c91d2f376a9d36eb97f7-3a424282845fcd2445d7",
+          "file": "admin-analytics/overview.spec.ts",
+          "line": 47,
+          "column": 1
+        },
+        {
+          "title": "empty rollup and failed rollup are distinct states",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12927,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:56:05.629Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c91d2f376a9d36eb97f7-a20bea0c5fd94355d5e8",
+          "file": "admin-analytics/overview.spec.ts",
+          "line": 63,
+          "column": 1
+        },
+        {
+          "title": "stale rollup keeps last-known data and disables export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10998,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:56:18.601Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c91d2f376a9d36eb97f7-5228dda962e2fa000892",
+          "file": "admin-analytics/overview.spec.ts",
+          "line": 84,
+          "column": 1
+        },
+        {
+          "title": "loading state is not announced before the first read",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4921,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:56:29.660Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c91d2f376a9d36eb97f7-38a55184992154f9543b",
+          "file": "admin-analytics/overview.spec.ts",
+          "line": 95,
+          "column": 1
+        },
+        {
+          "title": "loading after stale clears the stale banner",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "known-defect",
+                  "description": "P2 #375: stale flag survives a switch to Loading, so the stale banner and disabled export remain.",
+                  "location": {
+                    "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts",
+                    "line": 101,
+                    "column": 1
+                  }
+                },
+                {
+                  "type": "fail",
+                  "location": {
+                    "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts",
+                    "line": 111,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "failed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 26243,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByText('Showing last-known analytics.')\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Showing last-known analytics.')\u001b[22m\n\u001b[2m    33 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByText('Showing last-known analytics.')\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Showing last-known analytics.')\u001b[22m\n\u001b[2m    33 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n\n    at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts:116:67",
+                    "location": {
+                      "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts",
+                      "column": 67,
+                      "line": 116
+                    },
+                    "snippet": "  114 |     await expect(page.getByText('Showing last-known analytics.')).toBeVisible()\n  115 |     await setDataState(page, 'loading')\n> 116 |     await expect(page.getByText('Showing last-known analytics.')).toHaveCount(0)\n      |                                                                   ^\n  117 |   },\n  118 | )\n  119 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts",
+                        "column": 67,
+                        "line": 116
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByText('Showing last-known analytics.')\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Showing last-known analytics.')\u001b[22m\n\u001b[2m    33 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n\n\n  114 |     await expect(page.getByText('Showing last-known analytics.')).toBeVisible()\n  115 |     await setDataState(page, 'loading')\n> 116 |     await expect(page.getByText('Showing last-known analytics.')).toHaveCount(0)\n      |                                                                   ^\n  117 |   },\n  118 | )\n  119 |\n    at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts:116:67"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:56:34.639Z",
+                  "annotations": [
+                    {
+                      "type": "known-defect",
+                      "description": "P2 #375: stale flag survives a switch to Loading, so the stale banner and disabled export remain.",
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts",
+                        "line": 101,
+                        "column": 1
+                      }
+                    },
+                    {
+                      "type": "fail",
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts",
+                        "line": 111,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-analytics-overview-l-b47d9-ale-clears-the-stale-banner-verify-live/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts",
+                    "column": 67,
+                    "line": 116
+                  }
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c91d2f376a9d36eb97f7-a9dfed7268c8c2d73fe2",
+          "file": "admin-analytics/overview.spec.ts",
+          "line": 101,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "admin-analytics/responsive.spec.ts",
+      "file": "admin-analytics/responsive.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "900px: every section stays inside the viewport",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 82194,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:57:00.957Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bcba587a28fba84f0662-e856fdfbb61f81508fa6",
+          "file": "admin-analytics/responsive.spec.ts",
+          "line": 25,
+          "column": 1
+        },
+        {
+          "title": "1400px: overview and the densest tables stay inside the viewport",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 60459,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:58:23.187Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bcba587a28fba84f0662-706141d8eec9736fa10d",
+          "file": "admin-analytics/responsive.spec.ts",
+          "line": 34,
+          "column": 3
+        },
+        {
+          "title": "1180px: overview and the densest tables stay inside the viewport",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 55648,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T20:59:23.719Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bcba587a28fba84f0662-b2bddd11083418859864",
+          "file": "admin-analytics/responsive.spec.ts",
+          "line": 34,
+          "column": 3
+        },
+        {
+          "title": "dark theme keeps the surface readable and scoped",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8084,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:00:19.414Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bcba587a28fba84f0662-528fb371efdbbb76eb3e",
+          "file": "admin-analytics/responsive.spec.ts",
+          "line": 43,
+          "column": 1
+        },
+        {
+          "title": "200% text: headings and the rollup stamp stay visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7350,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:00:27.538Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bcba587a28fba84f0662-564c06279e13c6f8a0ab",
+          "file": "admin-analytics/responsive.spec.ts",
+          "line": 56,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "admin-analytics/sections.spec.ts",
+      "file": "admin-analytics/sections.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "journeys: nine definitions, one rollup source, filter scoped to this read",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8561,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:00:34.946Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-ebaf763111a0ece55469",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 21,
+          "column": 1
+        },
+        {
+          "title": "journey filter carried to overview is labelled not applied",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11322,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:00:43.564Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-3f43f7060308dbf3bd2e",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 51,
+          "column": 1
+        },
+        {
+          "title": "funnels: step bars and largest-drop caption render from the journey rollup",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10999,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:00:54.948Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-a38784f72d19d54ee2dc",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 64,
+          "column": 1
+        },
+        {
+          "title": "funnels: summary and step bars reconcile to one population (#387)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13258,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:01:05.990Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-b99b38db5acd3734adb7",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 78,
+          "column": 1
+        },
+        {
+          "title": "retention: elapsed cohorts only and an accessible description without future weeks",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7762,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:01:19.281Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-e74e33d13d682d071856",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 107,
+          "column": 1
+        },
+        {
+          "title": "adoption: reach, depth and repeat keep their denominators visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7013,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:01:27.080Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-dfb000e12e39f5f011c6",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 125,
+          "column": 1
+        },
+        {
+          "title": "search gaps: contract gap is explicit, never a fabricated zero",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7007,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:01:34.125Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-eac611ee65c9204a8884",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 145,
+          "column": 1
+        },
+        {
+          "title": "content: live rows when present, otherwise a labelled sample overlay",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6542,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:01:41.156Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-0b24cb4d92bf303ea8c4",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 162,
+          "column": 1
+        },
+        {
+          "title": "programme: domain-table impact is never proxied from telemetry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3269,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:01:47.723Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-763c6eee5050826a378e",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 174,
+          "column": 1
+        },
+        {
+          "title": "quality: pipeline checks, rollup health, definitions and erasure entry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6810,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:01:51.025Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-ef4d16029daa44d1463f",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 194,
+          "column": 1
+        },
+        {
+          "title": "suppressed: real withheld cells, em dashes and no revealing total",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7801,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:01:57.919Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-fa230cd93f50fd572986",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 210,
+          "column": 1
+        },
+        {
+          "title": "suppressed: retention cell names a week the retention table renders",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "known-defect",
+                  "description": "P2 #375: the suppressed list reports \"24 Aug · W8\" while the retention table stops at W7.",
+                  "location": {
+                    "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                    "line": 225,
+                    "column": 1
+                  }
+                },
+                {
+                  "type": "fail",
+                  "location": {
+                    "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                    "line": 235,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "failed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7746,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"W8\"\u001b[39m\nReceived string:        \u001b[31m\"YTC Explorer\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mADMIN PORTAL\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mDISCOVERY\u001b[39m\n\u001b[31mAnalytics\u001b[39m\n\u001b[31mCMS\u001b[39m\n\u001b[31mThen & Now\u001b[39m\n\u001b[31mMedia Library\u001b[39m\n\u001b[31mENGAGEMENT\u001b[39m\n\u001b[31mLMS\u001b[39m\n\u001b[31mConservation\u001b[39m\n\u001b[31mEvents\u001b[39m\n\u001b[31mMarketplace\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mEvents operations\u001b[39m\n\u001b[31mRecognition\u001b[39m\n\u001b[31mSpecies\u001b[39m\n\u001b[31mPLATFORM\u001b[39m\n\u001b[31mChallenges\u001b[39m\n\u001b[31mComments\u001b[39m\n\u001b[31mCampaigns\u001b[39m\n\u001b[31mUser Management\u001b[39m\n\u001b[31mAI Config\u001b[39m\n\u001b[31mV\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mVerify Admin\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mverify-admin@example.test\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mSettings\u001b[39m\n\u001b[31mSign Out\u001b[39m\n\u001b[31mToggle Sidebar\u001b[39m\n\u001b[31mPRODUCT HEALTH\u001b[39m\n\u001b[31mOverview\u001b[39m\n\u001b[31mJourneys\u001b[39m\n\u001b[31mFunnels\u001b[39m\n\u001b[31mRetention\u001b[39m\n\u001b[31mAdoption\u001b[39m\n\u001b[31mCONTENT\u001b[39m\n\u001b[31mSearch gaps\u001b[39m\n\u001b[31mContent\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mProgramme\u001b[39m\n\u001b[31mTRUST\u001b[39m\n\u001b[31mData quality\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mANALYTICS · TRUST\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mSmall-cell suppression protects small counties and small cohorts from re-identification. The rule is applied before a cell reaches any screen or export.\u001b[39m\n\u001b[31mExport CSV\u001b[39m\n\u001b[31mRANGE\u001b[39m\n\u001b[31mLast 30 days\u001b[39m\n\u001b[31mLast 90 days\u001b[39m\n\u001b[31mThis season\u001b[39m\n\u001b[31mReset filters\u001b[39m\n\u001b[31mDATA STATE\u001b[39m\n\u001b[31mDefault\u001b[39m\n\u001b[31mEmpty\u001b[39m\n\u001b[31mLoading\u001b[39m\n\u001b[31mError\u001b[39m\n\u001b[31mStale\u001b[39m\n\u001b[31mData through 18 Nov 2026 · nightly rollup\u001b[39m\n\u001b[31m·\u001b[39m\n\u001b[31mLast 30 days · applied to this screen\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCells under 10 readers are hidden.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mThis table lists the contract cells the rollup withheld for the selected range. A suppressed cell is shown as — and is never included in a total.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTHRESHOLD\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m10\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mReaders per cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCELLS SUPPRESSED\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m18\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mAcross the selected range\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mRULE\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mNo total that reveals a hidden cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mA total plus one visible cell can reconstruct the hidden value.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mContract cells withheld\u001b[39m\n\u001b[31mReal suppressed rows from this rollup\u001b[39m\n\u001b[31mSuppressed cells reported by the analytics rollup\u001b[39m\n\u001b[31mDATASET\tCELL\tREASON\u001b[39m\n\u001b[31mFUNNELS\tCourse completion\tFunnel withheld — entered or completed is below the threshold.\u001b[39m\n\u001b[31mRETENTION\t24 Aug · \u001b[7mW8\u001b[27m\tCohort cell withheld — the cohort is too small.\u001b[39m\n\u001b[31mCounty × feature\u001b[39m\n\u001b[31mIllustrative sample of the suppression rule\u001b[39m\n\u001b[31mSAMPLE OVERLAY\u001b[39m\n\u001b[31mSample county by feature table showing suppressed cells without a total\u001b[39m\n\u001b[31mCOUNTY\tEVENTS\tRECOGNITION\tLEARNING\u001b[39m\n\u001b[31mNairobi\t1,240\t860\t710\u001b[39m\n\u001b[31mNarok\t310\t180\t120\u001b[39m\n\u001b[31mLamu\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTurkana\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m“—” means fewer than 10 readers. There is deliberately no total row: a total plus one visible cell would reveal the hidden value. This sample is not part of the frozen contract and is not affected by the date range.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCONTRACT API\u001b[39m\n\u001b[31mAggregates only. Per-user event streams are never rendered; named support access is reason-recorded, 30 days, and excludes recognition data.\u001b[39m\n\u001b[31m2 journey step(s) · 2 feature row(s) · last success 18 Nov 2026\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"W8\"\u001b[39m\nReceived string:        \u001b[31m\"YTC Explorer\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mADMIN PORTAL\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mDISCOVERY\u001b[39m\n\u001b[31mAnalytics\u001b[39m\n\u001b[31mCMS\u001b[39m\n\u001b[31mThen & Now\u001b[39m\n\u001b[31mMedia Library\u001b[39m\n\u001b[31mENGAGEMENT\u001b[39m\n\u001b[31mLMS\u001b[39m\n\u001b[31mConservation\u001b[39m\n\u001b[31mEvents\u001b[39m\n\u001b[31mMarketplace\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mEvents operations\u001b[39m\n\u001b[31mRecognition\u001b[39m\n\u001b[31mSpecies\u001b[39m\n\u001b[31mPLATFORM\u001b[39m\n\u001b[31mChallenges\u001b[39m\n\u001b[31mComments\u001b[39m\n\u001b[31mCampaigns\u001b[39m\n\u001b[31mUser Management\u001b[39m\n\u001b[31mAI Config\u001b[39m\n\u001b[31mV\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mVerify Admin\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mverify-admin@example.test\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mSettings\u001b[39m\n\u001b[31mSign Out\u001b[39m\n\u001b[31mToggle Sidebar\u001b[39m\n\u001b[31mPRODUCT HEALTH\u001b[39m\n\u001b[31mOverview\u001b[39m\n\u001b[31mJourneys\u001b[39m\n\u001b[31mFunnels\u001b[39m\n\u001b[31mRetention\u001b[39m\n\u001b[31mAdoption\u001b[39m\n\u001b[31mCONTENT\u001b[39m\n\u001b[31mSearch gaps\u001b[39m\n\u001b[31mContent\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mProgramme\u001b[39m\n\u001b[31mTRUST\u001b[39m\n\u001b[31mData quality\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mANALYTICS · TRUST\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mSmall-cell suppression protects small counties and small cohorts from re-identification. The rule is applied before a cell reaches any screen or export.\u001b[39m\n\u001b[31mExport CSV\u001b[39m\n\u001b[31mRANGE\u001b[39m\n\u001b[31mLast 30 days\u001b[39m\n\u001b[31mLast 90 days\u001b[39m\n\u001b[31mThis season\u001b[39m\n\u001b[31mReset filters\u001b[39m\n\u001b[31mDATA STATE\u001b[39m\n\u001b[31mDefault\u001b[39m\n\u001b[31mEmpty\u001b[39m\n\u001b[31mLoading\u001b[39m\n\u001b[31mError\u001b[39m\n\u001b[31mStale\u001b[39m\n\u001b[31mData through 18 Nov 2026 · nightly rollup\u001b[39m\n\u001b[31m·\u001b[39m\n\u001b[31mLast 30 days · applied to this screen\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCells under 10 readers are hidden.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mThis table lists the contract cells the rollup withheld for the selected range. A suppressed cell is shown as — and is never included in a total.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTHRESHOLD\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m10\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mReaders per cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCELLS SUPPRESSED\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m18\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mAcross the selected range\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mRULE\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mNo total that reveals a hidden cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mA total plus one visible cell can reconstruct the hidden value.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mContract cells withheld\u001b[39m\n\u001b[31mReal suppressed rows from this rollup\u001b[39m\n\u001b[31mSuppressed cells reported by the analytics rollup\u001b[39m\n\u001b[31mDATASET\tCELL\tREASON\u001b[39m\n\u001b[31mFUNNELS\tCourse completion\tFunnel withheld — entered or completed is below the threshold.\u001b[39m\n\u001b[31mRETENTION\t24 Aug · \u001b[7mW8\u001b[27m\tCohort cell withheld — the cohort is too small.\u001b[39m\n\u001b[31mCounty × feature\u001b[39m\n\u001b[31mIllustrative sample of the suppression rule\u001b[39m\n\u001b[31mSAMPLE OVERLAY\u001b[39m\n\u001b[31mSample county by feature table showing suppressed cells without a total\u001b[39m\n\u001b[31mCOUNTY\tEVENTS\tRECOGNITION\tLEARNING\u001b[39m\n\u001b[31mNairobi\t1,240\t860\t710\u001b[39m\n\u001b[31mNarok\t310\t180\t120\u001b[39m\n\u001b[31mLamu\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTurkana\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m“—” means fewer than 10 readers. There is deliberately no total row: a total plus one visible cell would reveal the hidden value. This sample is not part of the frozen contract and is not affected by the date range.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCONTRACT API\u001b[39m\n\u001b[31mAggregates only. Per-user event streams are never rendered; named support access is reason-recorded, 30 days, and excludes recognition data.\u001b[39m\n\u001b[31m2 journey step(s) · 2 feature row(s) · last success 18 Nov 2026\"\u001b[39m\n    at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts:238:22",
+                    "location": {
+                      "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                      "column": 22,
+                      "line": 238
+                    },
+                    "snippet": "  236 |     await openAnalytics(page, 'suppressed')\n  237 |     const text = await bodyText(page)\n> 238 |     expect(text).not.toContain('W8')\n      |                      ^\n  239 |   },\n  240 | )\n  241 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                        "column": 22,
+                        "line": 238
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"W8\"\u001b[39m\nReceived string:        \u001b[31m\"YTC Explorer\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mADMIN PORTAL\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mDISCOVERY\u001b[39m\n\u001b[31mAnalytics\u001b[39m\n\u001b[31mCMS\u001b[39m\n\u001b[31mThen & Now\u001b[39m\n\u001b[31mMedia Library\u001b[39m\n\u001b[31mENGAGEMENT\u001b[39m\n\u001b[31mLMS\u001b[39m\n\u001b[31mConservation\u001b[39m\n\u001b[31mEvents\u001b[39m\n\u001b[31mMarketplace\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mEvents operations\u001b[39m\n\u001b[31mRecognition\u001b[39m\n\u001b[31mSpecies\u001b[39m\n\u001b[31mPLATFORM\u001b[39m\n\u001b[31mChallenges\u001b[39m\n\u001b[31mComments\u001b[39m\n\u001b[31mCampaigns\u001b[39m\n\u001b[31mUser Management\u001b[39m\n\u001b[31mAI Config\u001b[39m\n\u001b[31mV\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mVerify Admin\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mverify-admin@example.test\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mSettings\u001b[39m\n\u001b[31mSign Out\u001b[39m\n\u001b[31mToggle Sidebar\u001b[39m\n\u001b[31mPRODUCT HEALTH\u001b[39m\n\u001b[31mOverview\u001b[39m\n\u001b[31mJourneys\u001b[39m\n\u001b[31mFunnels\u001b[39m\n\u001b[31mRetention\u001b[39m\n\u001b[31mAdoption\u001b[39m\n\u001b[31mCONTENT\u001b[39m\n\u001b[31mSearch gaps\u001b[39m\n\u001b[31mContent\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mProgramme\u001b[39m\n\u001b[31mTRUST\u001b[39m\n\u001b[31mData quality\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mANALYTICS · TRUST\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mSmall-cell suppression protects small counties and small cohorts from re-identification. The rule is applied before a cell reaches any screen or export.\u001b[39m\n\u001b[31mExport CSV\u001b[39m\n\u001b[31mRANGE\u001b[39m\n\u001b[31mLast 30 days\u001b[39m\n\u001b[31mLast 90 days\u001b[39m\n\u001b[31mThis season\u001b[39m\n\u001b[31mReset filters\u001b[39m\n\u001b[31mDATA STATE\u001b[39m\n\u001b[31mDefault\u001b[39m\n\u001b[31mEmpty\u001b[39m\n\u001b[31mLoading\u001b[39m\n\u001b[31mError\u001b[39m\n\u001b[31mStale\u001b[39m\n\u001b[31mData through 18 Nov 2026 · nightly rollup\u001b[39m\n\u001b[31m·\u001b[39m\n\u001b[31mLast 30 days · applied to this screen\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCells under 10 readers are hidden.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mThis table lists the contract cells the rollup withheld for the selected range. A suppressed cell is shown as — and is never included in a total.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTHRESHOLD\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m10\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mReaders per cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCELLS SUPPRESSED\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m18\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mAcross the selected range\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mRULE\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mNo total that reveals a hidden cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mA total plus one visible cell can reconstruct the hidden value.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mContract cells withheld\u001b[39m\n\u001b[31mReal suppressed rows from this rollup\u001b[39m\n\u001b[31mSuppressed cells reported by the analytics rollup\u001b[39m\n\u001b[31mDATASET\tCELL\tREASON\u001b[39m\n\u001b[31mFUNNELS\tCourse completion\tFunnel withheld — entered or completed is below the threshold.\u001b[39m\n\u001b[31mRETENTION\t24 Aug · \u001b[7mW8\u001b[27m\tCohort cell withheld — the cohort is too small.\u001b[39m\n\u001b[31mCounty × feature\u001b[39m\n\u001b[31mIllustrative sample of the suppression rule\u001b[39m\n\u001b[31mSAMPLE OVERLAY\u001b[39m\n\u001b[31mSample county by feature table showing suppressed cells without a total\u001b[39m\n\u001b[31mCOUNTY\tEVENTS\tRECOGNITION\tLEARNING\u001b[39m\n\u001b[31mNairobi\t1,240\t860\t710\u001b[39m\n\u001b[31mNarok\t310\t180\t120\u001b[39m\n\u001b[31mLamu\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTurkana\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m“—” means fewer than 10 readers. There is deliberately no total row: a total plus one visible cell would reveal the hidden value. This sample is not part of the frozen contract and is not affected by the date range.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCONTRACT API\u001b[39m\n\u001b[31mAggregates only. Per-user event streams are never rendered; named support access is reason-recorded, 30 days, and excludes recognition data.\u001b[39m\n\u001b[31m2 journey step(s) · 2 feature row(s) · last success 18 Nov 2026\"\u001b[39m\n\n  236 |     await openAnalytics(page, 'suppressed')\n  237 |     const text = await bodyText(page)\n> 238 |     expect(text).not.toContain('W8')\n      |                      ^\n  239 |   },\n  240 | )\n  241 |\n    at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts:238:22"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:02:05.757Z",
+                  "annotations": [
+                    {
+                      "type": "known-defect",
+                      "description": "P2 #375: the suppressed list reports \"24 Aug · W8\" while the retention table stops at W7.",
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                        "line": 225,
+                        "column": 1
+                      }
+                    },
+                    {
+                      "type": "fail",
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                        "line": 235,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-analytics-sections-s-012af-the-retention-table-renders-verify-live/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                    "column": 22,
+                    "line": 238
+                  }
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-77c0d6eb29c6667ab46d",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 225,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "admin-mice/behaviour.spec.ts",
+      "file": "admin-mice/behaviour.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "MICE admin — implemented behaviour",
+          "file": "admin-mice/behaviour.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "agenda detects a room double-booking and explains it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11981,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:02:13.557Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6c8b5800f18ba6310c35-b64bfb9871552fe0960f",
+              "file": "admin-mice/behaviour.spec.ts",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "a waitlisted registration can be offered the freed place and promoted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 16582,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:02:25.589Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6c8b5800f18ba6310c35-7814e5102212112339d9",
+              "file": "admin-mice/behaviour.spec.ts",
+              "line": 50,
+              "column": 3
+            },
+            {
+              "title": "registrations expose the ticket, access needs and an honest empty waitlist",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 14854,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:02:42.202Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6c8b5800f18ba6310c35-4142144945cd21b84f70",
+              "file": "admin-mice/behaviour.spec.ts",
+              "line": 100,
+              "column": 3
+            },
+            {
+              "title": "check-in counts reconcile, roster stays hidden, undo and record both work",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 20437,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:02:57.083Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6c8b5800f18ba6310c35-9285a7358a400547ea54",
+              "file": "admin-mice/behaviour.spec.ts",
+              "line": 115,
+              "column": 3
+            },
+            {
+              "title": "console check-in reconciles the counts and undo reverses it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17830,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:03:17.562Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6c8b5800f18ba6310c35-30209ee37b4c5dab1a96",
+              "file": "admin-mice/behaviour.spec.ts",
+              "line": 146,
+              "column": 3
+            },
+            {
+              "title": "check-in override requires a reason before it can be recorded",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 19510,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:03:35.444Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6c8b5800f18ba6310c35-c17e3f873653265075bc",
+              "file": "admin-mice/behaviour.spec.ts",
+              "line": 170,
+              "column": 3
+            },
+            {
+              "title": "audit log filters, expands and records a local check-in action",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 27303,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:03:54.997Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6c8b5800f18ba6310c35-397f31c80d184adc9b46",
+              "file": "admin-mice/behaviour.spec.ts",
+              "line": 186,
+              "column": 3
+            },
+            {
+              "title": "event rows show lifecycle and organizer state; the editor carries revision state",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 24472,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:04:22.344Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6c8b5800f18ba6310c35-173a2ef0ebdaf111db91",
+              "file": "admin-mice/behaviour.spec.ts",
+              "line": 208,
+              "column": 3
+            },
+            {
+              "title": "role gating: a reader is redirected, a moderator keeps read access",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11078,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:04:46.901Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6c8b5800f18ba6310c35-278a71d604503f0667e3",
+              "file": "admin-mice/behaviour.spec.ts",
+              "line": 224,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "admin-mice/responsive.spec.ts",
+      "file": "admin-mice/responsive.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "MICE admin — responsive",
+          "file": "admin-mice/responsive.spec.ts",
+          "line": 15,
+          "column": 6,
+          "specs": [
+            {
+              "title": "1400: no document overflow and every table reaches its action column",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 95458,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:04:58.100Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2d957b3127f7f08f3b-0f5d3e0bcff3e394b7ba",
+              "file": "admin-mice/responsive.spec.ts",
+              "line": 32,
+              "column": 5
+            },
+            {
+              "title": "900: no document overflow and every table reaches its action column",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 115945,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:06:33.671Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2d957b3127f7f08f3b-826cdcacbb31d9422b9a",
+              "file": "admin-mice/responsive.spec.ts",
+              "line": 32,
+              "column": 5
+            },
+            {
+              "title": "200% text: KPIs and the overview grid reflow without overlap",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 16229,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:08:29.664Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2d957b3127f7f08f3b-f91b39808f68457da1a5",
+              "file": "admin-mice/responsive.spec.ts",
+              "line": 84,
+              "column": 3
+            },
+            {
+              "title": "900: the agenda header stacks its actions below the title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17133,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:08:45.970Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b2d957b3127f7f08f3b-8b92506fc0c0f8a597cc",
+              "file": "admin-mice/responsive.spec.ts",
+              "line": 134,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "admin-mice/screens.spec.ts",
+      "file": "admin-mice/screens.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "MICE admin — screen matrix",
+          "file": "admin-mice/screens.spec.ts",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "every screen renders real data at 1400",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 71969,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:09:03.171Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f57f63e8419a7b75ebc0-7c1c1607cfa3e34c51d5",
+              "file": "admin-mice/screens.spec.ts",
+              "line": 21,
+              "column": 3
+            },
+            {
+              "title": "1180 and 900 keep each screen readable and populated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 122854,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:10:15.210Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f57f63e8419a7b75ebc0-69b8b676bce6023d833e",
+              "file": "admin-mice/screens.spec.ts",
+              "line": 43,
+              "column": 3
+            },
+            {
+              "title": "default, empty, error and stale are distinct states",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 19791,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:12:18.131Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f57f63e8419a7b75ebc0-d40bb4ed459644b87a39",
+              "file": "admin-mice/screens.spec.ts",
+              "line": 56,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "admin-recognition/recognition.spec.ts",
+      "file": "admin-recognition/recognition.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "overview — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4587,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:12:38.011Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-00d4aec9ef008ebc7689",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "rules — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4401,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:12:53.556Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-d7766fc54b683ab3cd45",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "badges — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4733,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:12:58.009Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-79e52fe862025d0925a6",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "missions — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4388,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:02.781Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-80eb306c0de21cc63433",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "seasons — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5957,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:07.205Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-2af817dc786e574a6d00",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "leaderboard — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6990,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:13.218Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-08f044203d72b458336e",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "awards — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4753,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:20.267Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-140f11dc33eb23cb58e3",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "reports — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4528,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:25.057Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-0dacc807c5e343a56c5a",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "backfill — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4655,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:29.617Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-3ce88fa036c6419513e3",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "audit — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4139,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:34.313Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-f09435775c7bcbee1e5f",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "kill-switches — default 1400",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4157,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:38.473Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-97112c83d7ade5f6a66a",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "overview — 1180 and 900 widths",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8015,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:42.663Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-de5b2197add3fa3801bd",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 137,
+          "column": 1
+        },
+        {
+          "title": "overview — dark theme",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4166,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:50.706Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-8a9a307f604d960f3564",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 147,
+          "column": 1
+        },
+        {
+          "title": "leaderboard — retraction sits behind a row menu and restore is reachable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5855,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:13:54.922Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-fbdc2e5f576a944e921d",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 157,
+          "column": 1
+        },
+        {
+          "title": "awards — dark theme and 900 width",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7798,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:14:00.809Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-637d7eb8b760047f38b4",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 187,
+          "column": 1
+        },
+        {
+          "title": "overview — 200% text does not force horizontal scrolling",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4384,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:14:08.636Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-25140e77da9cc7fcaac7",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 197,
+          "column": 1
+        },
+        {
+          "title": "overview — KPI values stay inside their cards at 200% text",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8012,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:14:13.051Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-aa5535de23bd18665776",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 214,
+          "column": 1
+        },
+        {
+          "title": "overview — 200% text collapses the sidebar and keeps the nav on one line",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11864,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:14:21.089Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-b11a42bf1a5f97c1f731",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 249,
+          "column": 1
+        },
+        {
+          "title": "overview — shell links clear 4.5:1 in dark mode",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6376,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:14:32.988Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-160ff52bf0a926736408",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 277,
+          "column": 1
+        },
+        {
+          "title": "overview — empty, error, stale and read-only states",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14869,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:14:39.444Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-59421b0a531ea7fe06b1",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 339,
+          "column": 1
+        },
+        {
+          "title": "badges — empty and stale states",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8896,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:14:54.387Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-d6768f36d281c4feebda",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 362,
+          "column": 1
+        },
+        {
+          "title": "rules — simulation and second approver gate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3710,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:03.433Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-ec356aa66004a9b44890",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 379,
+          "column": 1
+        },
+        {
+          "title": "rule editor — weekly cap and anti-abuse explanation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8866,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:07.184Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-345855afa5db74d101bc",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 387,
+          "column": 1
+        },
+        {
+          "title": "overview — provenance banner matches the footer source marker",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5837,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:16.128Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-0ea48f1358f4081727d1",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 406,
+          "column": 1
+        },
+        {
+          "title": "badges — artwork preview and unpublish warning",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4455,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:22.024Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-96e2bc9f2460c81c2b0e",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 419,
+          "column": 1
+        },
+        {
+          "title": "badges — bilingual publish gate and badge locking copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3871,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:26.508Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-0a34eab27990dbfae288",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 434,
+          "column": 1
+        },
+        {
+          "title": "seasons — two-person close and snapshot copy",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3775,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:30.412Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-29cd9d9f885ffaa56d3f",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 442,
+          "column": 1
+        },
+        {
+          "title": "awards — grouping by cause, idempotent retry, manual credit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3989,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:34.216Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-d05edb6d619a0425a87e",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 451,
+          "column": 1
+        },
+        {
+          "title": "moderation — decisions require a reason and are audited",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4534,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:38.245Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-4a38a1ff89ac0a8f10f6",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 460,
+          "column": 1
+        },
+        {
+          "title": "backfill — frozen parameters and approver separation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3982,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:42.824Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-270e87fdacae8edcda6d",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 468,
+          "column": 1
+        },
+        {
+          "title": "kill switches — typed OFF confirmation and dependency summary",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3686,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:46.837Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-6a7f8eb4364b498a81a0",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 477,
+          "column": 1
+        },
+        {
+          "title": "moderation — a decision needs a reason and is recorded",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5545,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:50.552Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-cad2c65bd299d99f21c0",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 489,
+          "column": 1
+        },
+        {
+          "title": "awards — bulk retry asks for scope and never duplicates XP",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 180104,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-recognition/recognition.spec.ts",
+                        "column": 69,
+                        "line": 511
+                      },
+                      "message": "Error: locator.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /retry failed/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-size=\"sm\" data-slot=\"button\" data-variant=\"outline\" class=\"inline-flex shrink-0 items-center justify-center text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-…>…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    342 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m        - element is not enabled\u001b[22m\n\u001b[2m      - retrying click action\u001b[22m\n\u001b[2m        - waiting 500ms\u001b[22m\n\n\n  509 |   await open(page, '/recognition/awards', 'Awards ledger')\n  510 |   await page.waitForTimeout(1200)\n> 511 |   await page.getByRole('button', { name: /retry failed/i }).first().click()\n      |                                                                     ^\n  512 |   const dialog = page.getByRole('dialog')\n  513 |   await expect(dialog.getByText(/Retry \\d+ failed award/i)).toBeVisible({ timeout: 15_000 })\n  514 |   await shot(page, 'awards-1400-light-retry-preview')\n    at /home/brad/code/ytci-release-admin/e2e/verify/admin-recognition/recognition.spec.ts:511:69"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:15:56.123Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-2446fedc28504976d5b8",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 507,
+          "column": 1
+        },
+        {
+          "title": "seasons — closing needs a reason and a typed confirmation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:18:59.240Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-39e46b4e5b0ce748cac4",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 522,
+          "column": 1
+        },
+        {
+          "title": "role gating — content editor and reader are redirected to no-access",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:18:59.241Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-74705e092739c3ade865",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 540,
+          "column": 1
+        },
+        {
+          "title": "role gating — moderator reads but sees no authoring controls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T21:18:59.241Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-2a241c51df2b0e3c3701",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 555,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "admin-species/recapture.spec.ts",
+      "file": "admin-species/recapture.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "species recapture",
+          "file": "admin-species/recapture.spec.ts",
+          "line": 68,
+          "column": 6,
+          "specs": [
+            {
+              "title": "recaptures the screens that need the derived data loaded",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 33276,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:19:00.811Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c50f45218eacbf15e26a-be658f07650644b7731c",
+              "file": "admin-species/recapture.spec.ts",
+              "line": 76,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "admin-species/species.live.spec.ts",
+      "file": "admin-species/species.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "species admin",
+          "file": "admin-species/species.live.spec.ts",
+          "line": 91,
+          "column": 6,
+          "specs": [
+            {
+              "title": "captures overview, catalogue, editor and languages across the matrix",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 68329,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:19:48.736Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9ddb691198d9fab5cbe-fb34f0637c52b6a4990a",
+              "file": "admin-species/species.live.spec.ts",
+              "line": 144,
+              "column": 3
+            },
+            {
+              "title": "captures translation, sources, readiness and audit across the matrix",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 240000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 52990,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:20:57.117Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9ddb691198d9fab5cbe-6f0efc08ec323371d061",
+              "file": "admin-species/species.live.spec.ts",
+              "line": 149,
+              "column": 3
+            },
+            {
+              "title": "catalogue search, selection and bulk assignment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12134,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:21:50.130Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9ddb691198d9fab5cbe-edae50ec8d40809f3900",
+              "file": "admin-species/species.live.spec.ts",
+              "line": 154,
+              "column": 3
+            },
+            {
+              "title": "stale is derived and blocks publish",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 17560,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:22:02.291Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9ddb691198d9fab5cbe-886890293fac74bc7d1f",
+              "file": "admin-species/species.live.spec.ts",
+              "line": 188,
+              "column": 3
+            },
+            {
+              "title": "rights withdrawal names blast radius; non-revocable sources cannot be targeted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9172,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:22:19.870Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9ddb691198d9fab5cbe-4f8f12f49e5a8fbe77d4",
+              "file": "admin-species/species.live.spec.ts",
+              "line": 205,
+              "column": 3
+            },
+            {
+              "title": "readiness blockers link to records; second review is actionable; publish is gated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11337,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:22:29.077Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9ddb691198d9fab5cbe-4729059c586cd1be6b09",
+              "file": "admin-species/species.live.spec.ts",
+              "line": 223,
+              "column": 3
+            },
+            {
+              "title": "audit filters and CSV export use the same filter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10988,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:22:40.463Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9ddb691198d9fab5cbe-4c3c7bdf687fbfe8cb55",
+              "file": "admin-species/species.live.spec.ts",
+              "line": 239,
+              "column": 3
+            },
+            {
+              "title": "editor dirty guard keeps the draft on cancel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10961,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:22:51.471Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9ddb691198d9fab5cbe-5426f25be772c1f46a4e",
+              "file": "admin-species/species.live.spec.ts",
+              "line": 258,
+              "column": 3
+            },
+            {
+              "title": "role gating: translator and reviewer see their own actions only",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "verify-live",
+                  "projectName": "verify-live",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 21228,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-19T21:23:02.455Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c9ddb691198d9fab5cbe-3eed619c443a3989d174",
+              "file": "admin-species/species.live.spec.ts",
+              "line": 276,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-19T20:54:47.310Z",
+    "duration": 1716486.1709999999,
+    "expected": 93,
+    "skipped": 6,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
