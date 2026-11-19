@@ -48,6 +48,13 @@ export interface DataTableProps<TData> {
   state?: DataState
   className?: string
   caption?: string
+  /**
+   * Pin the first column while the table scrolls horizontally. MICE tables use
+   * this so the row identity (event, attendee, venue) stays visible when the
+   * right-most Actions/evidence column is scrolled into view at 900/1400 or at
+   * 200% text.
+   */
+  stickyFirstColumn?: boolean
 }
 
 export function DataTable<TData>({
@@ -67,6 +74,7 @@ export function DataTable<TData>({
   state,
   className,
   caption,
+  stickyFirstColumn = false,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -108,7 +116,13 @@ export function DataTable<TData>({
   const pageCount = table.getPageCount()
 
   return (
-    <div className={cn('rounded-xl border border-border bg-card', className)}>
+    <div
+      data-sticky-first={stickyFirstColumn ? 'true' : undefined}
+      className={cn(
+        'min-w-0 rounded-xl border border-border bg-card',
+        className,
+      )}
+    >
       <Table>
         {caption ? (
           <caption className="px-4 pt-3 text-left text-xs text-muted-foreground">{caption}</caption>
@@ -116,11 +130,19 @@ export function DataTable<TData>({
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
+              {headerGroup.headers.map((header, index) => {
                 const canSort = header.column.getCanSort()
                 const sorted = header.column.getIsSorted()
                 return (
-                  <TableHead key={header.id} className="px-4">
+                  <TableHead
+                    key={header.id}
+                    className={cn(
+                      'px-4',
+                      stickyFirstColumn &&
+                        index === 0 &&
+                        'sticky left-0 z-20 border-r border-border bg-card',
+                    )}
+                  >
                     {header.isPlaceholder ? null : canSort ? (
                       <button
                         type="button"
@@ -150,7 +172,7 @@ export function DataTable<TData>({
           {rows.map((row) => (
             <TableRow
               key={row.id}
-              className={cn(onRowClick && 'cursor-pointer')}
+              className={cn('group', onRowClick && 'cursor-pointer')}
               tabIndex={onRowClick ? 0 : undefined}
               onClick={onRowClick ? () => onRowClick(row.original) : undefined}
               onKeyDown={
@@ -164,8 +186,16 @@ export function DataTable<TData>({
                   : undefined
               }
             >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} className="px-4">
+              {row.getVisibleCells().map((cell, index) => (
+                <TableCell
+                  key={cell.id}
+                  className={cn(
+                    'px-4',
+                    stickyFirstColumn &&
+                      index === 0 &&
+                      'sticky left-0 z-10 border-r border-border bg-card group-hover:bg-muted',
+                  )}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
