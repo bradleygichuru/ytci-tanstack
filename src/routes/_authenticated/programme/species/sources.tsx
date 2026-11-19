@@ -20,8 +20,10 @@ import {
   computeSourceImpact,
   formatDate,
   isRevocableSource,
+  rightsImpactLabel,
   rightsIsActive,
   rightsStatus,
+  type RightsImpactEntry,
   type SpeciesRights,
   type SpeciesSource,
 } from '#/lib/species/model'
@@ -497,7 +499,7 @@ function RightsWithdrawDialog({
   onConfirm,
 }: {
   record: SpeciesRights
-  affected: { slug: string; name: string }[]
+  affected: RightsImpactEntry[]
   onClose: () => void
   onConfirm: (reason: string, note: string) => Promise<void>
 }) {
@@ -541,8 +543,19 @@ function RightsWithdrawDialog({
           <dd>{record.consentRecord ?? 'Not recorded'}</dd>
           <dt className="font-semibold text-muted-foreground">Blast radius</dt>
           <dd>
-            {affected.length} loaded species
-            {affected.length > 0 ? `: ${affected.map((entry) => entry.name).join(', ')}` : ''}
+            {affected.length} loaded species unpublished
+            {affected.length > 0 ? (
+              <ul className="mt-1 space-y-1">
+                {affected.map((entry) => (
+                  <li key={entry.slug}>
+                    <span className="font-semibold text-foreground">{rightsImpactLabel(entry)}</span>
+                    <span className="block text-[10px] text-muted-foreground">
+                      Affected use: {entry.uses.join(', ')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </dd>
         </dl>
       </div>

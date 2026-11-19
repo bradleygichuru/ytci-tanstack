@@ -556,17 +556,65 @@ export function rightsStatus(rights: SpeciesRights, now = Date.now()): 'active' 
   return 'active'
 }
 
+export type RightsUse = 'media' | 'audio'
+
+export interface RightsImpactEntry {
+  slug: string
+  name: string
+  /** Distinguishes species that share a common name in a destructive list. */
+  scientificName: string | null
+  /** Which of the species' uses the withdrawn right covers. */
+  uses: RightsUse[]
+}
+
+/**
+ * Every species the withdrawn right covers, exactly once.
+ *
+ * The same right can be attached to several records (an audio record per
+ * language, a reused media asset) and the loaded detail sample can repeat a
+ * slug. A confirmation list must not repeat a species line or hide which use
+ * is affected, so the impact is keyed by slug and keeps the uses distinct.
+ */
 export function computeRightsImpact(
   rights: SpeciesRights,
   details: SpeciesDetail[],
-): { slug: string; name: string }[] {
-  return details
-    .filter(
-      (detail) =>
-        (detail.media ?? []).some((record) => record.id === rights.subjectId) ||
-        (detail.audio ?? []).some((record) => record.rights?.id === rights.id),
-    )
-    .map((detail) => ({ slug: detail.slug, name: detail.nameEn }))
+): RightsImpactEntry[] {
+  const bySlug = new Map<string, RightsImpactEntry>()
+
+  for (const detail of details) {
+    const uses: RightsUse[] = []
+    if ((detail.media ?? []).some((record) => record.id === rights.subjectId)) uses.push('media')
+    if ((detail.audio ?? []).some((record) => record.rights?.id === rights.id)) uses.push('audio')
+    if (uses.length === 0) continue
+
+    const existing = bySlug.get(detail.slug)
+    if (existing) {
+      for (const use of uses) {
+        if (!existing.uses.includes(use)) existing.uses.push(use)
+      }
+      continue
+    }
+    bySlug.set(detail.slug, {
+      slug: detail.slug,
+      name: detail.nameEn,
+      scientificName: detail.scientificName ?? null,
+      uses,
+    })
+  }
+
+  return [...bySlug.values()]
+}
+
+/**
+ * The line shown in the blast radius. The scientific name (or the slug when it
+ * is not recorded) keeps two species with the same common name separable.
+ */
+export function rightsImpactLabel(entry: RightsImpactEntry): string {
+  const qualifier =
+    entry.scientificName && entry.scientificName !== entry.name
+      ? entry.scientificName
+      : entry.slug
+  return `${entry.name} · ${qualifier}`
 }
 
 export type TaskType = 'base' | 'prose' | 'name' | 'audio' | 'media' | 'where_to_see'
