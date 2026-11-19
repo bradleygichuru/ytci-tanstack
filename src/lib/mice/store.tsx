@@ -31,8 +31,10 @@ import {
   useMiceReports,
   useMiceVenues,
   miceKeys,
+  type PageResult,
 } from './api'
 import { eventToWrite } from './workflow'
+import { checkInRecord, reconcileCheckIn } from './checkins'
 import type {
   AdminRegistration,
   AuditEntry,
@@ -851,22 +853,42 @@ export function MiceProvider({ children }: { children: ReactNode }) {
             clientTs: new Date().toISOString(),
           },
         })
-        unwrap(result)
         const name = registration.attendee?.displayName ?? registration.id
+        // The 201 body is the authoritative row. Reconcile the cached page
+        // before the follow-up read so the row and counter update immediately;
+        // a static or lagging read can no longer discard the successful action.
+        const record = checkInRecord(
+          unwrap<Partial<CheckIn> | undefined>(result),
+          {
+            eventId,
+            registrationId: registration.id,
+            method,
+          },
+        )
+        queryClient.setQueryData<PageResult<CheckIn>>(
+          miceKeys.checkIns(eventId, fixtureState),
+          (page) => reconcileCheckIn(page, record),
+        )
         updateLocal((current) => ({
           ...current,
           localCheckIns: [
             {
-              id: `local-ci-${registration.id}-${Date.now()}`,
+              id: `local-ci-${record.id}`,
               eventId,
-              registrationId: registration.id,
+              registrationId: record.registrationId,
               attendeeName: name,
-              checkedInAt: new Date().toISOString(),
+              checkedInAt: record.checkedInAt,
               method,
               overrideReason: options.reason,
               by: actorName,
             },
-            ...current.localCheckIns,
+            ...current.localCheckIns.filter(
+              (row) =>
+                !(
+                  row.eventId === eventId &&
+                  row.registrationId === record.registrationId
+                ),
+            ),
           ],
           audit: [
             {
