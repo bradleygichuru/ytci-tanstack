@@ -13,6 +13,7 @@ import {
   deriveVariantStale,
   filterAudit,
   isRevocableSource,
+  rightsImpactLabel,
   rightsIsActive,
   type BaseDraft,
   type SpeciesDetail,
@@ -370,7 +371,85 @@ describe('sources and rights', () => {
           ],
         }),
       ]),
-    ).toEqual([{ slug: 'panthera-leo', name: 'Lion' }])
+    ).toEqual([
+      {
+        slug: 'panthera-leo',
+        name: 'Lion',
+        scientificName: 'Panthera leo',
+        uses: ['media'],
+      },
+    ])
+  })
+
+  it('lists each affected species once and keeps their uses distinguishable', () => {
+    const audioRight = rights({ id: 'rights-audio', subjectType: 'audio', subjectId: 'audio-1' })
+    const audioRecord = {
+      language: 'en',
+      url: 'https://cdn/audio.mp3',
+      narrator: 'Demo Narrator',
+      transcript: 'A big cat.',
+      durationSeconds: 12,
+      reviewStatus: 'reviewed' as const,
+      rights: audioRight,
+    }
+    // Three species share the same common name, which used to render as
+    // "Lion, Lion, Lion" and hid which records the withdrawal would unpublish.
+    const threeSpecies = [
+      detail({ slug: 'panthera-leo', scientificName: 'Panthera leo', nameEn: 'Lion', audio: [audioRecord] }),
+      detail({ slug: 'panthera-pardus', scientificName: 'Panthera pardus', nameEn: 'Lion', audio: [audioRecord] }),
+      detail({ slug: 'panthera-onca', scientificName: 'Panthera onca', nameEn: 'Lion', audio: [audioRecord] }),
+    ]
+
+    // The detail sample can repeat a slug; the confirmation must not.
+    const impact = computeRightsImpact(audioRight, [...threeSpecies, ...threeSpecies])
+
+    expect(impact).toHaveLength(3)
+    expect(impact.map((entry) => entry.slug)).toEqual([
+      'panthera-leo',
+      'panthera-pardus',
+      'panthera-onca',
+    ])
+    expect(impact.every((entry) => entry.uses.includes('audio'))).toBe(true)
+    const labels = impact.map(rightsImpactLabel)
+    expect(labels).toEqual([
+      'Lion · Panthera leo',
+      'Lion · Panthera pardus',
+      'Lion · Panthera onca',
+    ])
+    expect(new Set(labels).size).toBe(labels.length)
+  })
+
+  it('keeps one species entry when both media and audio carry the right', () => {
+    const shared = rights({ id: 'rights-shared', subjectType: 'media', subjectId: 'media-1' })
+    const impact = computeRightsImpact(shared, [
+      detail({
+        media: [
+          {
+            id: 'media-1',
+            mediaKind: 'image',
+            url: 'https://cdn/lion.jpg',
+            credit: 'YTCI',
+            rightsHolder: 'YTCI',
+            licenceCode: 'CC-BY-4.0',
+            sensitiveLocation: false,
+            alt: {},
+          },
+        ],
+        audio: [
+          {
+            language: 'en',
+            url: 'https://cdn/audio.mp3',
+            narrator: 'Demo Narrator',
+            transcript: 'A big cat.',
+            durationSeconds: 12,
+            reviewStatus: 'reviewed',
+            rights: shared,
+          },
+        ],
+      }),
+    ])
+    expect(impact).toHaveLength(1)
+    expect(impact[0].uses).toEqual(['media', 'audio'])
   })
 })
 
