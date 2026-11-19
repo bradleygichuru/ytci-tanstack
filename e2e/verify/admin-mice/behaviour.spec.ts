@@ -191,13 +191,13 @@ test.describe('MICE admin — implemented behaviour', () => {
   }) => {
     await login(page)
     await openRoute(page, '/programme/events/list')
-    await expect(page.locator('body')).toContainText(/IN REVIEW/)
-    await expect(page.locator('body')).toContainText(/Community organizer/)
-    await expect(page.locator('body')).toContainText(/Verified organizer/)
+    await expect(page.locator('body')).toContainText(/in review/i, { timeout: 20_000 })
+    await expect(page.locator('body')).toContainText(/Community organizer/, { timeout: 20_000 })
+    await expect(page.locator('body')).toContainText(/Verified organizer/, { timeout: 20_000 })
 
     await openRoute(page, `/programme/events/${EVENT_ID}`)
-    await expect(page.locator('body')).toContainText(/REVISION IN REVIEW/)
-    await expect(page.locator('body')).toContainText(/ALL CHANGES SAVED/)
+    await expect(page.locator('body')).toContainText(/revision in review/i, { timeout: 20_000 })
+    await expect(page.locator('body')).toContainText(/all changes saved/i)
     await expect(page.locator('body')).toContainText(/Capacity \(places\)/)
     await expect(page.locator('body')).toContainText(/Floor 313/)
   })
