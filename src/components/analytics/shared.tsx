@@ -32,7 +32,9 @@ import { DataStateView, StaleNotice } from '#/components/shell/DataState'
 import { cn } from '#/lib/utils.ts'
 import { useAnalytics } from '#/lib/analytics/store'
 import {
+  DEFAULT_FILTERS,
   resolveWindow,
+  SECTION_FILTERS,
   sectionAcceptsJourney,
   summariseFilters,
   RANGE_OPTIONS,
@@ -224,7 +226,11 @@ const SCENARIOS: { value: Scenario; label: string }[] = [
 
 export function FilterStateControl({ section }: { section: AnalyticsSectionKey }) {
   const { filters, setRange, setJourney, resetFilters, scenario, setScenario } = useAnalytics()
-  const isFiltered = filters.range !== '30d' || filters.journey !== 'all'
+  const applied = SECTION_FILTERS[section]
+  const offersAFilter = applied.range || applied.journey
+  // Reset stays available wherever some filter applies so a carried-in journey
+  // filter can be cleared. It is never offered on a screen that applies none.
+  const isFiltered = filters.range !== DEFAULT_FILTERS.range || filters.journey !== 'all'
 
   return (
     <div
@@ -232,22 +238,31 @@ export function FilterStateControl({ section }: { section: AnalyticsSectionKey }
       role="group"
       aria-label="Analytics filters"
     >
-      <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--amber-deep)]">
-        <ClockCounterClockwise className="h-3.5 w-3.5" weight="duotone" aria-hidden />
-        Range
-        <select
-          aria-label="Date range"
-          value={filters.range}
-          onChange={(event) => setRange(event.target.value as (typeof RANGE_OPTIONS)[number]['value'])}
-          className="h-7 rounded-md border border-[var(--amber)] bg-card px-2 text-xs font-semibold text-foreground"
-        >
-          {RANGE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      {applied.range ? (
+        <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--amber-deep)]">
+          <ClockCounterClockwise className="h-3.5 w-3.5" weight="duotone" aria-hidden />
+          Range
+          <select
+            aria-label="Date range"
+            value={filters.range}
+            onChange={(event) => setRange(event.target.value as (typeof RANGE_OPTIONS)[number]['value'])}
+            className="h-7 rounded-md border border-[var(--amber)] bg-card px-2 text-xs font-semibold text-foreground"
+          >
+            {RANGE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : !offersAFilter ? (
+        // The contract is "never show a filter the read cannot apply" (#388).
+        // Say why the bar is empty rather than offering an inert control.
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[var(--amber-deep)]">
+          <ShieldCheck className="h-3.5 w-3.5" weight="duotone" aria-hidden />
+          No telemetry filter applies to this screen
+        </span>
+      ) : null}
 
       {sectionAcceptsJourney(section) ? (
         <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--amber-deep)]">
@@ -268,14 +283,16 @@ export function FilterStateControl({ section }: { section: AnalyticsSectionKey }
         </label>
       ) : null}
 
-      <button
-        type="button"
-        onClick={resetFilters}
-        disabled={!isFiltered}
-        className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--amber-deep)] underline-offset-2 hover:underline disabled:opacity-50"
-      >
-        <X className="h-3 w-3" weight="bold" /> Reset filters
-      </button>
+      {offersAFilter ? (
+        <button
+          type="button"
+          onClick={resetFilters}
+          disabled={!isFiltered}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--amber-deep)] underline-offset-2 hover:underline disabled:opacity-50"
+        >
+          <X className="h-3 w-3" weight="bold" /> Reset filters
+        </button>
+      ) : null}
 
       <span className="mx-1 hidden h-5 w-px bg-[var(--amber)]/50 sm:block" aria-hidden="true" />
 
