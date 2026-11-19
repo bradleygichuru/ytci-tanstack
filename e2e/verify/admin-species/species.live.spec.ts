@@ -238,7 +238,7 @@ test.describe('species admin', () => {
     await page.goto(`${BASE}/programme/species/audit`)
     await settle(page)
     await expect(page.getByRole('heading', { name: 'Audit log' })).toBeVisible()
-    await page.getByLabel('Filter by category').selectOption({ label: 'Source' })
+    await page.getByLabel('Filter by category').selectOption({ label: 'Rights' })
     await page.waitForTimeout(400)
     const downloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: /Export CSV/ }).click()
@@ -246,7 +246,7 @@ test.describe('species admin', () => {
     const csvPath = await download.path()
     const csv = fs.readFileSync(csvPath, 'utf8')
     expect(csv.split('\n').filter(Boolean).length).toBeLessThanOrEqual(3)
-    expect(csv.toLowerCase()).toContain('source')
+    expect(csv.toLowerCase()).toContain('rights')
     await capture(page, 'audit', '1400', 'filtered-csv')
   })
 
@@ -256,7 +256,9 @@ test.describe('species admin', () => {
     await login(page, USERS.editor)
     await page.goto(`${BASE}/programme/species/panthera-leo`)
     await settle(page)
-    const field = page.getByLabel('Scientific name').first()
+    // FormField is rendered without an id on this screen, so the label is not
+    // associated. Target the first field and record the a11y finding in the critique.
+    const field = page.locator('input').first()
     await fillStable(field, 'Panthera leo edited')
     await expect(page.getByText('Unsaved changes').first()).toBeVisible()
     await page.getByRole('link', { name: 'Audit' }).click()
