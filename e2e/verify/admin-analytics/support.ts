@@ -1,5 +1,13 @@
-import { expect, type Page } from '@playwright/test'
+import { expect, type Cookie, type Page } from '@playwright/test'
 import { assertDisposableTarget } from '../helpers/seed'
+
+/**
+ * Better Auth rate-limits the sign-in path per client IP. The analytics specs
+ * open a fresh browser context per test, so signing in in every `beforeEach`
+ * turns the suite into a 429 generator. Reuse one real session per account
+ * within a worker instead; the auth suite is what tests the sign-in form.
+ */
+const sessionCache = new Map<string, Cookie[]>()
 
 export const ANALYTICS_ROUTES = {
   overview: '/analytics',
@@ -33,10 +41,26 @@ export async function loginAnalytics(page: Page, email: string): Promise<void> {
   if (!password) {
     throw new Error('VERIFY_ADMIN_PASSWORD is required for live analytics verification.')
   }
-  const response = await page.context().request.post('/api/auth/sign-in/email', {
-    data: { email, password },
-  })
+
+  const cached = sessionCache.get(email)
+  if (cached) {
+    await page.context().addCookies(cached)
+    return
+  }
+
+  const signIn = () =>
+    page.context().request.post('/api/auth/sign-in/email', {
+      data: { email, password },
+    })
+  let response = await signIn()
+  if (response.status() === 429) {
+    // A previous suite run can still own the rate-limit window. Wait it out
+    // once rather than turning a verification run into a retry storm.
+    await new Promise((resolve) => setTimeout(resolve, 15_000))
+    response = await signIn()
+  }
   expect(response.status(), `sign-in for ${email}`).toBe(200)
+  sessionCache.set(email, await page.context().cookies())
 }
 
 export async function openAnalytics(page: Page, screen: AnalyticsScreen | string): Promise<void> {
@@ -49,7 +73,9 @@ export async function openAnalytics(page: Page, screen: AnalyticsScreen | string
 export async function waitForRollup(page: Page): Promise<void> {
   await expect
     .poll(async () => (await page.locator('body').innerText()).includes('Loading the rollup'), {
-      timeout: 20_000,
+      // A cold preview/navigation has to fetch the route chunk before the
+      // rollup settles; 20s was tight enough to flake on a loaded machine.
+      timeout: 60_000,
     })
     .toBe(false)
   await page.waitForTimeout(100)

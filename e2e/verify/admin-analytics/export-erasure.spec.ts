@@ -7,7 +7,12 @@ import {
 } from './support'
 
 test.describe.configure({ mode: 'serial' })
-test.setTimeout(60_000)
+test.setTimeout(120_000)
+
+test.skip(
+  process.env.VERIFY_MODE !== 'live',
+  'Analytics sections need the live admin app and a disposable seed; the static fixture has no auth or rollup.',
+)
 
 test('administrator can queue an analytics export', async ({ page }) => {
   await loginAnalytics(page, VERIFY_ANALYTICS_USERS.admin)
