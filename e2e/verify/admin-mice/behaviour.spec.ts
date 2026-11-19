@@ -140,20 +140,31 @@ test.describe('MICE admin — implemented behaviour', () => {
     })
   })
 
-  // Known P1 (#364): the console POST returns 201 and shows a success toast,
-  // but the counts and row do not reconcile because the list is re-read from
-  // the static fixture. Kept as an expected failure so the gap cannot regress.
-  test('console check-in reconciles the counts (known P1)', async ({ page }) => {
-    test.fail(true, 'P1: check-in counts do not refresh after a successful console check-in')
+  // Regression guard for #395: a successful console check-in must reconcile
+  // from the 201 body, not from a static follow-up read. The fix lives on
+  // `fix/mice-responsive-checkin`; this assertion is the normal passing gate.
+  test('console check-in reconciles the counts and undo reverses it', async ({ page }) => {
     await login(page)
     await openRoute(page, '/programme/events/check-in')
     await page.getByLabel('Search name or ticket code').pressSequentially('Demo', { delay: 20 })
     await page.getByRole('button', { name: /Undo check-in/ }).first().click()
-    await expect(page.locator('body')).toContainText(/0 not yet arrived/, { timeout: 10_000 })
+    await expect(page.locator('body')).toContainText(/1 not yet arrived/, { timeout: 10_000 })
     await page.getByRole('button', { name: /^Check in Demo/ }).first().click()
     await expect(page.locator('body')).toContainText(/1 recorded in this console/, {
       timeout: 10_000,
     })
+    // The row flips to checked-in state; the scanner row is no longer the
+    // only source and the console action is counted once.
+    await expect(page.locator('body')).toContainText(/0 imported from the door scanner/)
+    await expect(page.getByRole('button', { name: /Undo check-in/ })).toBeVisible()
+
+    // Undo reverses the same counter without a refresh.
+    await page.getByRole('button', { name: /Undo check-in/ }).first().click()
+    await expect(page.locator('body')).toContainText(/0 recorded in this console/, {
+      timeout: 10_000,
+    })
+    await expect(page.locator('body')).toContainText(/1 not yet arrived/)
+    await expect(page.getByRole('button', { name: /^Check in Demo/ })).toBeVisible()
   })
 
   test('check-in override requires a reason before it can be recorded', async ({ page }) => {
