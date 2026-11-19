@@ -12,6 +12,7 @@ import {
   type ContractsSchemas,
   type FixtureState,
 } from '#/lib/contracts/client'
+import { ADJUSTMENT_ERROR_COPY, asAdjustmentError } from './errors'
 import type { KillSwitchKey } from './types'
 
 export interface RecognitionApi {
@@ -50,13 +51,16 @@ export interface RecognitionApi {
     to: string
   }) => Promise<ContractsSchemas['BackfillBatch']>
   approveBackfill: (id: string) => Promise<ContractsSchemas['BackfillBatch']>
-  createAdjustment: (body: {
-    subjectRef: string
-    amount: number
-    reason: 'adjustment' | 'reversal'
-    note: string
-    compensatingFor?: string | null
-  }) => Promise<ContractsSchemas['XpEntry']>
+  createAdjustment: (
+    body: {
+      subjectRef: string
+      amount: number
+      reason: 'adjustment' | 'reversal'
+      note: string
+      compensatingFor?: string | null
+    },
+    approverId: string
+  ) => Promise<ContractsSchemas['XpEntry']>
   listKillSwitches: () => Promise<ContractsSchemas['KillSwitch'][]>
   setKillSwitch: (
     key: KillSwitchKey,
@@ -181,10 +185,21 @@ export function createRecognitionApi(options: { fixtureState?: FixtureState } = 
         })
       ) as ContractsSchemas['BackfillBatch']
     },
-    async createAdjustment(body) {
-      return unwrap(
-        await client.POST('/v1/admin/recognition/adjustments', { body })
-      ) as ContractsSchemas['XpEntry']
+    async createAdjustment(body, approverId) {
+      const secondApprover = approverId.trim()
+      if (!secondApprover) {
+        throw new Error(ADJUSTMENT_ERROR_COPY.SECOND_APPROVER_REQUIRED)
+      }
+      try {
+        return unwrap(
+          await client.POST('/v1/admin/recognition/adjustments', {
+            body,
+            params: { header: { 'X-Second-Approver': secondApprover } },
+          })
+        ) as ContractsSchemas['XpEntry']
+      } catch (error) {
+        throw asAdjustmentError(error)
+      }
     },
     async listKillSwitches() {
       const data = unwrap(await client.GET('/v1/admin/recognition/kill-switches')) as {
