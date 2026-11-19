@@ -79,13 +79,15 @@ async function login(page) {
 
 async function settle(page) {
   await page.waitForLoadState('domcontentloaded')
-  await page.waitForLoadState('networkidle', { timeout: 12_000 }).catch(() => {})
-  await page.waitForTimeout(3200)
-  const loading = page.getByText(/^(Loading the event|Fetching the latest)/)
-  if ((await loading.count()) > 0) {
-    await loading.first().waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {})
+  await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {})
+  // The first visit to a route compiles it on demand under Vite, so give the
+  // loading state a generous window before treating the screen as ready.
+  const loading = page.getByText(/^(Loading|Fetching)/)
+  const deadline = Date.now() + 30_000
+  while ((await loading.count()) > 0 && Date.now() < deadline) {
+    await page.waitForTimeout(500)
   }
-  await page.waitForTimeout(600)
+  await page.waitForTimeout(800)
 }
 
 async function shot(page, name, meta) {
@@ -99,7 +101,12 @@ async function setState(page, label) {
   if ((await trigger.count()) === 0) return false
   await trigger.first().click()
   await page.getByRole('option', { name: label, exact: true }).click()
-  await page.waitForTimeout(1800)
+  const loading = page.getByText(/^(Loading|Fetching)/)
+  const deadline = Date.now() + 20_000
+  while ((await loading.count()) > 0 && Date.now() < deadline) {
+    await page.waitForTimeout(500)
+  }
+  await page.waitForTimeout(1000)
   return true
 }
 
