@@ -283,9 +283,10 @@ export interface ModerationDialogProps {
   pending?: boolean
   error?: string | null
   onSubmit: (decision: ModerationDecision, reason: string) => void
+  canDisqualify?: boolean
 }
 
-export function ModerationDialog({ open, onOpenChange, entry, pending, error, onSubmit }: ModerationDialogProps) {
+export function ModerationDialog({ open, onOpenChange, entry, pending, error, onSubmit, canDisqualify = true }: ModerationDialogProps) {
   const [decision, setDecision] = useState<ModerationDecision>('dismiss')
   const [reason, setReason] = useState('')
 
@@ -296,7 +297,11 @@ export function ModerationDialog({ open, onOpenChange, entry, pending, error, on
     }
   }, [open, entry?.id])
 
-  const options = entry ? (MODERATION_DECISIONS[entry.kind] ?? []) : []
+  const options = entry
+    ? (MODERATION_DECISIONS[entry.kind] ?? []).filter(
+        (option) => canDisqualify || (option.value !== 'disqualify' && option.value !== 'revoke'),
+      )
+    : []
   const valid = reason.trim().length >= 10
 
   return (

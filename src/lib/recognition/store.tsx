@@ -121,6 +121,7 @@ export interface RecognitionActions {
   reopenCase: (id: string, reason: string) => void
   dryRunBackfill: (ruleKey: string, windowLabel: string) => Promise<BackfillBatch>
   requestBackfill: (id: string) => void
+  setBackfillRowInclude: (batchId: string, rowId: string, include: boolean) => void
   approveBackfill: (id: string) => Promise<void>
   withdrawBackfill: (id: string, reason: string) => void
   setKillSwitch: (key: KillSwitch['key'], enabled: boolean, reason: string) => Promise<void>
@@ -863,24 +864,35 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       setState((prev) =>
         decorate({
           ...prev,
-          badges: prev.badges.map((badge) =>
-            badge.badgeKey === badgeKey ? { ...badge, ...patch, updatedAt: nowIso() } : badge,
-          ),
+          badges: prev.badges.map((badge) => {
+            if (badge.badgeKey !== badgeKey) return badge
+            if (badge.status === 'published') {
+              return {
+                ...badge,
+                pendingChanges: { ...badge.pendingChanges, ...patch },
+                pendingBy: actor.id,
+                updatedAt: nowIso(),
+              }
+            }
+            return { ...badge, ...patch, pendingBy: actor.id, updatedAt: nowIso() }
+          }),
         }),
       )
     },
-    [],
+    [actor.id],
   )
 
   const publishBadge = useCallback(
     async (badgeKey: string): Promise<void> => {
       const badge = stateRef.current.badges.find((entry) => entry.badgeKey === badgeKey)
       if (!badge) throw new Error('Badge not found.')
-      if (!badge.nameEn.trim() || !badge.nameSw?.trim()) {
+      const staged = { ...badge, ...(badge.pendingChanges ?? {}) }
+      if (!staged.nameEn.trim() || !staged.nameSw?.trim()) {
         throw new Error('A badge needs an English and a Kiswahili name before publish.')
       }
-      if (badge.createdBy && badge.createdBy === actor.id) {
-        throw new Error('You authored this badge. A second administrator must publish it.')
+      const author = badge.pendingBy ?? badge.createdBy
+      if (author && author === actor.id) {
+        throw new Error('You authored or last edited this badge. A second administrator must publish it.')
       }
       const api = createRecognitionApi()
       await api.publishBadge(badgeKey)
@@ -891,7 +903,15 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
               ...prev,
               badges: prev.badges.map((entry) =>
                 entry.badgeKey === badgeKey
-                  ? { ...entry, status: 'published', version: entry.version + 1, updatedAt: nowIso() }
+                  ? {
+                      ...entry,
+                      ...(entry.pendingChanges ?? {}),
+                      status: 'published',
+                      version: entry.version + 1,
+                      pendingChanges: undefined,
+                      pendingBy: undefined,
+                      updatedAt: nowIso(),
+                    }
                   : entry,
               ),
             },
@@ -1644,6 +1664,23 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
     [actor.id, actor.name, actor.role],
   )
 
+  const setBackfillRowInclude = useCallback(
+    (batchId: string, rowId: string, include: boolean) => {
+      setState((prev) => ({
+        ...prev,
+        backfill: prev.backfill.map((batch) =>
+          batch.id === batchId
+            ? {
+                ...batch,
+                rows: batch.rows.map((row) => (row.id === rowId ? { ...row, include } : row)),
+              }
+            : batch,
+        ),
+      }))
+    },
+    [],
+  )
+
   const requestBackfill = useCallback(
     (id: string) => {
       setState((prev) => {
@@ -1821,6 +1858,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       reopenCase,
       dryRunBackfill,
       requestBackfill,
+      setBackfillRowInclude,
       approveBackfill,
       withdrawBackfill,
       setKillSwitch,
@@ -1855,6 +1893,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       reopenCase,
       dryRunBackfill,
       requestBackfill,
+      setBackfillRowInclude,
       approveBackfill,
       withdrawBackfill,
       setKillSwitch,

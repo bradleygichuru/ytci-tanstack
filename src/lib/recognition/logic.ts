@@ -327,7 +327,7 @@ export function publicBoardSuppressed(rows: BoardRow[]): boolean {
 export function boardStateLabel(board: LeaderboardSnapshot, engineOn: boolean): string {
   if (board.suppressed) return 'Suppressed'
   if (board.frozen) return 'Frozen'
-  if (!board.publicHidden) return 'Hidden'
+  if (board.publicHidden) return 'Hidden'
   return engineOn ? 'Public' : 'Engine off'
 }
 

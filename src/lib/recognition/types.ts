@@ -96,6 +96,9 @@ export interface Badge {
   updatedAt: string
   /** Author of the draft; a second administrator must publish it. */
   createdBy?: string
+  /** Edits to a published badge stay staged until a second approver publishes. */
+  pendingChanges?: Partial<Pick<Badge, 'nameEn' | 'nameSw' | 'criteria' | 'family' | 'privacyClass' | 'hidden' | 'publicEligible'>>
+  pendingBy?: string
   /** Derived from rules and missions that reference the badge. */
   usedBy: number
 }
