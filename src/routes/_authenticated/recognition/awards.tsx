@@ -37,7 +37,7 @@ const TABS: { value: AwardTab; label: string }[] = [
 ]
 
 function AwardsPage() {
-  const { state, actions, engineOn, loads, can } = useRecognition()
+  const { state, actions, engineOn, loads, can, actor } = useRecognition()
   const [tab, setTab] = useState<AwardTab>('open')
   const [search, setSearch] = useState('')
   const [ruleFilter, setRuleFilter] = useState('all')
@@ -364,6 +364,7 @@ function AwardsPage() {
           if (!open) setCorrecting(null)
         }}
         award={correcting}
+        actorId={actor.id}
         pending={pending}
         error={correctError}
         onSubmit={async (input) => {

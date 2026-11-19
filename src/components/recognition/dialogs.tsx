@@ -21,6 +21,10 @@ import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
 import { cn } from '#/lib/utils.ts'
 import { MODERATION_DECISIONS, MODERATION_KIND_LABEL, type FailureGroup } from '#/lib/recognition/logic'
+import {
+  fetchAdjustmentApprovers,
+  type AdjustmentApprover,
+} from '#/lib/recognition/approvers'
 import { formatNumber, formatXp } from '#/lib/recognition/format'
 import type { Award, ModerationCase, ModerationDecision } from '#/lib/recognition/types'
 
@@ -189,15 +193,23 @@ export interface CorrectionDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   award: Award | null
+  /** Signed-in actor; excluded from the approver list by the server contract. */
+  actorId: string
   pending?: boolean
   error?: string | null
-  onSubmit: (input: { action: 'credit' | 'reversal'; supportRef: string; note: string }) => void
+  onSubmit: (input: {
+    action: 'credit' | 'reversal'
+    supportRef: string
+    note: string
+    approverId: string
+  }) => void
 }
 
 export function CorrectionDialog({
   open,
   onOpenChange,
   award,
+  actorId,
   pending,
   error,
   onSubmit,
@@ -205,16 +217,50 @@ export function CorrectionDialog({
   const [action, setAction] = useState<'credit' | 'reversal'>('credit')
   const [supportRef, setSupportRef] = useState('')
   const [note, setNote] = useState('')
+  const [approverId, setApproverId] = useState('')
+  const [approvers, setApprovers] = useState<AdjustmentApprover[]>([])
+  const [approverState, setApproverState] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [approverError, setApproverError] = useState<string | null>(null)
+  const [approverReload, setApproverReload] = useState(0)
 
   useEffect(() => {
     if (open) {
       setAction('credit')
       setSupportRef('')
       setNote('')
+      setApproverId('')
     }
   }, [open, award?.id])
 
-  const valid = supportRef.trim().length >= 10 && note.trim().length >= 10
+  useEffect(() => {
+    if (!open) return
+    let cancelled = false
+    setApproverState('loading')
+    setApproverError(null)
+    setApprovers([])
+    setApproverId('')
+    fetchAdjustmentApprovers({ actorId })
+      .then((options) => {
+        if (cancelled) return
+        setApprovers(options)
+        setApproverState('ready')
+      })
+      .catch((cause: unknown) => {
+        if (cancelled) return
+        setApprovers([])
+        setApproverState('error')
+        setApproverError(
+          cause instanceof Error ? cause.message : 'Could not load eligible approvers.'
+        )
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open, award?.id, actorId, approverReload])
+
+  const approverSelected = approvers.some((approver) => approver.id === approverId)
+  const valid =
+    supportRef.trim().length >= 10 && note.trim().length >= 10 && approverSelected
 
   return (
     <ActionDialog
@@ -234,7 +280,14 @@ export function CorrectionDialog({
       error={error}
       variant={action === 'reversal' ? 'destructive' : 'default'}
       confirmDisabled={!valid}
-      onConfirm={() => onSubmit({ action, supportRef: supportRef.trim(), note: note.trim() })}
+      onConfirm={() =>
+        onSubmit({
+          action,
+          supportRef: supportRef.trim(),
+          note: note.trim(),
+          approverId,
+        })
+      }
       size="lg"
     >
       <div className="flex flex-wrap gap-2" role="group" aria-label="Correction type">
@@ -257,6 +310,57 @@ export function CorrectionDialog({
           </button>
         ))}
       </div>
+      <label className="block space-y-1.5">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Second approver
+        </span>
+        <select
+          value={approverId}
+          onChange={(event) => setApproverId(event.target.value)}
+          aria-label="Second approver"
+          aria-required="true"
+          disabled={approverState !== 'ready' || approvers.length === 0}
+          className="h-9 w-full rounded-md border border-border bg-card px-2 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <option value="">
+            {approverState === 'loading'
+              ? 'Loading eligible approvers…'
+              : approvers.length === 0
+                ? 'No eligible approver available'
+                : 'Select an approver'}
+          </option>
+          {approvers.map((approver) => (
+            <option key={approver.id} value={approver.id}>
+              {approver.name}
+              {approver.email ? ` · ${approver.email}` : ''}
+            </option>
+          ))}
+        </select>
+        <span className="text-xs text-muted-foreground">
+          Must be an active user holding <code>recognition.approve_adjustment</code>. You cannot
+          approve your own adjustment.
+        </span>
+        {approverState === 'error' ? (
+          <span role="alert" className="flex flex-wrap items-center gap-2 text-xs text-destructive">
+            {approverError}
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              onClick={() => setApproverReload((value) => value + 1)}
+            >
+              Retry
+            </Button>
+          </span>
+        ) : null}
+        {approverState === 'ready' && approvers.length === 0 ? (
+          <span role="alert" className="text-xs text-destructive">
+            No eligible approver is available. A second active user with{' '}
+            <code>recognition.approve_adjustment</code> must exist and must not be you. Ask a super
+            administrator to add one; nothing can be submitted without an approver.
+          </span>
+        ) : null}
+      </label>
       <label className="block space-y-1.5">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Support reference

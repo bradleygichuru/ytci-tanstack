@@ -101,6 +101,8 @@ export interface CorrectionInput {
   action: 'credit' | 'reversal'
   supportRef: string
   note: string
+  /** User id sent as `X-Second-Approver`; must hold recognition.approve_adjustment. */
+  approverId: string
 }
 
 export interface RecognitionActions {
@@ -1112,65 +1114,86 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       if (input.note.trim().length < 10) {
         throw new Error('Explain the correction with at least 10 characters.')
       }
+      if (!input.approverId.trim()) {
+        throw new Error('Choose a second approver. You cannot approve your own adjustment.')
+      }
       const amount = input.action === 'reversal' ? -award.xp : award.xp
+      const supportRef = input.supportRef.trim()
+      const correctionNote = input.note.trim()
       const api = createRecognitionApi()
-      await api.createAdjustment({
-        subjectRef: award.reader,
-        amount,
-        reason: input.action === 'reversal' ? 'reversal' : 'adjustment',
-        note: `${input.supportRef.trim()} · ${input.note.trim()}`,
-        compensatingFor: input.action === 'reversal' ? award.id : null,
-      })
-      setState((prev) =>
-        withNote(
-          {
-            ...prev,
-            awards: [
-              ...prev.awards.map((entry) =>
-                entry.id === id
-                  ? {
-                      ...entry,
-                      status: input.action === 'reversal' ? entry.status : 'delivered',
-                      corrected: {
-                        action: input.action,
-                        supportRef: input.supportRef,
-                        note: input.note,
-                        by: actor.name,
-                        at: nowIso(),
-                      },
-                    }
-                  : entry
-              ),
-              ...(input.action === 'reversal'
-                ? [
-                    {
-                      id: uuid(),
-                      reader: award.reader,
-                      ruleKey: award.ruleKey,
-                      ruleVersion: award.ruleVersion,
-                      xp: -award.xp,
-                      event: `Reversal for ${award.id} · ${award.event}`,
-                      status: 'delivered' as const,
-                      attempts: 0,
-                      at: nowIso(),
-                      cause: 'none' as const,
-                    },
-                  ]
-                : []),
-            ],
-          },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: input.action === 'reversal' ? 'Award reversed' : 'Award credited manually',
-            entity: `${award.reader} · ${award.ruleKey} · v${award.ruleVersion}`,
-            detail: `${input.supportRef.trim()} · ${input.note.trim()}`,
-            category: 'awards',
-            at: nowIso(),
-          }
-        )
+      await api.createAdjustment(
+        {
+          subjectRef: award.reader,
+          amount,
+          reason: input.action === 'reversal' ? 'reversal' : 'adjustment',
+          note: `${supportRef} · ${correctionNote}`,
+          compensatingFor: input.action === 'reversal' ? award.id : null,
+        },
+        input.approverId
       )
+
+      // The adjustment succeeded. Refetch the contract audit so both actors
+      // show up, but do not turn a refetch failure into a failed adjustment.
+      let refreshedAudit: AuditEntry[] | null = null
+      try {
+        refreshedAudit = (await api.listAudit()).map(mapApiAudit)
+      } catch {
+        refreshedAudit = null
+      }
+      const auditAlreadyHasCorrection = refreshedAudit?.some((entry) =>
+        entry.detail.includes(supportRef)
+      )
+      const noteEntry: AuditEntry = {
+        id: uuid(),
+        actor: actor.name,
+        role: roleLabel(actor.role),
+        action: input.action === 'reversal' ? 'Award reversed' : 'Award credited manually',
+        entity: `${award.reader} · ${award.ruleKey} · v${award.ruleVersion}`,
+        detail: `${supportRef} · ${correctionNote}`,
+        category: 'awards',
+        at: nowIso(),
+      }
+
+      setState((prev) => {
+        const next: RecognitionState = {
+          ...prev,
+          ...(refreshedAudit ? { audit: refreshedAudit } : {}),
+          awards: [
+            ...prev.awards.map((entry) =>
+              entry.id === id
+                ? {
+                    ...entry,
+                    status: input.action === 'reversal' ? entry.status : 'delivered',
+                    corrected: {
+                      action: input.action,
+                      supportRef: input.supportRef,
+                      note: input.note,
+                      by: actor.name,
+                      at: nowIso(),
+                    },
+                  }
+                : entry
+            ),
+            ...(input.action === 'reversal'
+              ? [
+                  {
+                    id: uuid(),
+                    reader: award.reader,
+                    ruleKey: award.ruleKey,
+                    ruleVersion: award.ruleVersion,
+                    xp: -award.xp,
+                    event: `Reversal for ${award.id} · ${award.event}`,
+                    status: 'delivered' as const,
+                    attempts: 0,
+                    at: nowIso(),
+                    cause: 'none' as const,
+                  },
+                ]
+              : []),
+          ],
+        }
+        return auditAlreadyHasCorrection ? next : withNote(next, noteEntry)
+      })
       notify.saved('Correction recorded')
     },
     [actor.name, actor.role]
