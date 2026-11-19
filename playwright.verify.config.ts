@@ -30,8 +30,15 @@ export default defineConfig({
   testDir: './e2e/verify',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // The live harness signs into a real app and downloads route chunks on first
+  // navigation. A single retry absorbs a cold start or a transient rate-limit
+  // window without hiding a reproducible product failure.
+  retries: 1,
   workers: 1,
+  // A cold preview fetches a route chunk on first client-side navigation; the
+  // default 5s assertion timeout is shorter than that first chunk on a loaded
+  // machine, which reads as a product failure.
+  expect: { timeout: 15_000 },
   reporter: [
     ['list'],
     ['html', { outputFolder: 'playwright-report/verify', open: 'never' }],

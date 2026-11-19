@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { cloneElement, isValidElement, useId, type ReactElement } from 'react'
 import { format, parse } from 'date-fns'
 import { Calendar as CalendarIcon } from '@phosphor-icons/react'
 import { Field, FieldLabel, FieldDescription, FieldError } from '#/components/ui/field'
@@ -21,16 +21,43 @@ interface FormFieldProps {
   children?: React.ReactNode
 }
 
+interface FieldControlProps {
+  id?: string
+  'aria-describedby'?: string
+}
+
 export function FormField({ label, description, error, required, id, children }: FormFieldProps) {
+  const generatedId = useId()
+  // The label must always name a control. Callers that pass their own id wire
+  // the control themselves; otherwise the single control child is given the
+  // generated id here so `<FieldLabel htmlFor>` has a target. A control that
+  // already carries an id keeps it.
+  const childProps = isValidElement(children)
+    ? (children.props as FieldControlProps)
+    : undefined
+  const fieldId = id ?? childProps?.id ?? generatedId
+  const descriptionId = description ? `${fieldId}-description` : undefined
+  const errorId = error ? `${fieldId}-error` : undefined
+  const describedBy = [descriptionId, errorId].filter(Boolean).join(' ') || undefined
+
+  const control =
+    id === undefined && isValidElement(children)
+      ? cloneElement(children as ReactElement<FieldControlProps>, {
+          id: fieldId,
+          'aria-describedby':
+            [childProps?.['aria-describedby'], describedBy].filter(Boolean).join(' ') || undefined,
+        })
+      : children
+
   return (
     <Field data-invalid={!!error || undefined}>
-      <FieldLabel htmlFor={id}>
+      <FieldLabel htmlFor={fieldId}>
         {label}
         {required && <span className="text-destructive">*</span>}
       </FieldLabel>
-      {children}
-      {description && <FieldDescription>{description}</FieldDescription>}
-      {error && <FieldError>{error}</FieldError>}
+      {control}
+      {description && <FieldDescription id={descriptionId}>{description}</FieldDescription>}
+      {error && <FieldError id={errorId}>{error}</FieldError>}
     </Field>
   )
 }
