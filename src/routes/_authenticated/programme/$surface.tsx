@@ -9,7 +9,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { DataStateView } from '#/components/shell/DataState'
 import { PageHeader } from '#/components/shell/PageHeader'
 import { hasContractPermission } from '#/lib/contracts/session'
-import { normaliseRole } from '#/lib/contracts/roles'
+import { canAccessAdmin, normaliseRole } from '#/lib/contracts/roles'
 import { getFlags } from '#/lib/flags'
 import { findNavItem } from '#/lib/navigation/sections'
 
@@ -17,7 +17,11 @@ export const Route = createFileRoute('/_authenticated/programme/$surface')({
   beforeLoad: ({ context, params }) => {
     const role = normaliseRole(context.user?.role)
     const item = findNavItem(`/programme/${params.surface}`)
-    if (!item || (item.permission && !hasContractPermission(role, item.permission))) {
+    if (
+      !item ||
+      (item.requiresAdmin && !canAccessAdmin(role)) ||
+      (item.permission && !hasContractPermission(role, item.permission))
+    ) {
       throw redirect({ to: '/no-access' })
     }
     if (item.flag && !getFlags()[item.flag]) {
