@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { CheckCircle, FloppyDisk, Play, Trash, Warning } from '@phosphor-icons/react'
+import { CheckCircle, Play, Warning } from '@phosphor-icons/react'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Can } from '#/components/shell/Gates'
@@ -26,7 +26,6 @@ import {
   ScopeNote,
   StatusPill,
 } from '#/components/recognition/shared'
-import { ActionDialog } from '#/components/recognition/dialogs'
 import { DirtyGuard } from '#/components/recognition/DirtyGuard'
 import type { Rule, RuleDraft } from '#/lib/recognition/types'
 
@@ -96,7 +95,6 @@ function RuleEditorPage() {
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
-  const [discardOpen, setDiscardOpen] = useState(false)
 
   const initialisedFor = useRef<string | null>(null)
   useEffect(() => {
@@ -127,6 +125,10 @@ function RuleEditorPage() {
   const simMatches = Boolean(simEntry && simEntry.signature === draftSignature(form))
   const readOnly =
     !can('recognition.author_rule') || scenario === 'readonly' || scenario === 'stale' || scenario === 'error'
+  // POST /rules creates a draft and POST /rules/{id}/publish publishes it, but
+  // 1.0.0 has no rule-update operation. Definition fields are therefore locked
+  // after creation instead of being edited into a browser-only draft.
+  const definitionLocked = true
   const gateLive = live ?? draft ?? syntheticRule(ruleKey, form)
   const changes = diffRule(live ?? base ?? syntheticRule(ruleKey, form), form, state.badges)
   const gate = publishGate({
@@ -223,18 +225,6 @@ function RuleEditorPage() {
     }
   }
 
-  const saveDraft = () => {
-    setAttempted(true)
-    setError(null)
-    if (Object.keys(errors).length > 0) {
-      setError('Fix the invalid fields before saving the draft.')
-      return
-    }
-    actions.saveRuleDraft(ruleKey, form)
-    setInitial(form)
-    setNotice('Draft saved. Nothing is live until it is published.')
-  }
-
   const publish = async () => {
     setAttempted(true)
     setError(null)
@@ -277,27 +267,18 @@ function RuleEditorPage() {
           {dirty ? ' · unsaved changes' : ''}
         </span>
       }
-      actions={
-        <>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setDiscardOpen(true)}
-            disabled={readOnly || (!dirty && !draft)}
-          >
-            <Trash className="h-4 w-4" weight="duotone" /> Discard draft
-          </Button>
-          <Button variant="outline" size="sm" onClick={saveDraft} disabled={readOnly || !dirty}>
-            <FloppyDisk className="h-4 w-4" weight="duotone" /> Save staged draft
-          </Button>
-        </>
-      }
     >
       <DirtyGuard dirty={dirty && !pending} />
       <ScopeNote>
-        Edits are staged against live {live ? `v${live.version}` : '—'}. Nothing is live until published. A
-        new policy never applies retroactively.
+        This definition comes from the contracts API. The frozen contract has no rule-update operation, so the
+        fields are read-only; simulation and publish still use the contract draft.
       </ScopeNote>
+
+      <Notice tone="neutral" title="Rule definitions are not editable in the frozen contract.">
+        POST /rules creates a draft and POST /rules/{'{id}'}/publish publishes it, but 1.0.0 has no update
+        operation. Rather than save a browser-only edit and call it published, this editor locks the definition.
+        Changing a definition is a change-control candidate; create a new rule draft instead.
+      </Notice>
 
       {readOnly ? (
         <Notice tone="gold" title="Read-only">
@@ -343,7 +324,7 @@ function RuleEditorPage() {
                   onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
                   aria-invalid={showError('name')}
                   aria-label="Rule name"
-                  disabled={readOnly}
+                  disabled={readOnly || definitionLocked}
                 />
                 {showError('name') ? (
                   <span role="alert" className="text-xs text-destructive">
@@ -360,7 +341,7 @@ function RuleEditorPage() {
                   value={form.sourceType}
                   onChange={(event) => onSource(event.target.value as RuleDraft['sourceType'])}
                   aria-label="Verified event"
-                  disabled={readOnly}
+                  disabled={readOnly || definitionLocked}
                   className={fieldClass('sourceType')}
                 >
                   {SOURCE_OPTIONS.map((option) => (
@@ -382,7 +363,7 @@ function RuleEditorPage() {
                   value={form.verify}
                   onChange={(event) => setField('verify', event.target.value)}
                   aria-label="Verification"
-                  disabled={readOnly}
+                  disabled={readOnly || definitionLocked}
                   className={fieldClass('verify')}
                 >
                   {VERIFY_OPTIONS.map((option) => (
@@ -412,7 +393,7 @@ function RuleEditorPage() {
                   onBlur={() => setTouched((prev) => ({ ...prev, xpAmount: true }))}
                   aria-invalid={showError('xpAmount')}
                   aria-label="XP amount"
-                  disabled={readOnly}
+                  disabled={readOnly || definitionLocked}
                 />
                 <span className="text-xs text-muted-foreground">
                   Once per verified event. No repeatable or daily award.
@@ -432,7 +413,7 @@ function RuleEditorPage() {
                   value={form.badgeKey}
                   onChange={(event) => setField('badgeKey', event.target.value)}
                   aria-label="Badge"
-                  disabled={readOnly}
+                  disabled={readOnly || definitionLocked}
                   className={fieldClass('badgeKey')}
                 >
                   <option value="none">None</option>
@@ -464,7 +445,7 @@ function RuleEditorPage() {
                   onBlur={() => setTouched((prev) => ({ ...prev, effectiveFrom: true }))}
                   aria-invalid={showError('effectiveFrom')}
                   aria-label="Effective date"
-                  disabled={readOnly}
+                  disabled={readOnly || definitionLocked}
                 />
                 <span className="text-xs text-muted-foreground">
                   {formatDate(form.effectiveFrom)} · a new policy never applies retroactively.
@@ -558,7 +539,7 @@ function RuleEditorPage() {
                           variant="ghost"
                           size="xs"
                           onClick={() => restoreVersion(rule)}
-                          disabled={readOnly}
+                          disabled
                         >
                           Use values
                         </Button>
@@ -692,22 +673,6 @@ function RuleEditorPage() {
         </div>
       </div>
 
-      <ActionDialog
-        open={discardOpen}
-        onOpenChange={setDiscardOpen}
-        title="Discard the staged draft?"
-        description="The draft is removed from this browser. The published version and its award history are untouched."
-        confirmLabel="Discard draft"
-        variant="destructive"
-        onConfirm={() => {
-          actions.discardRuleDraft(ruleKey)
-          const next = live ? ruleDraftFromRule(live) : blankDraft()
-          setForm(next)
-          setInitial(next)
-          setDiscardOpen(false)
-          setNotice(live ? `Draft discarded. Live v${live.version} is unchanged.` : 'Draft discarded.')
-        }}
-      />
     </AdminPage>
   )
 }

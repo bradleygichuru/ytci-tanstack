@@ -52,10 +52,26 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   projects: [
+    // Harness specs (smoke, coordination guard) and anything else outside a
+    // track folder. These are the only specs a fixture run may execute.
     {
-      name: 'verify-chromium',
+      name: 'verify-harness',
+      testIgnore: 'admin-*/**',
       use: { ...devices['Desktop Chrome'] },
     },
+    // Product verification for the admin tracks: MICE (#364), recognition
+    // (#368), species (#372) and analytics (#375). They drive the real app and
+    // a disposable seed, so they run only with VERIFY_MODE=live. A fixture-only
+    // pass is never evidence for #376.
+    ...(MODE === 'live'
+      ? [
+          {
+            name: 'verify-live',
+            testMatch: 'admin-*/**/*.spec.ts',
+            use: { ...devices['Desktop Chrome'] },
+          },
+        ]
+      : []),
   ],
   // Fixture mode owns its server. reuseExistingServer is false on purpose:
   // a stale server on :3210 is a coordination bug, not something to reuse.

@@ -7,7 +7,6 @@
 import { expect, type Page } from '@playwright/test'
 
 export const ADMIN_EMAIL = process.env.VERIFY_ADMIN_EMAIL ?? 'grace@example.com'
-export const ADMIN_PASSWORD = process.env.VERIFY_ADMIN_PASSWORD ?? 'password'
 export const EVENT_ID = '11111111-1111-4111-8111-111111111111'
 export const PAID_EVENT_ID = '33333333-3333-4333-8333-333333333333'
 
@@ -31,8 +30,14 @@ export const SCREENS = [
  * every spec; authentication itself is covered by the shell e2e suite.
  */
 export async function login(page: Page, email = ADMIN_EMAIL) {
+  const password = process.env.VERIFY_ADMIN_PASSWORD
+  if (!password) {
+    throw new Error(
+      'VERIFY_ADMIN_PASSWORD is required for live verification; set it in the shell, never in a spec.',
+    )
+  }
   const response = await page.request.post('/api/auth/sign-in/email', {
-    data: { email, password: ADMIN_PASSWORD },
+    data: { email, password },
   })
   expect(response.ok(), `sign-in for ${email}`).toBeTruthy()
   await page.goto('/programme/events', { waitUntil: 'domcontentloaded' })

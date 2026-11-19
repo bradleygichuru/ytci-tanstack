@@ -71,7 +71,7 @@ function RulesPage() {
     )
   }
 
-  const createRule = () => {
+  const createRule = async () => {
     const ruleKey = newRule.ruleKey.trim()
     if (!/^[a-z][a-z0-9]*(\.[a-z0-9]+)+$/.test(ruleKey)) {
       setNewRule((prev) => ({
@@ -101,7 +101,15 @@ function RulesPage() {
       badgeKey: 'none',
       effectiveFrom: newRule.effectiveFrom,
     }
-    actions.saveRuleDraft(ruleKey, draft)
+    try {
+      await actions.createRule(ruleKey, draft)
+    } catch (cause) {
+      setNewRule((prev) => ({
+        ...prev,
+        error: cause instanceof Error ? cause.message : 'The rule draft was not created.',
+      }))
+      return
+    }
     setCreateOpen(false)
     setNewRule({
       ruleKey: '',
@@ -251,10 +259,8 @@ function RulesPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                setRetireError(null)
-                                setRetireTarget(published)
-                              }}
+                              disabled
+                              title="The frozen contract has no rule-retire operation. Nothing is changed locally."
                             >
                               Retire
                             </Button>
@@ -280,6 +286,11 @@ function RulesPage() {
       <Notice tone="green" title="Publishing is a version, not an edit.">
         A simulation of the staged values is required, and a second administrator must publish when XP or the
         audience changes. The live version stays intact until then.
+      </Notice>
+      <Notice tone="neutral" title="Definitions are immutable in this contract.">
+        The frozen contract creates a rule draft and publishes it, but has no operation to update or retire a
+        definition. Definition fields are read-only here and retiring is disabled; both are change-control
+        candidates. Nothing is saved locally.
       </Notice>
 
       <ActionDialog

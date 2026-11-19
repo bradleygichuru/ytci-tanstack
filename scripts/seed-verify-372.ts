@@ -1,11 +1,19 @@
 /**
  * Disposable seed for ticket #372 (species verification). Not product code.
  * Creates the four contract roles the species surface gates on.
+ *
+ * The password comes from VERIFY_ADMIN_PASSWORD so no credential is baked into
+ * the repository. Run it against a disposable database only.
  */
+import { eq } from 'drizzle-orm'
 import { auth } from '../src/lib/auth'
 import { db } from '../src/db'
 import { users } from '../src/db/schema/auth'
-import { eq } from 'drizzle-orm'
+
+const password = process.env.VERIFY_ADMIN_PASSWORD
+if (!password) {
+  throw new Error('VERIFY_ADMIN_PASSWORD is required to seed the verification users.')
+}
 
 const people = [
   { email: 'verify-admin@example.test', name: 'Verify Admin', role: 'super_admin' },
@@ -15,14 +23,18 @@ const people = [
 ] as const
 
 for (const person of people) {
-  const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, person.email)).limit(1)
+  const existing = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, person.email))
+    .limit(1)
   if (existing[0]) {
     await db.update(users).set({ role: person.role }).where(eq(users.id, existing[0].id))
     console.log('updated', person.email, person.role)
     continue
   }
   const result = (await auth.api.signUpEmail({
-    body: { email: person.email, password: 'password', name: person.name },
+    body: { email: person.email, password, name: person.name },
   })) as unknown as { user: { id: string } }
   await db.update(users).set({ role: person.role }).where(eq(users.id, result.user.id))
   console.log('created', person.email, person.role)

@@ -15,8 +15,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { assertDisposableTarget } from '../helpers/seed'
 
-const BASE = process.env.VERIFY_BASE_URL ?? 'http://127.0.0.1:3213'
-const PASS = process.env.VERIFY_ADMIN_PASSWORD ?? 'password'
+const BASE =
+  process.env.VERIFY_BASE_URL ?? `http://127.0.0.1:${process.env.VERIFY_PORT ?? '3210'}`
+const PASS = process.env.VERIFY_ADMIN_PASSWORD
 const EVIDENCE = process.env.EVIDENCE_DIR
 
 const SCREENS = [
@@ -38,6 +39,11 @@ const USERS = {
 } as const
 
 async function login(page: Page, email: string) {
+  if (!PASS) {
+    throw new Error(
+      'VERIFY_ADMIN_PASSWORD is required for live verification; set it in the shell, never in a spec.',
+    )
+  }
   const response = await page.request.post(`${BASE}/api/auth/sign-in/email`, {
     data: { email, password: PASS },
     headers: { Origin: BASE },
@@ -83,11 +89,10 @@ async function setDataState(page: Page, label: string) {
 }
 
 test.describe('species admin', () => {
+  test.skip(process.env.VERIFY_MODE !== 'live', 'live admin run only')
+
   test.beforeAll(() => {
-    assertDisposableTarget(
-      { mode: 'live', baseURL: BASE, seedId: process.env.VERIFY_SEED_ID },
-      process.env,
-    )
+    assertDisposableTarget()
   })
 
   async function captureScreens(page: Page, screens: readonly (readonly [string, string])[]) {

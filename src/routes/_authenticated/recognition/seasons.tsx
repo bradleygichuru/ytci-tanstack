@@ -53,25 +53,31 @@ function SeasonsPage() {
   const [closing, setClosing] = useState<Season | null>(null)
   const [closeError, setCloseError] = useState<string | null>(null)
   const [freezing, setFreezing] = useState<Season | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const publishedBadges = state.badges.filter((badge) => badge.status === 'published')
 
-  const createSeason = () => {
+  const createSeason = async () => {
     if (!/^[a-z0-9-]+$/.test(form.key.trim())) return setError('Use a short key such as 2027-q1.')
     if (!form.nameEn.trim()) return setError('Give the season a name.')
     if (!form.startsAt || !form.endsAt) return setError('Choose the start and end dates.')
     if (new Date(form.endsAt) <= new Date(form.startsAt))
       return setError('The end date must be after the start date.')
-    actions.createSeason({
-      key: form.key.trim(),
-      nameEn: form.nameEn.trim(),
-      nameSw: form.nameSw.trim() || form.nameEn.trim(),
-      startsAt: `${form.startsAt}T00:00:00+03:00`,
-      endsAt: `${form.endsAt}T23:59:59+03:00`,
-      badgeKey: form.badgeKey === 'none' ? null : form.badgeKey,
-      xpAward: form.xpAward,
-      missionFamilies: form.missionFamilies,
-    })
+    try {
+      await actions.createSeason({
+        key: form.key.trim(),
+        nameEn: form.nameEn.trim(),
+        nameSw: form.nameSw.trim() || form.nameEn.trim(),
+        startsAt: `${form.startsAt}T00:00:00+03:00`,
+        endsAt: `${form.endsAt}T23:59:59+03:00`,
+        badgeKey: form.badgeKey === 'none' ? null : form.badgeKey,
+        xpAward: form.xpAward,
+        missionFamilies: form.missionFamilies,
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The season was not created.')
+      return
+    }
     setDialogOpen(false)
   }
 
@@ -110,6 +116,19 @@ function SeasonsPage() {
       }
     >
       <ScopeNote>Closing a season is a two-person action. A closed board is a read-only snapshot.</ScopeNote>
+
+      {actionError ? (
+        <Notice tone="red" title="Season not changed">
+          {actionError}
+        </Notice>
+      ) : null}
+
+      <Notice tone="neutral" title="Season actions need a UUID the read model does not expose.">
+        Publish, freeze and close call POST /seasons/&#123;id&#125;/publish, /freeze and /close, which take a UUID.
+        The frozen Season read exposes only the key, so the console sends the UUID when one is present and
+        otherwise refuses with an explanation. It never sends the key or marks the action done locally. This is
+        a change-control candidate.
+      </Notice>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className="overflow-x-auto">
@@ -182,7 +201,14 @@ function SeasonsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => void actions.publishSeason(season.key)}
+                              onClick={() => {
+                                setActionError(null)
+                                void actions.publishSeason(season.key).catch((cause) => {
+                                  setActionError(
+                                    cause instanceof Error ? cause.message : 'The season was not published.'
+                                  )
+                                })
+                              }}
                             >
                               Publish
                             </Button>
@@ -198,13 +224,8 @@ function SeasonsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                actions.setBoardFrozen(
-                                  season.key,
-                                  false,
-                                  'Investigation concluded; placements resumed.'
-                                )
-                              }
+                              disabled
+                              title="The frozen contract has no board-unfreeze operation. Nothing is changed locally."
                             >
                               Unfreeze
                             </Button>
@@ -410,8 +431,14 @@ function SeasonsPage() {
         confirmLabel="Freeze board"
         onConfirm={async () => {
           if (!freezing) return
-          await actions.freezeSeason(freezing.key)
-          setFreezing(null)
+          setActionError(null)
+          try {
+            await actions.freezeSeason(freezing.key)
+            setFreezing(null)
+          } catch (cause) {
+            setActionError(cause instanceof Error ? cause.message : 'The season was not frozen.')
+            setFreezing(null)
+          }
         }}
       >
         <p className="text-sm text-muted-foreground">
