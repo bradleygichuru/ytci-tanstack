@@ -17,6 +17,7 @@ import {
   RecognitionNav,
   ScenarioBanner,
   StatusPill,
+  DataState,
 } from '#/components/recognition/shared'
 
 export const Route = createFileRoute('/_authenticated/recognition')({
@@ -69,7 +70,9 @@ function RecognitionShell() {
       <EngineOffBanner />
       <ScenarioBanner />
 
-      {scenario === 'error' ? (
+      {scenario === 'loading' ? (
+        <DataState state="loading">{null}</DataState>
+      ) : scenario === 'error' ? (
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-6 py-10 text-center">
           <p className="text-base font-semibold text-foreground">Recognition is unavailable</p>
           <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">

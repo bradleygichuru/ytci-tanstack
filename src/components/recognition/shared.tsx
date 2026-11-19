@@ -185,7 +185,7 @@ export function FixtureStateControl() {
 }
 
 export function ScenarioBanner() {
-  const { scenario, source, apiError, apiStatus, actions } = useRecognition()
+  const { scenario, source, apiError, apiStatus, setScenario } = useRecognition()
   if (scenario === 'stale') {
     return (
       <Notice tone="gold" title="Showing last-known recognition data.">
@@ -193,7 +193,7 @@ export function ScenarioBanner() {
         is restored.{' '}
         <button
           type="button"
-          onClick={() => actions.refresh()}
+          onClick={() => setScenario('default')}
           className="font-bold underline underline-offset-2"
         >
           Use live data
