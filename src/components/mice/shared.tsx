@@ -358,6 +358,7 @@ export function SimpleTable<T>({
       emptyAction={emptyAction}
       pageSize={pageSize}
       onRowClick={onRowClick}
+      stickyFirstColumn
     />
   )
 }

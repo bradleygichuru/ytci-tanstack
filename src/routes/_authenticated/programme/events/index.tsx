@@ -141,7 +141,10 @@ function EventsOverviewPage() {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div
+        data-testid="mice-kpi-strip"
+        className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr))]"
+      >
         <StatCard
           label="Published"
           value={published}
@@ -174,7 +177,10 @@ function EventsOverviewPage() {
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div
+        data-testid="mice-overview-grid"
+        className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr))]"
+      >
         <SectionCard title="Needs attention" description="Sorted by due time">
           {attention.length === 0 ? (
             <EmptyBlock
