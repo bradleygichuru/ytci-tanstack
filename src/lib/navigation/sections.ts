@@ -74,7 +74,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     key: 'discovery',
     label: 'Discovery',
     items: [
-      { key: 'analytics', label: 'Analytics', path: '/analytics', icon: ChartBar, resource: 'analytics', status: 'live' },
+      { key: 'analytics', label: 'Analytics', path: '/analytics', icon: ChartBar, permission: 'analytics.read', requiresAdmin: true, flag: 'analytics', status: 'live', owner: 'stream:analytics' },
       { key: 'cms', label: 'CMS', path: '/destinations', icon: MapTrifold, resource: 'destinations', status: 'live' },
       { key: 'then-now', label: 'Then & Now', path: '/then-now', icon: FilmSlate, resource: 'thenNow', status: 'live' },
       { key: 'media', label: 'Media Library', path: '/media', icon: ImageIcon, resource: 'media', status: 'live' },

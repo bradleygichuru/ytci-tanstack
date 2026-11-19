@@ -16,7 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as NoAccessRouteImport } from './routes/no-access'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAiConfigRouteImport } from './routes/_authenticated/ai-config'
-import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedAnalyticsRouteRouteImport } from './routes/_authenticated/analytics/route'
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
 import { Route as AuthenticatedChallengesRouteImport } from './routes/_authenticated/challenges'
 import { Route as AuthenticatedCommentsRouteImport } from './routes/_authenticated/comments'
@@ -30,6 +30,16 @@ import { Route as AuthenticatedRecognitionRouteRouteImport } from './routes/_aut
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedThenNowRouteRouteImport } from './routes/_authenticated/then-now/route'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedAnalyticsIndexRouteImport } from './routes/_authenticated/analytics/index'
+import { Route as AuthenticatedAnalyticsAdoptionRouteImport } from './routes/_authenticated/analytics/adoption'
+import { Route as AuthenticatedAnalyticsContentRouteImport } from './routes/_authenticated/analytics/content'
+import { Route as AuthenticatedAnalyticsFunnelsRouteImport } from './routes/_authenticated/analytics/funnels'
+import { Route as AuthenticatedAnalyticsJourneysRouteImport } from './routes/_authenticated/analytics/journeys'
+import { Route as AuthenticatedAnalyticsProgrammeRouteImport } from './routes/_authenticated/analytics/programme'
+import { Route as AuthenticatedAnalyticsQualityRouteImport } from './routes/_authenticated/analytics/quality'
+import { Route as AuthenticatedAnalyticsRetentionRouteImport } from './routes/_authenticated/analytics/retention'
+import { Route as AuthenticatedAnalyticsSearchRouteImport } from './routes/_authenticated/analytics/search'
+import { Route as AuthenticatedAnalyticsSuppressedRouteImport } from './routes/_authenticated/analytics/suppressed'
 import { Route as AuthenticatedProgrammeIndexRouteImport } from './routes/_authenticated/programme/index'
 import { Route as AuthenticatedProgrammeSurfaceRouteImport } from './routes/_authenticated/programme/$surface'
 import { Route as AuthenticatedProgrammeEventsRouteRouteImport } from './routes/_authenticated/programme/events/route'
@@ -101,11 +111,12 @@ const AuthenticatedAiConfigRoute = AuthenticatedAiConfigRouteImport.update({
   path: '/ai-config',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
+const AuthenticatedAnalyticsRouteRoute =
+  AuthenticatedAnalyticsRouteRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCampaignsRoute = AuthenticatedCampaignsRouteImport.update({
   id: '/campaigns',
   path: '/campaigns',
@@ -176,6 +187,66 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAnalyticsIndexRoute =
+  AuthenticatedAnalyticsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsAdoptionRoute =
+  AuthenticatedAnalyticsAdoptionRouteImport.update({
+    id: '/adoption',
+    path: '/adoption',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsContentRoute =
+  AuthenticatedAnalyticsContentRouteImport.update({
+    id: '/content',
+    path: '/content',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsFunnelsRoute =
+  AuthenticatedAnalyticsFunnelsRouteImport.update({
+    id: '/funnels',
+    path: '/funnels',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsJourneysRoute =
+  AuthenticatedAnalyticsJourneysRouteImport.update({
+    id: '/journeys',
+    path: '/journeys',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsProgrammeRoute =
+  AuthenticatedAnalyticsProgrammeRouteImport.update({
+    id: '/programme',
+    path: '/programme',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsQualityRoute =
+  AuthenticatedAnalyticsQualityRouteImport.update({
+    id: '/quality',
+    path: '/quality',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsRetentionRoute =
+  AuthenticatedAnalyticsRetentionRouteImport.update({
+    id: '/retention',
+    path: '/retention',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsSearchRoute =
+  AuthenticatedAnalyticsSearchRouteImport.update({
+    id: '/search',
+    path: '/search',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAnalyticsSuppressedRoute =
+  AuthenticatedAnalyticsSuppressedRouteImport.update({
+    id: '/suppressed',
+    path: '/suppressed',
+    getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
 const AuthenticatedProgrammeIndexRoute =
   AuthenticatedProgrammeIndexRouteImport.update({
     id: '/programme/',
@@ -397,10 +468,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/analytics': typeof AuthenticatedAnalyticsRouteRouteWithChildren
   '/recognition': typeof AuthenticatedRecognitionRouteRouteWithChildren
   '/then-now': typeof AuthenticatedThenNowRouteRouteWithChildren
   '/ai-config': typeof AuthenticatedAiConfigRoute
-  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/challenges': typeof AuthenticatedChallengesRoute
   '/comments': typeof AuthenticatedCommentsRoute
@@ -413,6 +484,15 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/programme/events': typeof AuthenticatedProgrammeEventsRouteRouteWithChildren
+  '/analytics/adoption': typeof AuthenticatedAnalyticsAdoptionRoute
+  '/analytics/content': typeof AuthenticatedAnalyticsContentRoute
+  '/analytics/funnels': typeof AuthenticatedAnalyticsFunnelsRoute
+  '/analytics/journeys': typeof AuthenticatedAnalyticsJourneysRoute
+  '/analytics/programme': typeof AuthenticatedAnalyticsProgrammeRoute
+  '/analytics/quality': typeof AuthenticatedAnalyticsQualityRoute
+  '/analytics/retention': typeof AuthenticatedAnalyticsRetentionRoute
+  '/analytics/search': typeof AuthenticatedAnalyticsSearchRoute
+  '/analytics/suppressed': typeof AuthenticatedAnalyticsSuppressedRoute
   '/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/recognition/audit': typeof AuthenticatedRecognitionAuditRoute
   '/recognition/awards': typeof AuthenticatedRecognitionAwardsRoute
@@ -424,6 +504,7 @@ export interface FileRoutesByFullPath {
   '/recognition/reports': typeof AuthenticatedRecognitionReportsRoute
   '/recognition/seasons': typeof AuthenticatedRecognitionSeasonsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/analytics/': typeof AuthenticatedAnalyticsIndexRoute
   '/programme/': typeof AuthenticatedProgrammeIndexRoute
   '/recognition/': typeof AuthenticatedRecognitionIndexRoute
   '/then-now/': typeof AuthenticatedThenNowIndexRoute
@@ -456,7 +537,6 @@ export interface FileRoutesByTo {
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
   '/ai-config': typeof AuthenticatedAiConfigRoute
-  '/analytics': typeof AuthenticatedAnalyticsRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/challenges': typeof AuthenticatedChallengesRoute
   '/comments': typeof AuthenticatedCommentsRoute
@@ -468,6 +548,15 @@ export interface FileRoutesByTo {
   '/media': typeof AuthenticatedMediaRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/analytics/adoption': typeof AuthenticatedAnalyticsAdoptionRoute
+  '/analytics/content': typeof AuthenticatedAnalyticsContentRoute
+  '/analytics/funnels': typeof AuthenticatedAnalyticsFunnelsRoute
+  '/analytics/journeys': typeof AuthenticatedAnalyticsJourneysRoute
+  '/analytics/programme': typeof AuthenticatedAnalyticsProgrammeRoute
+  '/analytics/quality': typeof AuthenticatedAnalyticsQualityRoute
+  '/analytics/retention': typeof AuthenticatedAnalyticsRetentionRoute
+  '/analytics/search': typeof AuthenticatedAnalyticsSearchRoute
+  '/analytics/suppressed': typeof AuthenticatedAnalyticsSuppressedRoute
   '/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/recognition/audit': typeof AuthenticatedRecognitionAuditRoute
   '/recognition/awards': typeof AuthenticatedRecognitionAwardsRoute
@@ -479,6 +568,7 @@ export interface FileRoutesByTo {
   '/recognition/reports': typeof AuthenticatedRecognitionReportsRoute
   '/recognition/seasons': typeof AuthenticatedRecognitionSeasonsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/analytics': typeof AuthenticatedAnalyticsIndexRoute
   '/programme': typeof AuthenticatedProgrammeIndexRoute
   '/recognition': typeof AuthenticatedRecognitionIndexRoute
   '/then-now': typeof AuthenticatedThenNowIndexRoute
@@ -512,10 +602,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRouteRouteWithChildren
   '/_authenticated/recognition': typeof AuthenticatedRecognitionRouteRouteWithChildren
   '/_authenticated/then-now': typeof AuthenticatedThenNowRouteRouteWithChildren
   '/_authenticated/ai-config': typeof AuthenticatedAiConfigRoute
-  '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
   '/_authenticated/challenges': typeof AuthenticatedChallengesRoute
   '/_authenticated/comments': typeof AuthenticatedCommentsRoute
@@ -528,6 +618,15 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/programme/events': typeof AuthenticatedProgrammeEventsRouteRouteWithChildren
+  '/_authenticated/analytics/adoption': typeof AuthenticatedAnalyticsAdoptionRoute
+  '/_authenticated/analytics/content': typeof AuthenticatedAnalyticsContentRoute
+  '/_authenticated/analytics/funnels': typeof AuthenticatedAnalyticsFunnelsRoute
+  '/_authenticated/analytics/journeys': typeof AuthenticatedAnalyticsJourneysRoute
+  '/_authenticated/analytics/programme': typeof AuthenticatedAnalyticsProgrammeRoute
+  '/_authenticated/analytics/quality': typeof AuthenticatedAnalyticsQualityRoute
+  '/_authenticated/analytics/retention': typeof AuthenticatedAnalyticsRetentionRoute
+  '/_authenticated/analytics/search': typeof AuthenticatedAnalyticsSearchRoute
+  '/_authenticated/analytics/suppressed': typeof AuthenticatedAnalyticsSuppressedRoute
   '/_authenticated/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/_authenticated/recognition/audit': typeof AuthenticatedRecognitionAuditRoute
   '/_authenticated/recognition/awards': typeof AuthenticatedRecognitionAwardsRoute
@@ -539,6 +638,7 @@ export interface FileRoutesById {
   '/_authenticated/recognition/reports': typeof AuthenticatedRecognitionReportsRoute
   '/_authenticated/recognition/seasons': typeof AuthenticatedRecognitionSeasonsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_authenticated/analytics/': typeof AuthenticatedAnalyticsIndexRoute
   '/_authenticated/programme/': typeof AuthenticatedProgrammeIndexRoute
   '/_authenticated/recognition/': typeof AuthenticatedRecognitionIndexRoute
   '/_authenticated/then-now/': typeof AuthenticatedThenNowIndexRoute
@@ -572,10 +672,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/no-access'
     | '/reset-password'
+    | '/analytics'
     | '/recognition'
     | '/then-now'
     | '/ai-config'
-    | '/analytics'
     | '/campaigns'
     | '/challenges'
     | '/comments'
@@ -588,6 +688,15 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/programme/events'
+    | '/analytics/adoption'
+    | '/analytics/content'
+    | '/analytics/funnels'
+    | '/analytics/journeys'
+    | '/analytics/programme'
+    | '/analytics/quality'
+    | '/analytics/retention'
+    | '/analytics/search'
+    | '/analytics/suppressed'
     | '/programme/$surface'
     | '/recognition/audit'
     | '/recognition/awards'
@@ -599,6 +708,7 @@ export interface FileRouteTypes {
     | '/recognition/reports'
     | '/recognition/seasons'
     | '/api/auth/$'
+    | '/analytics/'
     | '/programme/'
     | '/recognition/'
     | '/then-now/'
@@ -631,7 +741,6 @@ export interface FileRouteTypes {
     | '/no-access'
     | '/reset-password'
     | '/ai-config'
-    | '/analytics'
     | '/campaigns'
     | '/challenges'
     | '/comments'
@@ -643,6 +752,15 @@ export interface FileRouteTypes {
     | '/media'
     | '/settings'
     | '/users'
+    | '/analytics/adoption'
+    | '/analytics/content'
+    | '/analytics/funnels'
+    | '/analytics/journeys'
+    | '/analytics/programme'
+    | '/analytics/quality'
+    | '/analytics/retention'
+    | '/analytics/search'
+    | '/analytics/suppressed'
     | '/programme/$surface'
     | '/recognition/audit'
     | '/recognition/awards'
@@ -654,6 +772,7 @@ export interface FileRouteTypes {
     | '/recognition/reports'
     | '/recognition/seasons'
     | '/api/auth/$'
+    | '/analytics'
     | '/programme'
     | '/recognition'
     | '/then-now'
@@ -686,10 +805,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/no-access'
     | '/reset-password'
+    | '/_authenticated/analytics'
     | '/_authenticated/recognition'
     | '/_authenticated/then-now'
     | '/_authenticated/ai-config'
-    | '/_authenticated/analytics'
     | '/_authenticated/campaigns'
     | '/_authenticated/challenges'
     | '/_authenticated/comments'
@@ -702,6 +821,15 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/users'
     | '/_authenticated/programme/events'
+    | '/_authenticated/analytics/adoption'
+    | '/_authenticated/analytics/content'
+    | '/_authenticated/analytics/funnels'
+    | '/_authenticated/analytics/journeys'
+    | '/_authenticated/analytics/programme'
+    | '/_authenticated/analytics/quality'
+    | '/_authenticated/analytics/retention'
+    | '/_authenticated/analytics/search'
+    | '/_authenticated/analytics/suppressed'
     | '/_authenticated/programme/$surface'
     | '/_authenticated/recognition/audit'
     | '/_authenticated/recognition/awards'
@@ -713,6 +841,7 @@ export interface FileRouteTypes {
     | '/_authenticated/recognition/reports'
     | '/_authenticated/recognition/seasons'
     | '/api/auth/$'
+    | '/_authenticated/analytics/'
     | '/_authenticated/programme/'
     | '/_authenticated/recognition/'
     | '/_authenticated/then-now/'
@@ -805,7 +934,7 @@ declare module '@tanstack/react-router' {
       id: '/_authenticated/analytics'
       path: '/analytics'
       fullPath: '/analytics'
-      preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
+      preLoaderRoute: typeof AuthenticatedAnalyticsRouteRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/campaigns': {
@@ -898,6 +1027,76 @@ declare module '@tanstack/react-router' {
       fullPath: '/users'
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/analytics/': {
+      id: '/_authenticated/analytics/'
+      path: '/'
+      fullPath: '/analytics/'
+      preLoaderRoute: typeof AuthenticatedAnalyticsIndexRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/analytics/adoption': {
+      id: '/_authenticated/analytics/adoption'
+      path: '/adoption'
+      fullPath: '/analytics/adoption'
+      preLoaderRoute: typeof AuthenticatedAnalyticsAdoptionRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/analytics/content': {
+      id: '/_authenticated/analytics/content'
+      path: '/content'
+      fullPath: '/analytics/content'
+      preLoaderRoute: typeof AuthenticatedAnalyticsContentRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/analytics/funnels': {
+      id: '/_authenticated/analytics/funnels'
+      path: '/funnels'
+      fullPath: '/analytics/funnels'
+      preLoaderRoute: typeof AuthenticatedAnalyticsFunnelsRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/analytics/journeys': {
+      id: '/_authenticated/analytics/journeys'
+      path: '/journeys'
+      fullPath: '/analytics/journeys'
+      preLoaderRoute: typeof AuthenticatedAnalyticsJourneysRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/analytics/programme': {
+      id: '/_authenticated/analytics/programme'
+      path: '/programme'
+      fullPath: '/analytics/programme'
+      preLoaderRoute: typeof AuthenticatedAnalyticsProgrammeRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/analytics/quality': {
+      id: '/_authenticated/analytics/quality'
+      path: '/quality'
+      fullPath: '/analytics/quality'
+      preLoaderRoute: typeof AuthenticatedAnalyticsQualityRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/analytics/retention': {
+      id: '/_authenticated/analytics/retention'
+      path: '/retention'
+      fullPath: '/analytics/retention'
+      preLoaderRoute: typeof AuthenticatedAnalyticsRetentionRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/analytics/search': {
+      id: '/_authenticated/analytics/search'
+      path: '/search'
+      fullPath: '/analytics/search'
+      preLoaderRoute: typeof AuthenticatedAnalyticsSearchRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/analytics/suppressed': {
+      id: '/_authenticated/analytics/suppressed'
+      path: '/suppressed'
+      fullPath: '/analytics/suppressed'
+      preLoaderRoute: typeof AuthenticatedAnalyticsSuppressedRouteImport
+      parentRoute: typeof AuthenticatedAnalyticsRouteRoute
     }
     '/_authenticated/programme/': {
       id: '/_authenticated/programme/'
@@ -1154,6 +1353,39 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAnalyticsRouteRouteChildren {
+  AuthenticatedAnalyticsAdoptionRoute: typeof AuthenticatedAnalyticsAdoptionRoute
+  AuthenticatedAnalyticsContentRoute: typeof AuthenticatedAnalyticsContentRoute
+  AuthenticatedAnalyticsFunnelsRoute: typeof AuthenticatedAnalyticsFunnelsRoute
+  AuthenticatedAnalyticsJourneysRoute: typeof AuthenticatedAnalyticsJourneysRoute
+  AuthenticatedAnalyticsProgrammeRoute: typeof AuthenticatedAnalyticsProgrammeRoute
+  AuthenticatedAnalyticsQualityRoute: typeof AuthenticatedAnalyticsQualityRoute
+  AuthenticatedAnalyticsRetentionRoute: typeof AuthenticatedAnalyticsRetentionRoute
+  AuthenticatedAnalyticsSearchRoute: typeof AuthenticatedAnalyticsSearchRoute
+  AuthenticatedAnalyticsSuppressedRoute: typeof AuthenticatedAnalyticsSuppressedRoute
+  AuthenticatedAnalyticsIndexRoute: typeof AuthenticatedAnalyticsIndexRoute
+}
+
+const AuthenticatedAnalyticsRouteRouteChildren: AuthenticatedAnalyticsRouteRouteChildren =
+  {
+    AuthenticatedAnalyticsAdoptionRoute: AuthenticatedAnalyticsAdoptionRoute,
+    AuthenticatedAnalyticsContentRoute: AuthenticatedAnalyticsContentRoute,
+    AuthenticatedAnalyticsFunnelsRoute: AuthenticatedAnalyticsFunnelsRoute,
+    AuthenticatedAnalyticsJourneysRoute: AuthenticatedAnalyticsJourneysRoute,
+    AuthenticatedAnalyticsProgrammeRoute: AuthenticatedAnalyticsProgrammeRoute,
+    AuthenticatedAnalyticsQualityRoute: AuthenticatedAnalyticsQualityRoute,
+    AuthenticatedAnalyticsRetentionRoute: AuthenticatedAnalyticsRetentionRoute,
+    AuthenticatedAnalyticsSearchRoute: AuthenticatedAnalyticsSearchRoute,
+    AuthenticatedAnalyticsSuppressedRoute:
+      AuthenticatedAnalyticsSuppressedRoute,
+    AuthenticatedAnalyticsIndexRoute: AuthenticatedAnalyticsIndexRoute,
+  }
+
+const AuthenticatedAnalyticsRouteRouteWithChildren =
+  AuthenticatedAnalyticsRouteRoute._addFileChildren(
+    AuthenticatedAnalyticsRouteRouteChildren,
+  )
+
 interface AuthenticatedRecognitionRouteRouteChildren {
   AuthenticatedRecognitionAuditRoute: typeof AuthenticatedRecognitionAuditRoute
   AuthenticatedRecognitionAwardsRoute: typeof AuthenticatedRecognitionAwardsRoute
@@ -1274,10 +1506,10 @@ const AuthenticatedProgrammeEventsRouteRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAnalyticsRouteRoute: typeof AuthenticatedAnalyticsRouteRouteWithChildren
   AuthenticatedRecognitionRouteRoute: typeof AuthenticatedRecognitionRouteRouteWithChildren
   AuthenticatedThenNowRouteRoute: typeof AuthenticatedThenNowRouteRouteWithChildren
   AuthenticatedAiConfigRoute: typeof AuthenticatedAiConfigRoute
-  AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
   AuthenticatedChallengesRoute: typeof AuthenticatedChallengesRoute
   AuthenticatedCommentsRoute: typeof AuthenticatedCommentsRoute
@@ -1295,11 +1527,12 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAnalyticsRouteRoute:
+    AuthenticatedAnalyticsRouteRouteWithChildren,
   AuthenticatedRecognitionRouteRoute:
     AuthenticatedRecognitionRouteRouteWithChildren,
   AuthenticatedThenNowRouteRoute: AuthenticatedThenNowRouteRouteWithChildren,
   AuthenticatedAiConfigRoute: AuthenticatedAiConfigRoute,
-  AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
   AuthenticatedChallengesRoute: AuthenticatedChallengesRoute,
   AuthenticatedCommentsRoute: AuthenticatedCommentsRoute,
@@ -1334,12 +1567,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
