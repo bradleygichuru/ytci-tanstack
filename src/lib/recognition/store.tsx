@@ -28,7 +28,6 @@ import {
   SAMPLE_AUDIT,
   SAMPLE_AWARDS,
   SAMPLE_BACKFILL,
-  SAMPLE_BACKFILL_ROWS,
   SAMPLE_BADGES,
   SAMPLE_BOARDS,
   SAMPLE_KILL_SWITCHES,
@@ -42,7 +41,6 @@ import {
   draftSignature,
   publicBoardSuppressed,
   recomputeRanks,
-  requiresSecondApprover,
   simulateDraft,
 } from './logic'
 import {

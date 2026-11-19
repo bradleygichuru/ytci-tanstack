@@ -211,7 +211,7 @@ function BadgesPage() {
       ) : null}
 
       <Notice tone="neutral" title="Badge definitions are not editable in this contract.">
-        POST /badges creates a badge and POST /badges/{key}/publish publishes it. The frozen contract has no
+        POST /badges creates a badge and POST /badges/{'{key}'}/publish publishes it. The frozen contract has no
         update operation, so an existing badge opens read-only and its fields are never staged for a publish
         that could not carry them. A badge update is a change-control candidate.
       </Notice>
