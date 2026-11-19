@@ -19,9 +19,10 @@ test.describe('MICE admin — implemented behaviour', () => {
       if (route.request().method() !== 'GET' || !/^\/v1\/admin\/events\/[^/]+$/.test(pathname)) {
         return route.continue()
       }
-      const response = await route.fetch()
-      const body = await response.json()
-      body.agenda = [
+      try {
+        const response = await route.fetch()
+        const body = await response.json()
+        body.agenda = [
         ...(body.agenda ?? []),
         {
           id: 'verify-conflict-session',
@@ -33,7 +34,10 @@ test.describe('MICE admin — implemented behaviour', () => {
           speakers: [],
         },
       ]
-      await route.fulfill({ response, json: body })
+        await route.fulfill({ response, json: { ...body } })
+      } catch {
+        await route.continue().catch(() => {})
+      }
     })
 
     await login(page)
@@ -48,10 +52,11 @@ test.describe('MICE admin — implemented behaviour', () => {
   }) => {
     // The shared fixture has no waitlisted row; add one at the network boundary.
     await page.route('**/v1/admin/events/*/registrations*', async (route) => {
-      const response = await route.fetch()
-      const body = await response.json()
-      const confirmed = body.items?.[0]
-      if (confirmed) {
+      try {
+        const response = await route.fetch()
+        const body = await response.json()
+        const confirmed = body.items?.[0]
+        if (confirmed) {
         body.items = [
           ...body.items,
           {
@@ -65,7 +70,10 @@ test.describe('MICE admin — implemented behaviour', () => {
           },
         ]
       }
-      await route.fulfill({ response, json: body })
+        await route.fulfill({ response, json: { ...body } })
+      } catch {
+        await route.continue().catch(() => {})
+      }
     })
 
     await login(page)
