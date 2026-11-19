@@ -30,6 +30,9 @@ export const auth = betterAuth({
     enabled: true,
   },
   trustedOrigins: [
+    // Verification-only origin (ticket #372, port 3213). Revert before any merge.
+    "http://127.0.0.1:3213",
+    "http://localhost:3213",
     "http://localhost:3000",
     "http://localhost:8081",
     "exp://",
