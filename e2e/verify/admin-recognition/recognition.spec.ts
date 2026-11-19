@@ -61,8 +61,13 @@ async function open(page: Page, path: string, heading: string): Promise<void> {
 }
 
 async function setScenario(page: Page, value: string): Promise<void> {
+  // The dev bundle hydrates late; selecting before React attaches leaves the
+  // controlled select on its old value. Wait for the control, select, verify.
+  await page.locator(SCENARIO).waitFor({ state: 'visible', timeout: 20_000 })
+  await page.waitForTimeout(800)
   await page.locator(SCENARIO).selectOption(value)
-  await page.waitForTimeout(500)
+  await expect(page.locator(SCENARIO)).toHaveValue(value, { timeout: 10_000 })
+  await page.waitForTimeout(700)
 }
 
 async function setTheme(page: Page, theme: 'light' | 'dark'): Promise<void> {
@@ -167,7 +172,7 @@ test('overview — empty, error, stale and read-only states', async () => {
   await shot(page, 'overview-1400-light-empty')
 
   await setScenario(page, 'error')
-  await expect(page.getByText(/couldn.t load/i).first()).toBeVisible()
+  await expect(page.getByText(/Recognition is unavailable/).first()).toBeVisible()
   await shot(page, 'overview-1400-light-error')
 
   await setScenario(page, 'stale')
