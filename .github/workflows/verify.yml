@@ -43,8 +43,8 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Unit tests
         run: bun run test:unit -- --passWithNoTests
-      - name: Typecheck
-        run: bunx tsc --noEmit
+      - name: Typecheck (fails on any error outside the known baseline)
+        run: bun run typecheck:gate
 
   playwright:
     name: Playwright fixture smoke

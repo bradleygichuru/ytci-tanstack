@@ -9,6 +9,7 @@
     "dev": "bun --env-file=.env.local run vite dev --port 3000",
     "generate-routes": "tsr generate",
     "typecheck": "tsc --noEmit",
+    "typecheck:gate": "node scripts/typecheck-gate.mjs",
     "generate:contracts": "bunx openapi-typescript openapi/contracts.v1.yaml -o src/lib/contracts/generated/contracts.ts",
     "generate:roles": "node scripts/generate-roles.mjs",
     "generate:contracts:check": "bash scripts/check-generated-contracts.sh",

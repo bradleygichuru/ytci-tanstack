@@ -6,7 +6,7 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: ['e2e/**', 'node_modules/**'],
-    setupFiles: [],
+    setupFiles: ['./vitest.setup.ts'],
     server: {
       deps: {
         inline: ['zod'],

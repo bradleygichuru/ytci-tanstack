@@ -118,7 +118,7 @@ protection lists `Unit and contract` and `Playwright fixture smoke`; neither has
 
 | Job | Runs | What it proves |
 |---|---|---|
-| `Unit and contract` | every PR/push | `vitest` + `tsc` are clean |
+| `Unit and contract` | every PR/push | `vitest` is green and `tsc` reports no error outside the recorded baseline |
 | `Playwright fixture smoke` | every PR/push/nightly | the harness starts, navigates and guards the coordination rules |
 | `Playwright live (seeded)` | when the live secrets exist | the MICE (#364), recognition (#368), species (#372) and analytics (#375) suites drive the real app on a disposable seed |
 
