@@ -541,19 +541,24 @@ test('seasons — closing needs a reason and a typed confirmation', async () => 
 // Role gating.
 // ---------------------------------------------------------------------------
 
-test('role gating — content editor and reader are redirected to no-access', async () => {
-  for (const [email, file] of [
-    ['editor@example.com', 'content-editor'],
-    ['alice@example.com', 'reader'],
-  ] as const) {
-    const roleContext = await browser.newContext({ viewport: { width: 1400, height: 900 } })
-    const rolePage = await roleContext.newPage()
-    await login(rolePage, email, SEEDED_PASSWORD)
-    await rolePage.goto('/recognition', { waitUntil: 'domcontentloaded' })
-    await expect(rolePage).toHaveURL(/\/no-access/, { timeout: 30_000 })
-    await shot(rolePage, `role-gating-${file}-no-access`)
-    await roleContext.close()
-  }
+test('role gating — content editor reads, reader is redirected to no-access', async () => {
+  // `content_editor` holds `recognition.read` and, since the widened
+  // `platform.admin_access` grant (#65 / ytci-mobile#407), reaches the shell.
+  const editorContext = await browser.newContext({ viewport: { width: 1400, height: 900 } })
+  const editor = await editorContext.newPage()
+  await login(editor, 'editor@example.com', SEEDED_PASSWORD)
+  await open(editor, '/recognition', 'Recognition overview')
+  await shot(editor, 'role-gating-content-editor-overview')
+  await editorContext.close()
+
+  // A reader still has no admin access and no recognition permission.
+  const readerContext = await browser.newContext({ viewport: { width: 1400, height: 900 } })
+  const reader = await readerContext.newPage()
+  await login(reader, 'alice@example.com', SEEDED_PASSWORD)
+  await reader.goto('/recognition', { waitUntil: 'domcontentloaded' })
+  await expect(reader).toHaveURL(/\/no-access/, { timeout: 30_000 })
+  await shot(reader, 'role-gating-reader-no-access')
+  await readerContext.close()
 })
 
 test('role gating — moderator reads but sees no authoring controls', async () => {
