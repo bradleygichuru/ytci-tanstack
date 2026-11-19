@@ -42,9 +42,11 @@ async function shot(page: Page, name: string): Promise<void> {
 }
 
 async function login(page: Page, email: string, password: string): Promise<void> {
-  await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await page.locator('input[type="email"]').fill(email)
-  await page.locator('input[type="password"]').fill(password)
+  // `fill()` sets the DOM value without a React state update in this form, so
+  // the submit handler sees empty fields and posts the form natively. Type it.
+  await page.goto('/login', { waitUntil: 'networkidle' })
+  await page.locator('#login-email').pressSequentially(email, { delay: 5 })
+  await page.locator('#login-password').pressSequentially(password, { delay: 5 })
   await page.getByRole('button', { name: /sign in/i }).click()
   await expect(page).not.toHaveURL(/\/login/, { timeout: 30_000 })
   await page.waitForLoadState('networkidle').catch(() => {})
