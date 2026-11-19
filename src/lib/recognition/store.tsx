@@ -28,7 +28,6 @@ import {
   SAMPLE_AUDIT,
   SAMPLE_AWARDS,
   SAMPLE_BACKFILL,
-  SAMPLE_BACKFILL_ROWS,
   SAMPLE_BADGES,
   SAMPLE_BOARDS,
   SAMPLE_KILL_SWITCHES,
@@ -42,19 +41,11 @@ import {
   draftSignature,
   publicBoardSuppressed,
   recomputeRanks,
-  requiresSecondApprover,
   simulateDraft,
 } from './logic'
 import {
-  mergeAudit,
-  mergeBackfill,
+  classifySource,
   mergeBadgeUsage,
-  mergeBadges,
-  mergeKillSwitches,
-  mergeModeration,
-  mergeRules,
-  mergeSeasons,
-  mergeBoardRows,
   normaliseRuleHistory,
   mapApiAudit,
   mapApiBackfill,
@@ -63,6 +54,7 @@ import {
   mapApiModeration,
   mapApiRule,
   mapApiSeason,
+  sampleRows,
 } from './reconcile'
 import type {
   AuditCategory,
@@ -114,18 +106,16 @@ export interface CorrectionInput {
 export interface RecognitionActions {
   reset: () => void
   refresh: () => Promise<void>
-  saveRuleDraft: (ruleKey: string, draft: RuleDraft) => Rule
+  createRule: (ruleKey: string, draft: RuleDraft) => Promise<Rule>
   simulateRule: (ruleKey: string, draft: RuleDraft) => Promise<RuleSimulation>
   publishRule: (ruleKey: string, draft?: RuleDraft) => Promise<void>
   retireRule: (ruleKey: string, reason: string) => void
-  discardRuleDraft: (ruleKey: string) => void
-  createBadge: (input: Partial<Badge> & Pick<Badge, 'badgeKey' | 'nameEn' | 'family'>) => void
-  updateBadge: (badgeKey: string, patch: Partial<Badge>) => void
+  createBadge: (input: Partial<Badge> & Pick<Badge, 'badgeKey' | 'nameEn' | 'family'>) => Promise<void>
   publishBadge: (badgeKey: string) => Promise<void>
   saveMission: (input: Partial<Mission> & Pick<Mission, 'nameEn' | 'family'>) => void
   toggleMission: (id: string) => void
   correctMissionCompletion: (missionId: string, completionId: string, note: string) => void
-  createSeason: (input: Partial<Season> & Pick<Season, 'key' | 'nameEn' | 'startsAt' | 'endsAt'>) => void
+  createSeason: (input: Partial<Season> & Pick<Season, 'key' | 'nameEn' | 'startsAt' | 'endsAt'>) => Promise<void>
   publishSeason: (key: string) => Promise<void>
   freezeSeason: (key: string) => Promise<void>
   setBoardFrozen: (key: string, frozen: boolean, reason: string) => void
@@ -178,6 +168,24 @@ function nowIso(): string {
   return new Date().toISOString()
 }
 
+/** Contract leaderboard entries only; no sample rows are mixed in. */
+function consolidateBoardRows(api: ContractsSchemas['Leaderboard']): BoardRow[] {
+  return recomputeRanks(
+    api.entries.map((entry) => ({
+      rank: entry.rank,
+      displayName: entry.displayName,
+      county: entry.county ?? null,
+      level: String(entry.level),
+      xp: entry.level * 750,
+      verifiedSites: entry.verifiedSites,
+      trailCompletions: entry.trailCompletions,
+      status: 'active' as const,
+      isSelf: entry.isSelf,
+      provenance: 'api' as const,
+    }))
+  )
+}
+
 function roleLabel(role: string): string {
   return role
     .split('_')
@@ -207,7 +215,7 @@ function snapshot(
 function sampleState(): RecognitionState {
   const boards: Record<string, LeaderboardSnapshot> = {}
   for (const season of SAMPLE_SEASONS) {
-    const rows = SAMPLE_BOARDS[season.key] ?? []
+    const rows = sampleRows(SAMPLE_BOARDS[season.key] ?? [])
     boards[season.key] = snapshot(season.key, rows, {
       suppressed: publicBoardSuppressed(rows),
       frozen: season.status === 'frozen',
@@ -217,16 +225,16 @@ function sampleState(): RecognitionState {
     })
   }
   return {
-    rules: SAMPLE_RULES,
-    badges: SAMPLE_BADGES,
-    missions: SAMPLE_MISSIONS,
-    seasons: SAMPLE_SEASONS,
+    rules: sampleRows(SAMPLE_RULES),
+    badges: sampleRows(SAMPLE_BADGES),
+    missions: sampleRows(SAMPLE_MISSIONS),
+    seasons: sampleRows(SAMPLE_SEASONS),
     boards,
-    awards: SAMPLE_AWARDS,
-    moderation: SAMPLE_MODERATION,
-    backfill: SAMPLE_BACKFILL,
-    killSwitches: SAMPLE_KILL_SWITCHES,
-    audit: SAMPLE_AUDIT,
+    awards: sampleRows(SAMPLE_AWARDS),
+    moderation: sampleRows(SAMPLE_MODERATION),
+    backfill: sampleRows(SAMPLE_BACKFILL),
+    killSwitches: sampleRows(SAMPLE_KILL_SWITCHES),
+    audit: sampleRows(SAMPLE_AUDIT),
   }
 }
 
@@ -273,6 +281,24 @@ function decorate(state: RecognitionState): RecognitionState {
 function apiErrorText(error: unknown): string {
   if (error instanceof Error && error.message) return error.message
   return 'The contracts API did not answer.'
+}
+
+function contractGap(what: string): Error {
+  return new Error(
+    `The frozen contract has no ${what} operation. Nothing was changed. This is a change-control candidate, not a local save.`
+  )
+}
+
+/**
+ * Season publish/freeze/close address `{id}` as a UUID, but the frozen Season
+ * read model only exposes `key`. Never send the key and never swallow the
+ * rejection: explain the contract gap and leave the UI unchanged.
+ */
+function seasonContractId(season: Season, action: string): string {
+  if (season.id) return season.id
+  throw new Error(
+    `The frozen Season read exposes only the key (${season.key}); ${action} needs the season UUID at POST /seasons/{id}. Nothing was changed. This is a change-control candidate.`
+  )
 }
 
 function withNote(state: RecognitionState, note: AuditEntry): RecognitionState {
@@ -334,6 +360,15 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       setLoads(Object.fromEntries(SECTIONS.map((section) => [section, 'loading'])) as LoadMap)
       return
     }
+    if (scenario === 'demo') {
+      const sample = decorate(sampleState())
+      setState(sample)
+      setLoads(Object.fromEntries(SECTIONS.map((section) => [section, 'ready'])) as LoadMap)
+      setErrors({})
+      setApiError(null)
+      setSource('sample')
+      return
+    }
     if (scenario === 'empty') {
       setState(decorate(emptyState()))
       setLoads(Object.fromEntries(SECTIONS.map((section) => [section, 'ready'])) as LoadMap)
@@ -347,6 +382,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
         Object.fromEntries(SECTIONS.map((section) => [section, 'The recognition service returned an error.']))
       )
       setApiError('The recognition service returned an error.')
+      setSource(classifySource(stateRef.current))
       return
     }
 
@@ -386,23 +422,15 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
     const nextErrors: ErrorMap = {}
     let successes = 0
 
-    let rules = stateRef.current.rules
-    let badges = stateRef.current.badges
-    let seasons = stateRef.current.seasons
-    let moderation = stateRef.current.moderation
-    let backfill = stateRef.current.backfill
-    let killSwitches = stateRef.current.killSwitches
-    let audit = stateRef.current.audit
-    let boards = stateRef.current.boards
-
-    const findRule = (row: ContractsSchemas['RecognitionRule']) =>
-      stateRef.current.rules.find((rule) => rule.ruleKey === row.ruleKey && rule.version === row.version)
+    // Start from the rows already on screen. A successful read replaces its
+    // section with contract rows only; a failed read leaves the last-known rows
+    // in place so the marker can report the mixture truthfully.
+    const next: RecognitionState = { ...stateRef.current }
 
     if (rulesResult.status === 'fulfilled') {
       successes += 1
       apiRuleIds.current = new Set(rulesResult.value.map((row) => row.id))
-      const apiRules = rulesResult.value.map((row) => mapApiRule(row, findRule(row)))
-      rules = normaliseRuleHistory(mergeRules(stateRef.current.rules, apiRules))
+      next.rules = normaliseRuleHistory(rulesResult.value.map((row) => mapApiRule(row)))
       setSection('rules', 'ready')
     } else {
       nextErrors.rules = apiErrorText(rulesResult.reason)
@@ -411,13 +439,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
 
     if (badgesResult.status === 'fulfilled') {
       successes += 1
-      const apiBadges = badgesResult.value.map((row) =>
-        mapApiBadge(
-          row,
-          stateRef.current.badges.find((badge) => badge.badgeKey === row.badgeKey)
-        )
-      )
-      badges = mergeBadges(stateRef.current.badges, apiBadges)
+      next.badges = badgesResult.value.map((row) => mapApiBadge(row))
       setSection('badges', 'ready')
     } else {
       nextErrors.badges = apiErrorText(badgesResult.reason)
@@ -426,13 +448,10 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
 
     if (seasonsResult.status === 'fulfilled') {
       successes += 1
-      const apiSeasons = seasonsResult.value.map((row) =>
-        mapApiSeason(
-          row,
-          stateRef.current.seasons.find((season) => season.key === row.key)
-        )
-      )
-      seasons = mergeSeasons(stateRef.current.seasons, apiSeasons)
+      next.seasons = seasonsResult.value.map((row) => mapApiSeason(row))
+      // Sample boards belong to sample seasons; a contract season list drops
+      // them until the leaderboard read repopulates a contract board.
+      next.boards = {}
       setSection('seasons', 'ready')
     } else {
       nextErrors.seasons = apiErrorText(seasonsResult.reason)
@@ -442,13 +461,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
     if (moderationResult.status === 'fulfilled') {
       successes += 1
       apiModerationIds.current = new Set(moderationResult.value.map((row) => row.id))
-      const apiCases = moderationResult.value.map((row) =>
-        mapApiModeration(
-          row,
-          stateRef.current.moderation.find((entry) => entry.id === row.id)
-        )
-      )
-      moderation = mergeModeration(stateRef.current.moderation, apiCases)
+      next.moderation = moderationResult.value.map((row) => mapApiModeration(row))
       setSection('moderation', 'ready')
     } else {
       nextErrors.moderation = apiErrorText(moderationResult.reason)
@@ -458,13 +471,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
     if (backfillResult.status === 'fulfilled') {
       successes += 1
       apiBackfillIds.current = new Set(backfillResult.value.map((row) => row.id))
-      const apiBatches = backfillResult.value.map((row) =>
-        mapApiBackfill(
-          row,
-          stateRef.current.backfill.find((batch) => batch.id === row.id)
-        )
-      )
-      backfill = mergeBackfill(stateRef.current.backfill, apiBatches)
+      next.backfill = backfillResult.value.map((row) => mapApiBackfill(row))
       setSection('backfill', 'ready')
     } else {
       nextErrors.backfill = apiErrorText(backfillResult.reason)
@@ -473,15 +480,15 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
 
     if (killsResult.status === 'fulfilled') {
       successes += 1
-      const apiSwitches = killsResult.value
-        .map((row) =>
-          mapApiKillSwitch(
-            row,
-            stateRef.current.killSwitches.find((entry) => entry.key === row.key)
-          )
-        )
+      const byKey = new Map(
+        killsResult.value
+          .map((row) => mapApiKillSwitch(row))
+          .filter((entry): entry is KillSwitch => Boolean(entry))
+          .map((entry) => [entry.key, entry])
+      )
+      next.killSwitches = ['global', 'public_leaderboard', 'source:audio', 'source:event']
+        .map((key) => byKey.get(key as KillSwitch['key']))
         .filter((entry): entry is KillSwitch => Boolean(entry))
-      killSwitches = mergeKillSwitches(stateRef.current.killSwitches, apiSwitches)
       setSection('killSwitches', 'ready')
     } else {
       nextErrors.killSwitches = apiErrorText(killsResult.reason)
@@ -490,7 +497,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
 
     if (auditResult.status === 'fulfilled') {
       successes += 1
-      audit = mergeAudit(stateRef.current.audit, auditResult.value.map(mapApiAudit))
+      next.audit = auditResult.value.map(mapApiAudit)
       setSection('audit', 'ready')
     } else {
       nextErrors.audit = apiErrorText(auditResult.reason)
@@ -501,10 +508,8 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       successes += 1
       const apiBoard = boardResult.value
       const seasonKey = apiBoard.seasonKey
-      const sampleRows = stateRef.current.boards[seasonKey]?.rows ?? SAMPLE_BOARDS[seasonKey] ?? []
-      const rows = mergeBoardRows(sampleRows, apiBoard)
-      boards = {
-        ...stateRef.current.boards,
+      const rows = consolidateBoardRows(apiBoard)
+      next.boards = {
         [seasonKey]: snapshot(seasonKey, rows, {
           suppressed: apiBoard.suppressed || publicBoardSuppressed(rows),
           suppressionReason: apiBoard.suppressionReason ?? 'Not enough participants yet.',
@@ -518,22 +523,19 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       setSection('leaderboard', 'error', nextErrors.leaderboard)
     }
 
+    // Missions and the awards ledger have no contract read in 1.0.0. Their
+    // fixtures are demo data, so a reachable API clears them rather than mixing
+    // invented rows into a live screen.
+    if (successes > 0) {
+      next.missions = []
+      next.awards = []
+    }
+
     setErrors(nextErrors)
     setApiError(successes === 0 ? 'The contracts API did not answer any recognition read.' : null)
-    setSource(successes === 0 ? 'sample' : successes === results.length ? 'api' : 'mixed')
-    setState((prev) =>
-      decorate({
-        ...prev,
-        rules,
-        badges,
-        seasons,
-        moderation,
-        backfill,
-        killSwitches,
-        audit,
-        boards,
-      })
-    )
+    const decorated = decorate(next)
+    setState(decorated)
+    setSource(classifySource(decorated))
   }, [scenario])
 
   useEffect(() => {
@@ -555,6 +557,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
         detail: input.detail,
         category: input.category,
         at: nowIso(),
+        provenance: 'sample',
       }
       setState((prev) => withNote(prev, entry))
     },
@@ -585,85 +588,49 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
 
   const board = useCallback((seasonKey: string) => stateRef.current.boards[seasonKey], [])
 
-  const saveRuleDraft = useCallback(
-    (ruleKey: string, draft: RuleDraft): Rule => {
-      const current = stateRef.current
-      const live = current.rules
-        .filter((rule) => rule.ruleKey === ruleKey && rule.status === 'published')
-        .sort((a, b) => b.version - a.version)[0]
-      const existingDraft = current.rules.find((rule) => rule.ruleKey === ruleKey && rule.status === 'draft')
-      const maxVersion = Math.max(
-        0,
-        ...current.rules.filter((rule) => rule.ruleKey === ruleKey).map((rule) => rule.version)
-      )
-      const version = existingDraft?.version ?? maxVersion + 1
-      const rule: Rule = {
-        id: existingDraft?.id ?? uuid(),
+  const createRule = useCallback(
+    async (ruleKey: string, draft: RuleDraft): Promise<Rule> => {
+      if (!can('recognition.author_rule')) throw new Error('Your role cannot author a rule version.')
+      if (scenario === 'readonly' || scenario === 'stale' || scenario === 'demo') {
+        throw new Error('This data state disables writes. Switch back to Default to write.')
+      }
+      const api = createRecognitionApi()
+      const created = await api.createRule({
         ruleKey,
-        version,
-        name: draft.name.trim(),
-        status: 'draft',
         sourceType: draft.sourceType,
-        event: draft.event,
-        verify: draft.verify,
+        effectiveFrom: draft.effectiveFrom,
+        criteria: { name: draft.name.trim(), event: draft.event, verify: draft.verify },
         xpAmount: draft.xpAmount,
         badgeKey: draft.badgeKey === 'none' ? null : draft.badgeKey,
-        effectiveFrom: draft.effectiveFrom,
-        effectiveTo: null,
-        createdBy: actor.id,
-        publishedBy: null,
-        updatedAt: nowIso(),
-        weeklyCap: live?.weeklyCap ?? null,
-      }
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              rules: [...prev.rules.filter((entry) => entry.id !== rule.id), rule],
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: existingDraft ? 'Rule draft updated' : 'Rule draft saved',
-              entity: `${ruleKey} · v${version}`,
-              detail: 'Staged definition · nothing is live until published',
-              category: 'rules',
-              at: nowIso(),
-            }
-          )
-        )
-      )
-      return rule
+      })
+      // Refetch: the draft the server created is the draft the editor shows.
+      await refresh()
+      notify.saved('Rule draft created')
+      return mapApiRule(created)
     },
-    [actor.id, actor.name, actor.role]
+    [can, refresh, scenario]
   )
 
   const simulateRule = useCallback(async (ruleKey: string, draft: RuleDraft): Promise<RuleSimulation> => {
     const current = stateRef.current
-    const live =
-      current.rules
-        .filter((rule) => rule.ruleKey === ruleKey && rule.status === 'published')
-        .sort((a, b) => b.version - a.version)[0] ??
-      current.rules.filter((rule) => rule.ruleKey === ruleKey).sort((a, b) => b.version - a.version)[0]
-    if (!live) throw new Error('No rule version to simulate against.')
-    let simulation = simulateDraft(draft, live)
-    const draftRuleRow = current.rules.find((rule) => rule.ruleKey === ruleKey && rule.status === 'draft')
-    if (draftRuleRow && apiRuleIds.current.has(draftRuleRow.id)) {
-      try {
-        const api = createRecognitionApi()
-        const server = await api.simulateRule(draftRuleRow.id)
-        simulation = {
-          ...simulation,
-          serverEvaluated: server.evaluated,
-          serverWouldAward: server.wouldAward,
-          source: 'server-dry-run',
-          notes: server.notes ?? simulation.notes,
-        }
-      } catch {
-        // The staged estimate is still authoritative for the publish gate.
-      }
+    const draftRow = current.rules.find((rule) => rule.ruleKey === ruleKey && rule.status === 'draft')
+    if (!draftRow) throw new Error('Create a contract draft before simulating it.')
+    if (!apiRuleIds.current.has(draftRow.id)) {
+      throw new Error(
+        'This draft did not come from the contracts API. The frozen contract cannot simulate a browser-only draft.'
+      )
+    }
+    const api = createRecognitionApi()
+    const server = await api.simulateRule(draftRow.id)
+    const simulation: RuleSimulation = {
+      ...simulateDraft(draft, draftRow),
+      evaluated: server.evaluated,
+      wouldAward: server.wouldAward,
+      wouldDeduct: server.wouldDeduct,
+      serverEvaluated: server.evaluated,
+      serverWouldAward: server.wouldAward,
+      source: 'server-dry-run',
+      notes: server.notes ?? undefined,
     }
     setSimulations((prev) => ({
       ...prev,
@@ -677,96 +644,23 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       const current = stateRef.current
       const engine = current.killSwitches.find((entry) => entry.key === 'global')?.enabled ?? true
       if (!engine) throw new Error('The recognition engine is off. Publishing is blocked.')
-      const existingDraft = current.rules.find((rule) => rule.ruleKey === ruleKey && rule.status === 'draft')
-      const live = current.rules
-        .filter((rule) => rule.ruleKey === ruleKey && rule.status === 'published')
-        .sort((a, b) => b.version - a.version)[0]
-      const values =
-        draftValues ??
-        (existingDraft
-          ? {
-              name: existingDraft.name,
-              sourceType: existingDraft.sourceType,
-              event: existingDraft.event,
-              verify: existingDraft.verify,
-              xpAmount: existingDraft.xpAmount,
-              badgeKey: existingDraft.badgeKey ?? 'none',
-              effectiveFrom: existingDraft.effectiveFrom,
-            }
-          : undefined)
-      if (!values) throw new Error('There is no staged draft to publish.')
-      const maxVersion = Math.max(
-        0,
-        ...current.rules.filter((rule) => rule.ruleKey === ruleKey).map((rule) => rule.version)
-      )
-      const target: Rule = {
-        id: existingDraft?.id ?? uuid(),
-        ruleKey,
-        version: existingDraft?.version ?? maxVersion + 1,
-        name: values.name.trim(),
-        status: 'draft',
-        sourceType: values.sourceType,
-        event: values.event,
-        verify: values.verify,
-        xpAmount: values.xpAmount,
-        badgeKey: values.badgeKey === 'none' ? null : values.badgeKey,
-        effectiveFrom: values.effectiveFrom,
-        effectiveTo: null,
-        createdBy: existingDraft?.createdBy ?? actor.id,
-        publishedBy: null,
-        updatedAt: nowIso(),
-        weeklyCap: live?.weeklyCap ?? null,
+      const draft = current.rules.find((rule) => rule.ruleKey === ruleKey && rule.status === 'draft')
+      if (!draft) {
+        throw new Error(
+          'There is no contract draft to publish. The frozen contract has no rule-update operation, so a definition cannot be edited and published from this browser.'
+        )
       }
-      if (live && draftValues && requiresSecondApprover(live, draftValues) && target.createdBy === actor.id) {
-        throw new Error('XP or audience changes need a second administrator. You authored this draft.')
+      if (!apiRuleIds.current.has(draft.id)) {
+        throw contractGap('rule publish')
       }
       const sim = simulations[ruleKey]
       if (!sim) throw new Error('Run a simulation of the staged values first.')
-      if (sim.signature !== draftSignature(values)) {
+      if (draftValues && sim.signature !== draftSignature(draftValues)) {
         throw new Error('The staged values changed since the last simulation. Run it again.')
       }
-
-      if (apiRuleIds.current.has(target.id)) {
-        const api = createRecognitionApi()
-        await api.publishRule(target.id)
-      }
-
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              rules: [
-                ...prev.rules
-                  .filter((rule) => rule.id !== target.id)
-                  .map((rule) => {
-                    if (rule.ruleKey !== ruleKey || rule.status !== 'published') return rule
-                    return {
-                      ...rule,
-                      status: 'retired' as const,
-                      effectiveTo: target.effectiveFrom,
-                    }
-                  }),
-                {
-                  ...target,
-                  status: 'published' as const,
-                  publishedBy: actor.name,
-                },
-              ],
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: 'Rule published',
-              entity: `${ruleKey} · v${target.version}`,
-              detail: `Simulation of the staged definition · effective ${target.effectiveFrom}`,
-              category: 'rules',
-              at: nowIso(),
-            }
-          )
-        )
-      )
+      const api = createRecognitionApi()
+      await api.publishRule(draft.id)
+      await refresh()
       setSimulations((prev) => {
         const next = { ...prev }
         delete next[ruleKey]
@@ -774,194 +668,57 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       })
       notify.saved('Rule published')
     },
-    [actor.id, actor.name, actor.role, simulations]
+    [refresh, simulations]
   )
 
   const retireRule = useCallback(
-    (ruleKey: string, reason: string) => {
+    (_ruleKey: string, reason: string) => {
       if (reason.trim().length < 10)
         throw new Error('Retiring a rule needs a reason of at least 10 characters.')
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              rules: prev.rules.map((rule) =>
-                rule.ruleKey === ruleKey && rule.status === 'published'
-                  ? {
-                      ...rule,
-                      status: 'retired',
-                      effectiveTo: nowIso().slice(0, 10),
-                    }
-                  : rule
-              ),
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: 'Rule retired',
-              entity: ruleKey,
-              detail: `${reason} · awards already written are kept`,
-              category: 'rules',
-              at: nowIso(),
-            }
-          )
-        )
-      )
-      notify.saved('Rule retired')
+      throw contractGap('rule retire')
     },
-    [actor.name, actor.role]
+    []
   )
 
-  const discardRuleDraft = useCallback(
-    (ruleKey: string) => {
-      setState((prev) => {
-        const draft = prev.rules.find((rule) => rule.ruleKey === ruleKey && rule.status === 'draft')
-        if (!draft) return prev
-        return withNote(
-          { ...prev, rules: prev.rules.filter((rule) => rule.id !== draft.id) },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: 'Rule draft discarded',
-            entity: `${ruleKey} · v${draft.version}`,
-            detail: 'Staged definition removed · live version untouched',
-            category: 'rules',
-            at: nowIso(),
-          }
-        )
-      })
-      setSimulations((prev) => {
-        const next = { ...prev }
-        delete next[ruleKey]
-        return next
-      })
-    },
-    [actor.name, actor.role]
-  )
 
   const createBadge = useCallback(
-    (input: Partial<Badge> & Pick<Badge, 'badgeKey' | 'nameEn' | 'family'>) => {
-      const badge: Badge = {
+    async (input: Partial<Badge> & Pick<Badge, 'badgeKey' | 'nameEn' | 'family'>): Promise<void> => {
+      const api = createRecognitionApi()
+      await api.createBadge({
         badgeKey: input.badgeKey,
         nameEn: input.nameEn,
-        nameSw: input.nameSw ?? null,
+        nameSw: input.nameSw ?? input.nameEn,
         family: input.family,
-        criteria: input.criteria ?? 'Criteria not set',
+        criteria: { label: input.criteria ?? 'Criteria not set' },
         privacyClass: input.privacyClass ?? 'public',
         hidden: input.hidden ?? false,
         publicEligible: input.publicEligible ?? true,
-        status: 'draft',
-        version: 1,
-        updatedAt: nowIso(),
-        createdBy: actor.id,
-        usedBy: 0,
-      }
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              badges: [...prev.badges.filter((entry) => entry.badgeKey !== badge.badgeKey), badge],
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: 'Badge drafted',
-              entity: `${badge.badgeKey} · ${badge.nameEn}`,
-              detail: 'Both names required before publish',
-              category: 'rules',
-              at: nowIso(),
-            }
-          )
-        )
-      )
+      })
+      await refresh()
       notify.saved('Badge draft')
     },
-    [actor.id, actor.name, actor.role]
-  )
-
-  const updateBadge = useCallback(
-    (badgeKey: string, patch: Partial<Badge>) => {
-      setState((prev) =>
-        decorate({
-          ...prev,
-          badges: prev.badges.map((badge) => {
-            if (badge.badgeKey !== badgeKey) return badge
-            if (badge.status === 'published') {
-              return {
-                ...badge,
-                pendingChanges: { ...badge.pendingChanges, ...patch },
-                pendingBy: actor.id,
-                updatedAt: nowIso(),
-              }
-            }
-            return {
-              ...badge,
-              ...patch,
-              pendingBy: actor.id,
-              updatedAt: nowIso(),
-            }
-          }),
-        })
-      )
-    },
-    [actor.id]
+    [refresh]
   )
 
   const publishBadge = useCallback(
     async (badgeKey: string): Promise<void> => {
       const badge = stateRef.current.badges.find((entry) => entry.badgeKey === badgeKey)
       if (!badge) throw new Error('Badge not found.')
-      const staged = { ...badge, ...(badge.pendingChanges ?? {}) }
-      if (!staged.nameEn.trim() || !staged.nameSw?.trim()) {
+      if (!badge.nameEn.trim() || !badge.nameSw?.trim()) {
         throw new Error('A badge needs an English and a Kiswahili name before publish.')
       }
-      const author = badge.pendingBy ?? badge.createdBy
+      const author = badge.createdBy
       if (author && author === actor.id) {
-        throw new Error('You authored or last edited this badge. A second administrator must publish it.')
+        throw new Error('You authored this badge. A second administrator must publish it.')
       }
       const api = createRecognitionApi()
       await api.publishBadge(badgeKey)
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              badges: prev.badges.map((entry) =>
-                entry.badgeKey === badgeKey
-                  ? {
-                      ...entry,
-                      ...(entry.pendingChanges ?? {}),
-                      status: 'published',
-                      version: entry.version + 1,
-                      pendingChanges: undefined,
-                      pendingBy: undefined,
-                      updatedAt: nowIso(),
-                    }
-                  : entry
-              ),
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: 'Badge published',
-              entity: `${badgeKey} · ${badge.nameEn}`,
-              detail: 'EN + SW names reviewed',
-              category: 'rules',
-              at: nowIso(),
-            }
-          )
-        )
-      )
+      await refresh()
       notify.saved('Badge published')
     },
-    [actor.id, actor.name, actor.role]
+    [actor.id, refresh]
   )
+
 
   const saveMission = useCallback(
     (input: Partial<Mission> & Pick<Mission, 'nameEn' | 'family'>) => {
@@ -1073,163 +830,61 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
   )
 
   const createSeason = useCallback(
-    (input: Partial<Season> & Pick<Season, 'key' | 'nameEn' | 'startsAt' | 'endsAt'>) => {
-      const season: Season = {
+    async (
+      input: Partial<Season> & Pick<Season, 'key' | 'nameEn' | 'startsAt' | 'endsAt'>
+    ): Promise<void> => {
+      const api = createRecognitionApi()
+      await api.createSeason({
         key: input.key,
         nameEn: input.nameEn,
         nameSw: input.nameSw ?? input.nameEn,
         startsAt: input.startsAt,
         endsAt: input.endsAt,
-        status: 'upcoming',
         badgeKey: input.badgeKey ?? null,
         xpAward: input.xpAward ?? 500,
         missionFamilies: input.missionFamilies ?? [],
-        boardSize: 0,
-        preparedBy: actor.id,
-        closedAt: null,
-        closedBy: null,
-      }
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              seasons: [...prev.seasons.filter((entry) => entry.key !== season.key), season],
-              boards: {
-                ...prev.boards,
-                [season.key]: snapshot(season.key, []),
-              },
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: 'Season prepared',
-              entity: season.nameEn,
-              detail: `${season.startsAt.slice(0, 10)} – ${season.endsAt.slice(0, 10)}`,
-              category: 'events',
-              at: nowIso(),
-            }
-          )
-        )
-      )
-      notify.saved('Season')
+      })
+      await refresh()
+      notify.saved('Season prepared')
     },
-    [actor.id, actor.name, actor.role]
+    [refresh]
   )
 
   const publishSeason = useCallback(
     async (key: string): Promise<void> => {
       const season = stateRef.current.seasons.find((entry) => entry.key === key)
       if (!season) throw new Error('Season not found.')
+      const id = seasonContractId(season, 'publishing a season')
       const api = createRecognitionApi()
-      try {
-        await api.publishSeason(key)
-      } catch {
-        // The mock advertises season publish by UUID; a key-based sample stays local.
-      }
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              seasons: prev.seasons.map((entry) =>
-                entry.key === key ? { ...entry, status: 'active' } : entry
-              ),
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: 'Season published',
-              entity: season.nameEn,
-              detail: 'Board opens with the season',
-              category: 'events',
-              at: nowIso(),
-            }
-          )
-        )
-      )
+      await api.publishSeason(id)
+      await refresh()
       notify.saved('Season published')
     },
-    [actor.name, actor.role]
+    [refresh]
   )
 
   const freezeSeason = useCallback(
     async (key: string): Promise<void> => {
       const season = stateRef.current.seasons.find((entry) => entry.key === key)
       if (!season) throw new Error('Season not found.')
+      const id = seasonContractId(season, 'freezing a season')
       const api = createRecognitionApi()
-      try {
-        await api.freezeSeason(key)
-      } catch {
-        // Operator overlay keeps the freeze visible when the mock has no UUID season.
-      }
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              seasons: prev.seasons.map((entry) =>
-                entry.key === key ? { ...entry, status: 'frozen' } : entry
-              ),
-              boards: {
-                ...prev.boards,
-                [key]: { ...prev.boards[key], frozen: true },
-              },
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: 'Season frozen',
-              entity: season.nameEn,
-              detail: 'Ranks stay readable; no new placements are written',
-              category: 'safety',
-              at: nowIso(),
-            }
-          )
-        )
-      )
+      await api.freezeSeason(id)
+      await refresh()
       notify.saved('Board frozen')
     },
-    [actor.name, actor.role]
+    [refresh]
   )
 
+
   const setBoardFrozen = useCallback(
-    (key: string, frozen: boolean, reason: string) => {
-      if (reason.trim().length < 5) throw new Error('Give the board decision a reason.')
-      const season = stateRef.current.seasons.find((entry) => entry.key === key)
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              seasons: prev.seasons.map((entry) =>
-                entry.key === key && !frozen && entry.status === 'frozen'
-                  ? { ...entry, status: 'active' }
-                  : entry
-              ),
-              boards: {
-                ...prev.boards,
-                [key]: { ...prev.boards[key], frozen },
-              },
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: frozen ? 'Board frozen' : 'Board unfrozen',
-              entity: season?.nameEn ?? key,
-              detail: reason,
-              category: 'safety',
-              at: nowIso(),
-            }
-          )
-        )
-      )
+    (_key: string, _frozen: boolean, _reason: string): void => {
+      // Freezing a board goes through POST /seasons/{id}/freeze. There is no
+      // unfreeze operation in the frozen contract, so this never pretends to
+      // reverse one.
+      throw contractGap('board unfreeze')
     },
-    [actor.name, actor.role]
+    []
   )
 
   const closeSeason = useCallback(
@@ -1241,49 +896,15 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       if (season.preparedBy === actor.id) {
         throw new Error('You prepared this season. A second administrator must close it.')
       }
-      const board = stateRef.current.boards[key]
-      setState((prev) =>
-        decorate(
-          withNote(
-            {
-              ...prev,
-              seasons: prev.seasons.map((entry) =>
-                entry.key === key
-                  ? {
-                      ...entry,
-                      status: 'closed',
-                      closedAt: nowIso(),
-                      closedBy: actor.name,
-                      boardSize: board?.rows.filter((row) => row.status === 'active').length ?? 0,
-                    }
-                  : entry
-              ),
-              boards: {
-                ...prev.boards,
-                [key]: {
-                  ...prev.boards[key],
-                  frozen: true,
-                  updatedAt: nowIso(),
-                },
-              },
-            },
-            {
-              id: uuid(),
-              actor: actor.name,
-              role: roleLabel(actor.role),
-              action: 'Season closed',
-              entity: season.nameEn,
-              detail: `Snapshot taken by ${actor.name} · ${reason}`,
-              category: 'events',
-              at: nowIso(),
-            }
-          )
-        )
-      )
+      const id = seasonContractId(season, 'closing a season')
+      const api = createRecognitionApi()
+      await api.closeSeason(id)
+      await refresh()
       notify.saved('Season closed and board snapshotted')
     },
-    [actor.id, actor.name, actor.role]
+    [actor.id, refresh]
   )
+
 
   const setPublicHidden = useCallback(
     async (hidden: boolean, reason: string): Promise<void> => {
@@ -1633,94 +1254,32 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
   )
 
   const reopenCase = useCallback(
-    (id: string, reason: string) => {
+    (_id: string, reason: string): void => {
       if (reason.trim().length < 10) throw new Error('Give the reopen a reason of at least 10 characters.')
-      setState((prev) => {
-        const entry = prev.moderation.find((item) => item.id === id)
-        return withNote(
-          {
-            ...prev,
-            moderation: prev.moderation.map((item) =>
-              item.id === id ? { ...item, status: 'open', resolution: `reopened: ${reason}` } : item
-            ),
-          },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: 'Moderation case reopened',
-            entity: entry ? `${id} · ${entry.subject}` : id,
-            detail: reason,
-            category: 'moderation',
-            at: nowIso(),
-          }
-        )
-      })
+      throw contractGap('moderation reopen')
     },
-    [actor.name, actor.role]
+    []
   )
 
   const dryRunBackfill = useCallback(
     async (ruleKey: string, windowLabel: string): Promise<BackfillBatch> => {
-      const current = stateRef.current
-      const rule = current.rules
+      const rule = stateRef.current.rules
         .filter((entry) => entry.ruleKey === ruleKey && entry.status === 'published')
         .sort((a, b) => b.version - a.version)[0]
       if (!rule) throw new Error('Choose a published rule version.')
-      const rows = (SAMPLE_BACKFILL_ROWS[ruleKey] ?? []).map((row) => ({
-        ...row,
-      }))
-      const batch: BackfillBatch = {
-        id: `BF-2026-${String(current.backfill.length + 16).padStart(3, '0')}`,
+      const api = createRecognitionApi()
+      const created = await api.createBackfill({
         ruleKey,
         ruleVersion: rule.version,
-        windowLabel,
         from: '2026-10-19T00:00:00+03:00',
         to: '2026-11-18T23:59:59+03:00',
-        status: 'dry_run',
-        scanned: ruleKey === 'audio.story' ? 2980 : ruleKey === 'trail.completed' ? 386 : 1280,
-        unit:
-          ruleKey === 'audio.story'
-            ? 'completions'
-            : ruleKey === 'trail.completed'
-              ? 'trail completions'
-              : 'check-ins',
-        rows,
-        requestedBy: actor.id,
-        approvedBy: null,
-        createdAt: nowIso(),
-        approvedAt: null,
-      }
-      const api = createRecognitionApi()
-      try {
-        await api.createBackfill({
-          ruleKey,
-          ruleVersion: rule.version,
-          from: batch.from,
-          to: batch.to,
-        })
-      } catch {
-        // The operator dry-run remains available when the mock is off.
-      }
-      setState((prev) =>
-        withNote(
-          { ...prev, backfill: [batch, ...prev.backfill] },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: 'Backfill dry-run',
-            entity: `${batch.id} · ${ruleKey} · v${rule.version}`,
-            detail: `${rows.length} rows · 0 removals · ${windowLabel}`,
-            category: 'awards',
-            at: nowIso(),
-          }
-        )
-      )
-      return batch
+      })
+      await refresh()
+      return { ...mapApiBackfill(created), windowLabel }
     },
-    [actor.id, actor.name, actor.role]
+    [refresh]
   )
+
 
   const setBackfillRowInclude = useCallback((batchId: string, rowId: string, include: boolean) => {
     setState((prev) => ({
@@ -1737,33 +1296,10 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const requestBackfill = useCallback(
-    (id: string) => {
-      setState((prev) => {
-        const batch = prev.backfill.find((entry) => entry.id === id)
-        if (!batch) return prev
-        const included = batch.rows.filter((row) => row.include)
-        return withNote(
-          {
-            ...prev,
-            backfill: prev.backfill.map((entry) =>
-              entry.id === id ? { ...entry, status: 'requested' } : entry
-            ),
-          },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: 'Backfill approval requested',
-            entity: `${batch.id} · ${batch.ruleKey} · v${batch.ruleVersion}`,
-            detail: `${included.length} of ${batch.rows.length} rows · ${included.reduce((sum, row) => sum + row.xp, 0)} XP · awaiting a second approver`,
-            category: 'awards',
-            at: nowIso(),
-          }
-        )
-      })
-      notify.success('Approval requested')
+    (_id: string): void => {
+      throw contractGap('backfill approval request')
     },
-    [actor.name, actor.role]
+    []
   )
 
   const approveBackfill = useCallback(
@@ -1775,69 +1311,25 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       if (batch.requestedBy === actor.id) {
         throw new Error('You requested this batch. A second approver must approve it.')
       }
-      if (apiBackfillIds.current.has(id) && isUuid(id)) {
-        const api = createRecognitionApi()
-        await api.approveBackfill(id)
-      }
-      setState((prev) =>
-        withNote(
-          {
-            ...prev,
-            backfill: prev.backfill.map((entry) =>
-              entry.id === id
-                ? {
-                    ...entry,
-                    status: 'approved',
-                    approvedBy: actor.name,
-                    approvedAt: nowIso(),
-                  }
-                : entry
-            ),
-          },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: 'Backfill approved',
-            entity: `${batch.id} · ${batch.ruleKey} · v${batch.ruleVersion}`,
-            detail: `${batch.rows.filter((row) => row.include).length} awards · approved by a second administrator`,
-            category: 'awards',
-            at: nowIso(),
-          }
+      if (!apiBackfillIds.current.has(id) || !isUuid(id)) {
+        throw new Error(
+          'This batch did not come from the contracts API. Approval needs a contract batch id; nothing was changed.'
         )
-      )
+      }
+      const api = createRecognitionApi()
+      await api.approveBackfill(id)
+      await refresh()
       notify.saved('Backfill approved')
     },
-    [actor.id, actor.name, actor.role]
+    [actor.id, refresh]
   )
 
   const withdrawBackfill = useCallback(
-    (id: string, reason: string) => {
+    (_id: string, reason: string): void => {
       if (reason.trim().length < 10) throw new Error('Explain the withdrawal with at least 10 characters.')
-      setState((prev) => {
-        const batch = prev.backfill.find((entry) => entry.id === id)
-        return withNote(
-          {
-            ...prev,
-            backfill: prev.backfill.map((entry) =>
-              entry.id === id ? { ...entry, status: 'withdrawn', note: reason } : entry
-            ),
-          },
-          {
-            id: uuid(),
-            actor: actor.name,
-            role: roleLabel(actor.role),
-            action: 'Backfill request withdrawn',
-            entity: batch ? `${batch.id} · ${batch.ruleKey}` : id,
-            detail: `${reason} · the dry-run stays available`,
-            category: 'awards',
-            at: nowIso(),
-          }
-        )
-      })
-      notify.saved('Backfill withdrawn')
+      throw contractGap('backfill withdrawal')
     },
-    [actor.name, actor.role]
+    []
   )
 
   const setKillSwitch = useCallback(
@@ -1889,20 +1381,19 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
     setErrors({})
     setApiError(null)
     setSource('sample')
-    setScenarioState('default')
+    // Sample rows are only reachable through the explicit demo state.
+    setScenarioState('demo')
   }, [])
 
   const actions = useMemo<RecognitionActions>(
     () => ({
       reset,
       refresh,
-      saveRuleDraft,
+      createRule,
       simulateRule,
       publishRule,
       retireRule,
-      discardRuleDraft,
       createBadge,
-      updateBadge,
       publishBadge,
       saveMission,
       toggleMission,
@@ -1931,13 +1422,11 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
     [
       reset,
       refresh,
-      saveRuleDraft,
+      createRule,
       simulateRule,
       publishRule,
       retireRule,
-      discardRuleDraft,
       createBadge,
-      updateBadge,
       publishBadge,
       saveMission,
       toggleMission,

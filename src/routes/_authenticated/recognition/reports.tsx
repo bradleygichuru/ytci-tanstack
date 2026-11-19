@@ -272,11 +272,8 @@ function ReportsPage() {
               <Can permission="recognition.moderate">
                 <Button
                   variant="ghost"
-                  onClick={() => {
-                    setReopenError(null)
-                    setReopening(selected)
-                    setSelected(null)
-                  }}
+                  disabled
+                  title="The frozen contract has no moderation-reopen operation. Nothing is changed locally."
                 >
                   Reopen case
                 </Button>
@@ -294,11 +291,8 @@ function ReportsPage() {
               <Can permission="recognition.moderate">
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    setReopenError(null)
-                    setReopening(selected)
-                    setSelected(null)
-                  }}
+                  disabled
+                  title="The frozen contract has no moderation-reopen operation. Nothing is changed locally."
                 >
                   Reopen case
                 </Button>

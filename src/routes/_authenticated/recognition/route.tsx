@@ -47,11 +47,13 @@ function RecognitionShell() {
   const sourceLabel =
     scenario === 'empty'
       ? 'Empty dataset'
-      : source === 'api'
-        ? 'Contract API'
-        : source === 'mixed'
-          ? 'Contract API + sample overlay'
-          : 'Sample data'
+      : scenario === 'demo'
+        ? 'Sample data (demo)'
+        : source === 'api'
+          ? 'Contract API'
+          : source === 'mixed'
+            ? 'Contract API + sample fallback'
+            : 'Sample data'
   const sourceStatus = source === 'api' ? 'published' : source === 'mixed' ? 'triaged' : 'draft'
 
   return (

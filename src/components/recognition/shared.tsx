@@ -146,6 +146,7 @@ export function RecognitionNav() {
 
 const SCENARIOS: { value: Scenario; label: string }[] = [
   { value: 'default', label: 'Default' },
+  { value: 'demo', label: 'Sample (demo)' },
   { value: 'empty', label: 'Empty' },
   { value: 'loading', label: 'Loading' },
   { value: 'error', label: 'Error' },
@@ -185,7 +186,7 @@ export function FixtureStateControl() {
 }
 
 export function ScenarioBanner() {
-  const { scenario, source, apiError, apiStatus, setScenario } = useRecognition()
+  const { scenario, source, apiError, apiStatus, errors, setScenario } = useRecognition()
   if (scenario === 'stale') {
     return (
       <Notice tone="gold" title="Showing last-known recognition data.">
@@ -216,9 +217,28 @@ export function ScenarioBanner() {
       </Notice>
     )
   }
+  if (scenario === 'demo') {
+    return (
+      <Notice tone="gold" title="Sample data (demo).">
+        This view is the deterministic sample catalogue. Nothing here is contract data and every write action
+        is disabled or will fail with an explanation. Switch the data state back to Default for live reads.
+      </Notice>
+    )
+  }
+  if (source === 'mixed') {
+    const failed = Object.keys(errors)
+    return (
+      <Notice tone="gold" title="Mixed data: contract rows and sample fallback.">
+        {failed.length > 0
+          ? `These reads failed and are showing their fallback: ${failed.join(', ')}. `
+          : ''}
+        The footer lists this dataset as mixed; it is not a contract-only view. Writes still call the API and
+        fail with an explanation rather than pretending to succeed.
+      </Notice>
+    )
+  }
   // The banner is a provenance claim, so it may only appear when every read
-  // actually fell back to the sample overlay. A partial (mixed) read still
-  // renders contract rows and must not be labelled as sample data.
+  // actually fell back to the sample. A partial (mixed) read is handled above.
   if (source === 'sample' && apiStatus === 'error' && scenario === 'default') {
     return (
       <Notice tone="gold" title="Sample data is showing.">

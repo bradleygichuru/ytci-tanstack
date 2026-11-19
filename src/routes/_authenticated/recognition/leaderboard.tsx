@@ -216,14 +216,8 @@ function LeaderboardPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={closed}
-                    onClick={() =>
-                      actions.setBoardFrozen(
-                        season.key,
-                        false,
-                        'Investigation concluded; placements resumed.'
-                      )
-                    }
+                    disabled
+                    title="The frozen contract has no board-unfreeze operation. Nothing is changed locally."
                   >
                     <Snowflake className="h-4 w-4" weight="duotone" /> Unfreeze board
                   </Button>

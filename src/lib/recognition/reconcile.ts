@@ -18,6 +18,8 @@ import type {
   Mission,
   ModerationCase,
   RecognitionSource,
+  RecognitionState,
+  DataProvenance,
   Rule,
   Season,
 } from './types'
@@ -68,6 +70,7 @@ export function mapApiRule(row: ContractsSchemas['RecognitionRule'], existing?: 
     publishedBy: row.publishedBy ?? existing?.publishedBy ?? null,
     updatedAt: row.effectiveFrom,
     weeklyCap: existing?.weeklyCap ?? null,
+    provenance: 'api',
   }
 }
 
@@ -134,6 +137,7 @@ export function mapApiBadge(row: ContractsSchemas['BadgeDefinition'], existing?:
     version: row.version ?? existing?.version ?? 1,
     updatedAt: existing?.updatedAt ?? new Date().toISOString(),
     usedBy: existing?.usedBy ?? 0,
+    provenance: 'api',
   }
 }
 
@@ -153,8 +157,10 @@ export function mergeBadgeUsage(badges: Badge[], rules: Rule[], missions: Missio
 }
 
 export function mapApiSeason(row: ContractsSchemas['Season'], existing?: Season): Season {
+  const contractId = (row as { id?: unknown }).id
   return {
     key: row.key,
+    id: typeof contractId === 'string' && contractId.length > 0 ? contractId : existing?.id,
     nameEn: row.nameEn,
     nameSw: row.nameSw ?? existing?.nameSw ?? row.nameEn,
     startsAt: row.startsAt,
@@ -167,6 +173,7 @@ export function mapApiSeason(row: ContractsSchemas['Season'], existing?: Season)
     preparedBy: existing?.preparedBy ?? 'contract',
     closedAt: existing?.closedAt ?? null,
     closedBy: existing?.closedBy ?? null,
+    provenance: 'api',
   }
 }
 
@@ -201,6 +208,7 @@ export function mapApiModeration(
     decidedAt: row.decidedAt ?? existing?.decidedAt ?? null,
     resolution: existing?.resolution ?? null,
     createdAt: row.createdAt,
+    provenance: 'api',
   }
 }
 
@@ -232,6 +240,7 @@ export function mapApiBackfill(
     createdAt: row.createdAt ?? nowIso(),
     approvedAt: existing?.approvedAt ?? null,
     note: existing?.note,
+    provenance: 'api',
   }
 }
 
@@ -256,6 +265,7 @@ export function mapApiKillSwitch(
     reason: row.reason ?? existing?.reason ?? null,
     updatedBy: row.updatedBy ?? existing?.updatedBy ?? null,
     updatedAt: row.updatedAt ?? existing?.updatedAt ?? nowIso(),
+    provenance: 'api',
   }
 }
 
@@ -290,6 +300,7 @@ export function mapApiAudit(row: ContractsSchemas['AuditEntry']): AuditEntry {
     detail: row.reason ?? 'Recorded by the contracts API.',
     category: auditCategory(row.entityType, row.action),
     at: row.createdAt,
+    provenance: 'api',
   }
 }
 
@@ -318,6 +329,7 @@ export function mergeBoardRows(sample: BoardRow[], api: ContractsSchemas['Leader
       retractedReason: existing?.retractedReason,
       retractedBy: existing?.retractedBy,
       retractedAt: existing?.retractedAt,
+      provenance: 'api',
     })
   }
   return recomputeRanks([...merged.values()])
@@ -339,4 +351,44 @@ export function boardFromApi(
 
 export function isAwardTabEmpty(awards: Award[], tab: string): boolean {
   return awards.filter((award) => award.status === tab).length === 0
+}
+
+/** Tag fixture rows so the marker can tell them from contract rows. */
+export function sampleRows<T extends { provenance?: DataProvenance }>(rows: T[]): T[] {
+  return rows.map((row) => ({ ...row, provenance: 'sample' }))
+}
+
+/**
+ * Derive the footer provenance from the rows actually on screen.
+ *
+ * Sample rows are only ever present in demo mode or when their read failed, so
+ * this can never label a mixed dataset as `api`.
+ */
+export function classifySource(state: RecognitionState): 'api' | 'sample' | 'mixed' {
+  let api = 0
+  let sample = 0
+  const mark = (row: { provenance?: DataProvenance } | undefined) => {
+    if (!row) return
+    if (row.provenance === 'api') api += 1
+    else sample += 1
+  }
+  for (const rows of [
+    state.rules,
+    state.badges,
+    state.missions,
+    state.seasons,
+    state.awards,
+    state.moderation,
+    state.backfill,
+    state.killSwitches,
+    state.audit,
+  ]) {
+    rows.forEach(mark)
+  }
+  for (const board of Object.values(state.boards)) {
+    board.rows.forEach(mark)
+  }
+  if (api === 0) return 'sample'
+  if (sample === 0) return 'api'
+  return 'mixed'
 }
