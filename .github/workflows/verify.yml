@@ -1,17 +1,21 @@
-# Draft verification workflow — ticket #377.
+# Verification workflow — ticket #377, gate for #376.
 #
-# NOT a required check. Branch protection must not list these jobs yet.
+# This IS a required check. Branch protection lists `Unit and contract` and
+# `Playwright fixture smoke`; a red suite must block a merge, so do not add
+# `continue-on-error` back to these steps.
 #
 # Scope:
-#   pull_request  -> unit/contract only (fast, no backend)
-#   integration   -> Playwright fixture smoke on port 3210
-#   nightly       -> Playwright fixture smoke on port 3210
-#   manual        -> Playwright fixture smoke on port 3210
+#   pull_request  -> unit/contract + fixture harness smoke (fast, no backend)
+#   integration   -> unit/contract + fixture harness smoke
+#   nightly       -> unit/contract + fixture harness smoke
+#   manual        -> unit/contract + fixture harness smoke
 #
-# Live mode (real admin app + Postgres + Go API) is deliberately not wired
-# here. It needs a disposable database and seed; see docs/verification/README.md.
-# Do not point CI at a shared database.
-name: Verification (draft)
+# Live mode (real admin app + Postgres + Go contracts mock + disposable seed)
+# runs in `playwright-live`. It needs the repository secrets
+# VERIFY_DATABASE_URL (must contain "verify"), VERIFY_BETTER_AUTH_SECRET and
+# VERIFY_ADMIN_PASSWORD, and is skipped — not silently downgraded to fixture —
+# when they are absent. See docs/verification/README.md.
+name: Verification
 
 on:
   pull_request:
@@ -38,15 +42,12 @@ jobs:
       - uses: oven-sh/setup-bun@v1
       - run: bun install --frozen-lockfile
       - name: Unit tests
-        continue-on-error: true
         run: bun run test:unit -- --passWithNoTests
-      - name: Typecheck
-        continue-on-error: true
-        run: bunx tsc --noEmit
+      - name: Typecheck (fails on any error outside the known baseline)
+        run: bun run typecheck:gate
 
   playwright:
     name: Playwright fixture smoke
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -66,6 +67,124 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-verify-${{ github.run_id }}
+          path: |
+            playwright-report/verify
+            test-results/verify
+          if-no-files-found: warn
+          retention-days: 14
+
+  # Secrets are not available in a job-level `if`, so a preflight step reads
+  # them and publishes whether the live run can proceed.
+  live-preflight:
+    name: Live verification preflight
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+      missing: ${{ steps.check.outputs.missing }}
+    steps:
+      - name: Check live-mode secrets
+        id: check
+        env:
+          VERIFY_DATABASE_URL: ${{ secrets.VERIFY_DATABASE_URL }}
+          VERIFY_BETTER_AUTH_SECRET: ${{ secrets.VERIFY_BETTER_AUTH_SECRET }}
+          VERIFY_ADMIN_PASSWORD: ${{ secrets.VERIFY_ADMIN_PASSWORD }}
+        run: |
+          missing=""
+          for name in VERIFY_DATABASE_URL VERIFY_BETTER_AUTH_SECRET VERIFY_ADMIN_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              missing="${missing:+$missing, }$name"
+            fi
+          done
+          if [ -z "$missing" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "missing=$missing" >> "$GITHUB_OUTPUT"
+            echo "::notice::Live verification skipped — missing secrets: $missing"
+          fi
+
+  # Product verification: real admin app, disposable Postgres, Go contracts
+  # mock and a disposable seed. Fixture mode must never stand in for this.
+  playwright-live:
+    name: Playwright live (seeded)
+    needs: live-preflight
+    if: needs.live-preflight.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_USER: verify
+          POSTGRES_PASSWORD: verify
+          POSTGRES_DB: ytci_verify
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U verify -d ytci_verify"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      CI: "true"
+      DATABASE_URL: ${{ secrets.VERIFY_DATABASE_URL }}
+      BETTER_AUTH_SECRET: ${{ secrets.VERIFY_BETTER_AUTH_SECRET }}
+      BETTER_AUTH_URL: http://127.0.0.1:3210
+      VITE_CONTRACTS_API_URL: http://127.0.0.1:8099
+      VITE_FLAG_MICE: "true"
+      VITE_FLAG_SPECIES: "true"
+      VERIFY_MODE: live
+      VERIFY_SEED_ID: verify-ci-${{ github.run_id }}
+      VERIFY_BASE_URL: http://127.0.0.1:3210
+      VERIFY_ADMIN_PASSWORD: ${{ secrets.VERIFY_ADMIN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out the contracts source
+        uses: actions/checkout@v4
+        with:
+          repository: bradleygichuru/ytci-go
+          ref: master
+          path: ytci-go
+      - uses: oven-sh/setup-bun@v1
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ytci-go/go.mod
+          cache: false
+      - run: bun install --frozen-lockfile
+      - name: Apply migrations to the disposable database
+        run: bun run db:migrate
+      - name: Seed the verification users
+        run: bun run scripts/seed-test-users.ts
+      - name: Seed the species verification roles
+        run: bun run scripts/seed-verify-372.ts
+      - name: Start the frozen contracts mock
+        working-directory: ytci-go
+        run: |
+          go run ./cmd/contracts-mock -addr :8099 &
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8099/health >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo "contracts mock did not become healthy" >&2
+          exit 1
+      - name: Start the admin app on the verify port
+        run: |
+          bunx vite dev --port 3210 --host 127.0.0.1 &
+          for attempt in $(seq 1 120); do
+            if curl -fsS http://127.0.0.1:3210/login >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          echo "admin app did not become healthy" >&2
+          exit 1
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+      - name: Run live verification
+        run: bun run test:e2e:verify:live
+      - name: Upload Playwright artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-verify-live-${{ github.run_id }}
           path: |
             playwright-report/verify
             test-results/verify
