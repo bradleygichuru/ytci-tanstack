@@ -7,6 +7,7 @@ import {
   mergeBoardRows,
   mergeKillSwitches,
   mergeRules,
+  normaliseRuleHistory,
 } from '#/lib/recognition/reconcile'
 import type { BoardRow, KillSwitch, Rule } from '#/lib/recognition/types'
 
@@ -58,6 +59,13 @@ describe('contract reconciliation', () => {
     const merged = mergeRules([sampleRule], [mapApiRule(apiRule, sampleRule)])
     expect(merged.map((rule) => rule.version)).toEqual([3, 2])
     expect(merged[0].xpAmount).toBe(60)
+  })
+
+  it('leaves one published version when the contract is newer than the sample', () => {
+    const merged = mergeRules([sampleRule, { ...sampleRule, id: 'local-3', version: 3, status: 'published' }], [])
+    const normalised = normaliseRuleHistory(merged)
+    expect(normalised.filter((rule) => rule.status === 'published').map((rule) => rule.version)).toEqual([3])
+    expect(normalised.find((rule) => rule.version === 2)?.status).toBe('retired')
   })
 
   it('derives badge name fields from the contract', () => {

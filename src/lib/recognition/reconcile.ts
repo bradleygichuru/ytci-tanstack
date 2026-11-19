@@ -71,6 +71,35 @@ export function mapApiRule(row: ContractsSchemas['RecognitionRule'], existing?: 
   }
 }
 
+/**
+ * Keeps at most one published version per rule key. A contract row that is newer
+ * than a sample row retires the older one instead of leaving two live versions.
+ */
+export function normaliseRuleHistory(rules: Rule[]): Rule[] {
+  const byKey = new Map<string, Rule[]>()
+  for (const rule of rules) {
+    byKey.set(rule.ruleKey, [...(byKey.get(rule.ruleKey) ?? []), rule])
+  }
+  const result: Rule[] = []
+  for (const versions of byKey.values()) {
+    const published = versions
+      .filter((rule) => rule.status === 'published')
+      .sort((a, b) => b.version - a.version)
+    const active = published[0]
+    for (const rule of versions) {
+      if (active && rule.id !== active.id && rule.status === 'published') {
+        result.push({ ...rule, status: 'retired', effectiveTo: active.effectiveFrom })
+      } else {
+        result.push(rule)
+      }
+    }
+  }
+  return result.sort((a, b) => {
+    if (a.ruleKey !== b.ruleKey) return a.ruleKey.localeCompare(b.ruleKey)
+    return b.version - a.version
+  })
+}
+
 export function mergeRules(sample: Rule[], api: Rule[]): Rule[] {
   const merged = new Map<string, Rule>()
   for (const rule of sample) merged.set(`${rule.ruleKey}@${rule.version}`, rule)

@@ -55,6 +55,7 @@ import {
   mergeRules,
   mergeSeasons,
   mergeBoardRows,
+  normaliseRuleHistory,
   mapApiAudit,
   mapApiBackfill,
   mapApiBadge,
@@ -401,7 +402,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
       successes += 1
       apiRuleIds.current = new Set(rulesResult.value.map((row) => row.id))
       const apiRules = rulesResult.value.map((row) => mapApiRule(row, findRule(row)))
-      rules = mergeRules(stateRef.current.rules, apiRules)
+      rules = normaliseRuleHistory(mergeRules(stateRef.current.rules, apiRules))
       setSection('rules', 'ready')
     } else {
       nextErrors.rules = apiErrorText(rulesResult.reason)
