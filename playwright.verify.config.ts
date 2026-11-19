@@ -32,7 +32,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   // The live harness signs into a real app and downloads route chunks on first
   // navigation. A single retry absorbs a cold start or a transient rate-limit
-  // window without hiding a reproducible product failure.
+  // window without hiding a reproducible product failure. (#364 aligned this
+  // with CI so local and CI runs behave the same.)
   retries: 1,
   workers: 1,
   // A cold preview fetches a route chunk on first client-side navigation; the
