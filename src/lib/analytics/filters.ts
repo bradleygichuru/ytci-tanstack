@@ -141,7 +141,9 @@ export function summariseFilters(
   const scope =
     parts.length > 0
       ? `${parts.join(' · ')} · applied to this screen`
-      : 'Illustrative overlay · not filter-aware'
+      : section === 'programme'
+        ? 'Domain-table view · analytics filters do not apply'
+        : 'Illustrative overlay · not filter-aware'
 
   return {
     window,

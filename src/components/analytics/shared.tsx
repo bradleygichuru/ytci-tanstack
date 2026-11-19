@@ -346,7 +346,6 @@ export function ScopeLine({
           Not applied here: {summary.unapplied.map((item) => item.label).join(', ')}
         </span>
       ) : null}
-      {section === 'search' || section === 'programme' ? <ContractGapBadge /> : null}
       {stale ? <StaleNotice label="Stale rollup" /> : null}
     </div>
   )
@@ -877,6 +876,14 @@ export function ExportDialog({
     [],
   )
 
+  const openDialog = () => {
+    setFrom(defaultFrom)
+    setTo(defaultTo)
+    setAck(null)
+    setError(null)
+    setOpen(true)
+  }
+
   const submit = async () => {
     if (pending) return
     setPending(true)
@@ -897,7 +904,7 @@ export function ExportDialog({
       <Button
         variant="outline"
         size="sm"
-        onClick={() => setOpen(true)}
+        onClick={openDialog}
         disabled={!allowed || stale}
         title={
           !allowed
