@@ -29,6 +29,8 @@ import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedThenNowRouteRouteImport } from './routes/_authenticated/then-now/route'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedProgrammeIndexRouteImport } from './routes/_authenticated/programme/index'
+import { Route as AuthenticatedProgrammeSurfaceRouteImport } from './routes/_authenticated/programme/$surface'
 import { Route as AuthenticatedThenNowIndexRouteImport } from './routes/_authenticated/then-now/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedThenNowExperiencesIndexRouteImport } from './routes/_authenticated/then-now/experiences/index'
@@ -143,6 +145,18 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedProgrammeIndexRoute =
+  AuthenticatedProgrammeIndexRouteImport.update({
+    id: '/programme/',
+    path: '/programme/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedProgrammeSurfaceRoute =
+  AuthenticatedProgrammeSurfaceRouteImport.update({
+    id: '/programme/$surface',
+    path: '/programme/$surface',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedThenNowIndexRoute =
   AuthenticatedThenNowIndexRouteImport.update({
     id: '/',
@@ -222,7 +236,9 @@ export interface FileRoutesByFullPath {
   '/media': typeof AuthenticatedMediaRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/programme/': typeof AuthenticatedProgrammeIndexRoute
   '/then-now/': typeof AuthenticatedThenNowIndexRoute
   '/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
   '/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
@@ -252,7 +268,9 @@ export interface FileRoutesByTo {
   '/media': typeof AuthenticatedMediaRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/programme': typeof AuthenticatedProgrammeIndexRoute
   '/then-now': typeof AuthenticatedThenNowIndexRoute
   '/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
   '/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
@@ -285,7 +303,9 @@ export interface FileRoutesById {
   '/_authenticated/media': typeof AuthenticatedMediaRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_authenticated/programme/': typeof AuthenticatedProgrammeIndexRoute
   '/_authenticated/then-now/': typeof AuthenticatedThenNowIndexRoute
   '/_authenticated/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
   '/_authenticated/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
@@ -318,7 +338,9 @@ export interface FileRouteTypes {
     | '/media'
     | '/settings'
     | '/users'
+    | '/programme/$surface'
     | '/api/auth/$'
+    | '/programme/'
     | '/then-now/'
     | '/then-now/experiences/$experienceId'
     | '/then-now/experiences/new'
@@ -348,7 +370,9 @@ export interface FileRouteTypes {
     | '/media'
     | '/settings'
     | '/users'
+    | '/programme/$surface'
     | '/api/auth/$'
+    | '/programme'
     | '/then-now'
     | '/then-now/experiences/$experienceId'
     | '/then-now/experiences/new'
@@ -380,7 +404,9 @@ export interface FileRouteTypes {
     | '/_authenticated/media'
     | '/_authenticated/settings'
     | '/_authenticated/users'
+    | '/_authenticated/programme/$surface'
     | '/api/auth/$'
+    | '/_authenticated/programme/'
     | '/_authenticated/then-now/'
     | '/_authenticated/then-now/experiences/$experienceId'
     | '/_authenticated/then-now/experiences/new'
@@ -545,6 +571,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/programme/': {
+      id: '/_authenticated/programme/'
+      path: '/programme'
+      fullPath: '/programme/'
+      preLoaderRoute: typeof AuthenticatedProgrammeIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/programme/$surface': {
+      id: '/_authenticated/programme/$surface'
+      path: '/programme/$surface'
+      fullPath: '/programme/$surface'
+      preLoaderRoute: typeof AuthenticatedProgrammeSurfaceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/then-now/': {
       id: '/_authenticated/then-now/'
       path: '/'
@@ -665,6 +705,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedProgrammeSurfaceRoute: typeof AuthenticatedProgrammeSurfaceRoute
+  AuthenticatedProgrammeIndexRoute: typeof AuthenticatedProgrammeIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -682,6 +724,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMediaRoute: AuthenticatedMediaRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedProgrammeSurfaceRoute: AuthenticatedProgrammeSurfaceRoute,
+  AuthenticatedProgrammeIndexRoute: AuthenticatedProgrammeIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -701,12 +745,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
