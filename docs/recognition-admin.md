@@ -42,44 +42,80 @@ The shared sidebar has one Recognition entry (`src/lib/navigation/sections.ts`) 
 | 11  | Audit: one log, category filters                                                   | `recognition/audit.tsx`                       | Export respects the active filter; actor, role and absolute time on every row                                                                                            |
 | 12  | Kill switches: four switches, reason + typed OFF, history                          | `recognition/kill-switches.tsx`               | Current-state attribution with reason/actor/time; dependency summary; typed `OFF` for the global stop                                                                    |
 
-## Data states
+## Data states and provenance
 
-The layout exposes a data-state switcher (`default`, `empty`, `loading`, `error`,
-`stale`, `read-only`). Every list uses the shell `DataStateView` / `DataTable`
-state grammar. The contracts client is configured with the matching fixture
-state, so `empty`, `error` and `stale` exercise the mock where a fixture exists.
+The layout exposes a data-state switcher (`default`, `sample (demo)`, `empty`,
+`loading`, `error`, `stale`, `read-only`). Every list uses the shell
+`DataStateView` / `DataTable` state grammar.
 
-When the contracts mock is not running the surface falls back to the
-deterministic sample and the footer says `Sample data`. Actions that write to
-the contract still call the API and fail with an explanation rather than
-pretending the write succeeded (for example `publishBadge`, `correctAward`,
-`setKillSwitch`).
+Reads replace their section with contract rows. A successful read never keeps a
+sample row: rules, badges, seasons, moderation, backfill, kill switches, audit
+and the leaderboard each become exactly the rows the API returned. A failed read
+leaves the last-known rows for that section in place so the operator can see
+what is stale.
+
+Sample rows are reachable in two cases only:
+
+1. the explicit **Sample (demo)** data state, or
+2. every contract read fails and the whole surface falls back to the
+   deterministic sample.
+
+Each row carries a provenance tag (`api` or `sample`). The footer marker is
+derived from the rows actually on screen: `Contract API` only when every visible
+row is contract data, `Contract API + sample fallback` for a mixed result, and
+`Sample data` for the fallback/demo states. A mixed screen is never labelled
+`Contract API`.
+
+Missions and the awards ledger have no contract read in 1.0.0, so a reachable
+API clears their fixtures rather than mixing invented rows into a live screen.
+They remain available in the demo state and in the all-reads-failed fallback.
+
+Writes now call the contract and refetch on success. `createRule`,
+`createBadge` and `createSeason` post to their collection endpoints;
+`publishRule`, `publishBadge`, `publishSeason`, `freezeSeason` and
+`closeSeason` post to the action endpoints. A toast appears only after a 2xx
+response, and a rejected write leaves the UI unchanged and shows the error.
+
 
 ## Contract gaps (no contract change made)
 
 The frozen 1.0.0 contract has read/write endpoints for rules, badges, seasons,
 moderation, backfill, adjustments, kill switches and audit. It does **not** yet
-expose:
+expose the operations this console needs to finish the job. Each is read-only or
+explicitly refused rather than simulated:
 
-1. **Awards ledger read** (`GET /v1/admin/recognition/awards`) and **retry**
-   (`POST /v1/admin/recognition/awards/{id}/retry`). The ledger is an operator
-   overlay over the sample; corrections go through the real adjustments endpoint.
-2. **Mission administration** (`GET/POST /v1/admin/recognition/missions`). The
-   screen uses the sample catalogue; pause/resume and completion correction are
-   audited overlays.
-3. **Leaderboard administration** (`GET /v1/admin/recognition/leaderboard/{season}`,
+1. **Rule definition update** (`PATCH /v1/admin/recognition/rules/{id}`). `POST
+   /rules` creates a draft and `POST /rules/{id}/publish` publishes it, but there
+   is no way to change the definition after creation. The editor locks the
+   definition fields and explains the gap.
+2. **Rule retire** (`POST /v1/admin/recognition/rules/{id}/retire`). Retiring is
+   disabled; the button carries the contract-gap explanation.
+3. **Badge definition update** (`PATCH /v1/admin/recognition/badges/{key}`).
+   `POST /badges` creates and `POST /badges/{key}/publish` publishes, but an
+   existing badge cannot be edited. The badge dialog opens read-only.
+4. **Season identity in the read model.** `POST /seasons/{id}/publish`,
+   `/freeze` and `/close` require a UUID, but `Season` exposes only `key`. The
+   client sends the UUID when the read model provides one and otherwise refuses
+   with an explanation; it never sends the key and never swallows the rejection.
+   Either add `id` to `Season` or accept the season key on those endpoints.
+5. **Awards ledger read** (`GET /v1/admin/recognition/awards`) and **retry**
+   (`POST /v1/admin/recognition/awards/{id}/retry`). The ledger is empty in live
+   mode; corrections go through the real adjustments endpoint.
+6. **Mission administration** (`GET/POST /v1/admin/recognition/missions`). The
+   screen is empty in live mode and populated only by demo data.
+7. **Leaderboard administration** (`GET /v1/admin/recognition/leaderboard/{season}`,
    retract, restore). Freeze, public visibility and season close use contract
    endpoints/overlays; retract/restore are audited overlays.
-4. **Rule version-history read**. History is derived from the rule list by
+8. **Rule version-history read**. History is derived from the rule list by
    `ruleKey` + `version`; a dedicated endpoint would be cheaper at production
    volume.
-5. **Bulk award retry** with a server-side preview. The client preview groups the
+9. **Bulk award retry** with a server-side preview. The client preview groups the
    current filter and calls the same idempotent retry path per award.
 
 Adding any of these is an additive contract change in `ytci-go`, a vendored YAML
-update, regeneration and fixture/test coverage. Until then the UI labels the
-overlay behaviour in the footer and the audit entry, and keeps the contract
-writes real.
+update, regeneration and fixture/test coverage. The change-control candidates
+are 1–4; they are the operations the current UI deliberately disables instead of
+pretending to save.
 
 ## Tests
 

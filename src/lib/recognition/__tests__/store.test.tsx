@@ -142,7 +142,7 @@ async function mount() {
     </RecognitionProvider>
   )
   await waitFor(() => expect(ctx?.apiStatus).not.toBe('loading'))
-  return ctx as RecognitionContextValue
+  return ctx as unknown as RecognitionContextValue
 }
 
 beforeEach(() => {

@@ -123,6 +123,13 @@ function SeasonsPage() {
         </Notice>
       ) : null}
 
+      <Notice tone="neutral" title="Season actions need a UUID the read model does not expose.">
+        Publish, freeze and close call POST /seasons/&#123;id&#125;/publish, /freeze and /close, which take a UUID.
+        The frozen Season read exposes only the key, so the console sends the UUID when one is present and
+        otherwise refuses with an explanation. It never sends the key or marks the action done locally. This is
+        a change-control candidate.
+      </Notice>
+
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[860px] text-sm">

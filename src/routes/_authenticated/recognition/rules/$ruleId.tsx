@@ -26,7 +26,6 @@ import {
   ScopeNote,
   StatusPill,
 } from '#/components/recognition/shared'
-import { ActionDialog } from '#/components/recognition/dialogs'
 import { DirtyGuard } from '#/components/recognition/DirtyGuard'
 import type { Rule, RuleDraft } from '#/lib/recognition/types'
 
