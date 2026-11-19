@@ -1321,7 +1321,7 @@ export function RecognitionProvider({ children }: { children: ReactNode }) {
         to: '2026-11-18T23:59:59+03:00',
       })
       await refresh()
-      return mapApiBackfill(created, { ...mapApiBackfill(created), windowLabel } as BackfillBatch)
+      return { ...mapApiBackfill(created), windowLabel }
     },
     [refresh]
   )

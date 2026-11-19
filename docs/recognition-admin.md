@@ -125,7 +125,12 @@ bunx vitest run src/lib/recognition src/components/recognition
 bun run build                 # SSR build includes the recognition routes
 ```
 
+`src/lib/recognition/__tests__/store.test.tsx` covers the provenance contract
+(contract-only rows on success, labelled sample fallback when every read fails,
+mixed never reported as API) and the write contract (creates call the API and
+refetch, rejected writes leave the UI unchanged and never toast, season actions
+send the UUID and refuse without one).
+
 Playwright device screens were not run for this stream, per the execution
-instruction. The component tests cover the rule diff, validation, simulation
-gate, rank recomputation, failure grouping, contract reconciliation and the
-retracted-row restore path.
+instruction. The recognition verify spec is live-mode only and skips in the
+static fixture harness; it needs a seeded app and `VERIFY_ADMIN_PASSWORD`.
