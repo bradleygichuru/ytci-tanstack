@@ -95,6 +95,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     label: 'Programme',
     items: [
       {
+        key: 'mice',
+        label: 'Events operations',
+        path: '/programme/events',
+        icon: Calendar,
+        permission: 'events.read',
+        requiresAdmin: true,
+        flag: 'mice',
+        status: 'live',
+        owner: 'stream:mice',
+      },
+      {
         key: 'recognition',
         label: 'Recognition',
         path: '/recognition',

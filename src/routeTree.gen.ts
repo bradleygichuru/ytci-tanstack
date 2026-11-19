@@ -32,6 +32,7 @@ import { Route as AuthenticatedThenNowRouteRouteImport } from './routes/_authent
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedProgrammeIndexRouteImport } from './routes/_authenticated/programme/index'
 import { Route as AuthenticatedProgrammeSurfaceRouteImport } from './routes/_authenticated/programme/$surface'
+import { Route as AuthenticatedProgrammeEventsRouteRouteImport } from './routes/_authenticated/programme/events/route'
 import { Route as AuthenticatedRecognitionIndexRouteImport } from './routes/_authenticated/recognition/index'
 import { Route as AuthenticatedRecognitionAuditRouteImport } from './routes/_authenticated/recognition/audit'
 import { Route as AuthenticatedRecognitionAwardsRouteImport } from './routes/_authenticated/recognition/awards'
@@ -44,6 +45,17 @@ import { Route as AuthenticatedRecognitionReportsRouteImport } from './routes/_a
 import { Route as AuthenticatedRecognitionSeasonsRouteImport } from './routes/_authenticated/recognition/seasons'
 import { Route as AuthenticatedThenNowIndexRouteImport } from './routes/_authenticated/then-now/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthenticatedProgrammeEventsIndexRouteImport } from './routes/_authenticated/programme/events/index'
+import { Route as AuthenticatedProgrammeEventsEventIdRouteImport } from './routes/_authenticated/programme/events/$eventId'
+import { Route as AuthenticatedProgrammeEventsAgendaRouteImport } from './routes/_authenticated/programme/events/agenda'
+import { Route as AuthenticatedProgrammeEventsAuditRouteImport } from './routes/_authenticated/programme/events/audit'
+import { Route as AuthenticatedProgrammeEventsCheckInRouteImport } from './routes/_authenticated/programme/events/check-in'
+import { Route as AuthenticatedProgrammeEventsListRouteImport } from './routes/_authenticated/programme/events/list'
+import { Route as AuthenticatedProgrammeEventsOrganisersRouteImport } from './routes/_authenticated/programme/events/organisers'
+import { Route as AuthenticatedProgrammeEventsRegistrationsRouteImport } from './routes/_authenticated/programme/events/registrations'
+import { Route as AuthenticatedProgrammeEventsReportsRouteImport } from './routes/_authenticated/programme/events/reports'
+import { Route as AuthenticatedProgrammeEventsReviewRouteImport } from './routes/_authenticated/programme/events/review'
+import { Route as AuthenticatedProgrammeEventsVenuesRouteImport } from './routes/_authenticated/programme/events/venues'
 import { Route as AuthenticatedRecognitionRulesIndexRouteImport } from './routes/_authenticated/recognition/rules/index'
 import { Route as AuthenticatedRecognitionRulesRuleIdRouteImport } from './routes/_authenticated/recognition/rules/$ruleId'
 import { Route as AuthenticatedThenNowExperiencesIndexRouteImport } from './routes/_authenticated/then-now/experiences/index'
@@ -176,6 +188,12 @@ const AuthenticatedProgrammeSurfaceRoute =
     path: '/programme/$surface',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedProgrammeEventsRouteRoute =
+  AuthenticatedProgrammeEventsRouteRouteImport.update({
+    id: '/programme/events',
+    path: '/programme/events',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedRecognitionIndexRoute =
   AuthenticatedRecognitionIndexRouteImport.update({
     id: '/',
@@ -247,6 +265,72 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedProgrammeEventsIndexRoute =
+  AuthenticatedProgrammeEventsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsEventIdRoute =
+  AuthenticatedProgrammeEventsEventIdRouteImport.update({
+    id: '/$eventId',
+    path: '/$eventId',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsAgendaRoute =
+  AuthenticatedProgrammeEventsAgendaRouteImport.update({
+    id: '/agenda',
+    path: '/agenda',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsAuditRoute =
+  AuthenticatedProgrammeEventsAuditRouteImport.update({
+    id: '/audit',
+    path: '/audit',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsCheckInRoute =
+  AuthenticatedProgrammeEventsCheckInRouteImport.update({
+    id: '/check-in',
+    path: '/check-in',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsListRoute =
+  AuthenticatedProgrammeEventsListRouteImport.update({
+    id: '/list',
+    path: '/list',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsOrganisersRoute =
+  AuthenticatedProgrammeEventsOrganisersRouteImport.update({
+    id: '/organisers',
+    path: '/organisers',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsRegistrationsRoute =
+  AuthenticatedProgrammeEventsRegistrationsRouteImport.update({
+    id: '/registrations',
+    path: '/registrations',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsReportsRoute =
+  AuthenticatedProgrammeEventsReportsRouteImport.update({
+    id: '/reports',
+    path: '/reports',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsReviewRoute =
+  AuthenticatedProgrammeEventsReviewRouteImport.update({
+    id: '/review',
+    path: '/review',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
+const AuthenticatedProgrammeEventsVenuesRoute =
+  AuthenticatedProgrammeEventsVenuesRouteImport.update({
+    id: '/venues',
+    path: '/venues',
+    getParentRoute: () => AuthenticatedProgrammeEventsRouteRoute,
+  } as any)
 const AuthenticatedRecognitionRulesIndexRoute =
   AuthenticatedRecognitionRulesIndexRouteImport.update({
     id: '/rules/',
@@ -328,6 +412,7 @@ export interface FileRoutesByFullPath {
   '/media': typeof AuthenticatedMediaRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/programme/events': typeof AuthenticatedProgrammeEventsRouteRouteWithChildren
   '/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/recognition/audit': typeof AuthenticatedRecognitionAuditRoute
   '/recognition/awards': typeof AuthenticatedRecognitionAwardsRoute
@@ -342,6 +427,16 @@ export interface FileRoutesByFullPath {
   '/programme/': typeof AuthenticatedProgrammeIndexRoute
   '/recognition/': typeof AuthenticatedRecognitionIndexRoute
   '/then-now/': typeof AuthenticatedThenNowIndexRoute
+  '/programme/events/$eventId': typeof AuthenticatedProgrammeEventsEventIdRoute
+  '/programme/events/agenda': typeof AuthenticatedProgrammeEventsAgendaRoute
+  '/programme/events/audit': typeof AuthenticatedProgrammeEventsAuditRoute
+  '/programme/events/check-in': typeof AuthenticatedProgrammeEventsCheckInRoute
+  '/programme/events/list': typeof AuthenticatedProgrammeEventsListRoute
+  '/programme/events/organisers': typeof AuthenticatedProgrammeEventsOrganisersRoute
+  '/programme/events/registrations': typeof AuthenticatedProgrammeEventsRegistrationsRoute
+  '/programme/events/reports': typeof AuthenticatedProgrammeEventsReportsRoute
+  '/programme/events/review': typeof AuthenticatedProgrammeEventsReviewRoute
+  '/programme/events/venues': typeof AuthenticatedProgrammeEventsVenuesRoute
   '/recognition/rules/$ruleId': typeof AuthenticatedRecognitionRulesRuleIdRoute
   '/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
   '/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
@@ -349,6 +444,7 @@ export interface FileRoutesByFullPath {
   '/then-now/sites/$siteId': typeof AuthenticatedThenNowSitesSiteIdRoute
   '/then-now/sites/new': typeof AuthenticatedThenNowSitesNewRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
+  '/programme/events/': typeof AuthenticatedProgrammeEventsIndexRoute
   '/recognition/rules/': typeof AuthenticatedRecognitionRulesIndexRoute
   '/then-now/experiences/': typeof AuthenticatedThenNowExperiencesIndexRoute
   '/then-now/review/': typeof AuthenticatedThenNowReviewIndexRoute
@@ -386,6 +482,16 @@ export interface FileRoutesByTo {
   '/programme': typeof AuthenticatedProgrammeIndexRoute
   '/recognition': typeof AuthenticatedRecognitionIndexRoute
   '/then-now': typeof AuthenticatedThenNowIndexRoute
+  '/programme/events/$eventId': typeof AuthenticatedProgrammeEventsEventIdRoute
+  '/programme/events/agenda': typeof AuthenticatedProgrammeEventsAgendaRoute
+  '/programme/events/audit': typeof AuthenticatedProgrammeEventsAuditRoute
+  '/programme/events/check-in': typeof AuthenticatedProgrammeEventsCheckInRoute
+  '/programme/events/list': typeof AuthenticatedProgrammeEventsListRoute
+  '/programme/events/organisers': typeof AuthenticatedProgrammeEventsOrganisersRoute
+  '/programme/events/registrations': typeof AuthenticatedProgrammeEventsRegistrationsRoute
+  '/programme/events/reports': typeof AuthenticatedProgrammeEventsReportsRoute
+  '/programme/events/review': typeof AuthenticatedProgrammeEventsReviewRoute
+  '/programme/events/venues': typeof AuthenticatedProgrammeEventsVenuesRoute
   '/recognition/rules/$ruleId': typeof AuthenticatedRecognitionRulesRuleIdRoute
   '/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
   '/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
@@ -393,6 +499,7 @@ export interface FileRoutesByTo {
   '/then-now/sites/$siteId': typeof AuthenticatedThenNowSitesSiteIdRoute
   '/then-now/sites/new': typeof AuthenticatedThenNowSitesNewRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
+  '/programme/events': typeof AuthenticatedProgrammeEventsIndexRoute
   '/recognition/rules': typeof AuthenticatedRecognitionRulesIndexRoute
   '/then-now/experiences': typeof AuthenticatedThenNowExperiencesIndexRoute
   '/then-now/review': typeof AuthenticatedThenNowReviewIndexRoute
@@ -420,6 +527,7 @@ export interface FileRoutesById {
   '/_authenticated/media': typeof AuthenticatedMediaRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/programme/events': typeof AuthenticatedProgrammeEventsRouteRouteWithChildren
   '/_authenticated/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/_authenticated/recognition/audit': typeof AuthenticatedRecognitionAuditRoute
   '/_authenticated/recognition/awards': typeof AuthenticatedRecognitionAwardsRoute
@@ -434,6 +542,16 @@ export interface FileRoutesById {
   '/_authenticated/programme/': typeof AuthenticatedProgrammeIndexRoute
   '/_authenticated/recognition/': typeof AuthenticatedRecognitionIndexRoute
   '/_authenticated/then-now/': typeof AuthenticatedThenNowIndexRoute
+  '/_authenticated/programme/events/$eventId': typeof AuthenticatedProgrammeEventsEventIdRoute
+  '/_authenticated/programme/events/agenda': typeof AuthenticatedProgrammeEventsAgendaRoute
+  '/_authenticated/programme/events/audit': typeof AuthenticatedProgrammeEventsAuditRoute
+  '/_authenticated/programme/events/check-in': typeof AuthenticatedProgrammeEventsCheckInRoute
+  '/_authenticated/programme/events/list': typeof AuthenticatedProgrammeEventsListRoute
+  '/_authenticated/programme/events/organisers': typeof AuthenticatedProgrammeEventsOrganisersRoute
+  '/_authenticated/programme/events/registrations': typeof AuthenticatedProgrammeEventsRegistrationsRoute
+  '/_authenticated/programme/events/reports': typeof AuthenticatedProgrammeEventsReportsRoute
+  '/_authenticated/programme/events/review': typeof AuthenticatedProgrammeEventsReviewRoute
+  '/_authenticated/programme/events/venues': typeof AuthenticatedProgrammeEventsVenuesRoute
   '/_authenticated/recognition/rules/$ruleId': typeof AuthenticatedRecognitionRulesRuleIdRoute
   '/_authenticated/then-now/experiences/$experienceId': typeof AuthenticatedThenNowExperiencesExperienceIdRoute
   '/_authenticated/then-now/experiences/new': typeof AuthenticatedThenNowExperiencesNewRoute
@@ -441,6 +559,7 @@ export interface FileRoutesById {
   '/_authenticated/then-now/sites/$siteId': typeof AuthenticatedThenNowSitesSiteIdRoute
   '/_authenticated/then-now/sites/new': typeof AuthenticatedThenNowSitesNewRoute
   '/api/admin/users/$': typeof ApiAdminUsersSplatRoute
+  '/_authenticated/programme/events/': typeof AuthenticatedProgrammeEventsIndexRoute
   '/_authenticated/recognition/rules/': typeof AuthenticatedRecognitionRulesIndexRoute
   '/_authenticated/then-now/experiences/': typeof AuthenticatedThenNowExperiencesIndexRoute
   '/_authenticated/then-now/review/': typeof AuthenticatedThenNowReviewIndexRoute
@@ -468,6 +587,7 @@ export interface FileRouteTypes {
     | '/media'
     | '/settings'
     | '/users'
+    | '/programme/events'
     | '/programme/$surface'
     | '/recognition/audit'
     | '/recognition/awards'
@@ -482,6 +602,16 @@ export interface FileRouteTypes {
     | '/programme/'
     | '/recognition/'
     | '/then-now/'
+    | '/programme/events/$eventId'
+    | '/programme/events/agenda'
+    | '/programme/events/audit'
+    | '/programme/events/check-in'
+    | '/programme/events/list'
+    | '/programme/events/organisers'
+    | '/programme/events/registrations'
+    | '/programme/events/reports'
+    | '/programme/events/review'
+    | '/programme/events/venues'
     | '/recognition/rules/$ruleId'
     | '/then-now/experiences/$experienceId'
     | '/then-now/experiences/new'
@@ -489,6 +619,7 @@ export interface FileRouteTypes {
     | '/then-now/sites/$siteId'
     | '/then-now/sites/new'
     | '/api/admin/users/$'
+    | '/programme/events/'
     | '/recognition/rules/'
     | '/then-now/experiences/'
     | '/then-now/review/'
@@ -526,6 +657,16 @@ export interface FileRouteTypes {
     | '/programme'
     | '/recognition'
     | '/then-now'
+    | '/programme/events/$eventId'
+    | '/programme/events/agenda'
+    | '/programme/events/audit'
+    | '/programme/events/check-in'
+    | '/programme/events/list'
+    | '/programme/events/organisers'
+    | '/programme/events/registrations'
+    | '/programme/events/reports'
+    | '/programme/events/review'
+    | '/programme/events/venues'
     | '/recognition/rules/$ruleId'
     | '/then-now/experiences/$experienceId'
     | '/then-now/experiences/new'
@@ -533,6 +674,7 @@ export interface FileRouteTypes {
     | '/then-now/sites/$siteId'
     | '/then-now/sites/new'
     | '/api/admin/users/$'
+    | '/programme/events'
     | '/recognition/rules'
     | '/then-now/experiences'
     | '/then-now/review'
@@ -559,6 +701,7 @@ export interface FileRouteTypes {
     | '/_authenticated/media'
     | '/_authenticated/settings'
     | '/_authenticated/users'
+    | '/_authenticated/programme/events'
     | '/_authenticated/programme/$surface'
     | '/_authenticated/recognition/audit'
     | '/_authenticated/recognition/awards'
@@ -573,6 +716,16 @@ export interface FileRouteTypes {
     | '/_authenticated/programme/'
     | '/_authenticated/recognition/'
     | '/_authenticated/then-now/'
+    | '/_authenticated/programme/events/$eventId'
+    | '/_authenticated/programme/events/agenda'
+    | '/_authenticated/programme/events/audit'
+    | '/_authenticated/programme/events/check-in'
+    | '/_authenticated/programme/events/list'
+    | '/_authenticated/programme/events/organisers'
+    | '/_authenticated/programme/events/registrations'
+    | '/_authenticated/programme/events/reports'
+    | '/_authenticated/programme/events/review'
+    | '/_authenticated/programme/events/venues'
     | '/_authenticated/recognition/rules/$ruleId'
     | '/_authenticated/then-now/experiences/$experienceId'
     | '/_authenticated/then-now/experiences/new'
@@ -580,6 +733,7 @@ export interface FileRouteTypes {
     | '/_authenticated/then-now/sites/$siteId'
     | '/_authenticated/then-now/sites/new'
     | '/api/admin/users/$'
+    | '/_authenticated/programme/events/'
     | '/_authenticated/recognition/rules/'
     | '/_authenticated/then-now/experiences/'
     | '/_authenticated/then-now/review/'
@@ -759,6 +913,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProgrammeSurfaceRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/programme/events': {
+      id: '/_authenticated/programme/events'
+      path: '/programme/events'
+      fullPath: '/programme/events'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsRouteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/recognition/': {
       id: '/_authenticated/recognition/'
       path: '/'
@@ -842,6 +1003,83 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/programme/events/': {
+      id: '/_authenticated/programme/events/'
+      path: '/'
+      fullPath: '/programme/events/'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsIndexRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/$eventId': {
+      id: '/_authenticated/programme/events/$eventId'
+      path: '/$eventId'
+      fullPath: '/programme/events/$eventId'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsEventIdRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/agenda': {
+      id: '/_authenticated/programme/events/agenda'
+      path: '/agenda'
+      fullPath: '/programme/events/agenda'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsAgendaRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/audit': {
+      id: '/_authenticated/programme/events/audit'
+      path: '/audit'
+      fullPath: '/programme/events/audit'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsAuditRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/check-in': {
+      id: '/_authenticated/programme/events/check-in'
+      path: '/check-in'
+      fullPath: '/programme/events/check-in'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsCheckInRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/list': {
+      id: '/_authenticated/programme/events/list'
+      path: '/list'
+      fullPath: '/programme/events/list'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsListRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/organisers': {
+      id: '/_authenticated/programme/events/organisers'
+      path: '/organisers'
+      fullPath: '/programme/events/organisers'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsOrganisersRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/registrations': {
+      id: '/_authenticated/programme/events/registrations'
+      path: '/registrations'
+      fullPath: '/programme/events/registrations'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsRegistrationsRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/reports': {
+      id: '/_authenticated/programme/events/reports'
+      path: '/reports'
+      fullPath: '/programme/events/reports'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsReportsRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/review': {
+      id: '/_authenticated/programme/events/review'
+      path: '/review'
+      fullPath: '/programme/events/review'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsReviewRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
+    }
+    '/_authenticated/programme/events/venues': {
+      id: '/_authenticated/programme/events/venues'
+      path: '/venues'
+      fullPath: '/programme/events/venues'
+      preLoaderRoute: typeof AuthenticatedProgrammeEventsVenuesRouteImport
+      parentRoute: typeof AuthenticatedProgrammeEventsRouteRoute
     }
     '/_authenticated/recognition/rules/': {
       id: '/_authenticated/recognition/rules/'
@@ -990,6 +1228,51 @@ const AuthenticatedThenNowRouteRouteWithChildren =
     AuthenticatedThenNowRouteRouteChildren,
   )
 
+interface AuthenticatedProgrammeEventsRouteRouteChildren {
+  AuthenticatedProgrammeEventsEventIdRoute: typeof AuthenticatedProgrammeEventsEventIdRoute
+  AuthenticatedProgrammeEventsAgendaRoute: typeof AuthenticatedProgrammeEventsAgendaRoute
+  AuthenticatedProgrammeEventsAuditRoute: typeof AuthenticatedProgrammeEventsAuditRoute
+  AuthenticatedProgrammeEventsCheckInRoute: typeof AuthenticatedProgrammeEventsCheckInRoute
+  AuthenticatedProgrammeEventsListRoute: typeof AuthenticatedProgrammeEventsListRoute
+  AuthenticatedProgrammeEventsOrganisersRoute: typeof AuthenticatedProgrammeEventsOrganisersRoute
+  AuthenticatedProgrammeEventsRegistrationsRoute: typeof AuthenticatedProgrammeEventsRegistrationsRoute
+  AuthenticatedProgrammeEventsReportsRoute: typeof AuthenticatedProgrammeEventsReportsRoute
+  AuthenticatedProgrammeEventsReviewRoute: typeof AuthenticatedProgrammeEventsReviewRoute
+  AuthenticatedProgrammeEventsVenuesRoute: typeof AuthenticatedProgrammeEventsVenuesRoute
+  AuthenticatedProgrammeEventsIndexRoute: typeof AuthenticatedProgrammeEventsIndexRoute
+}
+
+const AuthenticatedProgrammeEventsRouteRouteChildren: AuthenticatedProgrammeEventsRouteRouteChildren =
+  {
+    AuthenticatedProgrammeEventsEventIdRoute:
+      AuthenticatedProgrammeEventsEventIdRoute,
+    AuthenticatedProgrammeEventsAgendaRoute:
+      AuthenticatedProgrammeEventsAgendaRoute,
+    AuthenticatedProgrammeEventsAuditRoute:
+      AuthenticatedProgrammeEventsAuditRoute,
+    AuthenticatedProgrammeEventsCheckInRoute:
+      AuthenticatedProgrammeEventsCheckInRoute,
+    AuthenticatedProgrammeEventsListRoute:
+      AuthenticatedProgrammeEventsListRoute,
+    AuthenticatedProgrammeEventsOrganisersRoute:
+      AuthenticatedProgrammeEventsOrganisersRoute,
+    AuthenticatedProgrammeEventsRegistrationsRoute:
+      AuthenticatedProgrammeEventsRegistrationsRoute,
+    AuthenticatedProgrammeEventsReportsRoute:
+      AuthenticatedProgrammeEventsReportsRoute,
+    AuthenticatedProgrammeEventsReviewRoute:
+      AuthenticatedProgrammeEventsReviewRoute,
+    AuthenticatedProgrammeEventsVenuesRoute:
+      AuthenticatedProgrammeEventsVenuesRoute,
+    AuthenticatedProgrammeEventsIndexRoute:
+      AuthenticatedProgrammeEventsIndexRoute,
+  }
+
+const AuthenticatedProgrammeEventsRouteRouteWithChildren =
+  AuthenticatedProgrammeEventsRouteRoute._addFileChildren(
+    AuthenticatedProgrammeEventsRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedRecognitionRouteRoute: typeof AuthenticatedRecognitionRouteRouteWithChildren
   AuthenticatedThenNowRouteRoute: typeof AuthenticatedThenNowRouteRouteWithChildren
@@ -1006,6 +1289,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedProgrammeEventsRouteRoute: typeof AuthenticatedProgrammeEventsRouteRouteWithChildren
   AuthenticatedProgrammeSurfaceRoute: typeof AuthenticatedProgrammeSurfaceRoute
   AuthenticatedProgrammeIndexRoute: typeof AuthenticatedProgrammeIndexRoute
 }
@@ -1027,6 +1311,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMediaRoute: AuthenticatedMediaRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedProgrammeEventsRouteRoute:
+    AuthenticatedProgrammeEventsRouteRouteWithChildren,
   AuthenticatedProgrammeSurfaceRoute: AuthenticatedProgrammeSurfaceRoute,
   AuthenticatedProgrammeIndexRoute: AuthenticatedProgrammeIndexRoute,
 }
