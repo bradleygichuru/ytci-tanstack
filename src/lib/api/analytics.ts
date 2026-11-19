@@ -22,10 +22,21 @@ export interface AnalyticsData {
   failedIntegrations: { name: string; lastError: string; since: string }[]
 }
 
+export interface HeritageCount {
+  day: string
+  scope: 'site' | 'sensitive'
+  siteId: string
+  siteName: string
+  event: string
+  count: number
+}
+
 export function analyticsApi(config: ApiConfig) {
   return {
     summary: () =>
       apiRequest<AnalyticsData>(config, '/v1/analytics/summary'),
+    heritage: () =>
+      apiRequest<{ items: HeritageCount[] }>(config, '/v1/analytics/heritage'),
     exportReport: (body: { format: 'csv' | 'pdf'; dateFrom: string; dateTo: string; sections: string[] }) =>
       apiRequest<{ reportId: string; status: string; createdAt: string }>(config, '/v1/analytics/reports/export', { method: 'POST', body }),
   }

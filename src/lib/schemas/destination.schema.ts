@@ -1,4 +1,5 @@
 import z from 'zod'
+import { DESTINATION_CATEGORIES } from '../catalog'
 
 const nullableStr = () => z.string().nullable().optional().default('')
 
@@ -7,7 +8,7 @@ export const destinationSchema = z.object({
   slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must be kebab-case'),
   county: z.string().min(1, 'County is required'),
   locality: nullableStr(),
-  category: z.string().min(1, 'Category is required'),
+  category: z.enum(DESTINATION_CATEGORIES, { message: 'Choose a controlled category' }),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   latitude: z.preprocess(
     (val) => val === '' || val === null ? undefined : val,

@@ -309,6 +309,13 @@
 
   --ring: var(--on-primary-container);
 
+  --amber-deep: #ffdf9d;
+  --amber-bg: rgba(253, 192, 2, 0.16);
+  --success-leaf: #b7e39e;
+  --leaf: #b7e39e;
+  --leaf-bg: rgba(183, 227, 158, 0.14);
+  --destructive: #8f1d1d;
+
   --bg-base: #0a1418;
 
   --sea-ink: #d7ece8;
@@ -469,24 +476,6 @@ body {
 
 }
 
-a {
-
-  color: var(--primary-container);
-
-  text-decoration-color: var(--outline-muted);
-
-  text-decoration-thickness: 1px;
-
-  text-underline-offset: 2px;
-
-}
-
-a:hover {
-
-  color: var(--primary);
-
-}
-
 button,
 
 a {
@@ -508,6 +497,24 @@ a {
     background-color: var(--background);
 
     color: var(--foreground);
+
+  }
+
+  a {
+
+    color: var(--primary-container);
+
+    text-decoration-color: var(--outline-muted);
+
+    text-decoration-thickness: 1px;
+
+    text-underline-offset: 2px;
+
+  }
+
+  a:hover {
+
+    color: var(--primary);
 
   }
 

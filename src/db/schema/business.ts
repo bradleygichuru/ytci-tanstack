@@ -1,5 +1,5 @@
 import { isNotNull, relations, sql } from "drizzle-orm";
-import { pgTable, uuid, text, timestamp, boolean, integer, bigint, numeric, jsonb, date, index, uniqueIndex, primaryKey, customType, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, boolean, integer, bigint, numeric, jsonb, date, index, uniqueIndex, primaryKey, customType, doublePrecision, check } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
 const geometry = customType<{ data: string }>({
@@ -12,9 +12,27 @@ export const destinations = pgTable("destinations", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   county: text("county").notNull(),
+  countyCode: text("county_code"),
   locality: text("locality"),
   category: text("category").notNull(),
+  interestTags: text("interest_tags").array().notNull().default(sql`'{}'::text[]`),
+  transportModes: text("transport_modes").array().notNull().default(sql`'{}'::text[]`),
+  bestSeasons: text("best_seasons").array().notNull().default(sql`'{}'::text[]`),
   status: text("status", { enum: ["draft", "published", "archived"] }).default("draft").notNull(),
+  isCurated: boolean("is_curated").default(false).notNull(),
+  visitDurationMinMinutes: integer("visit_duration_min_minutes"),
+  visitDurationMaxMinutes: integer("visit_duration_max_minutes"),
+  feeStatus: text("fee_status", { enum: ["verified", "reported", "not_verified", "free"] }),
+  feeCurrency: text("fee_currency"),
+  feeAmount: integer("fee_amount"),
+  feeBasis: text("fee_basis"),
+  openingHoursStatus: text("opening_hours_status", { enum: ["verified", "unverified"] }),
+  openingHours: jsonb("opening_hours"),
+  heroImageUrl: text("hero_image_url"),
+  heroImageAttribution: text("hero_image_attribution"),
+  heroImageLicense: text("hero_image_license"),
+  heroImageSource: text("hero_image_source"),
+  heroImageAlt: text("hero_image_alt"),
   location: geometry("location"),
   mapLabel: text("map_label"),
   accessRoute: text("access_route"),
@@ -38,6 +56,8 @@ export const destinations = pgTable("destinations", {
   googlePlaceId: text("google_place_id"),
   contentOwner: text("content_owner"),
   verificationStatus: text("verification_status"),
+  verifiedAt: timestamp("verified_at"),
+  verifiedBy: text("verified_by").references(() => users.id, { onDelete: "set null" }),
   lastUpdated: timestamp("last_updated"),
   reviewDate: timestamp("review_date"),
   createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
@@ -440,22 +460,28 @@ export const bucketListItems = pgTable("bucket_list_items", {
 // ── App Opens ──
 export const appOpens = pgTable("app_opens", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  analyticsId: uuid("analytics_id"),
   platform: text("platform", { enum: ["ios", "android"] }),
   appVersion: text("app_version"),
   openedAt: timestamp("opened_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("app_opens_analytics_idx").on(table.analyticsId, table.openedAt),
+]);
 
 // ── Analytics Events ──
 export const analyticsEvents = pgTable("analytics_events", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+  analyticsId: uuid("analytics_id"),
   event: text("event").notNull(),
   properties: jsonb("properties").default({}),
   platform: text("platform", { enum: ["ios", "android"] }),
   appVersion: text("app_version"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("analytics_events_analytics_idx").on(table.analyticsId, table.createdAt),
+]);
 
 // ── Report Jobs ──
 export const reportJobs = pgTable("report_jobs", {
@@ -521,9 +547,137 @@ export const eventSaves = pgTable("event_saves", {
   primaryKey({ columns: [table.userId, table.eventId] }),
 ]);
 
+// ── Marketplace ──
+export const partnerBusinesses = pgTable("partner_businesses", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  category: text("category", { enum: ["experiences", "food_drink", "transport", "shopping", "services", "connectivity"] }).notNull(),
+  tagline: text("tagline"),
+  shortDescription: text("short_description").notNull(),
+  fullDescription: text("full_description"),
+  county: text("county"),
+  locality: text("locality"),
+  serviceArea: text("service_area"),
+  address: text("address"),
+  locationLat: numeric("location_lat", { precision: 10, scale: 8 }),
+  locationLng: numeric("location_lng", { precision: 11, scale: 8 }),
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  redirectUrl: text("redirect_url").notNull(),
+  redirectLabel: text("redirect_label").default("Visit partner"),
+  disclosure: text("disclosure"),
+  imageUrl: text("image_url"),
+  imageAlt: text("image_alt"),
+  imageCredit: text("image_credit"),
+  status: text("status", { enum: ["draft", "published", "archived"] }).default("draft").notNull(),
+  isFeatured: boolean("is_featured").default(false).notNull(),
+  displayOrder: integer("display_order").default(0).notNull(),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+}, (table) => [
+  index("partner_businesses_category_status_idx").on(table.category, table.status),
+  index("partner_businesses_county_status_idx").on(table.county, table.status),
+  index("partner_businesses_status_featured_order_idx").on(table.status, table.isFeatured, table.displayOrder),
+  check("partner_businesses_category_check", sql`${table.category} in ('experiences', 'food_drink', 'transport', 'shopping', 'services', 'connectivity')`),
+  check("partner_businesses_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
+  check("partner_businesses_display_order_check", sql`${table.displayOrder} >= 0 and ${table.displayOrder} <= 10000`),
+]);
+
+export const accommodationProperties = pgTable("accommodation_properties", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  tier: text("tier", { enum: ["luxury", "midrange", "budget"] }).notNull(),
+  propertyType: text("property_type", { enum: ["lodge", "camp", "hotel", "hostel", "guesthouse", "apartment", "villa"] }).notNull(),
+  shortDescription: text("short_description").notNull(),
+  fullDescription: text("full_description"),
+  county: text("county").notNull(),
+  locality: text("locality"),
+  address: text("address"),
+  locationLat: numeric("location_lat", { precision: 10, scale: 8 }),
+  locationLng: numeric("location_lng", { precision: 11, scale: 8 }),
+  priceFromKes: integer("price_from_kes"),
+  priceNote: text("price_note"),
+  priceCheckedAt: date("price_checked_at"),
+  distanceNote: text("distance_note"),
+  cancellationNote: text("cancellation_note"),
+  paymentNote: text("payment_note"),
+  includedNote: text("included_note"),
+  badgeLabel: text("badge_label"),
+  amenities: text("amenities").array().notNull().default(sql`'{}'::text[]`),
+  highlights: text("highlights").array().notNull().default(sql`'{}'::text[]`),
+  bookingUrl: text("booking_url"),
+  directUrl: text("direct_url"),
+  disclosure: text("disclosure"),
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  imageUrl: text("image_url"),
+  imageAlt: text("image_alt"),
+  imageCredit: text("image_credit"),
+  status: text("status", { enum: ["draft", "published", "archived"] }).default("draft").notNull(),
+  isFeatured: boolean("is_featured").default(false).notNull(),
+  displayOrder: integer("display_order").default(0).notNull(),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+}, (table) => [
+  index("accommodation_properties_tier_status_idx").on(table.tier, table.status),
+  index("accommodation_properties_county_status_idx").on(table.county, table.status),
+  index("accommodation_properties_status_featured_order_idx").on(table.status, table.isFeatured, table.displayOrder),
+  check("accommodation_properties_tier_check", sql`${table.tier} in ('luxury', 'midrange', 'budget')`),
+  check("accommodation_properties_property_type_check", sql`${table.propertyType} in ('lodge', 'camp', 'hotel', 'hostel', 'guesthouse', 'apartment', 'villa')`),
+  check("accommodation_properties_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
+  check("accommodation_properties_display_order_check", sql`${table.displayOrder} >= 0 and ${table.displayOrder} <= 10000`),
+  check("accommodation_properties_price_from_kes_check", sql`${table.priceFromKes} is null or ${table.priceFromKes} >= 0`),
+]);
+
+export const esimProviders = pgTable("esim_providers", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  headline: text("headline"),
+  description: text("description").notNull(),
+  coverageNote: text("coverage_note"),
+  priceLabel: text("price_label"),
+  redirectUrl: text("redirect_url").notNull(),
+  redirectLabel: text("redirect_label").default("Get connected"),
+  disclosure: text("disclosure"),
+  logoUrl: text("logo_url"),
+  logoAlt: text("logo_alt"),
+  status: text("status", { enum: ["draft", "published", "archived"] }).default("draft").notNull(),
+  isFeatured: boolean("is_featured").default(false).notNull(),
+  displayOrder: integer("display_order").default(0).notNull(),
+  createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+}, (table) => [
+  uniqueIndex("esim_providers_one_featured_idx")
+    .on(table.isFeatured)
+    .where(sql`${table.isFeatured} = true and ${table.status} = 'published'`),
+  check("esim_providers_status_check", sql`${table.status} in ('draft', 'published', 'archived')`),
+  check("esim_providers_display_order_check", sql`${table.displayOrder} >= 0 and ${table.displayOrder} <= 10000`),
+]);
+
+export const marketplaceRedirects = pgTable("marketplace_redirects", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  entityType: text("entity_type", { enum: ["partner_business", "accommodation", "esim_provider"] }).notNull(),
+  entityId: uuid("entity_id").notNull(),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  source: text("source"),
+  platform: text("platform", { enum: ["ios", "android", "web"] }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("marketplace_redirects_entity_idx").on(table.entityType, table.entityId, table.createdAt),
+  check("marketplace_redirects_entity_type_check", sql`${table.entityType} in ('partner_business', 'accommodation', 'esim_provider')`),
+  check("marketplace_redirects_platform_check", sql`${table.platform} in ('ios', 'android', 'web')`),
+]);
+
 // ── Kenya Counties (PostGIS loaded via ogr2ogr) ──
 export const kenyaCounties = pgTable("kenya_counties", {
   gid: integer("gid").primaryKey(),
+  countyCode: text("county_code").notNull().unique(),
   adm1Name: text("adm1_name").notNull(),
   adm1Pcode: text("adm1_pcode"),
   areaSqkm: integer("area_sqkm"),

@@ -54,7 +54,7 @@ export async function apiRequest<T = unknown>(
   if (!res.ok) {
     const body = await res.json().catch(() => null)
     const err = body?.error ?? { code: 'UNKNOWN', message: res.statusText }
-    throw new ApiErrorResponse(res.status, err.code, err.message, err.details)
+    throw new ApiErrorResponse(res.status, err.code, err.message, err.details, body)
   }
 
   if (res.status === 204) return undefined as T

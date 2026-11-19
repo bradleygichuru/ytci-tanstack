@@ -15,7 +15,7 @@ import { getSession } from '#/lib/auth.functions'
 
 interface MyRouterContext {
   queryClient: QueryClient
-  user?: { id: string; email: string; role: string } | null
+  user?: { id: string; email: string; name?: string; role: string } | null
   token?: string | null
 }
 
@@ -30,6 +30,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
           user: {
             id: session.user.id,
             email: session.user.email,
+            name: session.user.name,
             role: session.user.role as string ?? 'moderator',
           },
           token: session.token ?? null,

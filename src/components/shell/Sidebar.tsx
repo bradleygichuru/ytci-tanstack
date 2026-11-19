@@ -1,19 +1,5 @@
-import {
-  ChartBar,
-  MapTrifold,
-  Image as ImageIcon,
-  BookOpen,
-  Leaf,
-  Calendar,
-  Megaphone,
-  Users,
-  Trophy,
-  GearSix,
-  ChatDots,
-  SignOut,
-  Robot,
-} from '@phosphor-icons/react'
-import { Link, useLocation, useRouter } from '@tanstack/react-router'
+import { SignOut } from '@phosphor-icons/react'
+import { Link, useLocation, useRouteContext, useRouter } from '@tanstack/react-router'
 import {
   Sidebar,
   SidebarContent,
@@ -27,53 +13,45 @@ import {
   SidebarMenuItem,
 } from '#/components/ui/sidebar'
 import { authClient } from '#/lib/auth-client'
+import { normaliseRole } from '#/lib/contracts/roles'
+import { useFlags } from '#/lib/flags'
+import {
+  PINNED_ITEMS,
+  visibleSections,
+  type NavItem,
+} from '#/lib/navigation/sections'
 
-const navGroups = [
-  {
-    label: 'Discovery',
-    items: [
-      { icon: ChartBar, label: 'Analytics', path: '/analytics' },
-      { icon: MapTrifold, label: 'CMS', path: '/destinations' },
-      { icon: ImageIcon, label: 'Media Library', path: '/media' },
-    ],
-  },
-  {
-    label: 'Engagement',
-    items: [
-      { icon: BookOpen, label: 'LMS', path: '/lms' },
-      { icon: Leaf, label: 'Conservation', path: '/conservation' },
-      { icon: Calendar, label: 'Events', path: '/events' },
-    ],
-  },
-  {
-    label: 'Platform',
-    items: [
-      { icon: Trophy, label: 'Challenges', path: '/challenges' },
-      { icon: ChatDots, label: 'Comments', path: '/comments' },
-      { icon: Megaphone, label: 'Campaigns', path: '/campaigns' },
-      { icon: Users, label: 'User Management', path: '/users' },
-      { icon: Robot, label: 'AI Config', path: '/ai-config' },
-    ],
-  },
-]
-
-const pinnedItems = [
-  { icon: GearSix, label: 'Settings', path: '/settings' },
-]
-
+/**
+ * Sectioned sidebar.
+ *
+ * Renders `NAV_SECTIONS` from the registry — this component owns no entries. A
+ * feature stream adds its entry to the registry; it never edits this file.
+ */
 export function AppSidebar() {
   const location = useLocation()
   const router = useRouter()
   const { data: session } = authClient.useSession()
+  const routeContext = useRouteContext({ from: '/_authenticated' })
   const user = session?.user
+  const role = normaliseRole(
+    (user as { role?: unknown } | undefined)?.role ?? routeContext.user?.role,
+  )
+  const flags = useFlags()
+
+  const visibleGroups = visibleSections({ role, flags })
+
+  const isActive = (item: NavItem) =>
+    location.pathname === item.path || location.pathname.startsWith(item.path + '/')
 
   return (
-    <Sidebar
-      collapsible="icon"
-    >
+    <Sidebar collapsible="icon">
       <SidebarHeader className="px-5 py-6 bg-sidebar group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-4">
         <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <img src="/logo.png" alt="YTC Explorer logo" className="h-9 w-9 shrink-0 rounded-xl object-cover" />
+          <img
+            src="/logo.png"
+            alt="YTC Explorer logo"
+            className="h-9 w-9 shrink-0 rounded-xl object-cover"
+          />
           <div className="group-data-[collapsible=icon]:hidden">
             <div className="font-sans text-2xl font-bold leading-none text-sidebar-foreground">
               YTC Explorer
@@ -86,24 +64,32 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-3 pt-4 group-data-[collapsible=icon]:px-1">
-        {navGroups.map((group, gi) => (
-          <SidebarGroup key={gi} className="mb-4">
+        {visibleGroups.map((group) => (
+          <SidebarGroup key={group.key} className="mb-4">
             <SidebarGroupLabel className="px-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/50">
               {group.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => (
-                  <SidebarMenuItem key={item.label}>
+                  <SidebarMenuItem key={item.key}>
                     <SidebarMenuButton
                       asChild
-                      isActive={location.pathname === item.path}
+                      isActive={isActive(item)}
                       tooltip={item.label}
                       className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                     >
                       <Link to={item.path} style={{ color: 'var(--sidebar-foreground)' }}>
                         <item.icon className="h-[18px] w-[18px]" weight="duotone" />
-                        <span className="text-sm font-semibold">{item.label}</span>
+                        <span className="flex-1 text-sm font-semibold">{item.label}</span>
+                        {item.status === 'shell' ? (
+                          <span
+                            className="rounded-full border border-sidebar-foreground/25 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden"
+                            title={item.owner ? `Owned by ${item.owner}` : 'Shell placeholder'}
+                          >
+                            Soon
+                          </span>
+                        ) : null}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -130,15 +116,13 @@ export function AppSidebar() {
               <p className="truncate text-sm font-semibold text-sidebar-foreground">
                 {user.name ?? 'User'}
               </p>
-              <p className="truncate text-xs text-sidebar-foreground/60">
-                {user.email}
-              </p>
+              <p className="truncate text-xs text-sidebar-foreground/60">{user.email}</p>
             </div>
           </div>
         )}
         <SidebarMenu>
-          {pinnedItems.map((item) => (
-            <SidebarMenuItem key={item.label}>
+          {PINNED_ITEMS.map((item) => (
+            <SidebarMenuItem key={item.key}>
               <SidebarMenuButton
                 asChild
                 isActive={location.pathname === item.path}
@@ -154,7 +138,14 @@ export function AppSidebar() {
           ))}
           <SidebarMenuItem>
             <SidebarMenuButton
-              onClick={async () => { try { await authClient.signOut() } catch { /* ignore, redirect anyway */ } await router.navigate({ to: '/login' }) }}
+              onClick={async () => {
+                try {
+                  await authClient.signOut()
+                } catch {
+                  /* ignore, redirect anyway */
+                }
+                await router.navigate({ to: '/login' })
+              }}
               tooltip="Sign Out"
               className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
             >

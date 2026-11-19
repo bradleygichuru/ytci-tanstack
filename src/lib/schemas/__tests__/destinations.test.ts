@@ -3,28 +3,28 @@ import { destinationSchema } from '../destination.schema'
 
 describe('destinationSchema', () => {
   it('accepts valid minimal input', () => {
-    const result = destinationSchema.safeParse({ name: 'Test Place', slug: 'test-place', county: 'Nairobi', category: 'wildlife' })
+    const result = destinationSchema.safeParse({ name: 'Test Place', slug: 'test-place', county: 'Nairobi', category: 'Wildlife' })
     expect(result.success).toBe(true)
   })
 
   it('rejects empty name', () => {
-    const result = destinationSchema.safeParse({ name: '', slug: 'test', county: 'Nairobi', category: 'wildlife' })
+    const result = destinationSchema.safeParse({ name: '', slug: 'test', county: 'Nairobi', category: 'Wildlife' })
     expect(result.success).toBe(false)
     if (!result.success) expect(result.error.issues.some(i => i.path[0] === 'name')).toBe(true)
   })
 
   it('rejects missing slug', () => {
-    const result = destinationSchema.safeParse({ name: 'Test', slug: '', county: 'Nairobi', category: 'wildlife' })
+    const result = destinationSchema.safeParse({ name: 'Test', slug: '', county: 'Nairobi', category: 'Wildlife' })
     expect(result.success).toBe(false)
   })
 
   it('rejects invalid slug format', () => {
-    const result = destinationSchema.safeParse({ name: 'Test', slug: 'Test Place!', county: 'Nairobi', category: 'wildlife' })
+    const result = destinationSchema.safeParse({ name: 'Test', slug: 'Test Place!', county: 'Nairobi', category: 'Wildlife' })
     expect(result.success).toBe(false)
   })
 
   it('rejects missing county', () => {
-    const result = destinationSchema.safeParse({ name: 'Test', slug: 'test', county: '', category: 'wildlife' })
+    const result = destinationSchema.safeParse({ name: 'Test', slug: 'test', county: '', category: 'Wildlife' })
     expect(result.success).toBe(false)
   })
 
@@ -33,8 +33,13 @@ describe('destinationSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('rejects an uncontrolled category', () => {
+    const result = destinationSchema.safeParse({ name: 'Test', slug: 'test', county: 'Nairobi', category: 'church' })
+    expect(result.success).toBe(false)
+  })
+
   it('fills defaults for optional fields', () => {
-    const result = destinationSchema.parse({ name: 'Test', slug: 'test', county: 'Nairobi', category: 'culture' })
+    const result = destinationSchema.parse({ name: 'Test', slug: 'test', county: 'Nairobi', category: 'Culture' })
     expect(result.status).toBe('draft')
     expect(result.difficulty).toBe('easy')
     expect(result.accessibility).toEqual([])
@@ -42,7 +47,7 @@ describe('destinationSchema', () => {
 
   it('coerces string lat/lng input to numbers', () => {
     const result = destinationSchema.parse({
-      name: 'Test', slug: 'test', county: 'Nairobi', category: 'culture',
+      name: 'Test', slug: 'test', county: 'Nairobi', category: 'Culture',
       latitude: '-1.4061', longitude: '35.2506',
     })
     expect(result.latitude).toBe(-1.4061)
@@ -51,7 +56,7 @@ describe('destinationSchema', () => {
 
   it('coerces zero lat/lng to 0', () => {
     const result = destinationSchema.parse({
-      name: 'Test', slug: 'test', county: 'Nairobi', category: 'culture',
+      name: 'Test', slug: 'test', county: 'Nairobi', category: 'Culture',
       latitude: 0, longitude: 0,
     })
     expect(result.latitude).toBe(0)
@@ -60,7 +65,7 @@ describe('destinationSchema', () => {
 
   it('treats empty string lat/lng as undefined, not 0', () => {
     const result = destinationSchema.parse({
-      name: 'Test', slug: 'test', county: 'Nairobi', category: 'culture',
+      name: 'Test', slug: 'test', county: 'Nairobi', category: 'Culture',
       latitude: '', longitude: '',
     })
     expect(result.latitude).toBeUndefined()
@@ -69,7 +74,7 @@ describe('destinationSchema', () => {
 
   it('treats undefined lat/lng as undefined, not 0', () => {
     const result = destinationSchema.parse({
-      name: 'Test', slug: 'test', county: 'Nairobi', category: 'culture',
+      name: 'Test', slug: 'test', county: 'Nairobi', category: 'Culture',
     })
     expect(result.latitude).toBeUndefined()
     expect(result.longitude).toBeUndefined()

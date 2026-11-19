@@ -17,6 +17,7 @@ interface FormFieldProps {
   error?: string
   required?: boolean
   id?: string
+  disabled?: boolean
   children?: React.ReactNode
 }
 
@@ -34,7 +35,7 @@ export function FormField({ label, description, error, required, id, children }:
   )
 }
 
-export function FormInput({ label, description, error, required, value, onChange, placeholder, type }: FormFieldProps & {
+export function FormInput({ label, description, error, required, disabled, value, onChange, placeholder, type }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
   placeholder?: string
@@ -49,6 +50,7 @@ export function FormInput({ label, description, error, required, value, onChange
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
+        disabled={disabled}
         aria-invalid={!!error || undefined}
         data-invalid={!!error || undefined}
       />
@@ -56,7 +58,7 @@ export function FormInput({ label, description, error, required, value, onChange
   )
 }
 
-export function FormTextarea({ label, description, error, required, value, onChange, placeholder }: FormFieldProps & {
+export function FormTextarea({ label, description, error, required, disabled, value, onChange, placeholder }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
   placeholder?: string
@@ -69,6 +71,7 @@ export function FormTextarea({ label, description, error, required, value, onCha
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
+        disabled={disabled}
         aria-invalid={!!error || undefined}
         data-invalid={!!error || undefined}
       />
@@ -78,7 +81,7 @@ export function FormTextarea({ label, description, error, required, value, onCha
 
 export type SelectOption = string | { value: string; label: string }
 
-export function FormSelect({ label, description, error, required, value, onChange, options }: FormFieldProps & {
+export function FormSelect({ label, description, error, required, disabled, value, onChange, options }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
   options: SelectOption[]
@@ -90,6 +93,7 @@ export function FormSelect({ label, description, error, required, value, onChang
         id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
+        disabled={disabled}
         aria-invalid={!!error || undefined}
         data-invalid={!!error || undefined}
         className="flex h-9 w-full rounded-lg border border-input bg-card px-3 py-1 text-sm text-foreground shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive"
@@ -104,19 +108,19 @@ export function FormSelect({ label, description, error, required, value, onChang
   )
 }
 
-export function FormSwitch({ label, description, error, required, checked, onChange }: FormFieldProps & {
+export function FormSwitch({ label, description, error, required, disabled, checked, onChange }: FormFieldProps & {
   checked: boolean
   onChange: (v: boolean) => void
 }) {
   const id = useId()
   return (
     <FormField label={label} description={description} error={error} required={required} id={id}>
-      <Switch id={id} checked={checked} onCheckedChange={onChange} />
+      <Switch id={id} checked={checked} onCheckedChange={onChange} disabled={disabled} />
     </FormField>
   )
 }
 
-export function FormSlider({ label, description, error, required, value, onChange, min, max, step }: FormFieldProps & {
+export function FormSlider({ label, description, error, required, disabled, value, onChange, min, max, step }: FormFieldProps & {
   value: number
   onChange: (v: number) => void
   min?: number
@@ -127,14 +131,14 @@ export function FormSlider({ label, description, error, required, value, onChang
   return (
     <FormField label={label} description={description} error={error} required={required} id={id}>
       <div className="flex items-center gap-3">
-        <Slider id={id} value={[value]} onValueChange={([v]) => onChange(v)} min={min} max={max} step={step} className="flex-1" />
+        <Slider id={id} value={[value]} onValueChange={([v]) => onChange(v)} min={min} max={max} step={step} disabled={disabled} className="flex-1" />
         <span className="text-sm text-muted-foreground w-10 text-right">{value}</span>
       </div>
     </FormField>
   )
 }
 
-export function FormDatePicker({ label, description, error, required, value, onChange }: FormFieldProps & {
+export function FormDatePicker({ label, description, error, required, disabled, value, onChange }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
 }) {
@@ -155,6 +159,7 @@ export function FormDatePicker({ label, description, error, required, value, onC
             )}
             aria-invalid={!!error || undefined}
             data-invalid={!!error || undefined}
+            disabled={disabled}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {isValidDate ? format(date!, 'PPP') : <span>Pick a date</span>}

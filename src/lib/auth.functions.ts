@@ -11,6 +11,7 @@ export const getSession = createServerFn({ method: "GET" }).handler(async () => 
     user: {
       id: session.user.id,
       email: session.user.email,
+      name: session.user.name,
       role: (session.user as Record<string, unknown>).role as string ?? 'moderator',
     },
     token: session.session.token,
