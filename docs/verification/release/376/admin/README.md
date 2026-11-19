@@ -74,12 +74,12 @@ VERIFY_MODE=live VERIFY_SEED_ID=verify-376-final \
 
 ## Results
 
-Three passes were needed because the host restarted repeatedly mid-run: it
-killed the preview (exit 143), once wiped `.output` (rebuilt at the same commit,
-`✓ built in 9.84s`), and wedged the app under load. Run 1 is the honest
-first pass. Runs 2-6 re-ran every failing file and every test a serial-mode
-cascade had skipped, so the final column is the best evidence available, not a
-single green run.
+Six runner invocations were needed because the host restarted repeatedly
+mid-run: it killed the preview (exit 143), once wiped `.output` (rebuilt at the
+same commit, `✓ built in 9.84s`), and wedged the app under load. Run 1 is the
+honest first pass. Runs 2-6 re-ran every failing file and every test a
+serial-mode cascade had skipped, so the final column is the best evidence
+available, not a single green run.
 
 ### Final status on this build
 
