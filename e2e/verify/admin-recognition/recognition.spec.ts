@@ -291,6 +291,57 @@ test('kill switches — typed OFF confirmation and dependency summary', async ()
 })
 
 // ---------------------------------------------------------------------------
+// Write paths (engine-on fixture override).
+// ---------------------------------------------------------------------------
+
+test('moderation — a decision needs a reason and is recorded', async () => {
+  test.skip(!process.env.VERIFY_WRITE_PATHS, 'needs the engine-on fixture override')
+  await open(page, '/recognition/reports', 'Names & reports')
+  await page.waitForTimeout(1200)
+  await page.getByRole('button', { name: /^decide$/i }).first().click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByText('Decide this case')).toBeVisible({ timeout: 15_000 })
+  const record = dialog.getByRole('button', { name: /record decision/i })
+  await expect(record, 'reason gate is enforced').toBeDisabled()
+  await dialog.getByLabel('Decision reason').pressSequentially('Verified against the scan evidence.', {
+    delay: 5,
+  })
+  await expect(record).toBeEnabled()
+  await record.click()
+  await expect(page.getByText(/decision recorded|recorded/i).first()).toBeVisible({ timeout: 20_000 })
+  await shot(page, 'reports-1400-light-decision-recorded')
+})
+
+test('awards — bulk retry asks for scope and never duplicates XP', async () => {
+  test.skip(!process.env.VERIFY_WRITE_PATHS, 'needs the engine-on fixture override')
+  await open(page, '/recognition/awards', 'Awards ledger')
+  await page.waitForTimeout(1200)
+  await page.getByRole('button', { name: /retry failed/i }).first().click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByText(/Retry \d+ failed award/i)).toBeVisible({ timeout: 15_000 })
+  await shot(page, 'awards-1400-light-retry-preview')
+  await dialog.getByRole('button', { name: /retry these awards/i }).click()
+  await expect(page.getByText(/XP was not duplicated|re-driven/i).first()).toBeVisible({
+    timeout: 20_000,
+  })
+  await shot(page, 'awards-1400-light-retry-done')
+})
+
+test('seasons — closing needs a reason and a typed confirmation', async () => {
+  test.skip(!process.env.VERIFY_WRITE_PATHS, 'needs the engine-on fixture override')
+  await open(page, '/recognition/seasons', 'Seasons')
+  await page.waitForTimeout(1000)
+  await page.getByRole('button', { name: /close season/i }).first().click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByText(/^Close .+\?$/)).toBeVisible({ timeout: 15_000 })
+  await expect(dialog.getByText(/type .* to confirm/i)).toBeVisible()
+  const confirm = dialog.getByRole('button', { name: /close and snapshot/i })
+  await expect(confirm, 'typed confirmation gates the close').toBeDisabled()
+  await shot(page, 'seasons-1400-light-close-dialog')
+  await dialog.getByRole('button', { name: /^cancel$/i }).click()
+})
+
+// ---------------------------------------------------------------------------
 // Role gating.
 // ---------------------------------------------------------------------------
 
