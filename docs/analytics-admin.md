@@ -11,7 +11,7 @@ Prototype: [species-analytics.html](https://github.com/bradleygichuru/ytci-mobil
 | --- | --- | --- | --- |
 | `overview` | `/analytics` | `GET /v1/admin/analytics/overview` + `quality` | `analytics.read` + `platform.admin_access` |
 | `journeys` | `/analytics/journeys` | `GET /v1/admin/analytics/journeys` | `analytics.read` |
-| `funnels` | `/analytics/funnels` | `GET /v1/admin/analytics/funnels` + `journeys` | `analytics.read` |
+| `funnels` | `/analytics/funnels` | `GET /v1/admin/analytics/journeys` (table and bars share it) | `analytics.read` |
 | `retention` | `/analytics/retention` | `GET /v1/admin/analytics/retention` | `analytics.read` |
 | `adoption` | `/analytics/adoption` | `GET /v1/admin/analytics/adoption` | `analytics.read` |
 | `search` | `/analytics/search` | `quality` signals; aggregate not in contract | `analytics.read` |
@@ -34,14 +34,19 @@ contract, not by copying the prototype's county/platform selectors.
 
 | Filter | Where it is offered | Where it is applied |
 | --- | --- | --- |
-| Date window (`30d`, `90d`, `season`) | Every section | Every contract read (`from`/`to`) |
+| Date window (`30d`, `90d`, `season`) | Every contract-backed section except Programme | Every contract read (`from`/`to`) |
 | Journey | Journeys only | Journeys read only (`journey` query) |
 | County | Not offered | No contract dimension exists |
 | Platform | Not offered | No contract dimension exists |
 
 - `SECTION_FILTERS` in `src/lib/analytics/filters.ts` is the single table the
-  request, the scope sentence and the "Not applied here" badge read. A filter
-  cannot be shown without being applied, or applied without being shown.
+  request, the scope sentence, the "Not applied here" badge and the filter bar
+  read. A filter cannot be shown without being applied, or applied without being
+  shown.
+- Programme reads no contract rollup, so its filter bar renders no date control
+  and no Reset: only the preview-only data-state switcher and the sentence
+  "No telemetry filter applies to this screen" (#388). A carried-in range or
+  journey filter stays hidden until the reader is on a screen that applies it.
 - The store sends the journey query to the journeys read only. Sending it to the
   other reads would make the badge a lie.
 - A journey set on Journeys and then carried to Overview shows a gold
@@ -119,6 +124,8 @@ update, regeneration and fixture/test coverage.
 | Keep the filter model honest | `SECTION_FILTERS` drives the request, the scope line and the badge. Journey is offered on Journeys only and is never sent to another read. |
 | Empty vs failed rollup | Distinct copy, distinct actions, distinct last-success sentences; no sample fallback; tests cover both. |
 | Last-success stamp | Derived from `quality.rollups`, preserved across a failed refetch, and rendered on every section. |
+| Funnels showed two completion populations (#387) | The summary table now derives from `journeySummaries(data.journeys)`, exactly like the step bars: entered is the first step, completed the last, so the row, the bar shares and the largest-drop caption share one denominator. The separate `funnels` read no longer backs the table. |
+| Programme offered a filter it does not apply (#388) | `FilterStateControl` reads `SECTION_FILTERS` before rendering a control. Programme offers no date range and no Reset; it keeps the data-state switcher and an explicit "No telemetry filter applies to this screen" note. |
 
 ## Data states and evidence matrix
 
@@ -152,7 +159,21 @@ bun run typecheck      # no new errors from this ticket (repo baseline remains)
 bun run build
 ```
 
-Playwright device runs were not performed for this stream, per the execution
-instruction. The unit and component tests cover the filter contract, chart/KPI
-population, journey reconciliation, funnel caption, elapsed retention, empty vs
-failed distinction, suppression markers, the API envelope and stale marker.
+The unit and component tests cover the filter contract, chart/KPI population,
+journey reconciliation, funnel caption, elapsed retention, empty vs failed
+distinction, suppression markers, the API envelope and stale marker.
+
+The analytics verification suite (`e2e/verify/admin-analytics/`) adds live
+screen assertions, including the #387 table/bars population check and the #388
+"no inert date control on Programme" check. It runs against a disposable app and
+seed:
+
+```bash
+VERIFY_MODE=live VERIFY_SEED_ID=verify-local-<session> \
+  VERIFY_BASE_URL=http://127.0.0.1:3210 \
+  VERIFY_ADMIN_PASSWORD=... DATABASE_URL=.../ytci_verify_<n> \
+  bun run test:e2e:verify
+```
+
+Fixture mode skips the live analytics specs; live mode skips the static fixture
+smoke, so the same command is valid in either mode.

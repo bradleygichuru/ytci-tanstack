@@ -181,6 +181,14 @@ test('programme: domain-table impact is never proxied from telemetry', async ({ 
   for (const surface of ['Conservation', 'Events', 'LMS', 'Recognition']) {
     await expect(page.getByRole('link', { name: new RegExp(surface) }).first()).toBeVisible()
   }
+
+  // #388: a filter is never shown unless applied. Programme reads domain
+  // tables, so it must not offer a date range or a reset that changes nothing.
+  await expect(page.getByLabel('Date range')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Reset filters' })).toHaveCount(0)
+  await expect(page.getByText('No telemetry filter applies to this screen')).toBeVisible()
+  // The preview-only data-state switcher remains.
+  await expect(page.getByLabel('Data state')).toBeVisible()
 })
 
 test('quality: pipeline checks, rollup health, definitions and erasure entry', async ({ page }) => {
