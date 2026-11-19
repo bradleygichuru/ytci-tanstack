@@ -147,7 +147,14 @@ function BadgesPage() {
     setDialogOpen(true)
   }
 
-  function save() {
+  async function save() {
+    if (editing) {
+      // No badge-update operation exists in the frozen contract. The dialog is
+      // read-only, so closing it must not pretend to save anything.
+      setDialogOpen(false)
+      setEditing(null)
+      return
+    }
     if (!form.badgeKey.trim() || !/^[a-z][a-z0-9_]*$/.test(form.badgeKey.trim())) {
       setError('Use a lowercase key with underscores, e.g. heritage_keeper.')
       return
@@ -156,18 +163,21 @@ function BadgesPage() {
       setError('The English name is required.')
       return
     }
-    const payload = {
-      badgeKey: form.badgeKey.trim(),
-      nameEn: form.nameEn.trim(),
-      nameSw: form.nameSw.trim() || null,
-      family: form.family.trim() || 'Explorer',
-      criteria: form.criteria.trim() || 'Criteria not set',
-      privacyClass: form.privacyClass,
-      hidden: form.hidden,
-      publicEligible: form.publicEligible,
+    try {
+      await actions.createBadge({
+        badgeKey: form.badgeKey.trim(),
+        nameEn: form.nameEn.trim(),
+        nameSw: form.nameSw.trim() || undefined,
+        family: form.family.trim() || 'Explorer',
+        criteria: form.criteria.trim() || 'Criteria not set',
+        privacyClass: form.privacyClass,
+        hidden: form.hidden,
+        publicEligible: form.publicEligible,
+      })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The badge draft was not created.')
+      return
     }
-    if (editing) actions.updateBadge(editing.badgeKey, payload)
-    else actions.createBadge(payload)
     setDialogOpen(false)
     setEditing(null)
   }
@@ -199,6 +209,12 @@ function BadgesPage() {
           unpublish endpoint, so this surface only warns and never removes a live badge.
         </Notice>
       ) : null}
+
+      <Notice tone="neutral" title="Badge definitions are not editable in this contract.">
+        POST /badges creates a badge and POST /badges/{key}/publish publishes it. The frozen contract has no
+        update operation, so an existing badge opens read-only and its fields are never staged for a publish
+        that could not carry them. A badge update is a change-control candidate.
+      </Notice>
 
       {publishError ? (
         <Notice tone="red" title="Badge not published">
@@ -354,13 +370,13 @@ function BadgesPage() {
           setDialogOpen(open)
           if (!open) setEditing(null)
         }}
-        title={editing ? `Edit ${editing.nameEn}` : 'New badge'}
+        title={editing ? `View ${editing.nameEn}` : 'New badge'}
         description={
-          editing?.status === 'published'
-            ? 'Changes to a published badge are staged as a new version.'
-            : 'Drafts can be incomplete, but publish needs both names.'
+          editing
+            ? 'The frozen contract has no badge-update operation. These fields are read-only; nothing is saved.'
+            : 'The badge draft is created by POST /badges. Publish needs both names.'
         }
-        confirmLabel={editing ? 'Save changes' : 'Create draft'}
+        confirmLabel={editing ? 'Close' : 'Create draft'}
         onConfirm={save}
         error={error}
         size="lg"
@@ -416,6 +432,7 @@ function BadgesPage() {
               value={form.family}
               onChange={(event) => setForm((prev) => ({ ...prev, family: event.target.value }))}
               aria-label="Badge family"
+              disabled={Boolean(editing)}
               className="h-9 w-full rounded-md border border-border bg-card px-2 text-sm"
             >
               {[
@@ -443,6 +460,7 @@ function BadgesPage() {
             <Input
               value={form.nameEn}
               onChange={(event) => setForm((prev) => ({ ...prev, nameEn: event.target.value }))}
+              disabled={Boolean(editing)}
               aria-label="English name"
             />
           </label>
@@ -453,6 +471,7 @@ function BadgesPage() {
             <Input
               value={form.nameSw}
               onChange={(event) => setForm((prev) => ({ ...prev, nameSw: event.target.value }))}
+              disabled={Boolean(editing)}
               aria-label="Kiswahili name"
             />
           </label>
@@ -464,6 +483,7 @@ function BadgesPage() {
               value={form.criteria}
               onChange={(event) => setForm((prev) => ({ ...prev, criteria: event.target.value }))}
               rows={2}
+              disabled={Boolean(editing)}
               aria-label="Criteria"
             />
           </label>
@@ -480,6 +500,7 @@ function BadgesPage() {
                 }))
               }
               aria-label="Privacy class"
+              disabled={Boolean(editing)}
               className="h-9 w-full rounded-md border border-border bg-card px-2 text-sm"
             >
               <option value="public">Public</option>
@@ -492,6 +513,7 @@ function BadgesPage() {
               <input
                 type="checkbox"
                 checked={form.hidden}
+                disabled={Boolean(editing)}
                 onChange={(event) => setForm((prev) => ({ ...prev, hidden: event.target.checked }))}
               />
               Hidden until earned
@@ -500,6 +522,7 @@ function BadgesPage() {
               <input
                 type="checkbox"
                 checked={form.publicEligible}
+                disabled={Boolean(editing)}
                 onChange={(event) =>
                   setForm((prev) => ({
                     ...prev,

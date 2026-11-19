@@ -8,9 +8,16 @@
  * reconciled with the contract objects in `store.tsx`.
  */
 
-export type Scenario = 'default' | 'empty' | 'loading' | 'error' | 'stale' | 'readonly'
+export type Scenario = 'default' | 'empty' | 'loading' | 'error' | 'stale' | 'readonly' | 'demo'
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error'
+
+/**
+ * Where a visible row came from. Contract rows carry `'api'`; fixture rows carry
+ * `'sample'`. The footer marker is derived from the rows on screen, never from
+ * "did the reads settle", so a mixed screen can never claim to be contract data.
+ */
+export type DataProvenance = 'api' | 'sample'
 
 export type RuleStatus = 'draft' | 'published' | 'retired'
 
@@ -38,6 +45,7 @@ export interface Rule {
   updatedAt: string
   /** Which window the rule version governs; caps come from the event contract. */
   weeklyCap: number | null
+  provenance?: DataProvenance
 }
 
 export interface RuleDraft {
@@ -91,6 +99,7 @@ export interface Badge {
   pendingBy?: string
   /** Derived from rules and missions that reference the badge. */
   usedBy: number
+  provenance?: DataProvenance
 }
 
 export type MissionStatus = 'active' | 'paused'
@@ -116,12 +125,15 @@ export interface Mission {
   target: number
   completions: number
   completionsLedger: MissionCompletion[]
+  provenance?: DataProvenance
 }
 
 export type SeasonStatus = 'upcoming' | 'active' | 'frozen' | 'closed'
 
 export interface Season {
   key: string
+  /** Server UUID when the read model exposes it. Publish/freeze/close address the season by this id. */
+  id?: string
   nameEn: string
   nameSw: string
   startsAt: string
@@ -134,6 +146,7 @@ export interface Season {
   preparedBy: string
   closedAt: string | null
   closedBy: string | null
+  provenance?: DataProvenance
 }
 
 export type BoardRowStatus = 'active' | 'retracted'
@@ -151,6 +164,7 @@ export interface BoardRow {
   retractedReason?: string
   retractedBy?: string
   retractedAt?: string
+  provenance?: DataProvenance
 }
 
 export interface LeaderboardSnapshot {
@@ -194,6 +208,7 @@ export interface Award {
   at: string
   cause: AwardCause
   corrected?: AwardCorrection
+  provenance?: DataProvenance
 }
 
 export type ModerationKind = 'display_name' | 'leaderboard_cheat' | 'leaderboard_report' | 'event_report'
@@ -215,6 +230,7 @@ export interface ModerationCase {
   decidedAt: string | null
   resolution: string | null
   createdAt: string
+  provenance?: DataProvenance
 }
 
 export type BackfillStatus =
@@ -245,6 +261,7 @@ export interface BackfillBatch {
   createdAt: string
   approvedAt: string | null
   note?: string
+  provenance?: DataProvenance
 }
 
 export type KillSwitchKey = 'global' | 'public_leaderboard' | 'source:event' | 'source:audio'
@@ -259,6 +276,7 @@ export interface KillSwitch {
   reason: string | null
   updatedBy: string | null
   updatedAt: string
+  provenance?: DataProvenance
 }
 
 export type AuditCategory = 'awards' | 'events' | 'safety' | 'moderation' | 'system' | 'rules'
@@ -272,6 +290,7 @@ export interface AuditEntry {
   detail: string
   category: AuditCategory
   at: string
+  provenance?: DataProvenance
 }
 
 export interface RecognitionState {
