@@ -1,0 +1,11 @@
+count: 95
+distinct stack:
+13:Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+14-    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/@tanstack/react-router-ssr-query+%5B...%5D.mjs:74:27
+15-    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2052:5
+16-    at Set.forEach (<anonymous>)
+17-    at file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2051:19
+18-    at Object.batch (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:472:14)
+19-    at QueryCache.notify (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2050:17)
+20-    at QueryCache.add (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2008:9)
+21-    at QueryCache.build (file:///home/brad/code/ytci-release-admin/.output/server/_libs/tanstack__query-core.mjs:2001:9)

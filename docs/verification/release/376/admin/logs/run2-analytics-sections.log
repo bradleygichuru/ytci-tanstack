@@ -1,0 +1,45 @@
+
+Running 12 tests using 1 worker
+
+  ✓   1 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:21:1 › journeys: nine definitions, one rollup source, filter scoped to this read (6.1s)
+  ✓   2 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:51:1 › journey filter carried to overview is labelled not applied (6.1s)
+  ✓   3 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:64:1 › funnels: step bars and largest-drop caption render from the journey rollup (6.2s)
+  ✓   4 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:78:1 › funnels: summary and step bars reconcile to one population (#387) (6.6s)
+  ✓   5 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:107:1 › retention: elapsed cohorts only and an accessible description without future weeks (8.5s)
+  ✓   6 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:125:1 › adoption: reach, depth and repeat keep their denominators visible (8.1s)
+  ✓   7 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:145:1 › search gaps: contract gap is explicit, never a fabricated zero (8.6s)
+  ✓   8 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:162:1 › content: live rows when present, otherwise a labelled sample overlay (11.6s)
+  ✓   9 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:174:1 › programme: domain-table impact is never proxied from telemetry (5.0s)
+  ✓  10 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:194:1 › quality: pipeline checks, rollup health, definitions and erasure entry (25.8s)
+  ✓  11 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:210:1 › suppressed: real withheld cells, em dashes and no revealing total (1.9m)
+  ✘  12 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:225:1 › suppressed: retention cell names a week the retention table renders (2.0m)
+
+
+  1) [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:225:1 › suppressed: retention cell names a week the retention table renders 
+
+    Test timeout of 120000ms exceeded while running "beforeEach" hook.
+
+      15 | )
+      16 |
+    > 17 | test.beforeEach(async ({ page }) => {
+         |      ^
+      18 |   await loginAnalytics(page, VERIFY_ANALYTICS_USERS.admin)
+      19 | })
+      20 |
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts:17:6
+
+    Error Context: test-results/verify/admin-analytics-sections-s-012af-the-retention-table-renders-verify-live/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-sections-s-012af-the-retention-table-renders-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-analytics-sections-s-012af-the-retention-table-renders-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: [verify-live] › e2e/verify/admin-analytics/sections.spec.ts (5.5m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 failed
+    [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:225:1 › suppressed: retention cell names a week the retention table renders 
+  11 passed (5.5m)

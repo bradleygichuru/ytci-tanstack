@@ -1,0 +1,78 @@
+
+Running 35 tests using 1 worker
+
+  ✓   1 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › overview — default 1400 (4.3s)
+  ✓   2 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › rules — default 1400 (3.8s)
+  ✓   3 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › badges — default 1400 (4.2s)
+  ✓   4 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › missions — default 1400 (4.3s)
+  ✓   5 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › seasons — default 1400 (5.9s)
+  ✓   6 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › leaderboard — default 1400 (4.1s)
+  ✓   7 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › awards — default 1400 (4.0s)
+  ✓   8 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › reports — default 1400 (3.7s)
+  ✓   9 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › backfill — default 1400 (4.1s)
+  ✓  10 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › audit — default 1400 (3.8s)
+  ✓  11 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › kill-switches — default 1400 (3.9s)
+  ✓  12 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:137:1 › overview — 1180 and 900 widths (8.0s)
+  ✓  13 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:147:1 › overview — dark theme (4.3s)
+  ✓  14 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:157:1 › leaderboard — retraction sits behind a row menu and restore is reachable (6.2s)
+  ✓  15 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:187:1 › awards — dark theme and 900 width (7.9s)
+  ✘  16 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:197:1 › overview — 200% text does not force horizontal scrolling (4.6s)
+  -  17 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:212:1 › overview — 200% text collapses the sidebar and keeps the nav on one line
+  -  18 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:240:1 › overview — shell links clear 4.5:1 in dark mode
+  -  19 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:302:1 › overview — empty, error, stale and read-only states
+  -  20 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:325:1 › badges — empty and stale states
+  -  21 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:342:1 › rules — simulation and second approver gate
+  -  22 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:350:1 › rule editor — weekly cap and anti-abuse explanation
+  -  23 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:369:1 › overview — provenance banner matches the footer source marker
+  -  24 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:382:1 › badges — artwork preview and unpublish warning
+  -  25 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:397:1 › badges — bilingual publish gate and badge locking copy
+  -  26 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:405:1 › seasons — two-person close and snapshot copy
+  -  27 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:414:1 › awards — grouping by cause, idempotent retry, manual credit
+  -  28 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:423:1 › moderation — decisions require a reason and are audited
+  -  29 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:431:1 › backfill — frozen parameters and approver separation
+  -  30 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:440:1 › kill switches — typed OFF confirmation and dependency summary
+  -  31 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:452:1 › moderation — a decision needs a reason and is recorded
+  -  32 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:470:1 › awards — bulk retry asks for scope and never duplicates XP
+  -  33 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:485:1 › seasons — closing needs a reason and a typed confirmation
+  -  34 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:503:1 › role gating — content editor and reader are redirected to no-access
+  -  35 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:518:1 › role gating — moderator reads but sees no authoring controls
+
+
+  1) [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:197:1 › overview — 200% text does not force horizontal scrolling 
+
+    Error: horizontal overflow at 200% text
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 2
+    Received:    25
+
+      205 |   })
+      206 |   await shot(page, 'overview-1400-light-200text')
+    > 207 |   expect(overflow, 'horizontal overflow at 200% text').toBeLessThanOrEqual(2)
+          |                                                        ^
+      208 | })
+      209 |
+      210 | // #389 regression: the 200 % plate must fold the sidebar to the icon rail and
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-recognition/recognition.spec.ts:207:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/error-context.md
+
+    Error Context: test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:197:1 › overview — 200% text does not force horizontal scrolling 
+  19 did not run
+  15 passed (1.5m)

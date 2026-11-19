@@ -1,0 +1,233 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:470:1 › awards — bulk retry asks for scope and never duplicates XP (3.0m)
+
+
+  1) [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:470:1 › awards — bulk retry asks for scope and never duplicates XP 
+
+    Test timeout of 180000ms exceeded.
+
+    Error: locator.click: Target page, context or browser has been closed
+    Call log:
+      - waiting for getByRole('button', { name: /retry failed/i }).first()
+        - locator resolved to <button disabled data-size="sm" data-slot="button" data-variant="outline" class="inline-flex shrink-0 items-center justify-center text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-…>…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        338 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+
+
+      472 |   await open(page, '/recognition/awards', 'Awards ledger')
+      473 |   await page.waitForTimeout(1200)
+    > 474 |   await page.getByRole('button', { name: /retry failed/i }).first().click()
+          |                                                                     ^
+      475 |   const dialog = page.getByRole('dialog')
+      476 |   await expect(dialog.getByText(/Retry \d+ failed award/i)).toBeVisible({ timeout: 15_000 })
+      477 |   await shot(page, 'awards-1400-light-retry-preview')
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-recognition/recognition.spec.ts:474:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/error-context.md
+
+    Error Context: test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:470:1 › awards — bulk retry asks for scope and never duplicates XP 
+{
+  "config": {
+    "argv": [
+      "/home/brad/.nvm/versions/node/v26.5.0/bin/node",
+      "/home/brad/code/ytci-release-admin/node_modules/.bin/playwright",
+      "test",
+      "-c",
+      "playwright.verify.config.ts",
+      "--retries=0",
+      "e2e/verify/admin-recognition/recognition.spec.ts",
+      "--grep",
+      "awards — bulk retry",
+      "--reporter=list,json"
+    ],
+    "configFile": "/home/brad/code/ytci-release-admin/playwright.verify.config.ts",
+    "rootDir": "/home/brad/code/ytci-release-admin/e2e/verify",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/brad/code/ytci-release-admin/test-results/verify",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "verify-harness",
+        "name": "verify-harness",
+        "testDir": "/home/brad/code/ytci-release-admin/e2e/verify",
+        "testIgnore": [
+          "admin-*/**"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/brad/code/ytci-release-admin/test-results/verify",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "verify-live",
+        "name": "verify-live",
+        "testDir": "/home/brad/code/ytci-release-admin/e2e/verify",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-*/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "admin-recognition/recognition.spec.ts",
+      "file": "admin-recognition/recognition.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "awards — bulk retry asks for scope and never duplicates XP",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 180094,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-recognition/recognition.spec.ts",
+                        "column": 69,
+                        "line": 474
+                      },
+                      "message": "Error: locator.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /retry failed/i }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button disabled data-size=\"sm\" data-slot=\"button\" data-variant=\"outline\" class=\"inline-flex shrink-0 items-center justify-center text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-…>…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    338 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m        - element is not enabled\u001b[22m\n\u001b[2m      - retrying click action\u001b[22m\n\u001b[2m        - waiting 500ms\u001b[22m\n\n\n  472 |   await open(page, '/recognition/awards', 'Awards ledger')\n  473 |   await page.waitForTimeout(1200)\n> 474 |   await page.getByRole('button', { name: /retry failed/i }).first().click()\n      |                                                                     ^\n  475 |   const dialog = page.getByRole('dialog')\n  476 |   await expect(dialog.getByText(/Retry \\d+ failed award/i)).toBeVisible({ timeout: 15_000 })\n  477 |   await shot(page, 'awards-1400-light-retry-preview')\n    at /home/brad/code/ytci-release-admin/e2e/verify/admin-recognition/recognition.spec.ts:474:69"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T18:56:49.001Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-recognition-recognit-b593f-ope-and-never-duplicates-XP-verify-live/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "11b31e85d3afb7297d73-2446fedc28504976d5b8",
+          "file": "admin-recognition/recognition.spec.ts",
+          "line": 470,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-19T18:56:47.893Z",
+    "duration": 192519.114,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

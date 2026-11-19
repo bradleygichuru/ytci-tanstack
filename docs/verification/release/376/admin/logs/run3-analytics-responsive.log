@@ -1,0 +1,10 @@
+
+Running 5 tests using 1 worker
+
+  ✓  1 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:25:1 › 900px: every section stays inside the viewport (57.2s)
+  ✓  2 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1400px: overview and the densest tables stay inside the viewport (33.3s)
+  ✓  3 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1180px: overview and the densest tables stay inside the viewport (37.5s)
+  ✓  4 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:43:1 › dark theme keeps the surface readable and scoped (9.9s)
+  ✓  5 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:56:1 › 200% text: headings and the rollup stamp stay visible (6.9s)
+
+  5 passed (2.4m)

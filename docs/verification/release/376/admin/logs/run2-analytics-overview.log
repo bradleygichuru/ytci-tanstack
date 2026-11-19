@@ -1,0 +1,11 @@
+
+Running 6 tests using 1 worker
+
+  ✓  1 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:22:1 › overview default: one rollup population across KPIs, chart and stamp (5.1s)
+  ✓  2 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:47:1 › date range is applied to the read and named in the scope line (6.9s)
+  ✓  3 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:63:1 › empty rollup and failed rollup are distinct states (6.8s)
+  ✓  4 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:84:1 › stale rollup keeps last-known data and disables export (6.6s)
+  ✓  5 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:95:1 › loading state is not announced before the first read (3.1s)
+  ✘  6 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:101:1 › loading after stale clears the stale banner (21.7s)
+
+  6 passed (51.3s)

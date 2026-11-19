@@ -1,0 +1,196 @@
+
+Running 9 tests using 1 worker
+
+  ✘  1 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix (57.8s)
+  ✓  2 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:149:3 › species admin › captures translation, sources, readiness and audit across the matrix (57.0s)
+  ✓  3 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:154:3 › species admin › catalogue search, selection and bulk assignment (12.8s)
+  ✓  4 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:188:3 › species admin › stale is derived and blocks publish (15.2s)
+  ✘  5 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:205:3 › species admin › rights withdrawal names blast radius; non-revocable sources cannot be targeted (25.2s)
+  ✓  6 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:223:3 › species admin › readiness blockers link to records; second review is actionable; publish is gated (9.4s)
+  ✘  7 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:239:3 › species admin › audit filters and CSV export use the same filter (1.6m)
+  ✘  8 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel (29.0s)
+  ✓  9 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:276:3 › species admin › role gating: translator and reviewer see their own actions only (17.4s)
+
+
+  1) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix 
+
+    TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('heading', { level: 1 }).first() to be visible
+
+
+      66 | async function settle(page: Page) {
+      67 |   await page.waitForLoadState('domcontentloaded')
+    > 68 |   await page.getByRole('heading', { level: 1 }).first().waitFor({ timeout: 20_000 })
+         |                                                         ^
+      69 |   // The species screens fetch details client-side after the shell renders.
+      70 |   await page.waitForTimeout(1800)
+      71 | }
+        at settle (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:68:57)
+        at captureScreens (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:106:7)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:146:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:205:3 › species admin › rights withdrawal names blast radius; non-revocable sources cannot be targeted 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('1 sources')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('1 sources')
+
+
+      209 |     await page.goto(`${BASE}/programme/species/sources`)
+      210 |     await settle(page)
+    > 211 |     await expect(page.getByText('1 sources')).toBeVisible()
+          |                                               ^
+      212 |     // GBIF is non-revocable: no withdraw action on its row.
+      213 |     await expect(page.getByRole('button', { name: /Withdraw GBIF/ })).toHaveCount(0)
+      214 |     await expect(page.getByText('Not revocable').first()).toBeVisible()
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:211:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:239:3 › species admin › audit filters and CSV export use the same filter 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: page.waitForEvent: Test timeout of 90000ms exceeded.
+    =========================== logs ===========================
+    waiting for event "download"
+    ============================================================
+
+      246 |     await page.getByLabel('Filter by category').selectOption({ label: 'Rights' })
+      247 |     await page.waitForTimeout(400)
+    > 248 |     const downloadPromise = page.waitForEvent('download')
+          |                                  ^
+      249 |     await page.getByRole('button', { name: /Export CSV/ }).click()
+      250 |     const download = await downloadPromise
+      251 |     const csvPath = await download.path()
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:248:34
+
+    Error: locator.click: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /Export CSV/ })
+        - locator resolved to <button disabled data-size="sm" data-slot="button" data-variant="outline" class="inline-flex shrink-0 items-center justify-center text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-…>…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        174 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+
+
+      247 |     await page.waitForTimeout(400)
+      248 |     const downloadPromise = page.waitForEvent('download')
+    > 249 |     await page.getByRole('button', { name: /Export CSV/ }).click()
+          |                                                            ^
+      250 |     const download = await downloadPromise
+      251 |     const csvPath = await download.path()
+      252 |     const csv = fs.readFileSync(csvPath, 'utf8')
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:249:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/error-context.md
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel 
+
+    TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('heading', { level: 1 }).first() to be visible
+
+
+      66 | async function settle(page: Page) {
+      67 |   await page.waitForLoadState('domcontentloaded')
+    > 68 |   await page.getByRole('heading', { level: 1 }).first().waitFor({ timeout: 20_000 })
+         |                                                         ^
+      69 |   // The species screens fetch details client-side after the shell renders.
+      70 |   await page.waitForTimeout(1800)
+      71 | }
+        at settle (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:68:57)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:263:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:205:3 › species admin › rights withdrawal names blast radius; non-revocable sources cannot be targeted 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:239:3 › species admin › audit filters and CSV export use the same filter 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel 
+  5 passed (5.6m)

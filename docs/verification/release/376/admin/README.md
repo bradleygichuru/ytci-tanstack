@@ -74,17 +74,42 @@ VERIFY_MODE=live VERIFY_SEED_ID=verify-376-final \
 
 ## Results
 
+Three passes were needed because the host restarted repeatedly mid-run: it
+killed the preview (exit 143), once wiped `.output` (rebuilt at the same commit,
+`✓ built in 9.84s`), and wedged the app under load. Run 1 is the honest
+first pass. Runs 2-6 re-ran every failing file and every test a serial-mode
+cascade had skipped, so the final column is the best evidence available, not a
+single green run.
+
+### Final status on this build
+
+| Surface | Tests | Passed | Failed | Skipped | Known-defect (expected fail) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Harness (`seed-guard`, `smoke`) | 11 | 8 | 0 | 3 | 0 |
+| Analytics (#375) | 27 | 25 | 0 | 0 | 2 |
+| MICE (#364) | 16 | 16 | 0 | 0 | 0 |
+| Recognition (#368) | 35 | 33 | 2 | 0 | 0 |
+| Species (#372) | 10 | 5 | 5 | 0 | 0 |
+| **Total** | **99** | **87** | **7** | **3** | **2** |
+
+- The 3 skips are `smoke.spec.ts` only; it is fixture-mode by design and is
+  skipped in live mode. They are not product evidence.
+- The 2 known-defect tests are `test.fail()` annotations for P2 #375 (stale
+  flag survives Loading; suppressed retention labels W8 while the table stops
+  at W7). Both reproduced as expected; they are not green.
+- 7 failures: 6 product failures and 1 fixture gap (details below).
+- 87 passed is not "99 green". The gate is not met.
+
 ### Run 1 — all 99 tests, `--retries=0`, one worker
 
-Command as above. Raw output: `logs/run1.log`; per-file counts:
-`logs/run1-summary.json`.
+Raw output: `logs/run1.log`; per-file counts: `logs/run1-summary.json`.
 
 | File | Passed | Failed | Timed out | Skipped |
 | --- | ---: | ---: | ---: | ---: |
 | `seed-guard.spec.ts` | 8 | 0 | 0 | 0 |
-| `smoke.spec.ts` | 0 | 0 | 0 | 3 (fixture-only, expected in live mode) |
+| `smoke.spec.ts` | 0 | 0 | 0 | 3 (expected, fixture-only) |
 | `admin-analytics/export-erasure.spec.ts` | 0 | 1 | 0 | 3 (serial cascade) |
-| `admin-analytics/overview.spec.ts` | 3 | 1 | 0 | 2 (serial cascade, incl. one P2 known-defect) |
+| `admin-analytics/overview.spec.ts` | 3 | 1 | 0 | 2 (serial cascade) |
 | `admin-analytics/responsive.spec.ts` | 0 | 1 | 0 | 4 (serial cascade) |
 | `admin-analytics/sections.spec.ts` | 4 | 0 | 1 | 7 (serial cascade) |
 | `admin-mice/behaviour.spec.ts` | 9 | 0 | 0 | 0 |
@@ -95,33 +120,103 @@ Command as above. Raw output: `logs/run1.log`; per-file counts:
 | `admin-species/species.live.spec.ts` | 3 | 3 | 3 | 0 |
 | **Total** | **46** | **8** | **7** | **38** |
 
-The 38 skips are not green. Three are the fixture smoke spec correctly
-skipping in live mode; 35 are serial-mode cascades behind the first failure in
-their file, so those assertions did not run in run 1. Round 2 re-runs the
-failures and the cascaded remainder separately.
+The 35 serial-cascade skips were re-run in later passes (recognition with
+`--grep-invert`, then the three remaining tests directly; analytics responsive
+a third time; MICE screens/responsive again).
 
-Observed product/runtime failures from run 1:
+### Run 2 — per-file re-runs
 
-- **Species SSR throws on every request** (`app.log`, 85 occurrences):
-  `Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated
-  is not a function`. Reproduced with a single authenticated `GET
-  /programme/species` (200, shell only) and `/programme/species/catalogue`.
-  `@tanstack/react-router-ssr-query` 1.167.1 (via `router-ssr-query-core`
-  1.169.1) calls `serverSsr.isDehydrated()`, which does not exist in the
-  forced `@tanstack/router-core` 1.171.34. The CVE fix (#56) pinned
-  react-router/router-core but left ssr-query on its old resolution.
-- Recognition `/recognition` at 200 % text overflows horizontally by 25 px
-  (threshold 2 px).
-- Analytics stale/export/900 px failures: the rollup never left the loading
-  state within 60 s in several cases; recorded again in round 2.
-- MICE screen and responsive timeouts: pages did not finish loading inside the
-  180 s budget.
+| File | Result |
+| --- | --- |
+| `admin-analytics/export-erasure.spec.ts` | 4 passed |
+| `admin-analytics/overview.spec.ts` | 5 passed, 1 known P2 expected |
+| `admin-analytics/responsive.spec.ts` | 2 passed, 1 failed (`ERR_ABORTED` navigating to `/analytics/journeys`), 2 did not run |
+| `admin-analytics/sections.spec.ts` | 11 passed, 1 failed (beforeEach sign-in timed out at 120 s) |
+| `admin-mice/responsive.spec.ts` | 4 passed |
+| `admin-mice/screens.spec.ts` | 3 passed |
+| `admin-recognition/recognition.spec.ts` | 15 passed, 1 failed (200 % overflow), 19 cascaded |
+| `admin-species/recapture.spec.ts` | 1 failed (`4 shown` not found) |
+| `admin-species/species.live.spec.ts` | 5 passed, 4 failed |
+
+### Run 3-6 — coverage of cascaded tests
+
+- Recognition, `--grep-invert "200% text does not force horizontal scrolling"`:
+  30 passed, 1 failed (`awards — bulk retry`, fixture gap), 3 cascaded.
+- Recognition, the 3 remaining tests (`seasons — closing`, both role-gating
+  tests): 3 passed.
+- Recognition, `awards — bulk retry` alone: failed again (button disabled for
+  the full 180 s).
+- Analytics responsive, full file: 5 passed.
+- Analytics `suppressed: retention cell names ...`: expected P2 failure, as
+  annotated.
+
+### Reproducible product failures
+
+| # | Test | Result in run 1 | Result in re-run | Evidence |
+| --- | --- | --- | --- | --- |
+| 1 | recognition `overview — 200% text does not force horizontal scrolling` | failed, 25 px overflow | failed again, 25 px overflow | `screenshots/recognition-200percent-overflow.png` |
+| 2 | species `recaptures the screens that need the derived data loaded` (`4 shown` on translation) | failed | failed again | `screenshots/species-translation.png` |
+| 3 | species `captures overview, catalogue, editor and languages across the matrix` | timed out at `page.goto` | failed: H1 never visible, error boundary | error page `Something went wrong!` |
+| 4 | species `rights withdrawal names blast radius ...` (`1 sources`) | failed | failed again | sources screen |
+| 5 | species `audit filters and CSV export use the same filter` | timed out waiting for download | failed again: Export CSV disabled after Rights filter | audit screen |
+| 6 | species `editor dirty guard keeps the draft on cancel` | H1 timeout | H1 timeout, error boundary | editor screen |
+
+### Root cause found: SSR query integration is broken
+
+`app.log` shows **95** occurrences of:
+
+```
+Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated is not a function
+    at @tanstack/react-router-ssr-query
+```
+
+Stack saved in `logs/ssr-isdehydrated.txt`. Installed versions:
+
+| Package | Version |
+| --- | --- |
+| `@tanstack/react-router` | 1.170.41 |
+| `@tanstack/router-core` (forced override) | 1.171.34 |
+| `@tanstack/react-router-ssr-query` | 1.167.1 |
+| `router-ssr-query-core` | 1.169.1 |
+
+`router-ssr-query-core` calls `serverSsr.isDehydrated()`, which router-core
+1.171.34 does not implement. The CVE fix (#56) pinned react-router/router-core
+but left ssr-query at its older resolution; the mismatch throws on every SSR
+query notification. Species routes hit an error boundary
+(`Something went wrong!`) under Playwright, and the same defect is the likely
+cause of the species data not appearing.
+
+### Fixture gap (not a product failure)
+
+`recognition awards — bulk retry asks for scope and never duplicates XP`: the
+`Retry failed` button is disabled because the frozen mock's awards ledger
+returns **0 awards / engine off** on that screen, while the overview fixture
+reports 7 failed deliveries. Verified directly in the browser: the awards
+ledger renders `0`, `UNDELIVERED 0`, `FAILED GROUPS 0`, and the button is
+disabled with no timeout. The test cannot exercise the write path until the
+mock provides failed awards under the same conditions as the overview.
+
+### Environment flakes (not counted as defects)
+
+These failed in run 1 and passed on re-run, with the failure mode being a
+timeout/abort rather than an assertion about product behaviour:
+
+- analytics export queue, stale rollup, 900 px viewport (rollup stuck on
+  "Loading the rollup" for 60 s; passed in run 2);
+- analytics retention section (120 s timeout; passed in run 2);
+- MICE screens at 1400/1180/900 (180 s timeouts; all 3 passed in run 2);
+- MICE responsive 1400/900 (180 s timeout; all 4 passed in run 2);
+- species catalogue search/bulk assignment (browser launch timeout; passed in
+  run 2).
 
 ## Screenshots
 
 `docs/verification/release/376/admin/screenshots/` holds the key captured
-screens (compressed). Playwright's own `test-results/` and
-`playwright-report/` trees are not committed.
+screens: MICE overview/registrations/check-in/agenda, analytics
+overview/funnels/retention, species overview/catalogue/translation/readiness,
+recognition overview/rules, the 200 % overflow evidence, and the awards ledger
+showing the fixture gap. Playwright's own `test-results/` (traces, videos) and
+`playwright-report/` trees are not committed. Raw runner output is in `logs/`.
 
 ## Known environment follow-ups
 

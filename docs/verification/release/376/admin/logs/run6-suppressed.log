@@ -1,0 +1,212 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:225:1 › suppressed: retention cell names a week the retention table renders (13.7s)
+
+  1 passed (16.0s)
+{
+  "config": {
+    "argv": [
+      "/home/brad/.nvm/versions/node/v26.5.0/bin/node",
+      "/home/brad/code/ytci-release-admin/node_modules/.bin/playwright",
+      "test",
+      "-c",
+      "playwright.verify.config.ts",
+      "--retries=0",
+      "e2e/verify/admin-analytics/sections.spec.ts",
+      "--grep",
+      "suppressed: retention cell names",
+      "--reporter=list,json"
+    ],
+    "configFile": "/home/brad/code/ytci-release-admin/playwright.verify.config.ts",
+    "rootDir": "/home/brad/code/ytci-release-admin/e2e/verify",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/brad/code/ytci-release-admin/test-results/verify",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "verify-harness",
+        "name": "verify-harness",
+        "testDir": "/home/brad/code/ytci-release-admin/e2e/verify",
+        "testIgnore": [
+          "admin-*/**"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/brad/code/ytci-release-admin/test-results/verify",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "verify-live",
+        "name": "verify-live",
+        "testDir": "/home/brad/code/ytci-release-admin/e2e/verify",
+        "testIgnore": [],
+        "testMatch": [
+          "admin-*/**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "admin-analytics/sections.spec.ts",
+      "file": "admin-analytics/sections.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "suppressed: retention cell names a week the retention table renders",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "known-defect",
+                  "description": "P2 #375: the suppressed list reports \"24 Aug · W8\" while the retention table stops at W7.",
+                  "location": {
+                    "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                    "line": 225,
+                    "column": 1
+                  }
+                },
+                {
+                  "type": "fail",
+                  "location": {
+                    "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                    "line": 235,
+                    "column": 10
+                  }
+                }
+              ],
+              "expectedStatus": "failed",
+              "projectId": "verify-live",
+              "projectName": "verify-live",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13657,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"W8\"\u001b[39m\nReceived string:        \u001b[31m\"YTC Explorer\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mADMIN PORTAL\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mDISCOVERY\u001b[39m\n\u001b[31mAnalytics\u001b[39m\n\u001b[31mCMS\u001b[39m\n\u001b[31mThen & Now\u001b[39m\n\u001b[31mMedia Library\u001b[39m\n\u001b[31mENGAGEMENT\u001b[39m\n\u001b[31mLMS\u001b[39m\n\u001b[31mConservation\u001b[39m\n\u001b[31mEvents\u001b[39m\n\u001b[31mMarketplace\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mEvents operations\u001b[39m\n\u001b[31mRecognition\u001b[39m\n\u001b[31mSpecies\u001b[39m\n\u001b[31mPLATFORM\u001b[39m\n\u001b[31mChallenges\u001b[39m\n\u001b[31mComments\u001b[39m\n\u001b[31mCampaigns\u001b[39m\n\u001b[31mUser Management\u001b[39m\n\u001b[31mAI Config\u001b[39m\n\u001b[31mV\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mVerify Admin\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mverify-admin@example.test\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mSettings\u001b[39m\n\u001b[31mSign Out\u001b[39m\n\u001b[31mToggle Sidebar\u001b[39m\n\u001b[31mPRODUCT HEALTH\u001b[39m\n\u001b[31mOverview\u001b[39m\n\u001b[31mJourneys\u001b[39m\n\u001b[31mFunnels\u001b[39m\n\u001b[31mRetention\u001b[39m\n\u001b[31mAdoption\u001b[39m\n\u001b[31mCONTENT\u001b[39m\n\u001b[31mSearch gaps\u001b[39m\n\u001b[31mContent\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mProgramme\u001b[39m\n\u001b[31mTRUST\u001b[39m\n\u001b[31mData quality\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mANALYTICS · TRUST\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mSmall-cell suppression protects small counties and small cohorts from re-identification. The rule is applied before a cell reaches any screen or export.\u001b[39m\n\u001b[31mExport CSV\u001b[39m\n\u001b[31mRANGE\u001b[39m\n\u001b[31mLast 30 days\u001b[39m\n\u001b[31mLast 90 days\u001b[39m\n\u001b[31mThis season\u001b[39m\n\u001b[31mReset filters\u001b[39m\n\u001b[31mDATA STATE\u001b[39m\n\u001b[31mDefault\u001b[39m\n\u001b[31mEmpty\u001b[39m\n\u001b[31mLoading\u001b[39m\n\u001b[31mError\u001b[39m\n\u001b[31mStale\u001b[39m\n\u001b[31mData through 18 Nov 2026 · nightly rollup\u001b[39m\n\u001b[31m·\u001b[39m\n\u001b[31mLast 30 days · applied to this screen\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCells under 10 readers are hidden.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mThis table lists the contract cells the rollup withheld for the selected range. A suppressed cell is shown as — and is never included in a total.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTHRESHOLD\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m10\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mReaders per cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCELLS SUPPRESSED\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m18\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mAcross the selected range\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mRULE\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mNo total that reveals a hidden cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mA total plus one visible cell can reconstruct the hidden value.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mContract cells withheld\u001b[39m\n\u001b[31mReal suppressed rows from this rollup\u001b[39m\n\u001b[31mSuppressed cells reported by the analytics rollup\u001b[39m\n\u001b[31mDATASET\tCELL\tREASON\u001b[39m\n\u001b[31mFUNNELS\tCourse completion\tFunnel withheld — entered or completed is below the threshold.\u001b[39m\n\u001b[31mRETENTION\t24 Aug · \u001b[7mW8\u001b[27m\tCohort cell withheld — the cohort is too small.\u001b[39m\n\u001b[31mCounty × feature\u001b[39m\n\u001b[31mIllustrative sample of the suppression rule\u001b[39m\n\u001b[31mSAMPLE OVERLAY\u001b[39m\n\u001b[31mSample county by feature table showing suppressed cells without a total\u001b[39m\n\u001b[31mCOUNTY\tEVENTS\tRECOGNITION\tLEARNING\u001b[39m\n\u001b[31mNairobi\t1,240\t860\t710\u001b[39m\n\u001b[31mNarok\t310\t180\t120\u001b[39m\n\u001b[31mLamu\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTurkana\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m“—” means fewer than 10 readers. There is deliberately no total row: a total plus one visible cell would reveal the hidden value. This sample is not part of the frozen contract and is not affected by the date range.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCONTRACT API\u001b[39m\n\u001b[31mAggregates only. Per-user event streams are never rendered; named support access is reason-recorded, 30 days, and excludes recognition data.\u001b[39m\n\u001b[31m2 journey step(s) · 2 feature row(s) · last success 18 Nov 2026\"\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"W8\"\u001b[39m\nReceived string:        \u001b[31m\"YTC Explorer\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mADMIN PORTAL\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mDISCOVERY\u001b[39m\n\u001b[31mAnalytics\u001b[39m\n\u001b[31mCMS\u001b[39m\n\u001b[31mThen & Now\u001b[39m\n\u001b[31mMedia Library\u001b[39m\n\u001b[31mENGAGEMENT\u001b[39m\n\u001b[31mLMS\u001b[39m\n\u001b[31mConservation\u001b[39m\n\u001b[31mEvents\u001b[39m\n\u001b[31mMarketplace\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mEvents operations\u001b[39m\n\u001b[31mRecognition\u001b[39m\n\u001b[31mSpecies\u001b[39m\n\u001b[31mPLATFORM\u001b[39m\n\u001b[31mChallenges\u001b[39m\n\u001b[31mComments\u001b[39m\n\u001b[31mCampaigns\u001b[39m\n\u001b[31mUser Management\u001b[39m\n\u001b[31mAI Config\u001b[39m\n\u001b[31mV\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mVerify Admin\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mverify-admin@example.test\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mSettings\u001b[39m\n\u001b[31mSign Out\u001b[39m\n\u001b[31mToggle Sidebar\u001b[39m\n\u001b[31mPRODUCT HEALTH\u001b[39m\n\u001b[31mOverview\u001b[39m\n\u001b[31mJourneys\u001b[39m\n\u001b[31mFunnels\u001b[39m\n\u001b[31mRetention\u001b[39m\n\u001b[31mAdoption\u001b[39m\n\u001b[31mCONTENT\u001b[39m\n\u001b[31mSearch gaps\u001b[39m\n\u001b[31mContent\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mProgramme\u001b[39m\n\u001b[31mTRUST\u001b[39m\n\u001b[31mData quality\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mANALYTICS · TRUST\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mSmall-cell suppression protects small counties and small cohorts from re-identification. The rule is applied before a cell reaches any screen or export.\u001b[39m\n\u001b[31mExport CSV\u001b[39m\n\u001b[31mRANGE\u001b[39m\n\u001b[31mLast 30 days\u001b[39m\n\u001b[31mLast 90 days\u001b[39m\n\u001b[31mThis season\u001b[39m\n\u001b[31mReset filters\u001b[39m\n\u001b[31mDATA STATE\u001b[39m\n\u001b[31mDefault\u001b[39m\n\u001b[31mEmpty\u001b[39m\n\u001b[31mLoading\u001b[39m\n\u001b[31mError\u001b[39m\n\u001b[31mStale\u001b[39m\n\u001b[31mData through 18 Nov 2026 · nightly rollup\u001b[39m\n\u001b[31m·\u001b[39m\n\u001b[31mLast 30 days · applied to this screen\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCells under 10 readers are hidden.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mThis table lists the contract cells the rollup withheld for the selected range. A suppressed cell is shown as — and is never included in a total.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTHRESHOLD\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m10\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mReaders per cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCELLS SUPPRESSED\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m18\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mAcross the selected range\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mRULE\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mNo total that reveals a hidden cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mA total plus one visible cell can reconstruct the hidden value.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mContract cells withheld\u001b[39m\n\u001b[31mReal suppressed rows from this rollup\u001b[39m\n\u001b[31mSuppressed cells reported by the analytics rollup\u001b[39m\n\u001b[31mDATASET\tCELL\tREASON\u001b[39m\n\u001b[31mFUNNELS\tCourse completion\tFunnel withheld — entered or completed is below the threshold.\u001b[39m\n\u001b[31mRETENTION\t24 Aug · \u001b[7mW8\u001b[27m\tCohort cell withheld — the cohort is too small.\u001b[39m\n\u001b[31mCounty × feature\u001b[39m\n\u001b[31mIllustrative sample of the suppression rule\u001b[39m\n\u001b[31mSAMPLE OVERLAY\u001b[39m\n\u001b[31mSample county by feature table showing suppressed cells without a total\u001b[39m\n\u001b[31mCOUNTY\tEVENTS\tRECOGNITION\tLEARNING\u001b[39m\n\u001b[31mNairobi\t1,240\t860\t710\u001b[39m\n\u001b[31mNarok\t310\t180\t120\u001b[39m\n\u001b[31mLamu\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTurkana\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m“—” means fewer than 10 readers. There is deliberately no total row: a total plus one visible cell would reveal the hidden value. This sample is not part of the frozen contract and is not affected by the date range.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCONTRACT API\u001b[39m\n\u001b[31mAggregates only. Per-user event streams are never rendered; named support access is reason-recorded, 30 days, and excludes recognition data.\u001b[39m\n\u001b[31m2 journey step(s) · 2 feature row(s) · last success 18 Nov 2026\"\u001b[39m\n    at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts:238:22",
+                    "location": {
+                      "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                      "column": 22,
+                      "line": 238
+                    },
+                    "snippet": "  236 |     await openAnalytics(page, 'suppressed')\n  237 |     const text = await bodyText(page)\n> 238 |     expect(text).not.toContain('W8')\n      |                      ^\n  239 |   },\n  240 | )\n  241 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                        "column": 22,
+                        "line": 238
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected substring: not \u001b[32m\"W8\"\u001b[39m\nReceived string:        \u001b[31m\"YTC Explorer\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mADMIN PORTAL\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mDISCOVERY\u001b[39m\n\u001b[31mAnalytics\u001b[39m\n\u001b[31mCMS\u001b[39m\n\u001b[31mThen & Now\u001b[39m\n\u001b[31mMedia Library\u001b[39m\n\u001b[31mENGAGEMENT\u001b[39m\n\u001b[31mLMS\u001b[39m\n\u001b[31mConservation\u001b[39m\n\u001b[31mEvents\u001b[39m\n\u001b[31mMarketplace\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mEvents operations\u001b[39m\n\u001b[31mRecognition\u001b[39m\n\u001b[31mSpecies\u001b[39m\n\u001b[31mPLATFORM\u001b[39m\n\u001b[31mChallenges\u001b[39m\n\u001b[31mComments\u001b[39m\n\u001b[31mCampaigns\u001b[39m\n\u001b[31mUser Management\u001b[39m\n\u001b[31mAI Config\u001b[39m\n\u001b[31mV\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mVerify Admin\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mverify-admin@example.test\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mSettings\u001b[39m\n\u001b[31mSign Out\u001b[39m\n\u001b[31mToggle Sidebar\u001b[39m\n\u001b[31mPRODUCT HEALTH\u001b[39m\n\u001b[31mOverview\u001b[39m\n\u001b[31mJourneys\u001b[39m\n\u001b[31mFunnels\u001b[39m\n\u001b[31mRetention\u001b[39m\n\u001b[31mAdoption\u001b[39m\n\u001b[31mCONTENT\u001b[39m\n\u001b[31mSearch gaps\u001b[39m\n\u001b[31mContent\u001b[39m\n\u001b[31mPROGRAMME\u001b[39m\n\u001b[31mProgramme\u001b[39m\n\u001b[31mTRUST\u001b[39m\n\u001b[31mData quality\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mANALYTICS · TRUST\u001b[39m\n\u001b[31mSuppressed cells\u001b[39m\n\u001b[31mSmall-cell suppression protects small counties and small cohorts from re-identification. The rule is applied before a cell reaches any screen or export.\u001b[39m\n\u001b[31mExport CSV\u001b[39m\n\u001b[31mRANGE\u001b[39m\n\u001b[31mLast 30 days\u001b[39m\n\u001b[31mLast 90 days\u001b[39m\n\u001b[31mThis season\u001b[39m\n\u001b[31mReset filters\u001b[39m\n\u001b[31mDATA STATE\u001b[39m\n\u001b[31mDefault\u001b[39m\n\u001b[31mEmpty\u001b[39m\n\u001b[31mLoading\u001b[39m\n\u001b[31mError\u001b[39m\n\u001b[31mStale\u001b[39m\n\u001b[31mData through 18 Nov 2026 · nightly rollup\u001b[39m\n\u001b[31m·\u001b[39m\n\u001b[31mLast 30 days · applied to this screen\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCells under 10 readers are hidden.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mThis table lists the contract cells the rollup withheld for the selected range. A suppressed cell is shown as — and is never included in a total.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTHRESHOLD\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m10\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mReaders per cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCELLS SUPPRESSED\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m18\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mAcross the selected range\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mRULE\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mNo total that reveals a hidden cell\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mA total plus one visible cell can reconstruct the hidden value.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mContract cells withheld\u001b[39m\n\u001b[31mReal suppressed rows from this rollup\u001b[39m\n\u001b[31mSuppressed cells reported by the analytics rollup\u001b[39m\n\u001b[31mDATASET\tCELL\tREASON\u001b[39m\n\u001b[31mFUNNELS\tCourse completion\tFunnel withheld — entered or completed is below the threshold.\u001b[39m\n\u001b[31mRETENTION\t24 Aug · \u001b[7mW8\u001b[27m\tCohort cell withheld — the cohort is too small.\u001b[39m\n\u001b[31mCounty × feature\u001b[39m\n\u001b[31mIllustrative sample of the suppression rule\u001b[39m\n\u001b[31mSAMPLE OVERLAY\u001b[39m\n\u001b[31mSample county by feature table showing suppressed cells without a total\u001b[39m\n\u001b[31mCOUNTY\tEVENTS\tRECOGNITION\tLEARNING\u001b[39m\n\u001b[31mNairobi\t1,240\t860\t710\u001b[39m\n\u001b[31mNarok\t310\t180\t120\u001b[39m\n\u001b[31mLamu\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mTurkana\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\t\u001b[39m\n\u001b[31m—\u001b[39m\n\u001b[31mSuppressed cell: fewer readers than the suppression threshold.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31m“—” means fewer than 10 readers. There is deliberately no total row: a total plus one visible cell would reveal the hidden value. This sample is not part of the frozen contract and is not affected by the date range.\u001b[39m\n\u001b[31m\u001b[39m\n\u001b[31mCONTRACT API\u001b[39m\n\u001b[31mAggregates only. Per-user event streams are never rendered; named support access is reason-recorded, 30 days, and excludes recognition data.\u001b[39m\n\u001b[31m2 journey step(s) · 2 feature row(s) · last success 18 Nov 2026\"\u001b[39m\n\n  236 |     await openAnalytics(page, 'suppressed')\n  237 |     const text = await bodyText(page)\n> 238 |     expect(text).not.toContain('W8')\n      |                      ^\n  239 |   },\n  240 | )\n  241 |\n    at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts:238:22"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T19:07:48.129Z",
+                  "annotations": [
+                    {
+                      "type": "known-defect",
+                      "description": "P2 #375: the suppressed list reports \"24 Aug · W8\" while the retention table stops at W7.",
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                        "line": 225,
+                        "column": 1
+                      }
+                    },
+                    {
+                      "type": "fail",
+                      "location": {
+                        "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                        "line": 235,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/brad/code/ytci-release-admin/test-results/verify/admin-analytics-sections-s-012af-the-retention-table-renders-verify-live/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts",
+                    "column": 22,
+                    "line": 238
+                  }
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a293d257c8766cc32bb-77c0d6eb29c6667ab46d",
+          "file": "admin-analytics/sections.spec.ts",
+          "line": 225,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-19T19:07:46.326Z",
+    "duration": 16019.981,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
