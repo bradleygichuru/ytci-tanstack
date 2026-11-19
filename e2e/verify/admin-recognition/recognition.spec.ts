@@ -147,8 +147,46 @@ test('overview — dark theme', async () => {
   await setTheme(page, 'light')
 })
 
-test('awards — dark theme and 900 width', async () => {
-  await open(page, '/recognition/awards', 'Awards ledger')
+// #390 regression: destructive retraction is reserved for the row menu and
+// confirmation, and a retracted row keeps an explicit restore path.
+test('leaderboard — retraction sits behind a row menu and restore is reachable', async () => {
+  await page.setViewportSize({ width: 1400, height: 900 })
+  await setTheme(page, 'light')
+  await open(page, '/recognition/leaderboard', 'Leaderboard')
+  await page.waitForTimeout(800)
+
+  const table = page.locator('table').first()
+  await expect(table.getByRole('button', { name: /^retract$/i })).toHaveCount(0)
+  const menus = table.getByRole('button', { name: /row actions for/i })
+  await expect(menus.first()).toBeVisible()
+
+  await menus.first().click()
+  const retract = page.getByRole('menuitem', { name: /retract entry/i })
+  await expect(retract).toBeVisible()
+  await retract.click()
+
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByText(/^Retract .+\?$/)).toBeVisible({ timeout: 15_000 })
+  await dialog
+    .getByLabel(/reason/i)
+    .pressSequentially('Verification retraction with evidence.', { delay: 5 })
+  await dialog.getByRole('button', { name: /^retract entry$/i }).click()
+
+  await expect(table.getByText(/verification retraction with evidence/i)).toBeVisible({ timeout: 15_000 })
+  await shot(page, 'leaderboard-1400-light-retracted')
+
+  const restore = table.getByRole('row', { name: /retracted/i }).getByRole('button', {
+    name: /row actions for/i,
+  })
+  await restore.first().click()
+  await page.getByRole('menuitem', { name: /restore entry/i }).click()
+  await expect(table.getByText(/verification retraction with evidence/i)).toHaveCount(0, {
+    timeout: 15_000,
+  })
+  await shot(page, 'leaderboard-1400-light-restored')
+})
+
+test('awards — dark theme and 900 width', async () => {  await open(page, '/recognition/awards', 'Awards ledger')
   await setTheme(page, 'dark')
   await shot(page, 'awards-1400-dark-default')
   await setTheme(page, 'light')

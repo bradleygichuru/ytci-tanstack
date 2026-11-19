@@ -5,10 +5,11 @@
  * never edited. These wrap the shell grammar with recognition vocabulary
  * (operation groups, award delivery states, rule diffs, engine banners).
  */
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useLocation } from '@tanstack/react-router'
-import { ArrowLeft, CheckCircle, Info, Power, ShieldCheck, Warning } from '@phosphor-icons/react'
+import { ArrowLeft, CheckCircle, DotsThree, Info, Power, ShieldCheck, Warning } from '@phosphor-icons/react'
 import { Button } from '#/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover'
 import { DataStateView } from '#/components/shell/DataState'
 import { cn } from '#/lib/utils.ts'
 import { useRecognition } from '#/lib/recognition/store'
@@ -439,103 +440,153 @@ export function BoardRows({
 }) {
   const active = rows.filter((row) => row.status === 'active')
   const retracted = rows.filter((row) => row.status === 'retracted')
+
   return (
-    <>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[820px] text-sm">
-          <caption className="sr-only">
-            Leaderboard entries with rank, XP, level and verified activity
-          </caption>
-          <thead>
-            <tr className="border-b bg-[var(--surface-2)] text-left text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-              <th scope="col" className="px-4 py-3 text-right">
-                Rank
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Display name
-              </th>
-              <th scope="col" className="px-4 py-3">
-                County
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                XP
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Level
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                Verified sites
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                Trails
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {active.map((row) => (
-              <tr key={row.displayName} className="border-b last:border-0 hover:bg-[var(--surface-2)]">
-                <td className="px-4 py-3 text-right font-mono text-xs font-bold">{row.rank}</td>
-                <td className="px-4 py-3">
-                  <span className="font-semibold text-foreground">{row.displayName}</span>
-                  {row.isSelf ? (
-                    <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                      You
-                    </span>
-                  ) : null}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{row.county ?? '—'}</td>
-                <td className="px-4 py-3 text-right font-mono text-xs">{row.xp.toLocaleString('en-KE')}</td>
-                <td className="px-4 py-3">{row.level}</td>
-                <td className="px-4 py-3 text-right">{row.verifiedSites}</td>
-                <td className="px-4 py-3 text-right">{row.trailCompletions}</td>
-                <td className="px-4 py-3 text-right">
-                  <Button
-                    variant="destructive"
-                    size="xs"
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[820px] text-sm">
+        <caption className="sr-only">
+          Leaderboard entries with rank, XP, level and verified activity
+        </caption>
+        <thead>
+          <tr className="border-b bg-[var(--surface-2)] text-left text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            <th scope="col" className="px-4 py-3 text-right">
+              Rank
+            </th>
+            <th scope="col" className="px-4 py-3">
+              Display name
+            </th>
+            <th scope="col" className="px-4 py-3">
+              County
+            </th>
+            <th scope="col" className="px-4 py-3 text-right">
+              XP
+            </th>
+            <th scope="col" className="px-4 py-3">
+              Level
+            </th>
+            <th scope="col" className="px-4 py-3 text-right">
+              Verified sites
+            </th>
+            <th scope="col" className="px-4 py-3 text-right">
+              Trails
+            </th>
+            <th scope="col" className="px-4 py-3 text-right">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {active.map((row) => (
+            <tr key={row.displayName} className="border-b last:border-0 hover:bg-[var(--surface-2)]">
+              <td className="px-4 py-3 text-right font-mono text-xs font-bold">{row.rank}</td>
+              <td className="px-4 py-3">
+                <span className="font-semibold text-foreground">{row.displayName}</span>
+                {row.isSelf ? (
+                  <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                    You
+                  </span>
+                ) : null}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">{row.county ?? '—'}</td>
+              <td className="px-4 py-3 text-right font-mono text-xs">{row.xp.toLocaleString('en-KE')}</td>
+              <td className="px-4 py-3">{row.level}</td>
+              <td className="px-4 py-3 text-right">{row.verifiedSites}</td>
+              <td className="px-4 py-3 text-right">{row.trailCompletions}</td>
+              <td className="px-4 py-3 text-right">
+                <RowActionMenu
+                  label={`Row actions for ${row.displayName}`}
+                  disabled={closed || Boolean(retractDisabledReason)}
+                  disabledReason={closed ? 'A closed season cannot be retracted.' : retractDisabledReason}
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
                     onClick={() => onRetract(row)}
-                    disabled={closed || Boolean(retractDisabledReason)}
-                    title={closed ? 'A closed season cannot be retracted.' : retractDisabledReason}
+                    className="w-full rounded-sm px-3 py-2 text-left text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
                   >
-                    Retract
-                  </Button>
-                </td>
-              </tr>
-            ))}
-            {active.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                  No active entries on this board.
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
-      {retracted.length > 0 ? (
-        <div className="border-t border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
-          <span className="font-semibold uppercase tracking-wide">Retracted</span>
-          <span className="mx-2">·</span>
-          {retracted.map((row, index) => (
-            <span key={row.displayName}>
-              {index > 0 ? <span className="mx-2">·</span> : null}
-              {row.displayName}
-              <span className="mx-1 text-[10px]">({row.retractedReason})</span>
-              <button
-                type="button"
-                onClick={() => onRestore(row)}
-                disabled={closed}
-                className="font-semibold text-primary underline underline-offset-2 disabled:opacity-50"
-              >
-                Restore
-              </button>
-            </span>
+                    Retract entry…
+                  </button>
+                </RowActionMenu>
+              </td>
+            </tr>
           ))}
+          {retracted.map((row) => (
+            <tr key={row.displayName} className="border-b bg-muted/40 text-muted-foreground last:border-0">
+              <td className="px-4 py-3 text-right font-mono text-xs">—</td>
+              <td className="px-4 py-3">
+                <span className="font-semibold">{row.displayName}</span>
+                <span className="ml-2 rounded border border-border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+                  Retracted
+                </span>
+                <span className="mt-0.5 block text-[11px]">{row.retractedReason}</span>
+              </td>
+              <td className="px-4 py-3">{row.county ?? '—'}</td>
+              <td className="px-4 py-3 text-right font-mono text-xs">{row.xp.toLocaleString('en-KE')}</td>
+              <td className="px-4 py-3">{row.level}</td>
+              <td className="px-4 py-3 text-right">{row.verifiedSites}</td>
+              <td className="px-4 py-3 text-right">{row.trailCompletions}</td>
+              <td className="px-4 py-3 text-right">
+                <RowActionMenu
+                  label={`Row actions for ${row.displayName}`}
+                  disabled={closed}
+                  disabledReason={closed ? 'A closed season cannot be restored.' : undefined}
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => onRestore(row)}
+                    className="w-full rounded-sm px-3 py-2 text-left text-sm font-semibold text-link transition-colors hover:bg-muted"
+                  >
+                    Restore entry
+                  </button>
+                </RowActionMenu>
+              </td>
+            </tr>
+          ))}
+          {active.length === 0 && retracted.length === 0 ? (
+            <tr>
+              <td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                No entries on this board.
+              </td>
+            </tr>
+          ) : null}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function RowActionMenu({
+  label,
+  disabled,
+  disabledReason,
+  children,
+}: {
+  label: string
+  disabled: boolean
+  disabledReason?: string
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          aria-label={label}
+          title={disabled ? disabledReason : label}
+          disabled={disabled}
+        >
+          <DotsThree className="h-4 w-4" weight="bold" aria-hidden />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-44 p-1">
+        <div role="menu" aria-label={label} onClick={() => setOpen(false)}>
+          {children}
         </div>
-      ) : null}
-    </>
+      </PopoverContent>
+    </Popover>
   )
 }
 

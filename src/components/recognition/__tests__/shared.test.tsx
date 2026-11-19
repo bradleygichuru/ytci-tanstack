@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { BoardRows, RuleDiff } from '#/components/recognition/shared'
 import type { BoardRow } from '#/lib/recognition/types'
@@ -53,17 +53,35 @@ describe('BoardRows', () => {
     },
   ]
 
-  it('keeps retracted rows visible with a restore action', () => {
+  it('keeps retracted rows visible with a restore action behind the row menu', () => {
     render(<BoardRows rows={rows} closed={false} onRetract={vi.fn()} onRestore={vi.fn()} />)
     expect(screen.getByText('Njeri M.')).toBeInTheDocument()
     expect(screen.getByText('TrailKing')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /restore/i })).toBeInTheDocument()
     expect(screen.getByText(/impersonation confirmed/i)).toBeInTheDocument()
+
+    const menus = screen.getAllByRole('button', { name: /row actions/i })
+    expect(menus).toHaveLength(2)
+    fireEvent.click(menus[1])
+    expect(screen.getByRole('menuitem', { name: /restore entry/i })).toBeInTheDocument()
   })
 
-  it('disables retraction on a closed season', () => {
+  it('reserves danger styling for the confirmation, not every row', () => {
+    const onRetract = vi.fn()
+    render(<BoardRows rows={rows} closed={false} onRetract={onRetract} onRestore={vi.fn()} />)
+
+    // The row itself has no red destructive control; the only retract action
+    // lives inside the row menu and opens the confirmation dialog.
+    expect(screen.queryByRole('button', { name: /^retract$/i })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getAllByRole('button', { name: /row actions/i })[0])
+    fireEvent.click(screen.getByRole('menuitem', { name: /retract entry/i }))
+    expect(onRetract).toHaveBeenCalledWith(rows[0])
+  })
+
+  it('disables row actions on a closed season', () => {
     render(<BoardRows rows={rows} closed onRetract={vi.fn()} onRestore={vi.fn()} />)
-    expect(screen.getByRole('button', { name: /retract/i })).toBeDisabled()
-    expect(screen.getByRole('button', { name: /restore/i })).toBeDisabled()
+    for (const menu of screen.getAllByRole('button', { name: /row actions/i })) {
+      expect(menu).toBeDisabled()
+    }
   })
 })
