@@ -43,6 +43,7 @@ describe('admin nav registry', () => {
     const labels = sections.flatMap((section) => section.items.map((item) => item.label))
     expect(labels).not.toContain('Recognition')
     expect(labels).not.toContain('Species')
+    expect(labels).not.toContain('Analytics')
   })
 
   it('shows a surface once its flag is on and the role holds the permission', () => {
@@ -59,6 +60,16 @@ describe('admin nav registry', () => {
     expect(isItemVisible(species, { role: 'user', flags: flags({ species: true }) })).toBe(false)
   })
 
+  it('gates Analytics on the canonical permission, admin access and flag', () => {
+    const analytics = findNavItem('/analytics')!
+    const on = flags({ analytics: true })
+    expect(isItemVisible(analytics, { role: 'moderator', flags: on })).toBe(true)
+    expect(isItemVisible(analytics, { role: 'administrator', flags: on })).toBe(true)
+    expect(isItemVisible(analytics, { role: 'organizer', flags: on })).toBe(false)
+    expect(isItemVisible(analytics, { role: 'county_officer', flags: on })).toBe(false)
+    expect(isItemVisible(analytics, { role: 'moderator', flags: flags() })).toBe(false)
+  })
+
   it('keeps legacy screens gated by the legacy RBAC resources', () => {
     expect(visibleSections({ role: 'user', flags: flags() })).toEqual([])
     expect(
@@ -66,10 +77,5 @@ describe('admin nav registry', () => {
         section.items.map((item) => item.label),
       ),
     ).toContain('Then & Now')
-    expect(
-      visibleSections({ role: 'moderator', flags: flags() }).flatMap((section) =>
-        section.items.map((item) => item.label),
-      ),
-    ).toContain('Analytics')
   })
 })
