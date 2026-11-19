@@ -151,20 +151,16 @@ test('overview — dark theme', async () => {
 // confirmation, and a retracted row keeps an explicit restore path.
 test('leaderboard — retraction sits behind a row menu and restore is reachable', async () => {
   await page.setViewportSize({ width: 1400, height: 900 })
-  await setTheme(page, 'light')
   await open(page, '/recognition/leaderboard', 'Leaderboard')
+  await setTheme(page, 'light')
   await page.waitForTimeout(800)
 
   const table = page.locator('table').first()
   await expect(table.getByRole('button', { name: /^retract$/i })).toHaveCount(0)
-  const menus = table.getByRole('button', { name: /row actions for/i })
-  await expect(menus.first()).toBeVisible()
+  const manage = table.getByRole('button', { name: /^manage /i })
+  await expect(manage.first()).toBeVisible()
 
-  await menus.first().click()
-  const retract = page.getByRole('menuitem', { name: /retract entry/i })
-  await expect(retract).toBeVisible()
-  await retract.click()
-
+  await manage.first().click()
   const dialog = page.getByRole('dialog')
   await expect(dialog.getByText(/^Retract .+\?$/)).toBeVisible({ timeout: 15_000 })
   await dialog
@@ -175,11 +171,8 @@ test('leaderboard — retraction sits behind a row menu and restore is reachable
   await expect(table.getByText(/verification retraction with evidence/i)).toBeVisible({ timeout: 15_000 })
   await shot(page, 'leaderboard-1400-light-retracted')
 
-  const restore = table.getByRole('row', { name: /retracted/i }).getByRole('button', {
-    name: /row actions for/i,
-  })
+  const restore = table.getByRole('button', { name: /^restore /i })
   await restore.first().click()
-  await page.getByRole('menuitem', { name: /restore entry/i }).click()
   await expect(table.getByText(/verification retraction with evidence/i)).toHaveCount(0, {
     timeout: 15_000,
   })
@@ -215,7 +208,7 @@ test('overview — 200% text collapses the sidebar and keeps the nav on one line
   await page.setViewportSize({ width: 1400, height: 900 })
   await open(page, '/recognition', 'Recognition overview')
   await page.addStyleTag({ content: 'html { font-size: 32px !important; }' })
-  await page.waitForTimeout(600)
+  await page.waitForTimeout(2000)
 
   const gap = await page
     .locator('[data-slot="sidebar-gap"]')
@@ -276,9 +269,10 @@ test('overview — shell links clear 4.5:1 in dark mode', async () => {
       return (light + 0.05) / (dark + 0.05)
     }
 
-    const links = Array.from(document.querySelectorAll('main a')).filter((el) =>
-      ['Manage', 'All', 'Open →'].some((label) => (el.textContent ?? '').trim() === label)
-    )
+    const links = Array.from(document.querySelectorAll('main a')).filter((el) => {
+      const label = (el.textContent ?? '').trim()
+      return label === 'Manage' || label === 'All' || label.endsWith('Open →')
+    })
     return links.map((el) => ({
       label: (el.textContent ?? '').trim(),
       ratio: ratio(el),
@@ -366,6 +360,9 @@ test('rule editor — weekly cap and anti-abuse explanation', async () => {
 test('overview — provenance banner matches the footer source marker', async () => {
   await page.setViewportSize({ width: 1400, height: 900 })
   await open(page, '/recognition', 'Recognition overview')
+  await expect(page.getByText('Contract API', { exact: true }).first()).toBeVisible({
+    timeout: 30_000,
+  })
   const body = await page.locator('main').innerText()
   expect(body).toMatch(/Contract API/)
   expect(body).not.toMatch(/Sample data is showing/)

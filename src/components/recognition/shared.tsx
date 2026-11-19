@@ -5,11 +5,10 @@
  * never edited. These wrap the shell grammar with recognition vocabulary
  * (operation groups, award delivery states, rule diffs, engine banners).
  */
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link, useLocation } from '@tanstack/react-router'
-import { ArrowLeft, CheckCircle, DotsThree, Info, Power, ShieldCheck, Warning } from '@phosphor-icons/react'
+import { ArrowLeft, CheckCircle, Info, Power, ShieldCheck, Warning } from '@phosphor-icons/react'
 import { Button } from '#/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover'
 import { DataStateView } from '#/components/shell/DataState'
 import { cn } from '#/lib/utils.ts'
 import { useRecognition } from '#/lib/recognition/store'
@@ -186,7 +185,7 @@ export function FixtureStateControl() {
 }
 
 export function ScenarioBanner() {
-  const { scenario, source, apiError, setScenario } = useRecognition()
+  const { scenario, source, apiError, apiStatus, setScenario } = useRecognition()
   if (scenario === 'stale') {
     return (
       <Notice tone="gold" title="Showing last-known recognition data.">
@@ -220,7 +219,7 @@ export function ScenarioBanner() {
   // The banner is a provenance claim, so it may only appear when every read
   // actually fell back to the sample overlay. A partial (mixed) read still
   // renders contract rows and must not be labelled as sample data.
-  if (source === 'sample' && scenario === 'default') {
+  if (source === 'sample' && apiStatus === 'error' && scenario === 'default') {
     return (
       <Notice tone="gold" title="Sample data is showing.">
         {apiError
@@ -496,20 +495,16 @@ export function BoardRows({
               <td className="px-4 py-3 text-right">{row.verifiedSites}</td>
               <td className="px-4 py-3 text-right">{row.trailCompletions}</td>
               <td className="px-4 py-3 text-right">
-                <RowActionMenu
-                  label={`Row actions for ${row.displayName}`}
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onRetract(row)}
                   disabled={closed || Boolean(retractDisabledReason)}
-                  disabledReason={closed ? 'A closed season cannot be retracted.' : retractDisabledReason}
+                  title={closed ? 'A closed season cannot be retracted.' : retractDisabledReason}
+                  aria-label={`Manage ${row.displayName}`}
                 >
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => onRetract(row)}
-                    className="w-full rounded-sm px-3 py-2 text-left text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
-                  >
-                    Retract entry…
-                  </button>
-                </RowActionMenu>
+                  Manage
+                </Button>
               </td>
             </tr>
           ))}
@@ -529,20 +524,16 @@ export function BoardRows({
               <td className="px-4 py-3 text-right">{row.verifiedSites}</td>
               <td className="px-4 py-3 text-right">{row.trailCompletions}</td>
               <td className="px-4 py-3 text-right">
-                <RowActionMenu
-                  label={`Row actions for ${row.displayName}`}
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={() => onRestore(row)}
                   disabled={closed}
-                  disabledReason={closed ? 'A closed season cannot be restored.' : undefined}
+                  title={closed ? 'A closed season cannot be restored.' : undefined}
+                  aria-label={`Restore ${row.displayName}`}
                 >
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => onRestore(row)}
-                    className="w-full rounded-sm px-3 py-2 text-left text-sm font-semibold text-link transition-colors hover:bg-muted"
-                  >
-                    Restore entry
-                  </button>
-                </RowActionMenu>
+                  Restore
+                </Button>
               </td>
             </tr>
           ))}
@@ -556,40 +547,6 @@ export function BoardRows({
         </tbody>
       </table>
     </div>
-  )
-}
-
-function RowActionMenu({
-  label,
-  disabled,
-  disabledReason,
-  children,
-}: {
-  label: string
-  disabled: boolean
-  disabledReason?: string
-  children: ReactNode
-}) {
-  const [open, setOpen] = useState(false)
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          aria-label={label}
-          title={disabled ? disabledReason : label}
-          disabled={disabled}
-        >
-          <DotsThree className="h-4 w-4" weight="bold" aria-hidden />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-44 p-1">
-        <div role="menu" aria-label={label} onClick={() => setOpen(false)}>
-          {children}
-        </div>
-      </PopoverContent>
-    </Popover>
   )
 }
 
