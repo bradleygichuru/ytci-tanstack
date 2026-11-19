@@ -1,0 +1,668 @@
+
+Running 99 tests using 1 worker
+
+  ✓   1 [verify-harness] › e2e/verify/seed-guard.spec.ts:16:3 › disposable target guard › fixture mode defaults to the owned fixture port (201ms)
+  ✓   2 [verify-harness] › e2e/verify/seed-guard.spec.ts:22:3 › disposable target guard › fixture mode refuses an external base URL (158ms)
+  ✓   3 [verify-harness] › e2e/verify/seed-guard.spec.ts:29:3 › disposable target guard › live mode requires a seed id (119ms)
+  ✓   4 [verify-harness] › e2e/verify/seed-guard.spec.ts:36:3 › disposable target guard › live mode refuses a non-disposable seed id (66ms)
+  ✓   5 [verify-harness] › e2e/verify/seed-guard.spec.ts:43:3 › disposable target guard › live mode refuses the admin dev server port (41ms)
+  ✓   6 [verify-harness] › e2e/verify/seed-guard.spec.ts:53:3 › disposable target guard › live mode refuses a non-local deployment (64ms)
+  ✓   7 [verify-harness] › e2e/verify/seed-guard.spec.ts:61:3 › disposable target guard › live mode refuses a shared database URL (77ms)
+  ✓   8 [verify-harness] › e2e/verify/seed-guard.spec.ts:71:3 › disposable target guard › live mode accepts an owned port and disposable seed (50ms)
+  -   9 [verify-harness] › e2e/verify/smoke.spec.ts:12:3 › verification harness fixture › serves and asserts the fixture page
+  -  10 [verify-harness] › e2e/verify/smoke.spec.ts:32:3 › verification harness fixture › health endpoint answers
+  -  11 [verify-harness] › e2e/verify/smoke.spec.ts:37:3 › verification harness fixture › unknown paths are 404, not a fallback to the dev app
+  ✘  12 [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:17:1 › administrator can queue an analytics export (3.3m)
+  -  13 [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:42:1 › moderator can read analytics but cannot export or erase
+  -  14 [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:58:1 › administrator can submit a data-subject erasure request
+  -  15 [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:85:1 › a role without admin access cannot reach analytics
+  ✓  16 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:22:1 › overview default: one rollup population across KPIs, chart and stamp (58.3s)
+  ✓  17 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:47:1 › date range is applied to the read and named in the scope line (36.5s)
+  ✓  18 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:63:1 › empty rollup and failed rollup are distinct states (47.8s)
+  ✘  19 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:84:1 › stale rollup keeps last-known data and disables export (2.4m)
+  -  20 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:95:1 › loading state is not announced before the first read
+  -  21 [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:101:1 › loading after stale clears the stale banner
+  ✘  22 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:25:1 › 900px: every section stays inside the viewport (3.4m)
+  -  23 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1400px: overview and the densest tables stay inside the viewport
+  -  24 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:34:3 › 1180px: overview and the densest tables stay inside the viewport
+  -  25 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:43:1 › dark theme keeps the surface readable and scoped
+  -  26 [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:56:1 › 200% text: headings and the rollup stamp stay visible
+  ✓  27 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:21:1 › journeys: nine definitions, one rollup source, filter scoped to this read (37.4s)
+  ✓  28 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:51:1 › journey filter carried to overview is labelled not applied (22.2s)
+  ✓  29 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:64:1 › funnels: step bars and largest-drop caption render from the journey rollup (35.7s)
+  ✓  30 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:78:1 › funnels: summary and step bars reconcile to one population (#387) (42.8s)
+  ✘  31 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:107:1 › retention: elapsed cohorts only and an accessible description without future weeks (2.4m)
+  -  32 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:125:1 › adoption: reach, depth and repeat keep their denominators visible
+  -  33 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:145:1 › search gaps: contract gap is explicit, never a fabricated zero
+  -  34 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:162:1 › content: live rows when present, otherwise a labelled sample overlay
+  -  35 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:174:1 › programme: domain-table impact is never proxied from telemetry
+  -  36 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:194:1 › quality: pipeline checks, rollup health, definitions and erasure entry
+  -  37 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:210:1 › suppressed: real withheld cells, em dashes and no revealing total
+  -  38 [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:225:1 › suppressed: retention cell names a week the retention table renders
+  ✓  39 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:14:3 › MICE admin — implemented behaviour › agenda detects a room double-booking and explains it (2.1m)
+  ✓  40 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:50:3 › MICE admin — implemented behaviour › a waitlisted registration can be offered the freed place and promoted (1.0m)
+  ✓  41 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:100:3 › MICE admin — implemented behaviour › registrations expose the ticket, access needs and an honest empty waitlist (30.0s)
+  ✓  42 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:115:3 › MICE admin — implemented behaviour › check-in counts reconcile, roster stays hidden, undo and record both work (31.1s)
+  ✓  43 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:146:3 › MICE admin — implemented behaviour › console check-in reconciles the counts and undo reverses it (27.3s)
+  ✓  44 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:170:3 › MICE admin — implemented behaviour › check-in override requires a reason before it can be recorded (25.2s)
+  ✓  45 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:186:3 › MICE admin — implemented behaviour › audit log filters, expands and records a local check-in action (51.3s)
+  ✓  46 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:208:3 › MICE admin — implemented behaviour › event rows show lifecycle and organizer state; the editor carries revision state (36.6s)
+  ✓  47 [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts:224:3 › MICE admin — implemented behaviour › role gating: a reader is redirected, a moderator keeps read access (31.9s)
+  ✘  48 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:32:5 › MICE admin — responsive › 1400: no document overflow and every table reaches its action column (4.0m)
+  ✓  49 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:32:5 › MICE admin — responsive › 900: no document overflow and every table reaches its action column (1.1m)
+  ✓  50 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:84:3 › MICE admin — responsive › 200% text: KPIs and the overview grid reflow without overlap (10.3s)
+  ✓  51 [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:134:3 › MICE admin — responsive › 900: the agenda header stacks its actions below the title (10.1s)
+  ✘  52 [verify-live] › e2e/verify/admin-mice/screens.spec.ts:21:3 › MICE admin — screen matrix › every screen renders real data at 1400 (3.4m)
+  ✘  53 [verify-live] › e2e/verify/admin-mice/screens.spec.ts:43:3 › MICE admin — screen matrix › 1180 and 900 keep each screen readable and populated (6.0m)
+  ✓  54 [verify-live] › e2e/verify/admin-mice/screens.spec.ts:56:3 › MICE admin — screen matrix › default, empty, error and stale are distinct states (1.7m)
+  ✓  55 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › overview — default 1400 (1.4m)
+  ✓  56 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › rules — default 1400 (2.1m)
+  ✓  57 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › badges — default 1400 (8.2s)
+  ✓  58 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › missions — default 1400 (6.1s)
+  ✓  59 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › seasons — default 1400 (9.0s)
+  ✓  60 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › leaderboard — default 1400 (7.4s)
+  ✓  61 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › awards — default 1400 (13.7s)
+  ✓  62 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › reports — default 1400 (12.2s)
+  ✓  63 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › backfill — default 1400 (6.7s)
+  ✓  64 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › audit — default 1400 (5.5s)
+  ✓  65 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:125:3 › kill-switches — default 1400 (5.7s)
+  ✓  66 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:137:1 › overview — 1180 and 900 widths (11.7s)
+  ✓  67 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:147:1 › overview — dark theme (6.6s)
+  ✓  68 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:157:1 › leaderboard — retraction sits behind a row menu and restore is reachable (8.4s)
+  ✓  69 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:187:1 › awards — dark theme and 900 width (11.5s)
+  ✘  70 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:197:1 › overview — 200% text does not force horizontal scrolling (6.5s)
+  -  71 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:212:1 › overview — 200% text collapses the sidebar and keeps the nav on one line
+  -  72 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:240:1 › overview — shell links clear 4.5:1 in dark mode
+  -  73 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:302:1 › overview — empty, error, stale and read-only states
+  -  74 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:325:1 › badges — empty and stale states
+  -  75 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:342:1 › rules — simulation and second approver gate
+  -  76 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:350:1 › rule editor — weekly cap and anti-abuse explanation
+  -  77 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:369:1 › overview — provenance banner matches the footer source marker
+  -  78 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:382:1 › badges — artwork preview and unpublish warning
+  -  79 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:397:1 › badges — bilingual publish gate and badge locking copy
+  -  80 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:405:1 › seasons — two-person close and snapshot copy
+  -  81 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:414:1 › awards — grouping by cause, idempotent retry, manual credit
+  -  82 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:423:1 › moderation — decisions require a reason and are audited
+  -  83 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:431:1 › backfill — frozen parameters and approver separation
+  -  84 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:440:1 › kill switches — typed OFF confirmation and dependency summary
+  -  85 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:452:1 › moderation — a decision needs a reason and is recorded
+  -  86 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:470:1 › awards — bulk retry asks for scope and never duplicates XP
+  -  87 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:485:1 › seasons — closing needs a reason and a typed confirmation
+  -  88 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:503:1 › role gating — content editor and reader are redirected to no-access
+  -  89 [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:518:1 › role gating — moderator reads but sees no authoring controls
+  ✘  90 [verify-live] › e2e/verify/admin-species/recapture.spec.ts:76:3 › species recapture › recaptures the screens that need the derived data loaded (1.0m)
+  ✘  91 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix (6.5m)
+  ✘  92 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:149:3 › species admin › captures translation, sources, readiness and audit across the matrix (6ms)
+  ✘  93 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:154:3 › species admin › catalogue search, selection and bulk assignment (1.8m)
+  ✓  94 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:188:3 › species admin › stale is derived and blocks publish (1.6m)
+  ✘  95 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:205:3 › species admin › rights withdrawal names blast radius; non-revocable sources cannot be targeted (58.8s)
+  ✓  96 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:223:3 › species admin › readiness blockers link to records; second review is actionable; publish is gated (43.8s)
+  ✘  97 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:239:3 › species admin › audit filters and CSV export use the same filter (1.9m)
+  ✘  98 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel (55.0s)
+  ✓  99 [verify-live] › e2e/verify/admin-species/species.live.spec.ts:276:3 › species admin › role gating: translator and reviewer see their own actions only (1.4m)
+
+
+  1) [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:17:1 › administrator can queue an analytics export 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+    Call Log:
+    - Timeout 60000ms exceeded while waiting on the predicate
+
+       at admin-analytics/support.ts:80
+
+      78 |       timeout: 60_000,
+      79 |     })
+    > 80 |     .toBe(false)
+         |      ^
+      81 |   await page.waitForTimeout(100)
+      82 | }
+      83 |
+        at waitForRollup (/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/support.ts:80:6)
+        at openAnalytics (/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/support.ts:69:9)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/export-erasure.spec.ts:19:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-export-era-ff610-n-queue-an-analytics-export-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-export-era-ff610-n-queue-an-analytics-export-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-analytics-export-era-ff610-n-queue-an-analytics-export-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-export-era-ff610-n-queue-an-analytics-export-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-analytics-export-era-ff610-n-queue-an-analytics-export-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:84:1 › stale rollup keeps last-known data and disables export 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Stale rollup').first()
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('Stale rollup').first()
+
+
+      87 |
+      88 |   await expect(page.getByText('Showing last-known analytics.')).toBeVisible()
+    > 89 |   await expect(page.getByText('Stale rollup').first()).toBeVisible()
+         |                                                        ^
+      90 |   await expect(page.getByRole('button', { name: /Export CSV/ })).toBeDisabled()
+      91 |   // Last-known numbers remain readable rather than blanking the screen.
+      92 |   expect(await bodyText(page)).toContain('821 / 2,410 / 6,304')
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/overview.spec.ts:89:56
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-overview-s-73546-wn-data-and-disables-export-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-analytics-overview-s-73546-wn-data-and-disables-export-verify-live/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-overview-s-73546-wn-data-and-disables-export-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-analytics-overview-s-73546-wn-data-and-disables-export-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:25:1 › 900px: every section stays inside the viewport 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+    Call Log:
+    - Test timeout of 120000ms exceeded
+
+       at admin-analytics/support.ts:80
+
+      78 |       timeout: 60_000,
+      79 |     })
+    > 80 |     .toBe(false)
+         |      ^
+      81 |   await page.waitForTimeout(100)
+      82 | }
+      83 |
+        at waitForRollup (/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/support.ts:80:6)
+        at openAnalytics (/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/support.ts:69:9)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/responsive.spec.ts:28:5
+
+    Test timeout of 30000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-responsive-7f267-n-stays-inside-the-viewport-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-responsive-7f267-n-stays-inside-the-viewport-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-analytics-responsive-7f267-n-stays-inside-the-viewport-verify-live/error-context.md
+
+  4) [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:107:1 › retention: elapsed cohorts only and an accessible description without future weeks 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.innerText: Target page, context or browser has been closed
+
+       at admin-analytics/support.ts:75
+
+      73 | export async function waitForRollup(page: Page): Promise<void> {
+      74 |   await expect
+    > 75 |     .poll(async () => (await page.locator('body').innerText()).includes('Loading the rollup'), {
+         |                                                   ^
+      76 |       // A cold preview/navigation has to fetch the route chunk before the
+      77 |       // rollup settles; 20s was tight enough to flake on a loaded machine.
+      78 |       timeout: 60_000,
+        at expect.poll.timeout (/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/support.ts:75:51)
+        at waitForRollup (/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/support.ts:74:3)
+        at openAnalytics (/home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/support.ts:69:3)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-analytics/sections.spec.ts:108:3
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-sections-r-263ea-iption-without-future-weeks-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-analytics-sections-r-263ea-iption-without-future-weeks-verify-live/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-analytics-sections-r-263ea-iption-without-future-weeks-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-analytics-sections-r-263ea-iption-without-future-weeks-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:32:5 › MICE admin — responsive › 1400: no document overflow and every table reaches its action column 
+
+    Test timeout of 180000ms exceeded.
+
+    Error: locator.count: Target page, context or browser has been closed
+
+       at admin-mice/mice.helpers.ts:53
+
+      51 |   const loading = page.getByText(/^(Loading|Fetching)/)
+      52 |   const deadline = Date.now() + 30_000
+    > 53 |   while ((await loading.count()) > 0 && Date.now() < deadline) {
+         |                         ^
+      54 |     await page.waitForTimeout(500)
+      55 |   }
+      56 |   await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 15_000 })
+        at openRoute (/home/brad/code/ytci-release-admin/e2e/verify/admin-mice/mice.helpers.ts:53:25)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-mice/responsive.spec.ts:39:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-mice-responsive-MICE-7e295-e-reaches-its-action-column-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-mice-responsive-MICE-7e295-e-reaches-its-action-column-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-mice-responsive-MICE-7e295-e-reaches-its-action-column-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-mice-responsive-MICE-7e295-e-reaches-its-action-column-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-mice-responsive-MICE-7e295-e-reaches-its-action-column-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [verify-live] › e2e/verify/admin-mice/screens.spec.ts:21:3 › MICE admin — screen matrix › every screen renders real data at 1400 
+
+    Test timeout of 180000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-mice-screens-MICE-ad-9fc5b-n-renders-real-data-at-1400-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-mice-screens-MICE-ad-9fc5b-n-renders-real-data-at-1400-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-mice-screens-MICE-ad-9fc5b-n-renders-real-data-at-1400-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-mice-screens-MICE-ad-9fc5b-n-renders-real-data-at-1400-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-mice-screens-MICE-ad-9fc5b-n-renders-real-data-at-1400-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [verify-live] › e2e/verify/admin-mice/screens.spec.ts:43:3 › MICE admin — screen matrix › 1180 and 900 keep each screen readable and populated 
+
+    Test timeout of 180000ms exceeded.
+
+    Tearing down "context" exceeded the test timeout of 180000ms.
+
+    Error: locator.count: Target page, context or browser has been closed
+
+       at admin-mice/mice.helpers.ts:53
+
+      51 |   const loading = page.getByText(/^(Loading|Fetching)/)
+      52 |   const deadline = Date.now() + 30_000
+    > 53 |   while ((await loading.count()) > 0 && Date.now() < deadline) {
+         |                         ^
+      54 |     await page.waitForTimeout(500)
+      55 |   }
+      56 |   await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 15_000 })
+        at openRoute (/home/brad/code/ytci-release-admin/e2e/verify/admin-mice/mice.helpers.ts:53:25)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-mice/screens.spec.ts:48:9
+
+    Error Context: test-results/verify/admin-mice-screens-MICE-ad-b54f8-reen-readable-and-populated-verify-live/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-mice-screens-MICE-ad-b54f8-reen-readable-and-populated-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-mice-screens-MICE-ad-b54f8-reen-readable-and-populated-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:197:1 › overview — 200% text does not force horizontal scrolling 
+
+    Error: horizontal overflow at 200% text
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 2
+    Received:    25
+
+      205 |   })
+      206 |   await shot(page, 'overview-1400-light-200text')
+    > 207 |   expect(overflow, 'horizontal overflow at 200% text').toBeLessThanOrEqual(2)
+          |                                                        ^
+      208 | })
+      209 |
+      210 | // #389 regression: the 200 % plate must fold the sidebar to the icon rail and
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-recognition/recognition.spec.ts:207:56
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/error-context.md
+
+    Error Context: test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-recognition-recognit-1ff66--force-horizontal-scrolling-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [verify-live] › e2e/verify/admin-species/recapture.spec.ts:76:3 › species recapture › recaptures the screens that need the derived data loaded 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('4 shown').first()
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 30000ms
+      - waiting for getByText('4 shown').first()
+
+
+      43 |   await page.emulateMedia({ colorScheme: 'light' })
+      44 |   await page.goto(`${BASE}${route}`)
+    > 45 |   await expect(page.getByText(ready).first()).toBeVisible({ timeout: 30_000 })
+         |                                               ^
+      46 |   await page.waitForTimeout(600)
+      47 |   await shot(page, screen, '1400-light-default')
+      48 |   for (const width of [1180, 900]) {
+        at matrix (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/recapture.spec.ts:45:47)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/recapture.spec.ts:81:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-recapture-sp-3e809-eed-the-derived-data-loaded-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: page.goto: Test timeout of 240000ms exceeded.
+    Call log:
+      - navigating to "http://127.0.0.1:3220/programme/species", waiting until "load"
+
+
+      103 |       await page.setViewportSize({ width: 1400, height: 1000 })
+      104 |       await page.emulateMedia({ colorScheme: 'light' })
+    > 105 |       await page.goto(`${BASE}${route}`)
+          |                  ^
+      106 |       await settle(page)
+      107 |       await expect(page.locator('body')).not.toContainText('Failed to fetch')
+      108 |       await capture(page, screen, '1400', 'light-default')
+        at captureScreens (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:105:18)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:146:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-a60cf-languages-across-the-matrix-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:149:3 › species admin › captures translation, sources, readiness and audit across the matrix 
+
+    TimeoutError: browserType.launch: Timeout 180000ms exceeded.
+    Call log:
+      - <launching> /home/brad/.cache/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-MqdbyT --remote-debugging-pipe --no-startup-window
+      - <launched> pid=210247
+      - [pid=210247][err] [1119/204443.904303:WARNING:sandbox/policy/linux/sandbox_linux.cc:405] InitializeSandbox() called with multiple threads in process gpu-process.
+
+
+    Fixture "trace recording" timeout of 30000ms exceeded during teardown.
+
+    Error Context: test-results/verify/admin-species-species.live-ae210-and-audit-across-the-matrix-verify-live/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-ae210-and-audit-across-the-matrix-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-ae210-and-audit-across-the-matrix-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:154:3 › species admin › catalogue search, selection and bulk assignment 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: apiRequestContext.post: Test timeout of 90000ms exceeded.
+
+      45 |     )
+      46 |   }
+    > 47 |   const response = await page.request.post(`${BASE}/api/auth/sign-in/email`, {
+         |                                       ^
+      48 |     data: { email, password: PASS },
+      49 |     headers: { Origin: BASE },
+      50 |   })
+        at login (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:47:39)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:157:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-13a0e-lection-and-bulk-assignment-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-13a0e-lection-and-bulk-assignment-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-13a0e-lection-and-bulk-assignment-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-13a0e-lection-and-bulk-assignment-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-13a0e-lection-and-bulk-assignment-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:205:3 › species admin › rights withdrawal names blast radius; non-revocable sources cannot be targeted 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('1 sources')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('1 sources')
+
+
+      209 |     await page.goto(`${BASE}/programme/species/sources`)
+      210 |     await settle(page)
+    > 211 |     await expect(page.getByText('1 sources')).toBeVisible()
+          |                                               ^
+      212 |     // GBIF is non-revocable: no withdraw action on its row.
+      213 |     await expect(page.getByRole('button', { name: /Withdraw GBIF/ })).toHaveCount(0)
+      214 |     await expect(page.getByText('Not revocable').first()).toBeVisible()
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:211:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-39a2b--sources-cannot-be-targeted-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:239:3 › species admin › audit filters and CSV export use the same filter 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: page.waitForEvent: Test timeout of 90000ms exceeded.
+    =========================== logs ===========================
+    waiting for event "download"
+    ============================================================
+
+      246 |     await page.getByLabel('Filter by category').selectOption({ label: 'Rights' })
+      247 |     await page.waitForTimeout(400)
+    > 248 |     const downloadPromise = page.waitForEvent('download')
+          |                                  ^
+      249 |     await page.getByRole('button', { name: /Export CSV/ }).click()
+      250 |     const download = await downloadPromise
+      251 |     const csvPath = await download.path()
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:248:34
+
+    Error: locator.click: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: /Export CSV/ })
+        - locator resolved to <button disabled data-size="sm" data-slot="button" data-variant="outline" class="inline-flex shrink-0 items-center justify-center text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-…>…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        164 × waiting for element to be visible, enabled and stable
+            - element is not enabled
+          - retrying click action
+            - waiting 500ms
+
+
+      247 |     await page.waitForTimeout(400)
+      248 |     const downloadPromise = page.waitForEvent('download')
+    > 249 |     await page.getByRole('button', { name: /Export CSV/ }).click()
+          |                                                            ^
+      250 |     const download = await downloadPromise
+      251 |     const csvPath = await download.path()
+      252 |     const csv = fs.readFileSync(csvPath, 'utf8')
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:249:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/error-context.md
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-70c28--export-use-the-same-filter-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel 
+
+    TimeoutError: locator.waitFor: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('heading', { level: 1 }).first() to be visible
+
+
+      66 | async function settle(page: Page) {
+      67 |   await page.waitForLoadState('domcontentloaded')
+    > 68 |   await page.getByRole('heading', { level: 1 }).first().waitFor({ timeout: 20_000 })
+         |                                                         ^
+      69 |   // The species screens fetch details client-side after the shell renders.
+      70 |   await page.waitForTimeout(1800)
+      71 | }
+        at settle (/home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:68:57)
+        at /home/brad/code/ytci-release-admin/e2e/verify/admin-species/species.live.spec.ts:263:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/verify/admin-species-species.live-29dec-d-keeps-the-draft-on-cancel-verify-live/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: [verify-live] › e2e/verify/admin-mice/behaviour.spec.ts (7.0m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  15 failed
+    [verify-live] › e2e/verify/admin-analytics/export-erasure.spec.ts:17:1 › administrator can queue an analytics export 
+    [verify-live] › e2e/verify/admin-analytics/overview.spec.ts:84:1 › stale rollup keeps last-known data and disables export 
+    [verify-live] › e2e/verify/admin-analytics/responsive.spec.ts:25:1 › 900px: every section stays inside the viewport 
+    [verify-live] › e2e/verify/admin-analytics/sections.spec.ts:107:1 › retention: elapsed cohorts only and an accessible description without future weeks 
+    [verify-live] › e2e/verify/admin-mice/responsive.spec.ts:32:5 › MICE admin — responsive › 1400: no document overflow and every table reaches its action column 
+    [verify-live] › e2e/verify/admin-mice/screens.spec.ts:21:3 › MICE admin — screen matrix › every screen renders real data at 1400 
+    [verify-live] › e2e/verify/admin-mice/screens.spec.ts:43:3 › MICE admin — screen matrix › 1180 and 900 keep each screen readable and populated 
+    [verify-live] › e2e/verify/admin-recognition/recognition.spec.ts:197:1 › overview — 200% text does not force horizontal scrolling 
+    [verify-live] › e2e/verify/admin-species/recapture.spec.ts:76:3 › species recapture › recaptures the screens that need the derived data loaded 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:144:3 › species admin › captures overview, catalogue, editor and languages across the matrix 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:149:3 › species admin › captures translation, sources, readiness and audit across the matrix 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:154:3 › species admin › catalogue search, selection and bulk assignment 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:205:3 › species admin › rights withdrawal names blast radius; non-revocable sources cannot be targeted 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:239:3 › species admin › audit filters and CSV export use the same filter 
+    [verify-live] › e2e/verify/admin-species/species.live.spec.ts:258:3 › species admin › editor dirty guard keeps the draft on cancel 
+  3 skipped
+  35 did not run
+  46 passed (1.3h)

@@ -74,7 +74,48 @@ VERIFY_MODE=live VERIFY_SEED_ID=verify-376-final \
 
 ## Results
 
-_Filled in after the run._
+### Run 1 — all 99 tests, `--retries=0`, one worker
+
+Command as above. Raw output: `logs/run1.log`; per-file counts:
+`logs/run1-summary.json`.
+
+| File | Passed | Failed | Timed out | Skipped |
+| --- | ---: | ---: | ---: | ---: |
+| `seed-guard.spec.ts` | 8 | 0 | 0 | 0 |
+| `smoke.spec.ts` | 0 | 0 | 0 | 3 (fixture-only, expected in live mode) |
+| `admin-analytics/export-erasure.spec.ts` | 0 | 1 | 0 | 3 (serial cascade) |
+| `admin-analytics/overview.spec.ts` | 3 | 1 | 0 | 2 (serial cascade, incl. one P2 known-defect) |
+| `admin-analytics/responsive.spec.ts` | 0 | 1 | 0 | 4 (serial cascade) |
+| `admin-analytics/sections.spec.ts` | 4 | 0 | 1 | 7 (serial cascade) |
+| `admin-mice/behaviour.spec.ts` | 9 | 0 | 0 | 0 |
+| `admin-mice/responsive.spec.ts` | 3 | 0 | 1 | 0 |
+| `admin-mice/screens.spec.ts` | 1 | 0 | 2 | 0 |
+| `admin-recognition/recognition.spec.ts` | 15 | 1 | 0 | 19 (serial cascade) |
+| `admin-species/recapture.spec.ts` | 0 | 1 | 0 | 0 |
+| `admin-species/species.live.spec.ts` | 3 | 3 | 3 | 0 |
+| **Total** | **46** | **8** | **7** | **38** |
+
+The 38 skips are not green. Three are the fixture smoke spec correctly
+skipping in live mode; 35 are serial-mode cascades behind the first failure in
+their file, so those assertions did not run in run 1. Round 2 re-runs the
+failures and the cascaded remainder separately.
+
+Observed product/runtime failures from run 1:
+
+- **Species SSR throws on every request** (`app.log`, 85 occurrences):
+  `Error in renderToReadableStream: TypeError: router.serverSsr?.isDehydrated
+  is not a function`. Reproduced with a single authenticated `GET
+  /programme/species` (200, shell only) and `/programme/species/catalogue`.
+  `@tanstack/react-router-ssr-query` 1.167.1 (via `router-ssr-query-core`
+  1.169.1) calls `serverSsr.isDehydrated()`, which does not exist in the
+  forced `@tanstack/router-core` 1.171.34. The CVE fix (#56) pinned
+  react-router/router-core but left ssr-query on its old resolution.
+- Recognition `/recognition` at 200 % text overflows horizontally by 25 px
+  (threshold 2 px).
+- Analytics stale/export/900 px failures: the rollup never left the loading
+  state within 60 s in several cases; recorded again in round 2.
+- MICE screen and responsive timeouts: pages did not finish loading inside the
+  180 s budget.
 
 ## Screenshots
 
