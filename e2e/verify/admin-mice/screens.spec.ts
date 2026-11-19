@@ -63,7 +63,7 @@ test.describe('MICE admin — screen matrix', () => {
     await expect(page.locator('body')).toContainText(/No events match|No events in this fixture/i)
 
     await setDataState(page, 'Error')
-    await expect(page.locator('body')).toContainText(/could not load|Retry/i)
+    await expect(page.locator('body')).toContainText(/couldn.t load|Try again/i)
 
     await setDataState(page, 'Stale')
     await expect(page.locator('body')).toContainText(/Stale snapshot/i)
