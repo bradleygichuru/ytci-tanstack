@@ -14,7 +14,8 @@ export type ResourceKey =
   | "challenges"
   | "comments"
   | "marketplace"
-  | "thenNow";
+  | "thenNow"
+  | "audioStories";
 
 export type Action =
   | "read"

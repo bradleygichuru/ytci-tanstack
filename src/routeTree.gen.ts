@@ -17,6 +17,7 @@ import { Route as NoAccessRouteImport } from './routes/no-access'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAiConfigRouteImport } from './routes/_authenticated/ai-config'
 import { Route as AuthenticatedAnalyticsRouteRouteImport } from './routes/_authenticated/analytics/route'
+import { Route as AuthenticatedAudioStoriesRouteImport } from './routes/_authenticated/audio-stories'
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
 import { Route as AuthenticatedChallengesRouteImport } from './routes/_authenticated/challenges'
 import { Route as AuthenticatedCommentsRouteImport } from './routes/_authenticated/comments'
@@ -40,6 +41,9 @@ import { Route as AuthenticatedAnalyticsQualityRouteImport } from './routes/_aut
 import { Route as AuthenticatedAnalyticsRetentionRouteImport } from './routes/_authenticated/analytics/retention'
 import { Route as AuthenticatedAnalyticsSearchRouteImport } from './routes/_authenticated/analytics/search'
 import { Route as AuthenticatedAnalyticsSuppressedRouteImport } from './routes/_authenticated/analytics/suppressed'
+import { Route as AuthenticatedAudioStoriesStoryIdRouteImport } from './routes/_authenticated/audio-stories_.$storyId'
+import { Route as AuthenticatedAudioStoriesCollectionsRouteImport } from './routes/_authenticated/audio-stories_.collections'
+import { Route as AuthenticatedAudioStoriesReviewRouteImport } from './routes/_authenticated/audio-stories_.review'
 import { Route as AuthenticatedProgrammeIndexRouteImport } from './routes/_authenticated/programme/index'
 import { Route as AuthenticatedProgrammeSurfaceRouteImport } from './routes/_authenticated/programme/$surface'
 import { Route as AuthenticatedProgrammeEventsRouteRouteImport } from './routes/_authenticated/programme/events/route'
@@ -124,6 +128,12 @@ const AuthenticatedAnalyticsRouteRoute =
   AuthenticatedAnalyticsRouteRouteImport.update({
     id: '/analytics',
     path: '/analytics',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAudioStoriesRoute =
+  AuthenticatedAudioStoriesRouteImport.update({
+    id: '/audio-stories',
+    path: '/audio-stories',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedCampaignsRoute = AuthenticatedCampaignsRouteImport.update({
@@ -255,6 +265,24 @@ const AuthenticatedAnalyticsSuppressedRoute =
     id: '/suppressed',
     path: '/suppressed',
     getParentRoute: () => AuthenticatedAnalyticsRouteRoute,
+  } as any)
+const AuthenticatedAudioStoriesStoryIdRoute =
+  AuthenticatedAudioStoriesStoryIdRouteImport.update({
+    id: '/audio-stories_/$storyId',
+    path: '/audio-stories/$storyId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAudioStoriesCollectionsRoute =
+  AuthenticatedAudioStoriesCollectionsRouteImport.update({
+    id: '/audio-stories_/collections',
+    path: '/audio-stories/collections',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAudioStoriesReviewRoute =
+  AuthenticatedAudioStoriesReviewRouteImport.update({
+    id: '/audio-stories_/review',
+    path: '/audio-stories/review',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedProgrammeIndexRoute =
   AuthenticatedProgrammeIndexRouteImport.update({
@@ -535,6 +563,7 @@ export interface FileRoutesByFullPath {
   '/recognition': typeof AuthenticatedRecognitionRouteRouteWithChildren
   '/then-now': typeof AuthenticatedThenNowRouteRouteWithChildren
   '/ai-config': typeof AuthenticatedAiConfigRoute
+  '/audio-stories': typeof AuthenticatedAudioStoriesRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/challenges': typeof AuthenticatedChallengesRoute
   '/comments': typeof AuthenticatedCommentsRoute
@@ -557,6 +586,9 @@ export interface FileRoutesByFullPath {
   '/analytics/retention': typeof AuthenticatedAnalyticsRetentionRoute
   '/analytics/search': typeof AuthenticatedAnalyticsSearchRoute
   '/analytics/suppressed': typeof AuthenticatedAnalyticsSuppressedRoute
+  '/audio-stories/$storyId': typeof AuthenticatedAudioStoriesStoryIdRoute
+  '/audio-stories/collections': typeof AuthenticatedAudioStoriesCollectionsRoute
+  '/audio-stories/review': typeof AuthenticatedAudioStoriesReviewRoute
   '/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/recognition/audit': typeof AuthenticatedRecognitionAuditRoute
   '/recognition/awards': typeof AuthenticatedRecognitionAwardsRoute
@@ -609,6 +641,7 @@ export interface FileRoutesByTo {
   '/no-access': typeof NoAccessRoute
   '/reset-password': typeof ResetPasswordRoute
   '/ai-config': typeof AuthenticatedAiConfigRoute
+  '/audio-stories': typeof AuthenticatedAudioStoriesRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/challenges': typeof AuthenticatedChallengesRoute
   '/comments': typeof AuthenticatedCommentsRoute
@@ -629,6 +662,9 @@ export interface FileRoutesByTo {
   '/analytics/retention': typeof AuthenticatedAnalyticsRetentionRoute
   '/analytics/search': typeof AuthenticatedAnalyticsSearchRoute
   '/analytics/suppressed': typeof AuthenticatedAnalyticsSuppressedRoute
+  '/audio-stories/$storyId': typeof AuthenticatedAudioStoriesStoryIdRoute
+  '/audio-stories/collections': typeof AuthenticatedAudioStoriesCollectionsRoute
+  '/audio-stories/review': typeof AuthenticatedAudioStoriesReviewRoute
   '/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/recognition/audit': typeof AuthenticatedRecognitionAuditRoute
   '/recognition/awards': typeof AuthenticatedRecognitionAwardsRoute
@@ -686,6 +722,7 @@ export interface FileRoutesById {
   '/_authenticated/recognition': typeof AuthenticatedRecognitionRouteRouteWithChildren
   '/_authenticated/then-now': typeof AuthenticatedThenNowRouteRouteWithChildren
   '/_authenticated/ai-config': typeof AuthenticatedAiConfigRoute
+  '/_authenticated/audio-stories': typeof AuthenticatedAudioStoriesRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
   '/_authenticated/challenges': typeof AuthenticatedChallengesRoute
   '/_authenticated/comments': typeof AuthenticatedCommentsRoute
@@ -708,6 +745,9 @@ export interface FileRoutesById {
   '/_authenticated/analytics/retention': typeof AuthenticatedAnalyticsRetentionRoute
   '/_authenticated/analytics/search': typeof AuthenticatedAnalyticsSearchRoute
   '/_authenticated/analytics/suppressed': typeof AuthenticatedAnalyticsSuppressedRoute
+  '/_authenticated/audio-stories_/$storyId': typeof AuthenticatedAudioStoriesStoryIdRoute
+  '/_authenticated/audio-stories_/collections': typeof AuthenticatedAudioStoriesCollectionsRoute
+  '/_authenticated/audio-stories_/review': typeof AuthenticatedAudioStoriesReviewRoute
   '/_authenticated/programme/$surface': typeof AuthenticatedProgrammeSurfaceRoute
   '/_authenticated/recognition/audit': typeof AuthenticatedRecognitionAuditRoute
   '/_authenticated/recognition/awards': typeof AuthenticatedRecognitionAwardsRoute
@@ -765,6 +805,7 @@ export interface FileRouteTypes {
     | '/recognition'
     | '/then-now'
     | '/ai-config'
+    | '/audio-stories'
     | '/campaigns'
     | '/challenges'
     | '/comments'
@@ -787,6 +828,9 @@ export interface FileRouteTypes {
     | '/analytics/retention'
     | '/analytics/search'
     | '/analytics/suppressed'
+    | '/audio-stories/$storyId'
+    | '/audio-stories/collections'
+    | '/audio-stories/review'
     | '/programme/$surface'
     | '/recognition/audit'
     | '/recognition/awards'
@@ -839,6 +883,7 @@ export interface FileRouteTypes {
     | '/no-access'
     | '/reset-password'
     | '/ai-config'
+    | '/audio-stories'
     | '/campaigns'
     | '/challenges'
     | '/comments'
@@ -859,6 +904,9 @@ export interface FileRouteTypes {
     | '/analytics/retention'
     | '/analytics/search'
     | '/analytics/suppressed'
+    | '/audio-stories/$storyId'
+    | '/audio-stories/collections'
+    | '/audio-stories/review'
     | '/programme/$surface'
     | '/recognition/audit'
     | '/recognition/awards'
@@ -915,6 +963,7 @@ export interface FileRouteTypes {
     | '/_authenticated/recognition'
     | '/_authenticated/then-now'
     | '/_authenticated/ai-config'
+    | '/_authenticated/audio-stories'
     | '/_authenticated/campaigns'
     | '/_authenticated/challenges'
     | '/_authenticated/comments'
@@ -937,6 +986,9 @@ export interface FileRouteTypes {
     | '/_authenticated/analytics/retention'
     | '/_authenticated/analytics/search'
     | '/_authenticated/analytics/suppressed'
+    | '/_authenticated/audio-stories_/$storyId'
+    | '/_authenticated/audio-stories_/collections'
+    | '/_authenticated/audio-stories_/review'
     | '/_authenticated/programme/$surface'
     | '/_authenticated/recognition/audit'
     | '/_authenticated/recognition/awards'
@@ -1050,6 +1102,13 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/analytics'
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/audio-stories': {
+      id: '/_authenticated/audio-stories'
+      path: '/audio-stories'
+      fullPath: '/audio-stories'
+      preLoaderRoute: typeof AuthenticatedAudioStoriesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/campaigns': {
@@ -1212,6 +1271,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/analytics/suppressed'
       preLoaderRoute: typeof AuthenticatedAnalyticsSuppressedRouteImport
       parentRoute: typeof AuthenticatedAnalyticsRouteRoute
+    }
+    '/_authenticated/audio-stories_/$storyId': {
+      id: '/_authenticated/audio-stories_/$storyId'
+      path: '/audio-stories/$storyId'
+      fullPath: '/audio-stories/$storyId'
+      preLoaderRoute: typeof AuthenticatedAudioStoriesStoryIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/audio-stories_/collections': {
+      id: '/_authenticated/audio-stories_/collections'
+      path: '/audio-stories/collections'
+      fullPath: '/audio-stories/collections'
+      preLoaderRoute: typeof AuthenticatedAudioStoriesCollectionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/audio-stories_/review': {
+      id: '/_authenticated/audio-stories_/review'
+      path: '/audio-stories/review'
+      fullPath: '/audio-stories/review'
+      preLoaderRoute: typeof AuthenticatedAudioStoriesReviewRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/programme/': {
       id: '/_authenticated/programme/'
@@ -1724,6 +1804,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRecognitionRouteRoute: typeof AuthenticatedRecognitionRouteRouteWithChildren
   AuthenticatedThenNowRouteRoute: typeof AuthenticatedThenNowRouteRouteWithChildren
   AuthenticatedAiConfigRoute: typeof AuthenticatedAiConfigRoute
+  AuthenticatedAudioStoriesRoute: typeof AuthenticatedAudioStoriesRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
   AuthenticatedChallengesRoute: typeof AuthenticatedChallengesRoute
   AuthenticatedCommentsRoute: typeof AuthenticatedCommentsRoute
@@ -1737,6 +1818,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedProgrammeEventsRouteRoute: typeof AuthenticatedProgrammeEventsRouteRouteWithChildren
   AuthenticatedProgrammeSpeciesRouteRoute: typeof AuthenticatedProgrammeSpeciesRouteRouteWithChildren
+  AuthenticatedAudioStoriesStoryIdRoute: typeof AuthenticatedAudioStoriesStoryIdRoute
+  AuthenticatedAudioStoriesCollectionsRoute: typeof AuthenticatedAudioStoriesCollectionsRoute
+  AuthenticatedAudioStoriesReviewRoute: typeof AuthenticatedAudioStoriesReviewRoute
   AuthenticatedProgrammeSurfaceRoute: typeof AuthenticatedProgrammeSurfaceRoute
   AuthenticatedProgrammeIndexRoute: typeof AuthenticatedProgrammeIndexRoute
 }
@@ -1748,6 +1832,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedRecognitionRouteRouteWithChildren,
   AuthenticatedThenNowRouteRoute: AuthenticatedThenNowRouteRouteWithChildren,
   AuthenticatedAiConfigRoute: AuthenticatedAiConfigRoute,
+  AuthenticatedAudioStoriesRoute: AuthenticatedAudioStoriesRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
   AuthenticatedChallengesRoute: AuthenticatedChallengesRoute,
   AuthenticatedCommentsRoute: AuthenticatedCommentsRoute,
@@ -1763,6 +1848,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedProgrammeEventsRouteRouteWithChildren,
   AuthenticatedProgrammeSpeciesRouteRoute:
     AuthenticatedProgrammeSpeciesRouteRouteWithChildren,
+  AuthenticatedAudioStoriesStoryIdRoute: AuthenticatedAudioStoriesStoryIdRoute,
+  AuthenticatedAudioStoriesCollectionsRoute:
+    AuthenticatedAudioStoriesCollectionsRoute,
+  AuthenticatedAudioStoriesReviewRoute: AuthenticatedAudioStoriesReviewRoute,
   AuthenticatedProgrammeSurfaceRoute: AuthenticatedProgrammeSurfaceRoute,
   AuthenticatedProgrammeIndexRoute: AuthenticatedProgrammeIndexRoute,
 }
@@ -1784,12 +1873,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

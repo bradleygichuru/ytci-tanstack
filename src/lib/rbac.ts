@@ -42,6 +42,22 @@ export const ac = createAccessControl({
     "manage_recognition",
     "hard_delete_draft",
   ],
+  audioStories: [
+    "read",
+    "create",
+    "edit",
+    "submit",
+    "review",
+    "publish",
+    "unpublish",
+    "archive",
+    "revoke",
+    "manage_rights",
+    "restore",
+    "hard_delete_draft",
+    "assign_reviewer",
+    "override_separation",
+  ],
 });
 
 export const roles = {
@@ -87,6 +103,22 @@ export const roles = {
       "manage_recognition",
       "hard_delete_draft",
     ],
+    audioStories: [
+      "read",
+      "create",
+      "edit",
+      "submit",
+      "review",
+      "publish",
+      "unpublish",
+      "archive",
+      "revoke",
+      "manage_rights",
+      "restore",
+      "hard_delete_draft",
+      "assign_reviewer",
+      "override_separation",
+    ],
   }),
   administrator: ac.newRole({
     analytics: ["read", "create", "edit", "delete", "publish"],
@@ -122,9 +154,17 @@ export const roles = {
       "assign_reviewer",
       "hard_delete_draft",
     ],
-  }),
-  content_editor: ac.newRole({
-    thenNow: ["read", "create", "edit", "submit"],
+    audioStories: [
+      "read",
+      "create",
+      "edit",
+      "submit",
+      "review",
+      "publish",
+      "unpublish",
+      "manage_rights",
+      "assign_reviewer",
+    ],
   }),
   moderator: ac.newRole({
     analytics: ["read"],
@@ -132,6 +172,11 @@ export const roles = {
     comments: ["read", "delete"],
     marketplace: ["read"],
     thenNow: ["read"],
+    audioStories: ["read"],
+  }),
+  content_editor: ac.newRole({
+    thenNow: ["read", "create", "edit", "submit"],
+    audioStories: ["read", "create", "edit", "submit"],
   }),
   county_officer: ac.newRole({
     destinations: ["read", "create", "edit"],

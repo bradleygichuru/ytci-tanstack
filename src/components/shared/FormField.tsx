@@ -62,11 +62,12 @@ export function FormField({ label, description, error, required, id, children }:
   )
 }
 
-export function FormInput({ label, description, error, required, disabled, value, onChange, placeholder, type }: FormFieldProps & {
+export function FormInput({ label, description, error, required, disabled, readOnly, value, onChange, placeholder, type }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
   placeholder?: string
   type?: string
+  readOnly?: boolean
 }) {
   const id = useId()
   return (
@@ -78,6 +79,7 @@ export function FormInput({ label, description, error, required, disabled, value
         placeholder={placeholder}
         type={type}
         disabled={disabled}
+        readOnly={readOnly}
         aria-invalid={!!error || undefined}
         data-invalid={!!error || undefined}
       />
@@ -85,10 +87,11 @@ export function FormInput({ label, description, error, required, disabled, value
   )
 }
 
-export function FormTextarea({ label, description, error, required, disabled, value, onChange, placeholder }: FormFieldProps & {
+export function FormTextarea({ label, description, error, required, disabled, value, onChange, placeholder, maxLength }: FormFieldProps & {
   value: string
   onChange: (v: string) => void
   placeholder?: string
+  maxLength?: number
 }) {
   const id = useId()
   return (
@@ -99,6 +102,7 @@ export function FormTextarea({ label, description, error, required, disabled, va
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
+        maxLength={maxLength}
         aria-invalid={!!error || undefined}
         data-invalid={!!error || undefined}
       />

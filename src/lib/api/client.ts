@@ -21,7 +21,7 @@ export async function apiRequest<T = unknown>(
   config: ApiConfig,
   path: string,
   opts?: {
-    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
     body?: unknown
     params?: PaginationParams | Record<string, string | number | undefined>
     headers?: Record<string, string>
