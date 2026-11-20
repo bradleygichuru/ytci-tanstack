@@ -41,7 +41,16 @@ export function mediaApi(config: ApiConfig) {
         method: 'POST',
         body: { contentType, fileSizeBytes, fileName },
       }),
-    complete: (objectKey: string, metadata?: { caption?: string; altText?: string; credit?: string; thumbnailKey?: string }) =>
+    complete: (objectKey: string, metadata?: {
+      caption?: string
+      altText?: string
+      credit?: string
+      thumbnailKey?: string
+      type?: MediaType
+      entityType?: string
+      entityId?: string
+      durationSeconds?: number
+    }) =>
       apiRequest<CompleteResponse>(config, '/v1/media/complete', {
         method: 'POST',
         body: { objectKey, ...metadata },

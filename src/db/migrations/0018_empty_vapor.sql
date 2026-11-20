@@ -1,0 +1,1 @@
+ALTER TABLE "audio_story_events" ALTER COLUMN "story_id" DROP NOT NULL;
