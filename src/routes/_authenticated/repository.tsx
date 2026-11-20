@@ -207,10 +207,11 @@ function RepositoryAdminPage() {
 
     setSaving(true)
     try {
-      const body: RepositoryEntryInput = {
-        ...draft,
-        status: statusOverride ?? (draft.status === 'published' ? 'published' : 'draft'),
-      }
+      const { status: _status, ...fields } = draft
+      const body: RepositoryEntryInput =
+        panelMode === 'create'
+          ? { ...fields, status: statusOverride ?? 'draft' }
+          : fields
       const saved =
         panelMode === 'create'
           ? await api.repository.entries.create(body)
