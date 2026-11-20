@@ -28,6 +28,7 @@ import { Route as AuthenticatedLmsRouteImport } from './routes/_authenticated/lm
 import { Route as AuthenticatedMarketplaceRouteImport } from './routes/_authenticated/marketplace'
 import { Route as AuthenticatedMediaRouteImport } from './routes/_authenticated/media'
 import { Route as AuthenticatedRecognitionRouteRouteImport } from './routes/_authenticated/recognition/route'
+import { Route as AuthenticatedRepositoryRouteImport } from './routes/_authenticated/repository'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedThenNowRouteRouteImport } from './routes/_authenticated/then-now/route'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
@@ -190,6 +191,11 @@ const AuthenticatedRecognitionRouteRoute =
     path: '/recognition',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedRepositoryRoute = AuthenticatedRepositoryRouteImport.update({
+  id: '/repository',
+  path: '/repository',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -573,6 +579,7 @@ export interface FileRoutesByFullPath {
   '/lms': typeof AuthenticatedLmsRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/media': typeof AuthenticatedMediaRoute
+  '/repository': typeof AuthenticatedRepositoryRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/programme/events': typeof AuthenticatedProgrammeEventsRouteRouteWithChildren
@@ -651,6 +658,7 @@ export interface FileRoutesByTo {
   '/lms': typeof AuthenticatedLmsRoute
   '/marketplace': typeof AuthenticatedMarketplaceRoute
   '/media': typeof AuthenticatedMediaRoute
+  '/repository': typeof AuthenticatedRepositoryRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/analytics/adoption': typeof AuthenticatedAnalyticsAdoptionRoute
@@ -732,6 +740,7 @@ export interface FileRoutesById {
   '/_authenticated/lms': typeof AuthenticatedLmsRoute
   '/_authenticated/marketplace': typeof AuthenticatedMarketplaceRoute
   '/_authenticated/media': typeof AuthenticatedMediaRoute
+  '/_authenticated/repository': typeof AuthenticatedRepositoryRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/programme/events': typeof AuthenticatedProgrammeEventsRouteRouteWithChildren
@@ -815,6 +824,7 @@ export interface FileRouteTypes {
     | '/lms'
     | '/marketplace'
     | '/media'
+    | '/repository'
     | '/settings'
     | '/users'
     | '/programme/events'
@@ -893,6 +903,7 @@ export interface FileRouteTypes {
     | '/lms'
     | '/marketplace'
     | '/media'
+    | '/repository'
     | '/settings'
     | '/users'
     | '/analytics/adoption'
@@ -973,6 +984,7 @@ export interface FileRouteTypes {
     | '/_authenticated/lms'
     | '/_authenticated/marketplace'
     | '/_authenticated/media'
+    | '/_authenticated/repository'
     | '/_authenticated/settings'
     | '/_authenticated/users'
     | '/_authenticated/programme/events'
@@ -1179,6 +1191,13 @@ declare module '@tanstack/react-router' {
       path: '/recognition'
       fullPath: '/recognition'
       preLoaderRoute: typeof AuthenticatedRecognitionRouteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/repository': {
+      id: '/_authenticated/repository'
+      path: '/repository'
+      fullPath: '/repository'
+      preLoaderRoute: typeof AuthenticatedRepositoryRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings': {
@@ -1814,6 +1833,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedLmsRoute: typeof AuthenticatedLmsRoute
   AuthenticatedMarketplaceRoute: typeof AuthenticatedMarketplaceRoute
   AuthenticatedMediaRoute: typeof AuthenticatedMediaRoute
+  AuthenticatedRepositoryRoute: typeof AuthenticatedRepositoryRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedProgrammeEventsRouteRoute: typeof AuthenticatedProgrammeEventsRouteRouteWithChildren
@@ -1842,6 +1862,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedLmsRoute: AuthenticatedLmsRoute,
   AuthenticatedMarketplaceRoute: AuthenticatedMarketplaceRoute,
   AuthenticatedMediaRoute: AuthenticatedMediaRoute,
+  AuthenticatedRepositoryRoute: AuthenticatedRepositoryRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedProgrammeEventsRouteRoute:
@@ -1873,3 +1894,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
