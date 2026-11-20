@@ -14,10 +14,10 @@ export function AuthLayout({ title, subtitle, children, nav }: AuthLayoutProps) 
       <div className="hidden w-1/2 flex-col items-center justify-center p-8 lg:flex lg:p-12" style={{ backgroundColor: 'var(--primary-container)' }}>
         <div className="max-w-sm text-center">
           <div className="mb-6 flex items-center justify-center gap-3">
-            <img src="/logo.png" alt="YTC Explorer logo" className="h-16 w-16 rounded-2xl object-cover shadow-lg" />
+            <img src="/logo.png" alt="Kenya Tourism app logo" className="h-16 w-16 rounded-2xl object-cover shadow-lg" />
           </div>
 
-          <h1 className="text-3xl font-bold tracking-tight text-white">YTC Explorer</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Kenya Tourism app</h1>
           <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.25em] text-white/60">Admin Portal</p>
 
           <div className="mt-10 space-y-4">
