@@ -11,8 +11,10 @@ export async function loginAs(page: Page, email: string) {
   await page.waitForTimeout(1500)
 }
 
+const ADMIN_EMAIL = process.env.ADMIN_TEST_EMAIL ?? 'admin@example.com'
+
 export async function loginAsAdmin(page: Page) {
-  await loginAs(page, 'admin@example.com')
+  await loginAs(page, ADMIN_EMAIL)
 }
 
 export async function waitForData(page: Page) {
