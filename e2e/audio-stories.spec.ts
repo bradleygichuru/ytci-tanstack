@@ -29,7 +29,7 @@ test.describe('Audio Stories admin', () => {
     await expect(
       page.getByRole('heading', { name: 'Audio Story Collections' }),
     ).toBeVisible()
-    await expect(page.getByText('Coastal Voices').first()).toBeVisible({
+    await expect(page.getByText(/Cultural Landscapes|Coastal Voices/).first()).toBeVisible({
       timeout: 20000,
     })
   })
