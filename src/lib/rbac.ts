@@ -26,6 +26,7 @@ export const ac = createAccessControl({
   challenges: ["read", "create", "edit", "delete", "publish"],
   comments: ["read", "create", "edit", "delete", "publish"],
   marketplace: ["read", "create", "edit", "delete", "publish"],
+  repository: ["read", "create", "edit", "delete", "publish"],
   thenNow: [
     "read",
     "create",
@@ -87,6 +88,7 @@ export const roles = {
     challenges: ["read", "create", "edit", "delete", "publish"],
     comments: ["read", "create", "edit", "delete", "publish"],
     marketplace: ["read", "create", "edit", "delete", "publish"],
+    repository: ["read", "create", "edit", "delete", "publish"],
     thenNow: [
       "read",
       "create",
@@ -142,6 +144,7 @@ export const roles = {
     challenges: ["read", "create", "edit", "delete", "publish"],
     comments: ["read", "create", "edit", "delete", "publish"],
     marketplace: ["read", "create", "edit", "delete", "publish"],
+    repository: ["read", "create", "edit", "delete", "publish"],
     thenNow: [
       "read",
       "create",
@@ -171,6 +174,7 @@ export const roles = {
     media: ["read", "edit", "delete", "publish"],
     comments: ["read", "delete"],
     marketplace: ["read"],
+    repository: ["read", "edit", "publish"],
     thenNow: ["read"],
     audioStories: ["read"],
   }),
@@ -182,6 +186,7 @@ export const roles = {
     destinations: ["read", "create", "edit"],
     media: ["read", "create"],
     marketplace: ["read"],
+    repository: ["read"],
   }),
   user: ac.newRole({}),
 };

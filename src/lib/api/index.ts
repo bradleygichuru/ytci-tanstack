@@ -11,6 +11,7 @@ import { challengesApi } from './challenges'
 import { analyticsApi } from './analytics'
 import { usersApi } from './users'
 import { commentsApi } from './comments'
+import { repositoryApi } from './repository'
 import { marketplaceApi } from './marketplace'
 import { thenNowApi } from './then-now'
 import { audioStoriesApi } from './audio-stories'
@@ -31,6 +32,7 @@ export function createApiClient(config: ApiConfig) {
     analytics: analyticsApi(config),
     users: usersApi(config),
     comments: commentsApi(config),
+    repository: repositoryApi(config),
     marketplace: marketplaceApi(config),
     thenNow: thenNowApi(config),
     audioStories: audioStoriesApi(config),

@@ -7,6 +7,7 @@ export default defineConfig({
     './src/db/schema/business.ts',
     './src/db/schema/then-now.ts',
     './src/db/schema/audio-stories.ts',
+    './src/db/schema/repository.ts',
   ],
   out: './src/db/migrations',
   dialect: 'postgresql',

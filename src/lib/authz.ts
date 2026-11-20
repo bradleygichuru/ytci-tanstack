@@ -14,6 +14,7 @@ export type ResourceKey =
   | "challenges"
   | "comments"
   | "marketplace"
+  | "repository"
   | "thenNow"
   | "audioStories";
 

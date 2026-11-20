@@ -178,7 +178,7 @@ export const storyInteractions = pgTable("story_interactions", {
 // ── Media Assets ──
 export const mediaAssets = pgTable("media_assets", {
   id: uuid("id").defaultRandom().primaryKey(),
-  entityType: text("entity_type", { enum: ["destination", "story", "event", "course", "conservation_activity", "user"] }),
+  entityType: text("entity_type", { enum: ["destination", "story", "event", "course", "conservation_activity", "user", "repository_entry"] }),
   entityId: text("entity_id"),
   objectKey: text("object_key").notNull(),
   thumbnailKey: text("thumbnail_key"),
