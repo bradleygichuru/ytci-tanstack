@@ -23,9 +23,11 @@ export type AudioStoryAction =
  */
 export function canAudioStory(role: string | undefined, action: AudioStoryAction): boolean {
   if (!role) return false
-  const roleDefinition = (roles as Record<string, { authorize: (input: { audioStories: AudioStoryAction[] }) => { success: boolean } }>)[role]
+  const roleDefinition = (roles as Record<string, { authorize: (input: { audioStories: string[] }) => { success: boolean } }>)[role]
   if (!roleDefinition) return false
-  return roleDefinition.authorize({ audioStories: [action] }).success
+  // The role map uses the shared underscore action names; the UI reads the
+  // hyphenated capability names from the audio-stories docs.
+  return roleDefinition.authorize({ audioStories: [action.replace(/-/g, '_')] }).success
 }
 
 export function isAudioStoryReadOnly(role: string | undefined): boolean {
