@@ -49,12 +49,12 @@ export function AppSidebar() {
         <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
           <img
             src="/logo.png"
-            alt="Kenya Tourism app logo"
+            alt="YTC Explorer logo"
             className="h-9 w-9 shrink-0 rounded-xl object-cover"
           />
           <div className="group-data-[collapsible=icon]:hidden">
             <div className="font-sans text-2xl font-bold leading-none text-sidebar-foreground">
-              Kenya Tourism app
+              YTC Explorer
             </div>
             <p className="mt-1.5 text-[11px] font-bold uppercase tracking-[0.25em] text-sidebar-foreground/60">
               Admin Portal
