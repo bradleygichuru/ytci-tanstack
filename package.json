@@ -29,6 +29,7 @@
     "bootstrap:admin": "bun --env-file=.env.local run scripts/bootstrap-admin.ts",
     "seed:test-users": "bun --env-file=.env.local run scripts/seed-test-users.ts",
     "seed:go-data": "bun --env-file=.env.local run scripts/seed-go-test-data.ts",
+    "seed:repository": "bun --env-file=.env.local run scripts/seed-repository.ts",
     "test:e2e": "bunx playwright test e2e/auth.spec.ts e2e/user-management.spec.ts e2e/crud-ui.spec.ts",
     "test:e2e:integration": "INTEGRATION_TEST=true bunx playwright test e2e/crud-integration.spec.ts e2e/comments-moderation.spec.ts",
     "test:e2e:then-now": "bunx playwright test e2e/then-now-admin.spec.ts",
