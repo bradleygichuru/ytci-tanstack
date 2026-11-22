@@ -8,6 +8,7 @@ export default defineConfig({
     './src/db/schema/then-now.ts',
     './src/db/schema/audio-stories.ts',
     './src/db/schema/repository.ts',
+    './src/db/schema/competition.ts',
   ],
   out: './src/db/migrations',
   dialect: 'postgresql',
