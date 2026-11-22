@@ -15,6 +15,7 @@ import { repositoryApi } from './repository'
 import { marketplaceApi } from './marketplace'
 import { thenNowApi } from './then-now'
 import { audioStoriesApi } from './audio-stories'
+import { competitionApi } from './competition'
 
 export type { ApiConfig } from './client'
 
@@ -36,6 +37,7 @@ export function createApiClient(config: ApiConfig) {
     marketplace: marketplaceApi(config),
     thenNow: thenNowApi(config),
     audioStories: audioStoriesApi(config),
+    competition: competitionApi(config),
   }
 }
 

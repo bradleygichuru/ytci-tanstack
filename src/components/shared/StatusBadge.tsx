@@ -27,6 +27,19 @@ const statusColorMap: Record<string, string> = {
   restricted: 'bg-destructive/10 text-destructive border-destructive dark:text-red-300',
   ready: 'bg-[var(--leaf-bg)] text-[var(--success-leaf)] border-[var(--success-leaf)]',
   missing: 'bg-destructive/10 text-destructive border-destructive dark:text-red-300',
+  consultation: 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]',
+  open: 'bg-[var(--leaf-bg)] text-[var(--success-leaf)] border-[var(--success-leaf)]',
+  judging: 'bg-primary/10 text-primary border-primary dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-700',
+  voting: 'bg-[var(--amber-bg)] text-[var(--amber-deep)] border-[var(--amber)]',
+  closed: 'bg-muted text-muted-foreground border-[var(--outline-muted)]',
+  invited: 'bg-primary/10 text-primary border-primary dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-700',
+  recused: 'bg-destructive/10 text-destructive border-destructive dark:text-red-300',
+  inactive: 'bg-muted text-muted-foreground border-[var(--outline-muted)]',
+  assigned: 'bg-primary/10 text-primary border-primary dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-700',
+  resolved: 'bg-[var(--leaf-bg)] text-[var(--success-leaf)] border-[var(--success-leaf)]',
+  dismissed: 'bg-muted text-muted-foreground border-[var(--outline-muted)]',
+  eligible: 'bg-[var(--leaf-bg)] text-[var(--success-leaf)] border-[var(--success-leaf)]',
+  ineligible: 'bg-destructive/10 text-destructive border-destructive dark:text-red-300',
 }
 
 export function StatusBadge({ status, label }: { status: string; label?: string }) {
