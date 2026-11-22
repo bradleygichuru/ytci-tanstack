@@ -110,7 +110,11 @@ export type Permission =
   | "then_now.author"
   | "then_now.review"
   | "then_now.publish"
-  | "then_now.takedown";
+  | "then_now.takedown"
+  | "competition.read"
+  | "competition.edit"
+  | "competition.publish"
+  | "competition.score";
 
 export const PERMISSIONS = [
   "platform.contracts.read",
@@ -168,6 +172,10 @@ export const PERMISSIONS = [
   "then_now.review",
   "then_now.publish",
   "then_now.takedown",
+  "competition.read",
+  "competition.edit",
+  "competition.publish",
+  "competition.score",
 ] as const;
 
 /** Roles granted each permission by the contract (before per-object scoping). */
@@ -227,6 +235,10 @@ export const PERMISSION_ROLES: Readonly<Record<Permission, readonly Role[]>> = {
   "then_now.review": ["administrator", "super_admin"],
   "then_now.publish": ["administrator", "super_admin"],
   "then_now.takedown": ["super_admin"],
+  "competition.read": ["county_officer", "moderator", "administrator", "super_admin"],
+  "competition.edit": ["moderator", "administrator", "super_admin"],
+  "competition.publish": ["moderator", "administrator", "super_admin"],
+  "competition.score": ["user", "administrator", "super_admin"],
 };
 
 export interface DutyDefinition {
@@ -242,6 +254,7 @@ export const DUTIES: Readonly<Record<string, DutyDefinition>> = {
   "rights_reviewer": { permissions: ["species.review_rights"], roles: ["rights_reviewer"] },
   "recognition_author": { permissions: ["recognition.author_rule", "recognition.author_badge"], roles: ["content_editor", "administrator", "super_admin"] },
   "recognition_publisher": { permissions: ["recognition.publish_rule", "recognition.publish_badge"], roles: ["administrator", "super_admin"] },
+  "competition_judge": { permissions: ["competition.score"], roles: ["user", "administrator", "super_admin"] },
   "organizer_requester": { permissions: ["events.submit_review"], roles: ["content_editor", "organizer"] },
   "organizer_verifier": { permissions: ["events.verify_organizer"], roles: ["administrator", "super_admin"] },
   "backfill_requester": { permissions: ["recognition.backfill"], roles: ["administrator", "super_admin"] },
