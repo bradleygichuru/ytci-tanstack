@@ -29,6 +29,7 @@ import {
   Waveform,
   Sparkle,
   Archive,
+  Medal,
   type Icon,
 } from '@phosphor-icons/react'
 import {
@@ -128,6 +129,14 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         permission: 'species.read',
         requiresAdmin: true,
         flag: 'species',
+        status: 'live',
+      },
+      {
+        key: 'competition',
+        label: 'Competition',
+        path: '/competition',
+        icon: Medal,
+        resource: 'competition',
         status: 'live',
       },
     ],

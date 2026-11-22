@@ -70,6 +70,15 @@ describe('admin nav registry', () => {
     expect(isItemVisible(analytics, { role: 'moderator', flags: flags() })).toBe(false)
   })
 
+  it('gates the Competition surface on the legacy competition resource', () => {
+    const competition = findNavItem('/competition')!
+    expect(competition.resource).toBe('competition')
+    expect(isItemVisible(competition, { role: 'county_officer', flags: flags() })).toBe(true)
+    expect(isItemVisible(competition, { role: 'moderator', flags: flags() })).toBe(true)
+    expect(isItemVisible(competition, { role: 'user', flags: flags() })).toBe(false)
+    expect(isItemVisible(competition, { role: 'content_editor', flags: flags() })).toBe(false)
+  })
+
   it('keeps legacy screens gated by the legacy RBAC resources', () => {
     expect(visibleSections({ role: 'user', flags: flags() })).toEqual([])
     expect(
