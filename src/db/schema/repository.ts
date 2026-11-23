@@ -55,6 +55,7 @@ export const repositoryEntries = pgTable("repository_entries", {
   tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
   authorName: text("author_name"),
   authorEmail: text("author_email"),
+  authorUserId: text("author_user_id").references(() => users.id, { onDelete: "set null" }),
   authorPhone: text("author_phone"),
   authorAgeBand: text("author_age_band"),
   authorOrg: text("author_org"),

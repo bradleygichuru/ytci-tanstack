@@ -213,7 +213,7 @@ function CompetitionAdminPage() {
             YTCI Awards
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">Competition</h1>
+            <h1 className="text-3xl font-bold tracking-tight">YTCI Awards</h1>
             <span className="rounded-full border border-[#d4c8b2] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.14em] text-[#6d5e44]">
               Award programme
             </span>
@@ -330,7 +330,7 @@ function CompetitionAdminPage() {
             <Info className="mx-auto size-8 text-[#a4926f]" weight="duotone" />
             <h2 className="mt-3 text-lg font-bold">No edition selected</h2>
             <p className="mx-auto mt-1 max-w-md text-sm text-[#5f5544]">
-              Create the competition edition before configuring entries, judges, scoring, votes, or
+              Create the awards edition before configuring entries, judges, scoring, votes, or
               awards.
             </p>
             {canEdit ? (

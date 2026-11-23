@@ -372,7 +372,7 @@ export function EditionsTab({
             No editions yet
           </h2>
           <p className="mt-1 max-w-xl text-sm text-[#5f5544]">
-            Create the first competition edition to set the entry window, categories, panel, and
+            Create the first awards edition to set the entry window, categories, panel, and
             award cycle.
           </p>
           {canEdit ? (
@@ -487,7 +487,7 @@ export function EditionsTab({
       {panel ? (
         <Panel
           kicker={panel === 'create' ? 'New edition' : 'Edition settings'}
-          title={panel === 'create' ? 'Create a competition edition' : draft.name}
+          title={panel === 'create' ? 'Create an awards edition' : draft.name}
           description={
             panel === 'create'
               ? 'Dates, ages, and the public vote mode are configuration. The award programme keeps the prize flag off.'

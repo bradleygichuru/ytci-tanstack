@@ -208,7 +208,7 @@ export const competitionVotes = pgTable("competition_votes", {
   editionId: uuid("edition_id").notNull().references(() => competitionEditions.id, { onDelete: "cascade" }),
   categoryId: uuid("category_id").notNull().references(() => competitionCategories.id, { onDelete: "cascade" }),
   entryId: uuid("entry_id").notNull().references(() => competitionEntries.id, { onDelete: "cascade" }),
-  voterUserId: text("voter_user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  voterUserId: text("voter_user_id").references(() => users.id, { onDelete: "set null" }),
   idempotencyKey: text("idempotency_key").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   invalidatedAt: timestamp("invalidated_at"),

@@ -288,6 +288,13 @@
       "when": 1795452727989,
       "tag": "0040_venue_evidence",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1795467997643,
+      "tag": "0041_preserve_votes_and_entry_authors",
+      "breakpoints": true
     }
   ]
 }
