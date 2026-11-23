@@ -2,8 +2,9 @@
  * Check-in counter.
  *
  * Per-day counts reconcile: imported scanner rows plus console rows equal the
- * shown total. A second scan is refused by the server; undo is a local correction
- * with an audit row. The roster stays hidden until the operator searches.
+ * shown total. A second scan is refused by the server; undo is a server
+ * operation with a required reason and an audit row. The roster stays hidden
+ * until the operator searches.
  */
 import { useMemo, useState, type KeyboardEvent } from 'react'
 import { createFileRoute } from '@tanstack/react-router'

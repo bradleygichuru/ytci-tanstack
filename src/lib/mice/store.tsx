@@ -897,10 +897,10 @@ export function MiceProvider({ children }: { children: ReactNode }) {
             ...current.audit,
           ],
         }))
+        // The 201 body is authoritative: keep the reconciled page rather than
+        // refetching immediately. A lagging or static read would replace the
+        // console row with the scanner row and drop the action.
         await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: miceKeys.checkIns(eventId, fixtureState),
-          }),
           queryClient.invalidateQueries({
             queryKey: miceKeys.registrations(eventId, fixtureState),
           }),
@@ -950,10 +950,11 @@ export function MiceProvider({ children }: { children: ReactNode }) {
                 : page,
           )
         }
+        // Do not refetch the check-ins page here: the delete is already
+        // acknowledged and a lagging/static read would resurrect the row.
+        // The cache is seeded with the post-delete state above; a later
+        // manual refresh reads the server's authoritative list.
         await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: miceKeys.checkIns(eventId, fixtureState),
-          }),
           queryClient.invalidateQueries({
             queryKey: miceKeys.registrations(eventId, fixtureState),
           }),
