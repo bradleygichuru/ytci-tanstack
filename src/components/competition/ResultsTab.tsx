@@ -242,7 +242,7 @@ export function ResultsTab({
             separate, non-cash People's Choice recognition.
           </p>
           {results?.ledgerHash ? (
-            <p className="mt-1 truncate font-mono text-[10px] text-muted-foreground">
+            <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
               Ledger hash {results.ledgerHash}
             </p>
           ) : null}
@@ -304,7 +304,7 @@ export function ResultsTab({
                           <td className={`${TABLE_CELL} font-mono text-sm font-semibold`}>
                             {entry.rank}
                             {entry.isTie ? (
-                              <span className="ml-1 text-[10px] font-semibold text-[var(--amber-deep)]">
+                              <span className="ml-1 text-[11px] font-semibold text-[var(--amber-deep)]">
                                 TIE
                               </span>
                             ) : null}
@@ -356,7 +356,7 @@ export function ResultsTab({
       <div className="rounded-lg border border-[var(--amber)]/40 bg-[var(--amber-bg)]/30 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Separate recognition
             </p>
             <h3 className="mt-1 flex items-center gap-2 text-lg font-bold">
@@ -490,7 +490,7 @@ export function ResultsTab({
           <div>
             <label
               htmlFor="award-entry"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Recipient
             </label>

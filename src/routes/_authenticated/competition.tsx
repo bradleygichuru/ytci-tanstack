@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { ArrowsClockwise, Info } from '@phosphor-icons/react'
+import { ArrowsClockwise, Info, Plus } from '@phosphor-icons/react'
 import { hasPermission, requirePermission } from '#/lib/authz'
 import { useApi } from '#/lib/api/use-api'
 import type { Edition } from '#/lib/api/competition'
@@ -64,6 +64,7 @@ function CompetitionAdminPage() {
   const [loading, setLoading] = useState(true)
   const [reloadKey, setReloadKey] = useState(0)
   const [awardsRefresh, setAwardsRefresh] = useState(0)
+  const [createRequest, setCreateRequest] = useState(0)
 
   const loadEditions = useCallback(async () => {
     setLoading(true)
@@ -109,6 +110,18 @@ function CompetitionAdminPage() {
     void navigate({ search: (current) => ({ ...current, edition: editionId }) })
   }
 
+  const hasNoEditions = editions !== null && editions.length === 0
+
+  /**
+   * One action for the zero-edition paths. It moves to the Editions tab and
+   * asks the tab to open its create panel, so the header button and the
+   * empty-state CTA cannot drift apart.
+   */
+  const startFirstEdition = () => {
+    if (search.tab !== 'editions') setTab('editions')
+    setCreateRequest((value) => value + 1)
+  }
+
   const renderTab = () => {
     if (!selectedEdition) {
       if (search.tab !== 'editions') return null
@@ -125,6 +138,8 @@ function CompetitionAdminPage() {
           }}
           canEdit={canEdit}
           canPublish={canPublish}
+          createRequest={createRequest}
+          onConsumeCreateRequest={() => setCreateRequest(0)}
         />
       )
     }
@@ -181,6 +196,8 @@ function CompetitionAdminPage() {
             }}
             canEdit={canEdit}
             canPublish={canPublish}
+            createRequest={createRequest}
+            onConsumeCreateRequest={() => setCreateRequest(0)}
           />
         )
     }
@@ -189,36 +206,52 @@ function CompetitionAdminPage() {
   const needsEdition = search.tab !== 'editions' && !selectedEdition
 
   return (
-    <div className="mx-auto w-full max-w-[1400px]">
-      <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto w-full max-w-[1400px] rounded-xl border border-[#e4dac7] bg-[#faf7f0] p-4 text-[#2b261c] sm:p-6 lg:p-8">
+      <div className="flex flex-col gap-4 border-b border-[#e4dac7] pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            Programme · Award programme
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#7b6a4c]">
+            YTCI Awards
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight">Competition</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">Competition</h1>
+            <span className="rounded-full border border-[#d4c8b2] px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.14em] text-[#6d5e44]">
+              Award programme
+            </span>
+          </div>
+          <p className="mt-2 max-w-2xl text-sm text-[#5f5544]">
             Run the edition cycle, panel judging, public vote review, and award publication. The
             panel selects awards. The public vote decides only the non-cash People&apos;s Choice.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {!canEdit ? <StatusBadge status="draft" label="Read only" /> : null}
-          <Button variant="outline" onClick={() => void refreshAll()} disabled={loading}>
+          {canEdit && hasNoEditions ? (
+            <Button onClick={startFirstEdition}>
+              <Plus /> New edition
+            </Button>
+          ) : null}
+          <Button
+            variant={hasNoEditions ? 'ghost' : 'outline'}
+            onClick={() => void refreshAll()}
+            disabled={loading}
+            title="Reload editions"
+            className={hasNoEditions ? 'text-[#6d5e44] hover:bg-[#efe8d9]' : undefined}
+          >
             <ArrowsClockwise className={loading ? 'animate-spin' : ''} /> Refresh
           </Button>
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3">
+      <div className="mt-5 flex flex-wrap items-center gap-3 rounded-lg border border-[#e4dac7] bg-[#fffdf8] p-3">
         <label
           htmlFor="competition-edition"
-          className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+          className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#7b6a4c]"
         >
           Edition
         </label>
         <select
           id="competition-edition"
-          className="h-9 min-w-56 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-9 min-w-56 rounded-md border border-[#d8cdb8] bg-white px-3 text-sm text-[#2b261c]"
           value={selectedEdition?.id ?? ''}
           onChange={(event) => setEdition(event.target.value)}
           disabled={!editions || editions.length === 0}
@@ -239,49 +272,76 @@ function CompetitionAdminPage() {
               status={selectedEdition.status}
               label={titleCase(selectedEdition.status)}
             />
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-[#6d5e44]">
               Entries {formatDate(selectedEdition.opensAt)} to {formatDate(selectedEdition.closesAt)}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-[#6d5e44]">
               {titleCase(selectedEdition.publicVoteMode)}
             </span>
           </>
         ) : null}
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-1 border-b border-border">
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setTab(tab.key)}
-            aria-current={search.tab === tab.key ? 'page' : undefined}
-            className={cn(
-              'border-b-2 px-3 py-2.5 text-sm font-semibold transition-colors',
-              search.tab === tab.key
-                ? 'border-primary text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/*
+        Router-backed section navigation. These are views of one page, not a
+        tab widget with hidden panels, so a labelled navigation list with
+        aria-current is the honest, low-risk semantic. Disabled sections stay
+        focusable and explain why with a title, rather than silently doing
+        nothing.
+      */}
+      <nav aria-label="Competition sections" className="mt-5 border-b border-[#e4dac7]">
+        <ul className="flex flex-wrap items-center gap-1">
+          {TABS.map((tab) => {
+            const isActive = search.tab === tab.key
+            const disabled = !selectedEdition && editions !== null && tab.key !== 'editions'
+            return (
+              <li key={tab.key}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (disabled) return
+                    setTab(tab.key)
+                  }}
+                  aria-current={isActive ? 'page' : undefined}
+                  aria-disabled={disabled || undefined}
+                  title={disabled ? 'Needs an edition' : undefined}
+                  className={cn(
+                    'border-b-2 px-3 py-2.5 text-sm font-semibold transition-colors',
+                    isActive
+                      ? 'border-[#154212] text-[#2b261c]'
+                      : 'border-transparent text-[#7b6a4c] hover:text-[#2b261c]',
+                    disabled &&
+                      'cursor-not-allowed border-transparent text-[#a89a83] hover:text-[#a89a83]',
+                  )}
+                >
+                  {tab.label}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
 
       <div className="mt-5">
         {loading && !editions ? (
           <CompetitionSkeleton />
         ) : needsEdition ? (
-          <div className="rounded-lg border border-dashed border-border p-10 text-center">
-            <Info className="mx-auto size-8 text-muted-foreground" weight="duotone" />
+          <div className="rounded-lg border border-dashed border-[#d4c8b2] bg-[#fffdf8] p-10 text-center">
+            <Info className="mx-auto size-8 text-[#a4926f]" weight="duotone" />
             <h2 className="mt-3 text-lg font-bold">No edition selected</h2>
-            <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+            <p className="mx-auto mt-1 max-w-md text-sm text-[#5f5544]">
               Create the competition edition before configuring entries, judges, scoring, votes, or
               awards.
             </p>
-            <Button className="mt-4" onClick={() => setTab('editions')}>
-              Set up the first edition
-            </Button>
+            {canEdit ? (
+              <Button className="mt-4" onClick={startFirstEdition}>
+                Create the first edition
+              </Button>
+            ) : (
+              <p className="mt-4 text-sm text-[#5f5544]">
+                Ask an administrator to create the first edition.
+              </p>
+            )}
           </div>
         ) : (
           <div key={`${search.tab}-${reloadKey}`}>{renderTab()}</div>

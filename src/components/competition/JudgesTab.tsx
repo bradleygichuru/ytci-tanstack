@@ -325,7 +325,7 @@ export function JudgesTab({
                             {judge.email ?? 'No email'}
                           </span>
                           {judge.userId ? (
-                            <span className="mt-0.5 block font-mono text-[10px] text-muted-foreground">
+                            <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground">
                               linked account
                             </span>
                           ) : null}
@@ -616,7 +616,7 @@ export function JudgesTab({
           <div>
             <label
               htmlFor="conflict-entry"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Entry
             </label>
@@ -639,7 +639,7 @@ export function JudgesTab({
           <div>
             <label
               htmlFor="conflict-reason"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Reason
             </label>

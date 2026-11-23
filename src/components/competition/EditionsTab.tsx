@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CalendarCheck, Plus, Trash } from '@phosphor-icons/react'
 import type { ApiClient } from '#/lib/api'
@@ -20,6 +20,7 @@ import {
   FormTextarea,
 } from '#/components/shared/FormField'
 import { StatusBadge } from '#/components/shared/StatusBadge'
+import { CompetitionSkeleton } from '#/components/skeletons/competition-skeleton'
 import {
   Detail,
   EmptyRow,
@@ -143,6 +144,8 @@ export function EditionsTab({
   onReload,
   canEdit,
   canPublish,
+  createRequest = 0,
+  onConsumeCreateRequest,
 }: {
   api: ApiClient
   editions: Edition[]
@@ -152,6 +155,9 @@ export function EditionsTab({
   onReload: (selectId?: string) => Promise<void>
   canEdit: boolean
   canPublish: boolean
+  /** Header/empty-state request counter that opens the create panel. */
+  createRequest?: number
+  onConsumeCreateRequest?: () => void
 }) {
   const [panel, setPanel] = useState<'create' | 'edit' | null>(null)
   const [editing, setEditing] = useState<Edition | null>(null)
@@ -208,6 +214,20 @@ export function EditionsTab({
     setEditing(null)
     setErrors({})
   }
+
+  // The route's primary action asks this tab to open the create panel. Consume
+  // the request once so revisiting the tab does not reopen the form.
+  const handledCreateRequest = useRef(0)
+  useEffect(() => {
+    if (!createRequest || createRequest === handledCreateRequest.current) return
+    handledCreateRequest.current = createRequest
+    setEditing(null)
+    setDraft(emptyDraft())
+    setErrors({})
+    setCategories(null)
+    setPanel('create')
+    onConsumeCreateRequest?.()
+  }, [createRequest, onConsumeCreateRequest])
 
   const buildBody = (): EditionInput => {
     const minAge = draft.minAge.trim() === '' ? null : Number(draft.minAge)
@@ -338,109 +358,131 @@ export function EditionsTab({
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Editions" value={stats.total} icon={CalendarCheck} />
-        <Stat label="Entries open" value={stats.open} foot="Public call to entry" />
-        <Stat
-          label="Award programme"
-          value={stats.awardProgramme}
-          foot="Panel selects awards"
-        />
-        <Stat
-          label="Next announcement"
-          value={stats.next ? formatDate(stats.next.announcementAt) : '-'}
-          foot={stats.next?.name ?? 'No date set'}
-        />
-      </div>
-
-      <SectionHeading
-        title="Editions"
-        description="Create the cycle, lock categories, and keep dates and modes configurable."
-        actions={
-          canEdit ? (
-            <Button onClick={openCreate}>
-              <Plus /> New edition
+      {loading && editions.length === 0 ? (
+        <CompetitionSkeleton />
+      ) : editions.length === 0 ? (
+        <section
+          aria-labelledby="editions-empty-heading"
+          className="rounded-lg border border-[#e4dac7] bg-[#fffdf8] p-6 sm:p-8"
+        >
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#7b6a4c]">
+            Editions
+          </p>
+          <h2 id="editions-empty-heading" className="mt-2 text-xl font-bold tracking-tight">
+            No editions yet
+          </h2>
+          <p className="mt-1 max-w-xl text-sm text-[#5f5544]">
+            Create the first competition edition to set the entry window, categories, panel, and
+            award cycle.
+          </p>
+          {canEdit ? (
+            <Button className="mt-4" onClick={openCreate}>
+              <Plus /> Create the first edition
             </Button>
-          ) : null
-        }
-      />
+          ) : (
+            <p className="mt-4 text-sm text-[#5f5544]">
+              An administrator can create the first edition.
+            </p>
+          )}
+        </section>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <Stat label="Editions" value={stats.total} icon={CalendarCheck} />
+            <Stat label="Entries open" value={stats.open} foot="Public call to entry" />
+            <Stat
+              label="Award programme"
+              value={stats.awardProgramme}
+              foot="Panel selects awards"
+            />
+            <Stat
+              label="Next announcement"
+              value={stats.next ? formatDate(stats.next.announcementAt) : '-'}
+              foot={stats.next?.name ?? 'No date set'}
+            />
+          </div>
 
-      <div className="overflow-hidden rounded-lg border border-border">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
-            <thead className={TABLE_HEAD}>
-              <tr>
-                <th className="px-4 py-3 font-semibold">Edition</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold">Entries</th>
-                <th className="px-4 py-3 font-semibold">Vote mode</th>
-                <th className="px-4 py-3 font-semibold">Announcement</th>
-                <th className="px-4 py-3 text-right font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {loading ? (
-                <LoadingRow colSpan={6} label="Loading editions…" />
-              ) : editions.length === 0 ? (
-                <EmptyRow colSpan={6}>
-                  No editions yet. Create the first competition edition to configure categories,
-                  judges, and awards.
-                </EmptyRow>
-              ) : (
-                editions.map((edition) => (
-                  <tr key={edition.id} className="align-top hover:bg-muted/30">
-                    <td className={TABLE_CELL}>
-                      <button
-                        type="button"
-                        className="text-left"
-                        onClick={() => (canEdit ? openEdit(edition) : onSelect(edition.id))}
-                      >
-                        <span className="block font-semibold">{edition.name}</span>
-                        <span className="mt-0.5 block font-mono text-[10px] text-muted-foreground">
-                          {edition.slug}
-                        </span>
-                        {edition.theme ? (
-                          <span className="mt-1 block text-xs text-muted-foreground">
-                            {edition.theme}
-                          </span>
-                        ) : null}
-                      </button>
-                    </td>
-                    <td className={TABLE_CELL}>
-                      <StatusBadge status={edition.status} label={titleCase(edition.status)} />
-                    </td>
-                    <td className={`${TABLE_CELL} whitespace-nowrap text-xs`}>
-                      {formatDate(edition.opensAt)} – {formatDate(edition.closesAt)}
-                    </td>
-                    <td className={`${TABLE_CELL} text-xs`}>
-                      {titleCase(edition.publicVoteMode)}
-                    </td>
-                    <td className={`${TABLE_CELL} text-xs`}>
-                      {formatDate(edition.announcementAt)}
-                    </td>
-                    <td className={TABLE_CELL}>
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          size="sm"
-                          variant={edition.id === selectedEditionId ? 'default' : 'outline'}
-                          onClick={() => onSelect(edition.id)}
-                        >
-                          {edition.id === selectedEditionId ? 'Selected' : 'Select'}
-                        </Button>
-                        {canEdit ? (
-                          <Button size="sm" variant="ghost" onClick={() => openEdit(edition)}>
-                            Edit
-                          </Button>
-                        ) : null}
-                      </div>
-                    </td>
+          <SectionHeading
+            title="Editions"
+            description="Create the cycle, lock categories, and keep dates and modes configurable."
+            actions={
+              canEdit ? (
+                <Button onClick={openCreate}>
+                  <Plus /> New edition
+                </Button>
+              ) : null
+            }
+          />
+
+          <div className="overflow-hidden rounded-lg border border-border">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left text-sm">
+                <thead className={TABLE_HEAD}>
+                  <tr>
+                    <th className="px-4 py-3 font-semibold">Edition</th>
+                    <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="px-4 py-3 font-semibold">Entries</th>
+                    <th className="px-4 py-3 font-semibold">Vote mode</th>
+                    <th className="px-4 py-3 font-semibold">Announcement</th>
+                    <th className="px-4 py-3 text-right font-semibold">Actions</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {editions.map((edition) => (
+                    <tr key={edition.id} className="align-top hover:bg-muted/30">
+                      <td className={TABLE_CELL}>
+                        <button
+                          type="button"
+                          className="text-left"
+                          onClick={() => (canEdit ? openEdit(edition) : onSelect(edition.id))}
+                        >
+                          <span className="block font-semibold">{edition.name}</span>
+                          <span className="mt-0.5 block font-mono text-[11px] text-muted-foreground">
+                            {edition.slug}
+                          </span>
+                          {edition.theme ? (
+                            <span className="mt-1 block text-xs text-muted-foreground">
+                              {edition.theme}
+                            </span>
+                          ) : null}
+                        </button>
+                      </td>
+                      <td className={TABLE_CELL}>
+                        <StatusBadge status={edition.status} label={titleCase(edition.status)} />
+                      </td>
+                      <td className={`${TABLE_CELL} whitespace-nowrap text-xs`}>
+                        {formatDate(edition.opensAt)} – {formatDate(edition.closesAt)}
+                      </td>
+                      <td className={`${TABLE_CELL} text-xs`}>
+                        {titleCase(edition.publicVoteMode)}
+                      </td>
+                      <td className={`${TABLE_CELL} text-xs`}>
+                        {formatDate(edition.announcementAt)}
+                      </td>
+                      <td className={TABLE_CELL}>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            size="sm"
+                            variant={edition.id === selectedEditionId ? 'default' : 'outline'}
+                            onClick={() => onSelect(edition.id)}
+                          >
+                            {edition.id === selectedEditionId ? 'Selected' : 'Select'}
+                          </Button>
+                          {canEdit ? (
+                            <Button size="sm" variant="ghost" onClick={() => openEdit(edition)}>
+                              Edit
+                            </Button>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {panel ? (
         <Panel

@@ -17,9 +17,9 @@ const flags = (enabled: Partial<SurfaceFlagMap> = {}): SurfaceFlagMap => ({
 describe('admin nav registry', () => {
   it('keeps the existing sections and items intact', () => {
     expect(NAV_SECTIONS.map((section) => section.label)).toEqual([
+      'Programme',
       'Discovery',
       'Engagement',
-      'Programme',
       'Platform',
     ])
     expect(findNavItem('/events')?.label).toBe('Events')

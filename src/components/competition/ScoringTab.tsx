@@ -510,7 +510,7 @@ export function ScoringTab({
 
           <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-4">
             <div>
-              <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                 Weighted total
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">Out of 100</p>
@@ -521,7 +521,7 @@ export function ScoringTab({
           <div>
             <label
               htmlFor="score-note"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Judge note
             </label>
