@@ -83,6 +83,8 @@ export interface AuditEntry {
   category: AuditCategory
   /** Server rows come from /v1/admin/mice/audit; local rows cover review staging. */
   source?: 'server' | 'local'
+  /** Stable server action key (e.g. event.publish) when the label is prose. */
+  rawAction?: string
 }
 
 export type RegistrationState =

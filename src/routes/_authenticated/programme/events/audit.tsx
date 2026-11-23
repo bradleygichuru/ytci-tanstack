@@ -51,6 +51,7 @@ function AuditPage() {
         actor: entry.actorName || entry.actorId || 'System',
         role: entry.actorId ? 'admin' : 'system',
         action: entry.summary || entry.action,
+        rawAction: entry.action,
         entity: `${entry.entityType} ${entry.entityId}`,
         detail: reason ?? entry.action,
         category:
@@ -254,7 +255,7 @@ function AuditPage() {
                           id {entry.id} · {entry.at} · actor {entry.actor} (
                           {entry.role}) · {entry.source ?? 'local'}
                           {entry.source === 'server'
-                            ? ` · action ${entry.action}`
+                            ? ` · action ${entry.rawAction ?? entry.action}`
                             : ''}
                         </span>
                       ) : null}
