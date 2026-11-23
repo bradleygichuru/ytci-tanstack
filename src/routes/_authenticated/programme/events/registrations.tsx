@@ -1,8 +1,8 @@
 /**
  * Registrations and the ordered waitlist.
  *
- * The capacity counter is server-enforced; the table derives its state from the
- * API rows plus the local corrections the 1.0.0 contract cannot yet write.
+ * The capacity counter is server-enforced. Corrections, cancellations and
+ * waitlist offers are contract writes; the table reads the API rows directly.
  */
 import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
