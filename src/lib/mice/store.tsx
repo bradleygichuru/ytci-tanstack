@@ -961,6 +961,12 @@ export function MiceProvider({ children }: { children: ReactNode }) {
             queryKey: miceKeys.audit(fixtureState),
           }),
         ])
+        addAudit({
+          action: 'Check-in undone',
+          entity: checkInId,
+          detail: reason.trim(),
+          category: 'events',
+        })
         notify.info('Check-in undone')
         return true
       } catch (error) {
@@ -968,7 +974,7 @@ export function MiceProvider({ children }: { children: ReactNode }) {
         return false
       }
     },
-    [blockIfStale, client, fixtureState, queryClient],
+    [addAudit, blockIfStale, client, fixtureState, queryClient],
   )
 
   const setVenueEvidence = useCallback(

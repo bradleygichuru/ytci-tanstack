@@ -252,7 +252,10 @@ function AuditPage() {
                       {open ? (
                         <span className="mt-1 block rounded-md bg-muted/60 p-2 font-mono text-[11px] text-muted-foreground">
                           id {entry.id} · {entry.at} · actor {entry.actor} (
-                          {entry.role})
+                          {entry.role}) · {entry.source ?? 'local'}
+                          {entry.source === 'server'
+                            ? ` · action ${entry.action}`
+                            : ''}
                         </span>
                       ) : null}
                     </span>
