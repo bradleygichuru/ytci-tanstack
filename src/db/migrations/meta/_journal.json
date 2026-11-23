@@ -274,6 +274,13 @@
       "when": 1795353519865,
       "tag": "0038_competition_self_entry",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1795434309317,
+      "tag": "0039_events_highlights",
+      "breakpoints": true
     }
   ]
 }
