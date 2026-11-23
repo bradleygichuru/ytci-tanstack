@@ -943,7 +943,8 @@ export function MiceProvider({ children }: { children: ReactNode }) {
                 ? {
                     ...page,
                     items: page.items.filter(
-                      (row) => row.registrationId !== ack.id,
+                      (row) =>
+                        row.id !== checkInId && row.registrationId !== ack.id,
                     ),
                   }
                 : page,
