@@ -511,6 +511,184 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/events/{id}/lifecycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel, unpublish, archive, publish or restore an event
+         * @description Additive to contract 1.0.0 (change-control note in
+         *     docs/execution/mice-admin-ops.md). Requires `events.publish`; a paid
+         *     event also requires `events.publish_paid` when the target state is
+         *     published. A reason is required and is written to the MICE audit log.
+         */
+        post: operations["adminChangeEventLifecycle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/events/{id}/waitlist-offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Offer a free seat to a waitlisted registration
+         * @description Additive to contract 1.0.0. The target defaults to the FIFO head. Only
+         *     one offer can be open per event; the 24-hour confirm-by window is capped
+         *     at the event start. Requires `events.edit_draft`.
+         */
+        post: operations["adminCreateWaitlistOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/events/{id}/waitlist-offers/{registrationId}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept or withdraw a waitlist offer
+         * @description Additive to contract 1.0.0. Accepting promotes the registration to
+         *     confirmed; withdrawing returns it to the FIFO queue. Requires
+         *     `events.edit_draft`.
+         */
+        post: operations["adminDecideWaitlistOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/events/{id}/checkins/{checkInId}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Undo a check-in and return the registration to confirmed
+         * @description Additive to contract 1.0.0. Requires `events.override_checkin` and a
+         *     reason. The check-in row is removed and the audit row records who undid
+         *     it and why.
+         */
+        post: operations["adminUndoCheckIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/events/{id}/registrations/{registrationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Correct or cancel a registration
+         * @description Additive to contract 1.0.0. Cancelling frees a seat and promotes the
+         *     next waitlisted reader. A checked-in registration must be un-checked
+         *     first. Requires `events.edit_draft` and a reason.
+         */
+        patch: operations["adminUpdateRegistration"];
+        trace?: never;
+    };
+    "/v1/admin/events/{id}/people/{personId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a speaker from every session in the event
+         * @description Additive to contract 1.0.0. The person record is kept for reuse in
+         *     other events. Requires `events.edit_draft`.
+         */
+        delete: operations["adminRemoveSpeaker"];
+        options?: never;
+        head?: never;
+        /**
+         * Edit a speaker content record
+         * @description Additive to contract 1.0.0. Requires `events.edit_draft`.
+         */
+        patch: operations["adminUpdatePerson"];
+        trace?: never;
+    };
+    "/v1/admin/events/{id}/people/{personId}/consent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a speaker consent decision
+         * @description Additive to contract 1.0.0. Granting makes the speaker public;
+         *     declining hides them from the public agenda. Requires
+         *     `events.edit_draft`.
+         */
+        post: operations["adminSetSpeakerConsent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/mice/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read the append-only MICE admin audit log
+         * @description Additive to contract 1.0.0. Newest first. Requires `events.read`.
+         */
+        get: operations["adminListMiceAudit"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/events/{id}/change-notices": {
         parameters: {
             query?: never;
@@ -1451,10 +1629,16 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Record analytics consent at enqueue and flush */
+        /**
+         * Record analytics consent at enqueue and flush
+         * @description Consent writes are bound to the caller. An authenticated account may only write consent for the analytics_id mapped to it in analytics_id_map; a guest must send the installId that minted the analytics_id. Unknown or mismatched bindings return 403 ANALYTICS_ID_UNKNOWN; guest writes without installId return 400 INSTALL_ID_REQUIRED.
+         */
         put: operations["setAnalyticsConsent"];
         post?: never;
-        /** Withdraw consent and clear the client queue */
+        /**
+         * Withdraw consent and clear the client queue
+         * @description Bound to the caller like PUT: accounts must own the analytics_id and guests must present the installId that minted it.
+         */
         delete: operations["withdrawAnalyticsConsent"];
         options?: never;
         head?: never;
@@ -1684,7 +1868,7 @@ export interface components {
             /** @enum {string} */
             access: "public" | "registered" | "invite_only";
             /** @enum {string} */
-            status: "draft" | "published" | "postponed" | "cancelled" | "scheduled";
+            status: "draft" | "published" | "postponed" | "cancelled" | "scheduled" | "archived";
             /** Format: date-time */
             startsAt: string;
             /** Format: date-time */
@@ -1957,6 +2141,8 @@ export interface components {
             /** @enum {string} */
             role?: "speaker" | "moderator" | "panelist" | "host";
             photoUrl?: string | null;
+            /** @enum {string} */
+            consentStatus?: "pending" | "granted" | "declined";
         };
         Price: {
             /**
@@ -2028,6 +2214,77 @@ export interface components {
                 email?: string;
             };
             answersSummary?: string | null;
+        };
+        EventLifecycleWrite: {
+            /** @enum {string} */
+            action: "cancel" | "unpublish" | "archive" | "publish" | "restore";
+            reason: string;
+        };
+        WaitlistOfferWrite: {
+            /**
+             * Format: uuid
+             * @description Defaults to the FIFO head
+             */
+            registrationId?: string;
+            /**
+             * Format: date-time
+             * @description Defaults to 24h, capped at event start
+             */
+            expiresAt?: string;
+            note?: string;
+        };
+        WaitlistOfferDecision: {
+            /** @enum {string} */
+            decision: "accept" | "withdraw";
+            /** @description Required for an audit-quality withdrawal note */
+            reason?: string;
+        };
+        WaitlistOffer: {
+            /** Format: uuid */
+            eventId: string;
+            /** Format: uuid */
+            registrationId: string;
+            attendeeName?: string | null;
+            /** Format: date-time */
+            offeredAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            offeredBy?: string | null;
+            note?: string | null;
+        };
+        CheckInUndoWrite: {
+            reason: string;
+        };
+        RegistrationWrite: {
+            /** @enum {string} */
+            status?: "confirmed" | "waitlisted" | "cancelled";
+            answers?: {
+                [key: string]: string;
+            };
+            reason: string;
+        };
+        SpeakerConsentWrite: {
+            /** @enum {string} */
+            consent: "pending" | "granted" | "declined" | "withdrawn";
+            note?: string;
+        };
+        MiceAuditEvent: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            entityType: "event" | "registration" | "checkin" | "speaker" | "venue" | "organizer" | "report";
+            entityId: string;
+            /** Format: uuid */
+            eventId?: string | null;
+            action: string;
+            actorId?: string | null;
+            actorName?: string | null;
+            summary: string;
+            details?: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            createdAt: string;
         };
         TicketHandoff: {
             /** Format: uuid */
@@ -2830,6 +3087,11 @@ export interface components {
         AnalyticsConsentWrite: {
             /** Format: uuid */
             analyticsId: string;
+            /**
+             * Format: uuid
+             * @description The install that minted the analytics_id. Required for guest writes; ignored for authenticated accounts.
+             */
+            installId?: string;
             version: string;
             /** @enum {string} */
             state: "granted" | "denied";
@@ -3777,7 +4039,7 @@ export interface operations {
     adminListEvents: {
         parameters: {
             query?: {
-                status?: "draft" | "published" | "postponed" | "cancelled" | "scheduled";
+                status?: "draft" | "published" | "postponed" | "cancelled" | "scheduled" | "archived";
                 limit?: components["parameters"]["Limit"];
                 cursor?: components["parameters"]["Cursor"];
             };
@@ -4089,6 +4351,312 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+        };
+    };
+    adminChangeEventLifecycle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["EventId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventLifecycleWrite"];
+            };
+        };
+        responses: {
+            /** @description Event with the new lifecycle state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventDetail"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description The transition is invalid or the readiness gate failed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    adminCreateWaitlistOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["EventId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaitlistOfferWrite"];
+            };
+        };
+        responses: {
+            /** @description Offer recorded */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistOffer"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description No free seat, no waitlist entry, or an offer is already open */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    adminDecideWaitlistOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["EventId"];
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WaitlistOfferDecision"];
+            };
+        };
+        responses: {
+            /** @description Registration with the new state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRegistration"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description No open offer, or the offer window has closed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    adminUndoCheckIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["EventId"];
+                checkInId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckInUndoWrite"];
+            };
+        };
+        responses: {
+            /** @description Check-in undone */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Acknowledgement"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUpdateRegistration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["EventId"];
+                registrationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationWrite"];
+            };
+        };
+        responses: {
+            /** @description Updated registration */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRegistration"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description The check-in must be undone first */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    adminRemoveSpeaker: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["EventId"];
+                personId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Speaker removed from the event */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Acknowledgement"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminUpdatePerson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["EventId"];
+                personId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonWrite"];
+            };
+        };
+        responses: {
+            /** @description Speaker */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Speaker"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminSetSpeakerConsent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["EventId"];
+                personId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpeakerConsentWrite"];
+            };
+        };
+        responses: {
+            /** @description Speaker with the new consent state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Speaker"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminListMiceAudit: {
+        parameters: {
+            query?: {
+                entityType?: "event" | "registration" | "checkin" | "speaker" | "venue" | "organizer" | "report";
+                entityId?: string;
+                eventId?: string;
+                limit?: components["parameters"]["Limit"];
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Audit page */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page"] & {
+                        items?: components["schemas"]["MiceAuditEvent"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
         };
     };
     adminDraftEventChangeNotice: {
@@ -5921,12 +6489,15 @@ export interface operations {
             };
             400: components["responses"]["ValidationError"];
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
         };
     };
     withdrawAnalyticsConsent: {
         parameters: {
             query: {
                 analyticsId: components["parameters"]["AnalyticsId"];
+                /** @description Required for guest withdrawals; must be the install that minted the analytics_id. */
+                installId?: string;
             };
             header?: never;
             path?: never;
@@ -5944,6 +6515,7 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
         };
     };
     exportMyAnalytics: {

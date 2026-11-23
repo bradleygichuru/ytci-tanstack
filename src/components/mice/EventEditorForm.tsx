@@ -69,14 +69,11 @@ export function EventEditorForm({ detail }: { detail: EventDetail }) {
     submitRevision,
     withdrawRevision,
     setLifecycle,
-    addAudit,
     saveVenue,
     markChangedAfterReview,
     isStale,
   } = useMice()
   const revision = local.revisions[detail.id]
-  const lifecycle = local.lifecycle[detail.id]
-
   const initial = useMemo<EventWrite>(
     () => revision?.write ?? eventToWrite(detail),
     [detail, revision],
@@ -203,7 +200,7 @@ export function EventEditorForm({ detail }: { detail: EventDetail }) {
   }
 
   const canEdit = !isStale
-  const status = lifecycle?.state ?? detail.status
+  const status = detail.status
   const staged =
     revision?.status === 'in_review'
       ? 'Revision in review'
@@ -236,14 +233,13 @@ export function EventEditorForm({ detail }: { detail: EventDetail }) {
           </Notice>
         ) : null}
 
-        {local.lifecycle[detail.id] ? (
+        {status === 'cancelled' || status === 'archived' ? (
           <Notice
             tone="warning"
-            title={`Lifecycle: ${local.lifecycle[detail.id].state}`}
+            title={status === 'cancelled' ? 'Event cancelled' : 'Event archived'}
           >
-            {local.lifecycle[detail.id].reason} · recorded{' '}
-            {formatLongDate(local.lifecycle[detail.id].at.slice(0, 10))} by{' '}
-            {local.lifecycle[detail.id].by}
+            Public discovery excludes this event. Restore or publish it from the
+            lifecycle controls below to make it visible again.
           </Notice>
         ) : null}
 
@@ -753,14 +749,12 @@ export function EventEditorForm({ detail }: { detail: EventDetail }) {
               size="sm"
               onClick={() =>
                 setLifecycleAction(
-                  status === 'unpublished' ? 'published' : 'unpublished',
+                  status === 'draft' ? 'published' : 'unpublished',
                 )
               }
               disabled={!canEdit}
             >
-              {status === 'unpublished'
-                ? 'Re-publish listing'
-                : 'Unpublish listing'}
+              {status === 'draft' ? 'Re-publish listing' : 'Unpublish listing'}
             </Button>
             <Button
               type="button"
@@ -926,15 +920,11 @@ export function EventEditorForm({ detail }: { detail: EventDetail }) {
         }
         onSubmit={() => {
           if (!lifecycleAction || !lifecycleReason.trim()) return
-          setLifecycle(detail.id, lifecycleAction, lifecycleReason.trim())
-          addAudit({
-            action: `Lifecycle control used: ${lifecycleAction}`,
-            entity: detail.title,
-            detail: lifecycleReason.trim(),
-            category: 'events',
-          })
+          const action = lifecycleAction
+          const reason = lifecycleReason.trim()
           setLifecycleAction(null)
           setLifecycleReason('')
+          void setLifecycle(detail.id, action, reason)
         }}
       >
         <Field label="Reason" htmlFor="lifecycle-reason">

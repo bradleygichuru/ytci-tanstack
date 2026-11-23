@@ -18,7 +18,7 @@ import {
   EmptyBlock,
   SectionCard,
 } from '#/components/mice/shared'
-import type { AuditCategory } from '#/lib/mice/types'
+import type { AuditCategory, AuditEntry } from '#/lib/mice/types'
 
 export const Route = createFileRoute('/_authenticated/programme/events/audit')({
   component: AuditPage,
@@ -32,7 +32,7 @@ const CATEGORIES: Array<{ key: 'all' | AuditCategory; label: string }> = [
 ]
 
 function AuditPage() {
-  const { local, actorName, resetLocal } = useMice()
+  const { local, actorName, resetLocal, auditQuery } = useMice()
   const [category, setCategory] = useState<'all' | AuditCategory>('all')
   const [actor, setActor] = useState('')
   const [entity, setEntity] = useState('')
@@ -40,10 +40,32 @@ function AuditPage() {
   const [to, setTo] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
 
+  const serverRows = useMemo<AuditEntry[]>(() => {
+    return (auditQuery.data?.items ?? []).map((entry) => {
+      const details = entry.details ?? {}
+      const reason =
+        typeof details.reason === 'string' ? details.reason : undefined
+      return {
+        id: entry.id,
+        at: entry.createdAt,
+        actor: entry.actorName || entry.actorId || 'System',
+        role: entry.actorId ? 'admin' : 'system',
+        action: entry.summary || entry.action,
+        entity: `${entry.entityType} ${entry.entityId}`,
+        detail: reason ?? entry.action,
+        category:
+          entry.entityType === 'report' || entry.entityType === 'organizer'
+            ? 'safety'
+            : 'events',
+        source: 'server',
+      }
+    })
+  }, [auditQuery.data?.items])
+
   const rows = useMemo(() => {
     const actorQuery = actor.trim().toLowerCase()
     const entityQuery = entity.trim().toLowerCase()
-    return [...local.audit]
+    return [...serverRows, ...local.audit]
       .filter((entry) => category === 'all' || entry.category === category)
       .filter(
         (entry) =>
@@ -64,7 +86,7 @@ function AuditPage() {
         return true
       })
       .sort((a, b) => b.at.localeCompare(a.at))
-  }, [actor, category, entity, from, local.audit, to])
+  }, [actor, category, entity, from, local.audit, serverRows, to])
 
   function exportCsv() {
     const header = [
@@ -100,7 +122,7 @@ function AuditPage() {
     URL.revokeObjectURL(url)
   }
 
-  const actors = [...new Set(local.audit.map((entry) => entry.actor))].sort()
+  const actors = [...new Set([...serverRows, ...local.audit].map((entry) => entry.actor))].sort()
 
   return (
     <div className="space-y-4">
@@ -261,7 +283,7 @@ function AuditPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
         <span>
-          Signed in as {actorName}. Local workflow entries stay in this browser.
+          Signed in as {actorName}. Server rows come from the MICE audit endpoint; review-staging rows stay in this browser.
         </span>
         <Button
           variant="ghost"

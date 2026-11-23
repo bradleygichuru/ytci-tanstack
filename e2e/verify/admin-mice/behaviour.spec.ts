@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { assertDisposableTarget } from '../helpers/seed'
 import { EVENT_ID, login, openRoute } from './mice.helpers'
 
@@ -23,17 +23,17 @@ test.describe('MICE admin — implemented behaviour', () => {
         const response = await route.fetch()
         const body = await response.json()
         body.agenda = [
-        ...(body.agenda ?? []),
-        {
-          id: 'verify-conflict-session',
-          day: '2026-12-05',
-          startsAt: '2026-12-05T09:30:00+03:00',
-          endsAt: '2026-12-05T10:30:00+03:00',
-          title: 'Overlap check',
-          room: 'Tsavo Ballroom',
-          speakers: [],
-        },
-      ]
+          ...(body.agenda ?? []),
+          {
+            id: 'verify-conflict-session',
+            day: '2026-12-05',
+            startsAt: '2026-12-05T09:30:00+03:00',
+            endsAt: '2026-12-05T10:30:00+03:00',
+            title: 'Overlap check',
+            room: 'Tsavo Ballroom',
+            speakers: [],
+          },
+        ]
         await route.fulfill({ response, json: { ...body } })
       } catch {
         await route.continue().catch(() => {})
@@ -47,34 +47,66 @@ test.describe('MICE admin — implemented behaviour', () => {
     await expect(page.locator('body')).toContainText(/Tsavo Ballroom is double-booked/i)
   })
 
-  test('a waitlisted registration can be offered the freed place and promoted', async ({
+  test('a waitlist offer is written by the server and can be accepted', async ({
     page,
   }) => {
-    // The shared fixture has no waitlisted row; add one at the network boundary.
-    await page.route('**/v1/admin/events/*/registrations*', async (route) => {
-      try {
-        const response = await route.fetch()
-        const body = await response.json()
-        const confirmed = body.items?.[0]
-        if (confirmed) {
-        body.items = [
-          ...body.items,
-          {
-            ...confirmed,
-            id: 'verify-waitlisted-registration',
-            status: 'waitlisted',
-            waitlistPosition: 1,
-            ticket: null,
-            checkIn: null,
-            attendee: { ...confirmed.attendee, displayName: 'Waitlist Wendy' },
-          },
-        ]
-      }
-        await route.fulfill({ response, json: { ...body } })
-      } catch {
-        await route.continue().catch(() => {})
-      }
+    // Keep the queue deterministic at the network boundary. The offer itself
+    // must still be a real POST: this test fails if the store falls back to a
+    // browser-local record.
+    let confirmBy: string | null = null
+    let status: 'waitlisted' | 'confirmed' = 'waitlisted'
+    let offerBody: Record<string, unknown> | null = null
+
+    const registration = () => ({
+      id: 'verify-waitlisted-registration',
+      eventId: EVENT_ID,
+      status,
+      answers: {},
+      reminderOffsetMinutes: null,
+      waitlistPosition: status === 'waitlisted' ? 1 : null,
+      confirmBy,
+      createdAt: '2026-11-18T10:00:00Z',
+      cancelledAt: null,
+      ticket: null,
+      checkIn: null,
+      attendee: { displayName: 'Waitlist Wendy', email: 'wendy@example.com' },
+      answersSummary: '',
     })
+
+    await page.route('**/v1/admin/events/*/registrations*', async (route) => {
+      if (route.request().method() === 'GET') {
+        return route.fulfill({
+          json: { items: [registration()], nextCursor: null, hasMore: false },
+        })
+      }
+      return route.continue()
+    })
+    await page.route('**/v1/admin/events/*/waitlist-offers', async (route) => {
+      offerBody = route.request().postDataJSON() as Record<string, unknown>
+      confirmBy = new Date(Date.now() + 86_400_000).toISOString()
+      return route.fulfill({
+        status: 201,
+        json: {
+          eventId: EVENT_ID,
+          registrationId: 'verify-waitlisted-registration',
+          attendeeName: 'Waitlist Wendy',
+          offeredAt: new Date().toISOString(),
+          expiresAt: confirmBy,
+          offeredBy: 'grace@example.com',
+        },
+      })
+    })
+    await page.route(
+      '**/v1/admin/events/*/waitlist-offers/*/decision',
+      async (route) => {
+        const body = route.request().postDataJSON() as { decision: string }
+        if (body.decision === 'accept') {
+          status = 'confirmed'
+          confirmBy = null
+        }
+        return route.fulfill({ json: registration() })
+      },
+    )
 
     await login(page)
     await openRoute(page, '/programme/events/registrations')
@@ -82,19 +114,16 @@ test.describe('MICE admin — implemented behaviour', () => {
     await expect(page.locator('body')).toContainText(/Waitlist Wendy is next/)
 
     await page.getByRole('button', { name: /^Send offer$/ }).click()
+    await expect.poll(() => offerBody).not.toBeNull()
+    expect(offerBody).toMatchObject({
+      registrationId: 'verify-waitlisted-registration',
+    })
     await expect(page.locator('body')).toContainText(/has an offer/)
     await expect(page.locator('body')).toContainText(/No further promotion/)
 
     await page.getByRole('button', { name: 'Accept offer' }).click()
     await expect(page.locator('body')).toContainText(/0 waiting/)
-    // The local workflow row is persisted before a full page navigation.
-    await page.waitForFunction(() =>
-      localStorage.getItem('ytci.mice.workflow.v1')?.includes('Waitlist offer accepted'),
-    )
-
-    await openRoute(page, '/programme/events/audit')
-    await expect(page.locator('body')).toContainText(/Waitlist offer accepted/, { timeout: 20_000 })
-    await expect(page.locator('body')).toContainText(/Promoted from waitlist to confirmed/)
+    await expect(page.locator('body')).toContainText(/Registration confirmed/)
   })
 
   test('registrations expose the ticket, access needs and an honest empty waitlist', async ({
@@ -110,6 +139,33 @@ test.describe('MICE admin — implemented behaviour', () => {
     await expect(page.getByRole('button', { name: /Export access needs/ })).toBeEnabled()
     // No waitlist offer can exist when nobody is waiting.
     await expect(page.getByRole('button', { name: /^Send offer$/ })).toHaveCount(0)
+  })
+
+  test('an admin cancels a registration through the server endpoint', async ({
+    page,
+  }) => {
+    let patchBody: Record<string, unknown> | null = null
+    await page.route('**/v1/admin/events/*/registrations/*', async (route) => {
+      if (route.request().method() !== 'PATCH') return route.continue()
+      patchBody = route.request().postDataJSON() as Record<string, unknown>
+      const response = await route.fetch()
+      return route.fulfill({ response })
+    })
+
+    await login(page)
+    await openRoute(page, '/programme/events/registrations')
+
+    await page.getByRole('button', { name: /^Cancel Demo/ }).first().click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    await dialog.locator('#cancel-reason').fill('Attendee asked to withdraw')
+    await dialog.getByRole('button', { name: 'Cancel registration' }).click()
+
+    await expect.poll(() => patchBody).not.toBeNull()
+    expect(patchBody).toMatchObject({
+      status: 'cancelled',
+      reason: 'Attendee asked to withdraw',
+    })
   })
 
   test('check-in counts reconcile, roster stays hidden, undo and record both work', async ({
@@ -129,7 +185,7 @@ test.describe('MICE admin — implemented behaviour', () => {
     await expect(page.locator('body')).toContainText(/Matching registrations/)
     await expect(page.locator('body')).toContainText(/Demo Attendee/)
 
-    await page.getByRole('button', { name: /Undo check-in/ }).first().click()
+    await undoCheckIn(page)
     await expect(page.locator('body')).toContainText(/0 imported from the door scanner/)
     await expect(page.locator('body')).toContainText(/1 not yet arrived/)
 
@@ -141,13 +197,12 @@ test.describe('MICE admin — implemented behaviour', () => {
   })
 
   // Regression guard for #395: a successful console check-in must reconcile
-  // from the 201 body, not from a static follow-up read. The fix lives on
-  // `fix/mice-responsive-checkin`; this assertion is the normal passing gate.
+  // from the 201 body, not from a static follow-up read.
   test('console check-in reconciles the counts and undo reverses it', async ({ page }) => {
     await login(page)
     await openRoute(page, '/programme/events/check-in')
     await page.getByLabel('Search name or ticket code').pressSequentially('Demo', { delay: 20 })
-    await page.getByRole('button', { name: /Undo check-in/ }).first().click()
+    await undoCheckIn(page)
     await expect(page.locator('body')).toContainText(/1 not yet arrived/, { timeout: 10_000 })
     await page.getByRole('button', { name: /^Check in Demo/ }).first().click()
     await expect(page.locator('body')).toContainText(/1 recorded in this console/, {
@@ -159,7 +214,7 @@ test.describe('MICE admin — implemented behaviour', () => {
     await expect(page.getByRole('button', { name: /Undo check-in/ })).toBeVisible()
 
     // Undo reverses the same counter without a refresh.
-    await page.getByRole('button', { name: /Undo check-in/ }).first().click()
+    await undoCheckIn(page)
     await expect(page.locator('body')).toContainText(/0 recorded in this console/, {
       timeout: 10_000,
     })
@@ -167,12 +222,34 @@ test.describe('MICE admin — implemented behaviour', () => {
     await expect(page.getByRole('button', { name: /^Check in Demo/ })).toBeVisible()
   })
 
+  test('check-in undo posts a reason to the server', async ({ page }) => {
+    let undoBody: Record<string, unknown> | null = null
+    await page.route('**/v1/admin/events/*/checkins/*/undo', async (route) => {
+      undoBody = route.request().postDataJSON() as Record<string, unknown>
+      return route.fulfill({
+        json: { ok: true, id: 'verify-registration', message: 'check-in undone' },
+      })
+    })
+
+    await login(page)
+    await openRoute(page, '/programme/events/check-in')
+    await page.getByLabel('Search name or ticket code').pressSequentially('Demo', { delay: 20 })
+    await page.getByRole('button', { name: /Undo check-in/ }).first().click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    await dialog.locator('#undo-reason').fill('Scanned the wrong guest')
+    await dialog.getByRole('button', { name: 'Undo check-in' }).click()
+
+    await expect.poll(() => undoBody).not.toBeNull()
+    expect(undoBody).toMatchObject({ reason: 'Scanned the wrong guest' })
+  })
+
   test('check-in override requires a reason before it can be recorded', async ({ page }) => {
     await login(page)
     await openRoute(page, '/programme/events/check-in')
     await page.getByLabel('Search name or ticket code').pressSequentially('Demo', { delay: 20 })
     // Override is for a registration that is not checked in yet.
-    await page.getByRole('button', { name: /Undo check-in/ }).first().click()
+    await undoCheckIn(page)
     await page.getByRole('button', { name: /Override entry/ }).click()
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
@@ -183,26 +260,52 @@ test.describe('MICE admin — implemented behaviour', () => {
     await expect(dialog).toContainText(/reason is required/i)
   })
 
-  test('audit log filters, expands and records a local check-in action', async ({ page }) => {
+  test('audit log reads the server trail and still shows review-staging rows', async ({
+    page,
+  }) => {
     await login(page)
     await openRoute(page, '/programme/events/audit')
-    await expect(page.locator('body')).toContainText(/3 entries/, { timeout: 20_000 })
+
+    // Server fixture rows from GET /v1/admin/mice/audit.
+    await expect(page.locator('body')).toContainText(/Event published/, {
+      timeout: 20_000,
+    })
+    await expect(page.locator('body')).toContainText(/Registration corrected/)
 
     await page.getByRole('button', { name: 'Events', exact: true }).click()
-    await expect(page.locator('body')).toContainText(/2 entries/, { timeout: 20_000 })
     await page.getByRole('button', { name: 'Detail' }).first().click()
-    await expect(page.locator('body')).toContainText(/Great Lakes Tourism Forum 2026/)
+    await expect(page.locator('body')).toContainText(/event\.publish/)
 
-    // A local workflow action appends its own audit row.
+    // A server write appends a row that the next read shows.
     await openRoute(page, '/programme/events/check-in')
     const search = page.getByLabel('Search name or ticket code')
     await search.pressSequentially('Demo', { delay: 20 })
-    await page.getByRole('button', { name: /Undo check-in/ }).first().click()
-    await page.waitForFunction(() =>
-      localStorage.getItem('ytci.mice.workflow.v1')?.includes('Check-in undone'),
-    )
+    await undoCheckIn(page)
     await openRoute(page, '/programme/events/audit')
-    await expect(page.locator('body')).toContainText(/Check-in|Undo|check-in/i)
+    await expect(page.locator('body')).toContainText(/Check-in undone|checkin\.undone/i)
+  })
+
+  test('event lifecycle is a server write', async ({ page }) => {
+    let lifecycleBody: Record<string, unknown> | null = null
+    await page.route('**/v1/admin/events/*/lifecycle', async (route) => {
+      lifecycleBody = route.request().postDataJSON() as Record<string, unknown>
+      const response = await route.fetch()
+      return route.fulfill({ response })
+    })
+
+    await login(page)
+    await openRoute(page, `/programme/events/${EVENT_ID}`)
+    await page.getByRole('button', { name: 'Cancel event' }).click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    await dialog.locator('#lifecycle-reason').fill('Venue withdrew the booking')
+    await dialog.getByRole('button', { name: 'Record lifecycle change' }).click()
+
+    await expect.poll(() => lifecycleBody).not.toBeNull()
+    expect(lifecycleBody).toMatchObject({
+      action: 'cancel',
+      reason: 'Venue withdrew the booking',
+    })
   })
 
   test('event rows show lifecycle and organizer state; the editor carries revision state', async ({
@@ -240,3 +343,12 @@ test.describe('MICE admin — implemented behaviour', () => {
     await moderator.close()
   })
 })
+
+async function undoCheckIn(page: Page) {
+  await page.getByRole('button', { name: /Undo check-in/ }).first().click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+  await dialog.locator('#undo-reason').fill('Verification correction')
+  await dialog.getByRole('button', { name: 'Undo check-in' }).click()
+  await expect(dialog).not.toBeVisible()
+}

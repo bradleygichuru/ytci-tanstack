@@ -24,6 +24,9 @@ export type CheckIn = ContractsSchemas['CheckIn']
 export type EventReport = ContractsSchemas['EventReport']
 export type AccessibilityWrite = ContractsSchemas['AccessibilityWrite']
 export type AccessibilityBlock = ContractsSchemas['AccessibilityBlock']
+export type WaitlistOffer = ContractsSchemas['WaitlistOffer']
+export type MiceAuditEvent = ContractsSchemas['MiceAuditEvent']
+export type RegistrationWrite = ContractsSchemas['RegistrationWrite']
 
 export type TriState = 'yes' | 'no' | 'unknown'
 
@@ -78,53 +81,12 @@ export interface AuditEntry {
   entity: string
   detail: string
   category: AuditCategory
-}
-
-export interface WaitlistOffer {
-  eventId: string
-  registrationId: string
-  attendeeName: string
-  offeredAt: string
-  expiresAt: string
-  offeredBy: string
+  /** Server rows come from /v1/admin/mice/audit; local rows cover review staging. */
+  source?: 'server' | 'local'
 }
 
 export type RegistrationState =
   'confirmed' | 'waitlisted' | 'cancelled' | 'checked_in'
-
-export interface RegistrationOverride {
-  registrationId: string
-  eventId: string
-  status?: RegistrationState
-  attendeeName?: string
-  attendeeEmail?: string
-  answersSummary?: string
-  at: string
-  by: string
-  reason?: string
-}
-
-export interface LocalCheckIn {
-  id: string
-  eventId: string
-  registrationId: string
-  attendeeName: string
-  checkedInAt: string
-  method: 'qr' | 'manual' | 'offline_queue' | 'staff_override'
-  overrideReason?: string
-  by: string
-  /** Undo is a local correction; the server row is hidden for this registration. */
-  removed?: boolean
-}
-
-export interface SpeakerLifecycle {
-  /** Keyed by `${sessionId}:${speakerId}` or `person:${name}`. */
-  key: string
-  consent: 'pending' | 'granted' | 'declined'
-  removed?: boolean
-  updatedAt: string
-  by: string
-}
 
 export interface VenueEvidence {
   venueId: string
@@ -151,12 +113,7 @@ export interface ReportAssignment {
 
 export interface MiceLocalState {
   revisions: Record<string, StagedRevision>
-  lifecycle: Record<string, LifecycleOverride>
   audit: AuditEntry[]
-  offers: Record<string, WaitlistOffer>
-  registrationOverrides: Record<string, RegistrationOverride>
-  localCheckIns: LocalCheckIn[]
-  speakerLifecycle: Record<string, SpeakerLifecycle>
   venueEvidence: Record<string, VenueEvidence>
   venueRetired: Record<string, { at: string; by: string; mergedInto?: string }>
   organizerNotes: Record<string, OrganizerNote>

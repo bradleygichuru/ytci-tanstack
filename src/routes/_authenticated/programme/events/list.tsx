@@ -51,7 +51,7 @@ function EventsListPage() {
     const query = search.trim().toLowerCase()
     return events.filter((event) => {
       const revision = local.revisions[event.id]
-      const state = local.lifecycle[event.id]?.state ?? event.status
+      const state = event.status
       const derived = revision?.status === 'in_review' ? 'in_review' : state
       if (status !== 'all' && derived !== status) return false
       if (!query) return true
@@ -59,7 +59,7 @@ function EventsListPage() {
         .toLowerCase()
         .includes(query)
     })
-  }, [events, local.lifecycle, local.revisions, search, status])
+  }, [events, local.revisions, search, status])
 
   return (
     <div className="space-y-4">
@@ -141,7 +141,7 @@ function EventsListPage() {
             header: 'Status',
             cell: (event) => {
               const revision = local.revisions[event.id]
-              const state = local.lifecycle[event.id]?.state ?? event.status
+              const state = event.status
               return (
                 <span className="flex flex-col gap-1">
                   <MicePill

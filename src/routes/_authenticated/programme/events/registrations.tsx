@@ -4,7 +4,7 @@
  * The capacity counter is server-enforced; the table derives its state from the
  * API rows plus the local corrections the 1.0.0 contract cannot yet write.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import {
   DownloadSimple,
@@ -29,7 +29,6 @@ import {
 } from '#/lib/mice/workflow'
 import {
   EventScope,
-  LocalActionNote,
   MetricBar,
   MicePill,
   Notice,
@@ -55,7 +54,6 @@ function RegistrationsPage() {
     isStale,
     registrations,
     registrationsQuery,
-    local,
     sendOffer,
     withdrawOffer,
     acceptOffer,
@@ -68,25 +66,7 @@ function RegistrationsPage() {
   const [cancelling, setCancelling] = useState<AdminRegistration | null>(null)
   const [cancelReason, setCancelReason] = useState('')
 
-  const effective = useMemo(
-    () =>
-      registrations.map((registration) => {
-        const override = local.registrationOverrides[registration.id]
-        if (!override) return registration
-        return {
-          ...registration,
-          status: override.status ?? registration.status,
-          attendee: {
-            displayName:
-              override.attendeeName ?? registration.attendee?.displayName,
-            email: override.attendeeEmail ?? registration.attendee?.email,
-          },
-          answersSummary:
-            override.answersSummary ?? registration.answersSummary,
-        }
-      }),
-    [local.registrationOverrides, registrations],
-  )
+  const effective = registrations
 
   const confirmed = effective.filter(
     (row) => row.status === 'confirmed' || row.status === 'checked_in',
@@ -94,7 +74,12 @@ function RegistrationsPage() {
   const waitlist = orderWaitlist(
     effective.filter((row) => row.status === 'waitlisted'),
   )
-  const offer = selectedEventId ? local.offers[selectedEventId] : undefined
+  // The server records an open offer on the registration as confirmBy.
+  const offer = waitlist.find(
+    (entry) =>
+      entry.registration.confirmBy != null &&
+      new Date(entry.registration.confirmBy).getTime() > Date.now(),
+  )?.registration
 
   const visible = effective.filter((registration) => {
     if (state === 'checked') return registration.status === 'checked_in'
@@ -217,19 +202,21 @@ function RegistrationsPage() {
           {offer ? (
             <>
               <p className="text-sm font-semibold text-foreground">
-                {offer.attendeeName}
+                {attendeeName(offer)}
               </p>
               <p className="text-xs text-muted-foreground">
-                has an offer · confirm-by {formatDateTime(offer.expiresAt)}
+                has an offer · confirm-by {formatDateTime(offer.confirmBy)}
               </p>
               <p className="mt-1 text-[11px] text-muted-foreground">
                 No further promotion until it is accepted or withdrawn. This is
-                the same offer shown on the overview.
+                the server offer shown on the overview too.
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <Button
                   size="sm"
-                  onClick={() => acceptOffer(offer.eventId)}
+                  onClick={() =>
+                    selectedEventId && void acceptOffer(selectedEventId, offer.id)
+                  }
                   disabled={isStale}
                 >
                   Accept offer
@@ -237,7 +224,10 @@ function RegistrationsPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => withdrawOffer(offer.eventId)}
+                  onClick={() =>
+                    selectedEventId &&
+                    void withdrawOffer(selectedEventId, offer.id)
+                  }
                   disabled={isStale}
                 >
                   Withdraw offer
@@ -258,7 +248,7 @@ function RegistrationsPage() {
                 size="sm"
                 onClick={() =>
                   selectedEventId &&
-                  sendOffer(selectedEventId, waitlist[0].registration)
+                  void sendOffer(selectedEventId, waitlist[0].registration)
                 }
                 disabled={isStale}
               >
@@ -302,7 +292,7 @@ function RegistrationsPage() {
                     {formatDateTime(entry.registration.createdAt)}
                   </span>
                 </span>
-                {offer?.registrationId === entry.registration.id ? (
+                {offer?.id === entry.registration.id ? (
                   <MicePill tone="gold">Offered</MicePill>
                 ) : null}
                 <Button
@@ -318,10 +308,10 @@ function RegistrationsPage() {
             ))}
           </ol>
         )}
-        <LocalActionNote>
-          Waitlist offers are local workflow state. They use the same record
-          here and on the overview.
-        </LocalActionNote>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          Waitlist offers are written by the server and audited. Only one offer
+          can be open per event.
+        </p>
       </SectionCard>
 
       <SectionCard
@@ -453,7 +443,7 @@ function RegistrationsPage() {
         registration={editing}
         onSubmit={(patch) => {
           if (!editing || !selectedEventId) return
-          overrideRegistration(selectedEventId, editing.id, patch)
+          void overrideRegistration(selectedEventId, editing.id, patch)
           setEditing(null)
         }}
       />
@@ -479,7 +469,11 @@ function RegistrationsPage() {
         }
         onSubmit={() => {
           if (!cancelling || !selectedEventId || !cancelReason.trim()) return
-          cancelRegistration(selectedEventId, cancelling, cancelReason.trim())
+          void cancelRegistration(
+            selectedEventId,
+            cancelling,
+            cancelReason.trim(),
+          )
           setCancelling(null)
           setCancelReason('')
         }}
@@ -497,8 +491,8 @@ function RegistrationsPage() {
           placeholder="e.g. attendee request"
         />
         <Notice tone="info">
-          This is a local correction. The contract has no admin registration
-          cancel endpoint yet.
+          The server cancels the registration, frees the seat and promotes the
+          next waitlisted reader. The reason is written to the audit log.
         </Notice>
       </FormDialog>
     </div>
@@ -515,83 +509,107 @@ function EditRegistrationDialog({
   onOpenChange: (open: boolean) => void
   registration: AdminRegistration | null
   onSubmit: (patch: {
-    attendeeName?: string
-    attendeeEmail?: string
-    answersSummary?: string
+    status?: 'confirmed' | 'waitlisted' | 'cancelled'
+    answers?: Record<string, string>
+    reason: string
   }) => void
 }) {
-  const [name, setName] = useState(registration?.attendee?.displayName ?? '')
-  const [email, setEmail] = useState(registration?.attendee?.email ?? '')
-  const [answers, setAnswers] = useState(registration?.answersSummary ?? '')
+  const answerKey = Object.keys(registration?.answers ?? {})[0] ?? ''
+  const [status, setStatus] = useState<'confirmed' | 'waitlisted' | 'cancelled'>(
+    registration?.status === 'checked_in'
+      ? 'confirmed'
+      : (registration?.status ?? 'confirmed'),
+  )
+  const [answer, setAnswer] = useState(
+    answerKey ? (registration?.answers?.[answerKey] ?? '') : '',
+  )
+  const [reason, setReason] = useState('')
 
   useEffect(() => {
     if (!open) return
-    setName(registration?.attendee?.displayName ?? '')
-    setEmail(registration?.attendee?.email ?? '')
-    setAnswers(registration?.answersSummary ?? '')
-  }, [
-    open,
-    registration?.answersSummary,
-    registration?.attendee?.displayName,
-    registration?.attendee?.email,
-  ])
+    setStatus(
+      registration?.status === 'checked_in'
+        ? 'confirmed'
+        : (registration?.status ?? 'confirmed'),
+    )
+    setAnswer(answerKey ? (registration?.answers?.[answerKey] ?? '') : '')
+    setReason('')
+  }, [answerKey, open, registration?.answers, registration?.status])
 
   return (
     <FormDialog
       open={open}
       onOpenChange={onOpenChange}
       title="Edit registration"
-      description="Corrections keep the same registration id and audit the change."
+      description="Corrections keep the same registration id and are written to the audit log."
       submitLabel="Save correction"
+      fieldErrors={
+        reason.trim() ? undefined : { reason: 'A reason is required.' }
+      }
       onSubmit={() =>
         onSubmit({
-          attendeeName: name,
-          attendeeEmail: email,
-          answersSummary: answers,
+          status,
+          answers: answerKey ? { [answerKey]: answer } : undefined,
+          reason,
         })
       }
     >
       <div className="space-y-1">
         <label
-          htmlFor="edit-reg-name"
+          htmlFor="edit-reg-status"
           className="text-xs font-bold text-foreground"
         >
-          Attendee name
+          Status
         </label>
-        <Input
-          id="edit-reg-name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-        />
-      </div>
-      <div className="space-y-1">
-        <label
-          htmlFor="edit-reg-email"
-          className="text-xs font-bold text-foreground"
+        <select
+          id="edit-reg-status"
+          value={status}
+          onChange={(event) =>
+            setStatus(
+              event.target.value as 'confirmed' | 'waitlisted' | 'cancelled',
+            )
+          }
+          className="h-9 w-full rounded-md border border-border bg-card px-2 text-xs font-semibold text-foreground"
         >
-          Email
-        </label>
-        <Input
-          id="edit-reg-email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
+          <option value="confirmed">Confirmed</option>
+          <option value="waitlisted">Waitlisted</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <p className="text-[11px] text-muted-foreground">
+          A checked-in registration must be un-checked on the counter first.
+        </p>
       </div>
       <div className="space-y-1">
         <label
           htmlFor="edit-reg-answers"
           className="text-xs font-bold text-foreground"
         >
-          Answers summary
+          {answerKey ? `Answer · ${answerKey}` : 'Answers'}
         </label>
         <Textarea
           id="edit-reg-answers"
-          value={answers}
-          onChange={(event) => setAnswers(event.target.value)}
+          value={answer}
+          readOnly={!answerKey}
+          onChange={(event) => setAnswer(event.target.value)}
+          placeholder={
+            answerKey ? 'Correct the recorded answer' : 'No answers recorded'
+          }
         />
       </div>
-      <LocalActionNote />
+      <div className="space-y-1">
+        <label
+          htmlFor="edit-reg-reason"
+          className="text-xs font-bold text-foreground"
+        >
+          Reason
+        </label>
+        <Input
+          id="edit-reg-reason"
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+          placeholder="Why is this correction needed?"
+        />
+      </div>
     </FormDialog>
   )
 }
