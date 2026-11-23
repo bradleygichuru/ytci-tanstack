@@ -28,14 +28,13 @@ import {
 } from '#/lib/mice/workflow'
 import {
   EmptyBlock,
-  LocalActionNote,
   MetricBar,
   Notice,
   SectionCard,
   SimpleTable,
   statusLabel,
 } from '#/components/mice/shared'
-import type { AdminRegistration } from '#/lib/mice/types'
+import type { AdminRegistration, CheckIn } from '#/lib/mice/types'
 
 export const Route = createFileRoute(
   '/_authenticated/programme/events/check-in',
@@ -51,7 +50,6 @@ function CheckInPage() {
     isStale,
     registrations,
     checkIns,
-    local,
     selectedEventId,
     checkIn,
     undoCheckIn,
@@ -61,48 +59,28 @@ function CheckInPage() {
   const [search, setSearch] = useState('')
   const [overrideFor, setOverrideFor] = useState<AdminRegistration | null>(null)
   const [overrideReason, setOverrideReason] = useState('')
+  const [undoFor, setUndoFor] = useState<CheckIn | null>(null)
+  const [undoReason, setUndoReason] = useState('')
   const [pendingId, setPendingId] = useState<string | null>(null)
 
   const selectedDay =
     day || days[0] || eventQuery.data?.startsAt.slice(0, 10) || ''
 
   const checkedByRegistration = useMemo(() => {
-    const map = new Map<
-      string,
-      { at: string; source: 'scanner' | 'console'; name: string }
-    >()
+    const map = new Map<string, CheckIn>()
     for (const row of checkIns) {
       if (!row.registrationId) continue
-      map.set(row.registrationId, {
-        at: row.checkedInAt,
-        source: 'scanner',
-        name: row.attendeeName ?? row.registrationId,
-      })
-    }
-    for (const row of local.localCheckIns) {
-      if (row.eventId !== selectedEventId) continue
-      if (row.removed) {
-        map.delete(row.registrationId)
-      } else {
-        map.set(row.registrationId, {
-          at: row.checkedInAt,
-          source: 'console',
-          name: row.attendeeName,
-        })
-      }
+      map.set(row.registrationId, row)
     }
     return map
-  }, [checkIns, local.localCheckIns, selectedEventId])
+  }, [checkIns])
 
   const forDay = (iso: string) => iso.slice(0, 10) === selectedDay
   const checkedRows = [...checkedByRegistration.entries()].filter(([, value]) =>
-    forDay(value.at),
+    forDay(value.checkedInAt),
   )
-  const recorded = local.localCheckIns.filter(
-    (row) =>
-      row.eventId === selectedEventId &&
-      !row.removed &&
-      forDay(row.checkedInAt),
+  const recorded = checkedRows.filter(([, value]) =>
+    value.method === 'manual' || value.method === 'staff_override',
   ).length
   const imported = Math.max(0, checkedRows.length - recorded)
   const confirmed = registrations.filter(
@@ -306,10 +284,7 @@ function CheckInPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() =>
-                                selectedEventId &&
-                                undoCheckIn(selectedEventId, registration.id)
-                              }
+                              onClick={() => setUndoFor(checked)}
                               disabled={isStale}
                               aria-label={`Undo check-in for ${attendeeName(registration)}`}
                             >
@@ -401,7 +376,7 @@ function CheckInPage() {
               ) : (
                 <ul className="space-y-2">
                   {checkedRows
-                    .sort((a, b) => b[1].at.localeCompare(a[1].at))
+                    .sort((a, b) => b[1].checkedInAt.localeCompare(a[1].checkedInAt))
                     .slice(0, 6)
                     .map(([registrationId, value]) => (
                       <li
@@ -409,16 +384,17 @@ function CheckInPage() {
                         className="grid grid-cols-[3rem_1fr] gap-2 text-xs"
                       >
                         <span className="text-muted-foreground">
-                          {formatTime(value.at)}
+                          {formatTime(value.checkedInAt)}
                         </span>
                         <span>
                           <span className="block font-semibold text-foreground">
-                            {value.name}
+                            {value.attendeeName ?? registrationId}
                           </span>
                           <span className="block text-muted-foreground">
-                            {value.source === 'scanner'
-                              ? 'Door scanner'
-                              : 'This console'}
+                            {value.method === 'manual' ||
+                            value.method === 'staff_override'
+                              ? 'This console'
+                              : 'Door scanner'}
                           </span>
                         </span>
                       </li>
@@ -479,9 +455,49 @@ function CheckInPage() {
           Walk-in check-in needs a registration record first; the contract
           identifies a check-in by registration or signed ticket.
         </Notice>
-        <LocalActionNote>
-          Undo is local. Overrides call the staff check-in endpoint.
-        </LocalActionNote>
+        <Notice tone="info">
+          Undo is now a server operation with its own reason and audit row.
+        </Notice>
+      </FormDialog>
+
+      <FormDialog
+        open={Boolean(undoFor)}
+        onOpenChange={(next) => {
+          if (!next) {
+            setUndoFor(null)
+            setUndoReason('')
+          }
+        }}
+        title={
+          undoFor
+            ? `Undo check-in for ${undoFor.attendeeName ?? undoFor.registrationId}`
+            : 'Undo check-in'
+        }
+        description="The check-in row is deleted and the registration returns to confirmed. The reason is audited."
+        submitLabel="Undo check-in"
+        variant="destructive"
+        fieldErrors={
+          undoReason.trim() ? undefined : { reason: 'A reason is required.' }
+        }
+        onSubmit={() => {
+          if (!undoFor || !selectedEventId || !undoReason.trim()) return
+          void undoCheckIn(selectedEventId, undoFor.id, undoReason.trim())
+          setUndoFor(null)
+          setUndoReason('')
+        }}
+      >
+        <label
+          htmlFor="undo-reason"
+          className="text-xs font-bold text-foreground"
+        >
+          Reason
+        </label>
+        <Textarea
+          id="undo-reason"
+          value={undoReason}
+          onChange={(change) => setUndoReason(change.target.value)}
+          placeholder="Why is this check-in wrong?"
+        />
       </FormDialog>
     </div>
   )

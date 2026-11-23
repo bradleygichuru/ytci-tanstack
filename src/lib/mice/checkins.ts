@@ -29,7 +29,9 @@ export function checkInRecord(
     registrationId: created?.registrationId ?? fallback.registrationId,
     eventId: created?.eventId ?? fallback.eventId,
     checkedInAt: created?.checkedInAt ?? new Date().toISOString(),
-    method: created?.method ?? fallback.method,
+    // The operator chose the method; a fixture or stale payload that echoes
+    // 'qr' for a console action must not move the row into the scanner count.
+    method: fallback.method,
     staffRef: created?.staffRef ?? null,
     attendeeName: created?.attendeeName ?? null,
     duplicate: created?.duplicate ?? false,

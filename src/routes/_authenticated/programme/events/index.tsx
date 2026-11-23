@@ -9,6 +9,7 @@ import { ArrowRight } from '@phosphor-icons/react'
 import { PageHeader } from '#/components/shell/PageHeader'
 import { useMice } from '#/lib/mice/store'
 import {
+  attendeeName,
   formatDateRange,
   formatDateTime,
   reportAgeHours,
@@ -44,8 +45,7 @@ function EventsOverviewPage() {
   } = useMice()
 
   const published = events.filter(
-    (event) =>
-      (local.lifecycle[event.id]?.state ?? event.status) === 'published',
+    (event) => event.status === 'published',
   ).length
   const reviewItems = Object.values(local.revisions).filter(
     (revision) => revision.status === 'in_review',
@@ -73,14 +73,14 @@ function EventsOverviewPage() {
     (r) => r.status === 'confirmed' || r.status === 'checked_in',
   ).length
   const checkedIn = new Set(
-    [
-      ...checkIns.map((row) => row.registrationId),
-      ...local.localCheckIns
-        .filter((row) => row.eventId === selectedEventId && !row.removed)
-        .map((row) => row.registrationId),
-    ].filter(Boolean),
+    checkIns.map((row) => row.registrationId).filter(Boolean),
   ).size
-  const offer = selectedEventId ? local.offers[selectedEventId] : undefined
+  const offer = registrations.find(
+    (registration) =>
+      registration.status === 'waitlisted' &&
+      registration.confirmBy != null &&
+      new Date(registration.confirmBy).getTime() > Date.now(),
+  )
   const oldestReport = [...openReports].sort((a, b) =>
     a.createdAt.localeCompare(b.createdAt),
   )[0]
@@ -95,7 +95,7 @@ function EventsOverviewPage() {
   if (offer) {
     attention.push({
       title: 'Waitlist offer expires soon',
-      detail: `${offer.attendeeName} · confirm-by ${formatDateTime(offer.expiresAt)}`,
+      detail: `${attendeeName(offer)} · confirm-by ${formatDateTime(offer.confirmBy)}`,
       owner: 'Front desk',
       to: '/programme/events/registrations',
       action: 'Open waitlist',
@@ -324,7 +324,7 @@ function EventsOverviewPage() {
               header: 'Status',
               cell: (event) => {
                 const revision = local.revisions[event.id]
-                const state = local.lifecycle[event.id]?.state ?? event.status
+                const state = event.status
                 return (
                   <span className="flex flex-col gap-1">
                     <MicePill tone={StatusTone(state)}>

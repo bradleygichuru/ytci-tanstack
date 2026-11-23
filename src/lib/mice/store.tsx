@@ -22,6 +22,7 @@ import { unwrap, type FixtureState } from '#/lib/contracts/client'
 import { useContractRole } from '#/lib/contracts/session'
 import { notify } from '#/lib/toast'
 import {
+  useMiceAudit,
   useMiceCheckIns,
   useMiceClient,
   useMiceEvent,
@@ -59,12 +60,7 @@ const STORAGE_KEY = 'ytci.mice.workflow.v1'
 export function emptyLocalState(): MiceLocalState {
   return {
     revisions: {},
-    lifecycle: {},
     audit: [],
-    offers: {},
-    registrationOverrides: {},
-    localCheckIns: [],
-    speakerLifecycle: {},
     venueEvidence: {},
     venueRetired: {},
     organizerNotes: {},
@@ -113,6 +109,7 @@ export interface MiceStoreValue {
   reportsQuery: ReturnType<typeof useMiceReports>
   registrationsQuery: ReturnType<typeof useMiceRegistrations>
   checkInsQuery: ReturnType<typeof useMiceCheckIns>
+  auditQuery: ReturnType<typeof useMiceAudit>
   events: NonNullable<ReturnType<typeof useMiceEvents>['data']>['items']
   venues: Venue[]
   organizers: OrganizerProfile[]
@@ -122,9 +119,6 @@ export interface MiceStoreValue {
   selectedEventId: string | null
   selectEvent: (eventId: string) => void
   revisionFor: (eventId: string) => StagedRevision | undefined
-  lifecycleFor: (
-    eventId: string,
-  ) => MiceLocalState['lifecycle'][string] | undefined
   saveRevision: (eventId: string, write: EventWrite, evidence: string) => void
   submitRevision: (eventId: string) => void
   withdrawRevision: (eventId: string) => void
@@ -132,32 +126,37 @@ export interface MiceStoreValue {
   markChangedAfterReview: (eventId: string) => void
   publishRevision: (eventId: string) => Promise<boolean>
   createEvent: (write: EventWrite) => Promise<EventDetail | null>
-  setLifecycle: (eventId: string, state: LifecycleState, reason: string) => void
+  setLifecycle: (
+    eventId: string,
+    state: LifecycleState,
+    reason: string,
+  ) => Promise<boolean>
   addAudit: (
     entry: Omit<AuditEntry, 'id' | 'at' | 'actor' | 'role'> & {
       actor?: string
       role?: string
     },
   ) => void
-  sendOffer: (eventId: string, registration: AdminRegistration) => void
-  withdrawOffer: (eventId: string) => void
-  acceptOffer: (eventId: string) => void
+  sendOffer: (
+    eventId: string,
+    registration: AdminRegistration,
+  ) => Promise<WaitlistOffer | null>
+  withdrawOffer: (eventId: string, registrationId: string) => Promise<boolean>
+  acceptOffer: (eventId: string, registrationId: string) => Promise<boolean>
   overrideRegistration: (
     eventId: string,
     registrationId: string,
     patch: {
-      status?: AdminRegistration['status']
-      attendeeName?: string
-      attendeeEmail?: string
-      answersSummary?: string
-      reason?: string
+      status?: 'confirmed' | 'waitlisted' | 'cancelled'
+      answers?: Record<string, string>
+      reason: string
     },
-  ) => void
+  ) => Promise<boolean>
   cancelRegistration: (
     eventId: string,
     registration: AdminRegistration,
     reason: string,
-  ) => void
+  ) => Promise<boolean>
   checkIn: (
     eventId: string,
     registration: AdminRegistration,
@@ -167,7 +166,11 @@ export interface MiceStoreValue {
       method?: 'qr' | 'manual' | 'staff_override'
     },
   ) => Promise<boolean>
-  undoCheckIn: (eventId: string, registrationId: string) => void
+  undoCheckIn: (
+    eventId: string,
+    checkInId: string,
+    reason: string,
+  ) => Promise<boolean>
   setVenueEvidence: (
     venueId: string,
     fields: VenueEvidence['fields'],
@@ -204,11 +207,12 @@ export interface MiceStoreValue {
     body: Record<string, unknown>,
     sessionId?: string,
   ) => Promise<boolean>
-  setSpeakerLifecycle: (
-    key: string,
+  setSpeakerConsent: (
+    eventId: string,
+    personId: string,
     consent: 'pending' | 'granted' | 'declined',
-    removed?: boolean,
-  ) => void
+  ) => Promise<boolean>
+  removeSpeaker: (eventId: string, personId: string) => Promise<boolean>
   resetLocal: () => void
 }
 
@@ -263,6 +267,7 @@ export function MiceProvider({ children }: { children: ReactNode }) {
   const eventQuery = useMiceEvent(resolvedEventId, fixtureState)
   const registrationsQuery = useMiceRegistrations(resolvedEventId, fixtureState)
   const checkInsQuery = useMiceCheckIns(resolvedEventId, fixtureState)
+  const auditQuery = useMiceAudit(fixtureState)
 
   const registrations = registrationsQuery.data?.items ?? []
   const checkIns = checkInsQuery.data?.items ?? []
@@ -371,10 +376,6 @@ export function MiceProvider({ children }: { children: ReactNode }) {
   const revisionFor = useCallback(
     (eventId: string) => local.revisions[eventId],
     [local.revisions],
-  )
-  const lifecycleFor = useCallback(
-    (eventId: string) => local.lifecycle[eventId],
-    [local.lifecycle],
   )
 
   const saveRevision = useCallback(
@@ -619,209 +620,216 @@ export function MiceProvider({ children }: { children: ReactNode }) {
   )
 
   const setLifecycle = useCallback(
-    (eventId: string, state: LifecycleState, reason: string) => {
-      if (blockIfStale()) return
+    async (eventId: string, state: LifecycleState, reason: string) => {
+      if (blockIfStale()) return false
       if (!reason.trim()) {
         notify.warning('A reason is required for a lifecycle change')
-        return
+        return false
       }
-      updateLocal((current) => {
-        const detail = eventQuery.data
-        return {
-          ...current,
-          lifecycle: {
-            ...current.lifecycle,
-            [eventId]: {
-              state,
-              reason,
-              at: new Date().toISOString(),
-              by: actorName,
-            },
-          },
-          audit: [
-            {
-              id: auditId(),
-              at: new Date().toISOString(),
-              actor: actorName,
-              role: actorRole,
-              action: `Event marked ${state}`,
-              entity: detail?.title ?? eventId,
-              detail: reason,
-              category: 'events',
-            },
-            ...current.audit,
-          ],
-        }
-      })
-      notify.success(`Event marked ${state}`)
+      const currentStatus = eventQuery.data?.status
+      const action =
+        state === 'cancelled'
+          ? 'cancel'
+          : state === 'unpublished'
+            ? 'unpublish'
+            : state === 'archived'
+              ? 'archive'
+              : state === 'published'
+                ? currentStatus === 'cancelled'
+                  ? 'restore'
+                  : 'publish'
+                : null
+      if (!action) {
+        notify.warning(`${state} is not a lifecycle action`)
+        return false
+      }
+      try {
+        await client
+          .POST('/v1/admin/events/{id}/lifecycle', {
+            params: { path: { id: eventId } },
+            body: { action, reason: reason.trim() },
+          })
+          .then((result) => unwrap(result))
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.event(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.events(fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        addAudit({
+          action: `Event marked ${state}`,
+          entity: eventQuery.data?.title ?? eventId,
+          detail: reason.trim(),
+          category: 'events',
+        })
+        notify.success(`Event marked ${state}`)
+        return true
+      } catch (error) {
+        notify.error(error)
+        return false
+      }
     },
-    [actorName, actorRole, eventQuery.data, updateLocal],
+    [
+      addAudit,
+      blockIfStale,
+      client,
+      eventQuery.data?.status,
+      eventQuery.data?.title,
+      fixtureState,
+      queryClient,
+    ],
   )
 
   const sendOffer = useCallback(
-    (eventId: string, registration: AdminRegistration) => {
-      if (blockIfStale()) return
+    async (eventId: string, registration: AdminRegistration) => {
+      if (blockIfStale()) return null
       const name = registration.attendee?.displayName ?? registration.id
-      const offer: WaitlistOffer = {
-        eventId,
-        registrationId: registration.id,
-        attendeeName: name,
-        offeredAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 24 * 3_600_000).toISOString(),
-        offeredBy: actorName,
+      try {
+        const offer = await client
+          .POST('/v1/admin/events/{id}/waitlist-offers', {
+            params: { path: { id: eventId } },
+            body: { registrationId: registration.id },
+          })
+          .then((result) => unwrap<WaitlistOffer>(result))
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.registrations(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        notify.success(`Offer sent to ${name}`)
+        return offer
+      } catch (error) {
+        notify.error(error)
+        return null
       }
-      updateLocal((current) => ({
-        ...current,
-        offers: { ...current.offers, [eventId]: offer },
-        audit: [
-          {
-            id: auditId(),
-            at: new Date().toISOString(),
-            actor: actorName,
-            role: actorRole,
-            action: 'Waitlist offer sent',
-            entity: name,
-            detail: 'Confirm-by in 24 hours · FIFO position held',
-            category: 'events',
-          },
-          ...current.audit,
-        ],
-      }))
-      notify.success(`Offer sent to ${name}`)
     },
-    [actorName, actorRole, updateLocal],
+    [blockIfStale, client, fixtureState, queryClient],
+  )
+
+  const decideOffer = useCallback(
+    async (
+      eventId: string,
+      registrationId: string,
+      decision: 'accept' | 'withdraw',
+    ) => {
+      if (blockIfStale()) return false
+      try {
+        await client
+          .POST(
+            '/v1/admin/events/{id}/waitlist-offers/{registrationId}/decision',
+            {
+              params: { path: { id: eventId, registrationId } },
+              body: {
+                decision,
+                reason:
+                  decision === 'withdraw'
+                    ? 'Withdrawn from the admin console'
+                    : undefined,
+              },
+            },
+          )
+          .then((result) => unwrap(result))
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.registrations(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        notify.success(
+          decision === 'accept'
+            ? 'Registration confirmed'
+            : 'Offer withdrawn',
+        )
+        return true
+      } catch (error) {
+        notify.error(error)
+        return false
+      }
+    },
+    [blockIfStale, client, fixtureState, queryClient],
   )
 
   const withdrawOffer = useCallback(
-    (eventId: string) => {
-      if (blockIfStale()) return
-      updateLocal((current) => {
-        const offer = current.offers[eventId]
-        const offers = { ...current.offers }
-        delete offers[eventId]
-        return {
-          ...current,
-          offers,
-          audit: offer
-            ? [
-                {
-                  id: auditId(),
-                  at: new Date().toISOString(),
-                  actor: actorName,
-                  role: actorRole,
-                  action: 'Waitlist offer withdrawn',
-                  entity: offer.attendeeName,
-                  detail: 'The place returns to the FIFO queue',
-                  category: 'events',
-                },
-                ...current.audit,
-              ]
-            : current.audit,
-        }
-      })
-      notify.info('Offer withdrawn')
-    },
-    [actorName, actorRole, updateLocal],
+    (eventId: string, registrationId: string) =>
+      decideOffer(eventId, registrationId, 'withdraw'),
+    [decideOffer],
   )
 
   const acceptOffer = useCallback(
-    (eventId: string) => {
-      if (blockIfStale()) return
-      updateLocal((current) => {
-        const offer = current.offers[eventId]
-        if (!offer) return current
-        const offers = { ...current.offers }
-        delete offers[eventId]
-        return {
-          ...current,
-          offers,
-          registrationOverrides: {
-            ...current.registrationOverrides,
-            [offer.registrationId]: {
-              registrationId: offer.registrationId,
-              eventId,
-              status: 'confirmed',
-              at: new Date().toISOString(),
-              by: actorName,
-              reason: 'Waitlist offer accepted',
-            },
-          },
-          audit: [
-            {
-              id: auditId(),
-              at: new Date().toISOString(),
-              actor: actorName,
-              role: actorRole,
-              action: 'Waitlist offer accepted',
-              entity: offer.attendeeName,
-              detail: 'Promoted from waitlist to confirmed',
-              category: 'events',
-            },
-            ...current.audit,
-          ],
-        }
-      })
-      notify.success('Registration confirmed')
-    },
-    [actorName, actorRole, updateLocal],
+    (eventId: string, registrationId: string) =>
+      decideOffer(eventId, registrationId, 'accept'),
+    [decideOffer],
   )
 
   const overrideRegistration = useCallback(
-    (
+    async (
       eventId: string,
       registrationId: string,
       patch: {
-        status?: AdminRegistration['status']
-        attendeeName?: string
-        attendeeEmail?: string
-        answersSummary?: string
-        reason?: string
+        status?: 'confirmed' | 'waitlisted' | 'cancelled'
+        answers?: Record<string, string>
+        reason: string
       },
     ) => {
-      if (blockIfStale()) return
-      updateLocal((current) => ({
-        ...current,
-        registrationOverrides: {
-          ...current.registrationOverrides,
-          [registrationId]: {
-            registrationId,
-            eventId,
-            ...patch,
-            at: new Date().toISOString(),
-            by: actorName,
-          },
-        },
-        audit: [
-          {
-            id: auditId(),
-            at: new Date().toISOString(),
-            actor: actorName,
-            role: actorRole,
-            action:
-              patch.status === 'cancelled'
-                ? 'Registration cancelled'
-                : 'Registration edited',
-            entity: patch.attendeeName ?? registrationId,
-            detail: patch.reason ?? 'Admin correction recorded locally',
-            category: 'events',
-          },
-          ...current.audit,
-        ],
-      }))
-      notify.saved('Registration')
+      if (blockIfStale()) return false
+      if (!patch.reason.trim()) {
+        notify.warning('A reason is required for a registration correction')
+        return false
+      }
+      try {
+        await client
+          .PATCH('/v1/admin/events/{id}/registrations/{registrationId}', {
+            params: { path: { id: eventId, registrationId } },
+            body: {
+              status: patch.status,
+              answers: patch.answers,
+              reason: patch.reason.trim(),
+            },
+          })
+          .then((result) => unwrap(result))
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.registrations(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        addAudit({
+          action:
+            patch.status === 'cancelled'
+              ? 'Registration cancelled'
+              : 'Registration edited',
+          entity: registrationId,
+          detail: patch.reason.trim(),
+          category: 'events',
+        })
+        notify.saved('Registration')
+        return true
+      } catch (error) {
+        notify.error(error)
+        return false
+      }
     },
-    [actorName, actorRole, updateLocal],
+    [addAudit, blockIfStale, client, fixtureState, queryClient],
   )
 
   const cancelRegistration = useCallback(
-    (eventId: string, registration: AdminRegistration, reason: string) => {
+    (eventId: string, registration: AdminRegistration, reason: string) =>
       overrideRegistration(eventId, registration.id, {
         status: 'cancelled',
-        attendeeName: registration.attendee?.displayName,
-        attendeeEmail: registration.attendee?.email,
         reason,
-      })
-    },
+      }),
     [overrideRegistration],
   )
 
@@ -871,25 +879,6 @@ export function MiceProvider({ children }: { children: ReactNode }) {
         )
         updateLocal((current) => ({
           ...current,
-          localCheckIns: [
-            {
-              id: `local-ci-${record.id}`,
-              eventId,
-              registrationId: record.registrationId,
-              attendeeName: name,
-              checkedInAt: record.checkedInAt,
-              method,
-              overrideReason: options.reason,
-              by: actorName,
-            },
-            ...current.localCheckIns.filter(
-              (row) =>
-                !(
-                  row.eventId === eventId &&
-                  row.registrationId === record.registrationId
-                ),
-            ),
-          ],
           audit: [
             {
               id: auditId(),
@@ -908,9 +897,17 @@ export function MiceProvider({ children }: { children: ReactNode }) {
             ...current.audit,
           ],
         }))
-        await queryClient.invalidateQueries({
-          queryKey: miceKeys.checkIns(eventId, fixtureState),
-        })
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.checkIns(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.registrations(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
         notify.success(`${name} checked in`)
         return true
       } catch (error) {
@@ -922,53 +919,62 @@ export function MiceProvider({ children }: { children: ReactNode }) {
   )
 
   const undoCheckIn = useCallback(
-    (eventId: string, registrationId: string) => {
-      if (blockIfStale()) return
-      updateLocal((current) => {
-        const target = current.localCheckIns.find(
-          (row) =>
-            row.eventId === eventId &&
-            row.registrationId === registrationId &&
-            !row.removed,
-        )
-        const localCheckIns = target
-          ? current.localCheckIns.map((row) =>
-              row.id === target.id ? { ...row, removed: true } : row,
-            )
-          : [
-              {
-                id: `local-ci-undo-${registrationId}-${Date.now()}`,
-                eventId,
-                registrationId,
-                attendeeName: registrationId,
-                checkedInAt: new Date().toISOString(),
-                method: 'manual' as const,
-                by: actorName,
-                removed: true,
-              },
-              ...current.localCheckIns,
-            ]
-        return {
-          ...current,
-          localCheckIns,
-          audit: [
-            {
-              id: auditId(),
-              at: new Date().toISOString(),
-              actor: actorName,
-              role: actorRole,
-              action: 'Check-in undone',
-              entity: target?.attendeeName ?? registrationId,
-              detail: 'Correction recorded locally',
-              category: 'events',
-            },
-            ...current.audit,
-          ],
+    async (eventId: string, checkInId: string, reason: string) => {
+      if (blockIfStale()) return false
+      if (!reason.trim()) {
+        notify.warning('A reason is required to undo a check-in')
+        return false
+      }
+      try {
+        const ack = await client
+          .POST('/v1/admin/events/{id}/checkins/{checkInId}/undo', {
+            params: { path: { id: eventId, checkInId } },
+            body: { reason: reason.trim() },
+          })
+          .then((result) => unwrap<{ id?: string }>(result))
+        // Drop the row immediately so the counter reconciles even when the
+        // follow-up read is served from a lagging cache. The registration id
+        // comes back in the acknowledgement.
+        if (ack?.id) {
+          queryClient.setQueryData<PageResult<CheckIn>>(
+            miceKeys.checkIns(eventId, fixtureState),
+            (page) =>
+              page
+                ? {
+                    ...page,
+                    items: page.items.filter(
+                      (row) =>
+                        row.id !== checkInId && row.registrationId !== ack.id,
+                    ),
+                  }
+                : page,
+          )
         }
-      })
-      notify.info('Check-in undone')
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.checkIns(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.registrations(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        addAudit({
+          action: 'Check-in undone',
+          entity: checkInId,
+          detail: reason.trim(),
+          category: 'events',
+        })
+        notify.info('Check-in undone')
+        return true
+      } catch (error) {
+        notify.error(error)
+        return false
+      }
     },
-    [actorName, actorRole, updateLocal],
+    [addAudit, blockIfStale, client, fixtureState, queryClient],
   )
 
   const setVenueEvidence = useCallback(
@@ -1340,44 +1346,63 @@ export function MiceProvider({ children }: { children: ReactNode }) {
     [addAudit, client, fixtureState, queryClient],
   )
 
-  const setSpeakerLifecycle = useCallback(
-    (
-      key: string,
+  const setSpeakerConsent = useCallback(
+    async (
+      eventId: string,
+      personId: string,
       consent: 'pending' | 'granted' | 'declined',
-      removed?: boolean,
     ) => {
-      if (blockIfStale()) return
-      updateLocal((current) => ({
-        ...current,
-        speakerLifecycle: {
-          ...current.speakerLifecycle,
-          [key]: {
-            key,
-            consent,
-            removed,
-            updatedAt: new Date().toISOString(),
-            by: actorName,
-          },
-        },
-        audit: [
-          {
-            id: auditId(),
-            at: new Date().toISOString(),
-            actor: actorName,
-            role: actorRole,
-            action: removed
-              ? 'Speaker removed from session'
-              : 'Speaker consent updated',
-            entity: key,
-            detail: `Consent: ${consent}`,
-            category: 'events',
-          },
-          ...current.audit,
-        ],
-      }))
-      notify.saved('Speaker record')
+      if (blockIfStale()) return false
+      try {
+        await client
+          .POST('/v1/admin/events/{id}/people/{personId}/consent', {
+            params: { path: { id: eventId, personId } },
+            body: { consent },
+          })
+          .then((result) => unwrap(result))
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.event(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        notify.saved('Speaker record')
+        return true
+      } catch (error) {
+        notify.error(error)
+        return false
+      }
     },
-    [actorName, actorRole, updateLocal],
+    [blockIfStale, client, fixtureState, queryClient],
+  )
+
+  const removeSpeaker = useCallback(
+    async (eventId: string, personId: string) => {
+      if (blockIfStale()) return false
+      try {
+        await client
+          .DELETE('/v1/admin/events/{id}/people/{personId}', {
+            params: { path: { id: eventId, personId } },
+          })
+          .then((result) => unwrap(result))
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.event(eventId, fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        notify.success('Speaker removed from the event')
+        return true
+      } catch (error) {
+        notify.error(error)
+        return false
+      }
+    },
+    [blockIfStale, client, fixtureState, queryClient],
   )
 
   const resetLocal = useCallback(() => {
@@ -1401,6 +1426,7 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       reportsQuery,
       registrationsQuery,
       checkInsQuery,
+      auditQuery,
       events,
       venues,
       organizers,
@@ -1410,7 +1436,6 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       selectedEventId: resolvedEventId,
       selectEvent: setSelectedEventId,
       revisionFor,
-      lifecycleFor,
       saveRevision,
       submitRevision,
       withdrawRevision,
@@ -1439,7 +1464,8 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       createSession,
       updateSession,
       createSpeaker,
-      setSpeakerLifecycle,
+      setSpeakerConsent,
+      removeSpeaker,
       resetLocal,
     }),
     [
@@ -1449,6 +1475,7 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       addAudit,
       assignReport,
       assignReview,
+      auditQuery,
       cancelRegistration,
       checkIn,
       checkIns,
@@ -1465,7 +1492,6 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       eventsQuery,
       fixtureState,
       isStale,
-      lifecycleFor,
       local,
       markChangedAfterReview,
       noteOrganizer,
@@ -1476,6 +1502,7 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       recordSecondReview,
       registrations,
       registrationsQuery,
+      removeSpeaker,
       reports,
       reportsQuery,
       resetLocal,
@@ -1486,7 +1513,7 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       saveVenue,
       sendOffer,
       setLifecycle,
-      setSpeakerLifecycle,
+      setSpeakerConsent,
       setVenueEvidence,
       submitRevision,
       undoCheckIn,

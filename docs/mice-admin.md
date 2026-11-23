@@ -2,7 +2,7 @@
 
 Status: implemented on `feat/mice-admin` for [ytci-mobile#363](https://github.com/bradleygichuru/ytci-mobile/issues/363).
 Owner: `stream:mice`. Surface flag: `VITE_FLAG_MICE` (ships dark).
-Contracts: frozen 1.0.0. This stream did not change the contract, generated types or the shared shell.
+Contracts: 1.0.0 plus the additive MICE admin operations documented in `ytci-go/docs/execution/mice-admin-ops.md` (operations 112–120). No existing 1.0.0 operation changed.
 
 ## Routes
 
@@ -33,35 +33,48 @@ stale banner) is in `src/components/mice/shared.tsx`. It composes the shell's
   fixture state selected in the header (`default`, `empty`, `error`, `stale`).
 - `error` is a deterministic 503 with the frozen error copy; `empty` suppresses
   the list panels; `stale` keeps last-known data readable but disables writes.
-- Local workflow (staged revisions, review assignments, waitlist offers,
-  registration corrections, local check-in undo, speaker consent, venue evidence,
-  report assignments and the audit trail) is persisted under
-  `ytci.mice.workflow.v1`. The audit screen can reset it.
+- Server writes cover event lifecycle, waitlist offers, registration
+  corrections, check-in undo, speaker edit/consent/remove and the MICE audit
+  read. The store calls the contract endpoints directly and invalidates the
+  matching query.
+- The browser store under `ytci.mice.workflow.v1` now holds only the work the
+  contract does not model yet: staged review revisions, review assignments,
+  venue evidence/retirement and organizer request notes. The audit screen
+  merges those local review rows with the server audit log and labels the
+  source.
 - One realistic review item is seeded on first load so the review queue, second
   reviewer and publish gate are demonstrable without hand-building data.
 
-## Contract gaps (no contract change in this ticket)
+## Server-backed operations
 
-The frozen 1.0.0 contract has no admin operation for these. The UI still exposes
-the job, records it in the audit log, and labels it as local:
+The additive operations are documented in
+`ytci-go/docs/execution/mice-admin-ops.md`. The admin calls them directly:
 
-| Job                                       | Gap                             | Behaviour                                                                                     |
-| ----------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
-| Event cancel / unpublish / archive        | no lifecycle write              | local lifecycle override, reason required, audit row                                          |
-| Registration edit / cancel                | no admin registration write     | local correction, audit row                                                                   |
-| Waitlist offer create / accept / withdraw | no offer operation              | one local offer per event, same record on overview and registrations                          |
-| Check-in undo                             | no delete operation             | local correction; the staff check-in endpoint is used for check-in/override                   |
-| Speaker edit / consent / remove           | no speaker update operation     | local lifecycle; `adminCreateEventPerson` and `adminLinkSessionSpeaker` are used for creation |
-| Venue evidence / retire / merge           | no evidence or retire operation | local evidence and retire/merge with audit row                                                |
-| Organizer “request more evidence”         | no request operation            | local request note; verification decisions use the real endpoint                              |
-| MICE audit read                           | no admin audit endpoint         | append-only browser-local log for every stream action                                         |
+| Job                                       | Endpoint |
+| ----------------------------------------- | -------- |
+| Event cancel / unpublish / archive / publish / restore | `POST /v1/admin/events/{id}/lifecycle` |
+| Registration edit / cancel                | `PATCH /v1/admin/events/{id}/registrations/{registrationId}` |
+| Waitlist offer create                     | `POST /v1/admin/events/{id}/waitlist-offers` |
+| Waitlist offer accept / withdraw          | `POST /v1/admin/events/{id}/waitlist-offers/{registrationId}/decision` |
+| Check-in undo                             | `POST /v1/admin/events/{id}/checkins/{checkInId}/undo` |
+| Speaker edit / consent / remove           | `PATCH|DELETE /v1/admin/events/{id}/people/{personId}`, `POST .../consent` |
+| MICE audit read                           | `GET /v1/admin/mice/audit` |
 
-Server writes that do exist are used directly: `adminCreateEvent`, `adminUpdateEvent`,
+Existing writes remain in use: `adminCreateEvent`, `adminUpdateEvent`,
 `adminPublishEvent`, `adminCreateEventSession`, `adminUpdateEventSession`,
 `adminCreateEventPerson`, `adminLinkSessionSpeaker`, `adminCreateVenue`,
 `adminUpdateVenue`, `adminDecideOrganizerVerification`,
 `adminDraftEventChangeNotice`, the staff check-in endpoint, and
 `adminDecideEventReport`.
+
+## Remaining contract gaps
+
+| Job                              | Behaviour |
+| -------------------------------- | --------- |
+| Venue evidence / retire / merge  | local evidence and retire/merge with a local audit row |
+| Organizer “request more evidence”| local request note; verification decisions use the real endpoint |
+
+Both are documented as out of scope in the change-control note.
 
 ## Carry-forwards from the prototype critique
 
@@ -85,9 +98,11 @@ bunx vitest run src/lib/mice src/components/mice
 bun run build
 ```
 
-- 23 unit/component tests cover the capacity floor, organizer tiers, readiness
+- 35 unit/component tests cover the capacity floor, organizer tiers, readiness
   blockers, second reviewer, uploader self-review, event diff, agenda conflicts,
-  FIFO waitlist, queue navigation, report target and the simple table states.
+  FIFO waitlist, queue navigation, report target, the simple table states and the
+  server write path for lifecycle, waitlist, registration, check-in undo and
+  speaker consent/removal.
 - SSR smoke (authenticated, against `cmd/contracts-mock`) returned 200 for every
   route; the shared shell's query provider is used, no client fetch wrapper.
 - Per the task instruction, no Playwright device runs were made in this
@@ -112,5 +127,4 @@ Target ≥30/40. Scored against the prototype critique's heuristic shape:
 | Help and documentation          | 2           | inline hints, no dedicated help panel                                                        |
 | **Total**                       | **33 / 40** | passes the ≥30 bar; local-only gaps are documented                                           |
 
-No screenshot pack is committed because Playwright device runs were out of scope
-for this execution. Component tests and typecheck replace them in this branch.
+Playwright coverage for the write path lives in `e2e/verify/admin-mice/behaviour.spec.ts` (live mode). Component and unit tests cover the request shapes in CI; the live track owns the seeded end-to-end pass.

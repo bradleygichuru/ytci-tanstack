@@ -20,6 +20,7 @@ import type {
   EventDetail,
   EventReport,
   EventSummary,
+  MiceAuditEvent,
   OrganizerProfile,
   Venue,
 } from './types'
@@ -75,6 +76,7 @@ export const miceKeys = {
     ['mice', 'registrations', id, state] as const,
   checkIns: (id: string, state: FixtureState) =>
     ['mice', 'checkins', id, state] as const,
+  audit: (state: FixtureState) => ['mice', 'audit', state] as const,
 }
 
 export function useMiceEvents(fixtureState: FixtureState, enabled = true) {
@@ -210,6 +212,24 @@ export function useMiceCheckIns(
         fixtureState === 'error',
       ),
     enabled: Boolean(eventId) && enabled,
+    staleTime: 10_000,
+  })
+}
+
+export function useMiceAudit(fixtureState: FixtureState, enabled = true) {
+  const client = useMiceClient(fixtureState)
+  return useQuery({
+    queryKey: miceKeys.audit(fixtureState),
+    queryFn: () =>
+      readPage<MiceAuditEvent>(
+        () =>
+          client.GET('/v1/admin/mice/audit', {
+            params: { query: { limit: 100 } },
+          }),
+        fixtureState === 'empty',
+        fixtureState === 'error',
+      ),
+    enabled,
     staleTime: 10_000,
   })
 }

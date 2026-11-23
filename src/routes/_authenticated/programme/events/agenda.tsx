@@ -25,7 +25,6 @@ import {
 import type { Session, Speaker } from '#/lib/mice/types'
 import {
   EventScope,
-  LocalActionNote,
   MicePill,
   Notice,
   SectionCard,
@@ -45,11 +44,11 @@ function AgendaPage() {
     fixtureState,
     setFixtureState,
     selectedEventId,
-    local,
     createSession,
     updateSession,
     createSpeaker,
-    setSpeakerLifecycle,
+    setSpeakerConsent,
+    removeSpeaker,
   } = useMice()
   const [sessionOpen, setSessionOpen] = useState(false)
   const [editingSession, setEditingSession] = useState<Session | null>(null)
@@ -197,12 +196,6 @@ function AgendaPage() {
               cell: (session) => (
                 <span className="text-xs">
                   {(session.speakers ?? [])
-                    .filter(
-                      (speaker) =>
-                        !local.speakerLifecycle[
-                          `${session.id}:${speaker.id ?? speaker.displayName}`
-                        ]?.removed,
-                    )
                     .map((speaker) => speaker.displayName)
                     .join(', ') || 'None linked'}
                 </span>
@@ -261,20 +254,22 @@ function AgendaPage() {
             {
               header: 'Consent',
               cell: (speaker) => {
-                const key = speakerKey(speaker, sessions)
-                const state = local.speakerLifecycle[key]?.consent ?? 'pending'
+                const state = speaker.consentStatus ?? 'pending'
                 return (
                   <select
                     aria-label={`Consent for ${speaker.displayName}`}
                     className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
                     value={state}
-                    onChange={(event) =>
-                      setSpeakerLifecycle(
-                        key,
+                    disabled={!selectedEventId || !speaker.id}
+                    onChange={(event) => {
+                      if (!selectedEventId || !speaker.id) return
+                      void setSpeakerConsent(
+                        selectedEventId,
+                        speaker.id,
                         event.target.value as
                           'pending' | 'granted' | 'declined',
                       )
-                    }
+                    }}
                   >
                     <option value="pending">Pending</option>
                     <option value="granted">Granted</option>
@@ -289,25 +284,26 @@ function AgendaPage() {
             },
             {
               header: 'Actions',
-              cell: (speaker) => {
-                const key = speakerKey(speaker, sessions)
-                return (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSpeakerLifecycle(key, 'pending', true)}
-                  >
-                    Remove from sessions
-                  </Button>
-                )
-              },
+              cell: (speaker) => (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={!selectedEventId || !speaker.id}
+                  onClick={() => {
+                    if (!selectedEventId || !speaker.id) return
+                    void removeSpeaker(selectedEventId, speaker.id)
+                  }}
+                >
+                  Remove from sessions
+                </Button>
+              ),
             },
           ]}
         />
-        <LocalActionNote>
-          Consent, removal and speaker edits are local. Creating a person and
-          linking a speaker use the contract.
-        </LocalActionNote>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          Consent decisions and removal are written by the server. A declined
+          speaker stays on this admin list but is hidden from the public agenda.
+        </p>
       </SectionCard>
 
       <SessionDialog
@@ -650,20 +646,6 @@ function uniqueSpeakers(sessions: Session[]): Speaker[] {
     }
   }
   return [...seen.values()]
-}
-
-function speakerKey(speaker: Speaker, sessions: Session[]): string {
-  for (const session of sessions) {
-    if (
-      (session.speakers ?? []).some(
-        (item) =>
-          (item.id ?? item.displayName) === (speaker.id ?? speaker.displayName),
-      )
-    ) {
-      return `${session.id}:${speaker.id ?? speaker.displayName}`
-    }
-  }
-  return `person:${speaker.displayName}`
 }
 
 function speakerSessions(speaker: Speaker, sessions: Session[]): Session[] {
