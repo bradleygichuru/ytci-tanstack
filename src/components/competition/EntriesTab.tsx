@@ -327,7 +327,7 @@ export function EntriesTab({
           <div>
             <label
               htmlFor="eligibility-note"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Decision note
             </label>
@@ -372,7 +372,7 @@ export function EntriesTab({
           <div>
             <label
               htmlFor="attach-repository"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Repository entry
             </label>

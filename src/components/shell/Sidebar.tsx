@@ -66,7 +66,7 @@ export function AppSidebar() {
       <SidebarContent className="px-3 pt-4 group-data-[collapsible=icon]:px-1">
         {visibleGroups.map((group) => (
           <SidebarGroup key={group.key} className="mb-4">
-            <SidebarGroupLabel className="px-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/50">
+            <SidebarGroupLabel className="px-2 text-[11px] font-semibold uppercase tracking-widest text-sidebar-foreground/80">
               {group.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -76,8 +76,9 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={isActive(item)}
+                      aria-current={isActive(item) ? 'page' : undefined}
                       tooltip={item.label}
-                      className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                      className="rounded-lg text-sidebar-foreground/80 ring-sidebar-foreground/25 hover:bg-sidebar-accent hover:text-sidebar-foreground data-[active=true]:font-bold data-[active=true]:ring-1"
                     >
                       <Link to={item.path} style={{ color: 'var(--sidebar-foreground)' }}>
                         <item.icon className="h-[18px] w-[18px]" weight="duotone" />
@@ -126,6 +127,7 @@ export function AppSidebar() {
               <SidebarMenuButton
                 asChild
                 isActive={location.pathname === item.path}
+                aria-current={location.pathname === item.path ? 'page' : undefined}
                 tooltip={item.label}
                 className="rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               >

@@ -341,7 +341,7 @@ export function VotesTab({
           <div>
             <label
               htmlFor="case-entry"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Entry
             </label>
@@ -364,7 +364,7 @@ export function VotesTab({
           <div>
             <label
               htmlFor="case-signal"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Signals
             </label>
@@ -412,7 +412,7 @@ export function VotesTab({
           <div>
             <label
               htmlFor="case-status"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Outcome
             </label>
@@ -434,7 +434,7 @@ export function VotesTab({
           <div>
             <label
               htmlFor="case-resolution"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Written resolution
             </label>
@@ -481,7 +481,7 @@ export function VotesTab({
           <div>
             <label
               htmlFor="invalidate-reason"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Reason code
             </label>

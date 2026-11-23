@@ -281,7 +281,7 @@ export function AwardsTab({
                         label={award.publishedAt ? 'Published' : 'Recorded'}
                       />
                       {award.publishedAt ? (
-                        <span className="mt-1 block text-[10px] text-muted-foreground">
+                        <span className="mt-1 block text-[11px] text-muted-foreground">
                           {formatDate(award.publishedAt)}
                         </span>
                       ) : null}
@@ -385,7 +385,7 @@ export function AwardsTab({
           <div>
             <label
               htmlFor="award-entry-edit"
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground"
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
             >
               Recipient
             </label>

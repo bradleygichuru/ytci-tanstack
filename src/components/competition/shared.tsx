@@ -54,7 +54,7 @@ export function Stat({
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
           {label}
         </p>
         {Icon ? <Icon className="size-4 text-muted-foreground" /> : null}
@@ -68,7 +68,7 @@ export function Stat({
 export function Detail({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <dt className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+      <dt className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </dt>
       <dd className="mt-0.5 break-words font-medium text-foreground">{value}</dd>
@@ -124,7 +124,7 @@ export function Panel({
       >
         <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               {kicker}
             </p>
             <h2 className="mt-1 text-xl font-bold">{title}</h2>
@@ -166,7 +166,7 @@ export function LoadingRow({ colSpan, label }: { colSpan: number; label: string 
 }
 
 export const TABLE_HEAD =
-  'bg-muted/50 text-[10px] uppercase tracking-[0.12em] text-muted-foreground'
+  'bg-muted/50 text-[11px] uppercase tracking-[0.12em] text-muted-foreground'
 
 export const TABLE_CELL = 'px-4 py-3'
 

@@ -232,7 +232,7 @@ export function ConsultationTab({
             <Detail label="Reference" value={selected.id} />
           </div>
           <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               Answers
             </p>
             <pre className="mt-1 max-h-[420px] overflow-auto rounded-lg border border-border bg-muted/30 p-4 text-xs leading-relaxed">

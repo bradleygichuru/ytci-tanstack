@@ -74,28 +74,8 @@ export interface NavSection {
 
 export const NAV_SECTIONS: readonly NavSection[] = [
   {
-    key: 'discovery',
-    label: 'Discovery',
-    items: [
-      { key: 'analytics', label: 'Analytics', path: '/analytics', icon: ChartBar, permission: 'analytics.read', requiresAdmin: true, flag: 'analytics', status: 'live', owner: 'stream:analytics' },
-      { key: 'cms', label: 'CMS', path: '/destinations', icon: MapTrifold, resource: 'destinations', status: 'live' },
-      { key: 'repository', label: 'Repository', path: '/repository', icon: Archive, resource: 'repository', status: 'live' },
-      { key: 'then-now', label: 'Then & Now', path: '/then-now', icon: FilmSlate, resource: 'thenNow', status: 'live' },
-      { key: 'audio-stories', label: 'Audio Stories', path: '/audio-stories', icon: Waveform, resource: 'audioStories', status: 'live' },
-      { key: 'media', label: 'Media Library', path: '/media', icon: ImageIcon, resource: 'media', status: 'live' },
-    ],
-  },
-  {
-    key: 'engagement',
-    label: 'Engagement',
-    items: [
-      { key: 'lms', label: 'LMS', path: '/lms', icon: BookOpen, resource: 'lms', status: 'live' },
-      { key: 'conservation', label: 'Conservation', path: '/conservation', icon: Leaf, resource: 'conservation', status: 'live' },
-      { key: 'events', label: 'Events', path: '/events', icon: Calendar, resource: 'events', status: 'live' },
-      { key: 'marketplace', label: 'Marketplace', path: '/marketplace', icon: Storefront, resource: 'marketplace', status: 'live' },
-    ],
-  },
-  {
+    // The programme surfaces (including Competition) sit first so they stay
+    // reachable without scrolling a long sidebar at 900px.
     key: 'programme',
     label: 'Programme',
     items: [
@@ -139,6 +119,28 @@ export const NAV_SECTIONS: readonly NavSection[] = [
         resource: 'competition',
         status: 'live',
       },
+    ],
+  },
+  {
+    key: 'discovery',
+    label: 'Discovery',
+    items: [
+      { key: 'analytics', label: 'Analytics', path: '/analytics', icon: ChartBar, permission: 'analytics.read', requiresAdmin: true, flag: 'analytics', status: 'live', owner: 'stream:analytics' },
+      { key: 'cms', label: 'CMS', path: '/destinations', icon: MapTrifold, resource: 'destinations', status: 'live' },
+      { key: 'repository', label: 'Repository', path: '/repository', icon: Archive, resource: 'repository', status: 'live' },
+      { key: 'then-now', label: 'Then & Now', path: '/then-now', icon: FilmSlate, resource: 'thenNow', status: 'live' },
+      { key: 'audio-stories', label: 'Audio Stories', path: '/audio-stories', icon: Waveform, resource: 'audioStories', status: 'live' },
+      { key: 'media', label: 'Media Library', path: '/media', icon: ImageIcon, resource: 'media', status: 'live' },
+    ],
+  },
+  {
+    key: 'engagement',
+    label: 'Engagement',
+    items: [
+      { key: 'lms', label: 'LMS', path: '/lms', icon: BookOpen, resource: 'lms', status: 'live' },
+      { key: 'conservation', label: 'Conservation', path: '/conservation', icon: Leaf, resource: 'conservation', status: 'live' },
+      { key: 'events', label: 'Events', path: '/events', icon: Calendar, resource: 'events', status: 'live' },
+      { key: 'marketplace', label: 'Marketplace', path: '/marketplace', icon: Storefront, resource: 'marketplace', status: 'live' },
     ],
   },
   {
