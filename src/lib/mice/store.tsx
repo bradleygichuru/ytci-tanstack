@@ -926,12 +926,29 @@ export function MiceProvider({ children }: { children: ReactNode }) {
         return false
       }
       try {
-        await client
+        const ack = await client
           .POST('/v1/admin/events/{id}/checkins/{checkInId}/undo', {
             params: { path: { id: eventId, checkInId } },
             body: { reason: reason.trim() },
           })
-          .then((result) => unwrap(result))
+          .then((result) => unwrap<{ id?: string }>(result))
+        // Drop the row immediately so the counter reconciles even when the
+        // follow-up read is served from a lagging cache. The registration id
+        // comes back in the acknowledgement.
+        if (ack?.id) {
+          queryClient.setQueryData<PageResult<CheckIn>>(
+            miceKeys.checkIns(eventId, fixtureState),
+            (page) =>
+              page
+                ? {
+                    ...page,
+                    items: page.items.filter(
+                      (row) => row.registrationId !== ack.id,
+                    ),
+                  }
+                : page,
+          )
+        }
         await Promise.all([
           queryClient.invalidateQueries({
             queryKey: miceKeys.checkIns(eventId, fixtureState),
