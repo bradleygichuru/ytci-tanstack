@@ -102,12 +102,35 @@ export async function toContractsError(response: Response): Promise<ContractsApi
   )
 }
 
+let sessionTokenCache: { token: string; expiresAt: number } | null = null
+
+/** Mints the better-auth JWT for direct Go API calls. */
+async function sessionToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
+  if (sessionTokenCache && sessionTokenCache.expiresAt > Date.now() + 30_000) {
+    return sessionTokenCache.token
+  }
+  try {
+    const res = await fetch('/api/auth/token', { credentials: 'include' })
+    if (!res.ok) return null
+    const body = (await res.json()) as { token?: string }
+    if (!body.token) return null
+    const part = body.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(part + '='.repeat((4 - (part.length % 4)) % 4)))
+    sessionTokenCache = { token: body.token, expiresAt: Number(payload.exp ?? 0) * 1000 }
+    return body.token
+  } catch {
+    return null
+  }
+}
+
 export function createContractsClient(options: ContractsClientOptions = {}) {
   const baseUrl = (options.baseUrl ?? contractsBaseUrl()).replace(/\/$/, '')
 
   const middleware: Middleware = {
     async onRequest({ request }) {
-      const token = options.getToken?.()
+      const token =
+        options.getToken?.() ?? (baseUrl && !isMockTarget(baseUrl) ? await sessionToken() : null)
       if (token) request.headers.set('Authorization', `Bearer ${token}`)
       if (options.fixtureState && request.method === 'GET') {
         const url = new URL(request.url, globalThis.location?.origin ?? 'http://localhost')
@@ -120,7 +143,9 @@ export function createContractsClient(options: ContractsClientOptions = {}) {
 
   const client = createClient<paths>({
     baseUrl,
-    credentials: 'include',
+    // Direct Go API calls authenticate with a bearer token; same-origin calls
+    // (the BFF path) rely on cookies.
+    credentials: baseUrl ? 'omit' : 'include',
     fetch: options.fetch,
   })
   client.use(middleware)
