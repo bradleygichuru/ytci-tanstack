@@ -289,7 +289,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Read one venue with retirement state and its evidence
+         * @description Additive to contract 1.0.0. Requires `events.read`. Evidence is newest
+         *     first. A retired venue is still readable here so an admin can inspect
+         *     its history.
+         */
+        get: operations["adminGetVenue"];
         put?: never;
         post?: never;
         delete?: never;
@@ -297,6 +303,51 @@ export interface paths {
         head?: never;
         /** Update a venue and its accessibility report */
         patch: operations["adminUpdateVenue"];
+        trace?: never;
+    };
+    "/v1/admin/venues/{id}/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a claim's evidence against a venue
+         * @description Additive to contract 1.0.0. Requires `events.create`. Evidence is
+         *     append-only; the audit row records the actor, claim and reference.
+         */
+        post: operations["adminAddVenueEvidence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/venues/{id}/retire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retire a venue, optionally merging it into another
+         * @description Additive to contract 1.0.0. Requires `events.create` and a reason. When
+         *     `mergedIntoVenueId` is present the events that pointed at the source are
+         *     re-pointed to the target in the same transaction and the audit action is
+         *     `venue.merged`; otherwise it is `venue.retired`. Retired venues 404 on
+         *     the public venue read and never appear in public event payloads.
+         */
+        post: operations["adminRetireVenue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/admin/organizers": {
@@ -350,6 +401,29 @@ export interface paths {
          *     organizer_verification_event and an audit row.
          */
         post: operations["adminDecideOrganizerVerification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/organizers/{id}/evidence-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask an organizer for more verification evidence
+         * @description Additive to contract 1.0.0. Requires `events.verify_organizer` (the
+         *     review permission used by the verification decision). The request keeps
+         *     the record pending and is resolved when a verification decision is
+         *     recorded. The audit action is `organizer.evidence_requested`.
+         */
+        post: operations["adminRequestOrganizerEvidence"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1964,6 +2038,39 @@ export interface components {
             accessibility?: components["schemas"]["AccessibilityBlock"] | null;
             /** Format: date-time */
             verifiedAt?: string | null;
+            /** Format: date-time */
+            retiredAt?: string | null;
+            /** @description Present on the admin read after retirement */
+            retiredReason?: string | null;
+            /**
+             * Format: uuid
+             * @description The surviving venue when this one was merged
+             */
+            mergedIntoVenueId?: string | null;
+            /** @description Append-only claim evidence, newest first (admin read) */
+            evidence?: components["schemas"]["VenueEvidence"][];
+        };
+        VenueEvidence: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            venueId: string;
+            claim: string;
+            note: string;
+            reference?: string | null;
+            recordedBy?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        VenueEvidenceWrite: {
+            claim: string;
+            note: string;
+            reference?: string;
+        };
+        VenueRetireWrite: {
+            reason: string;
+            /** Format: uuid */
+            mergedIntoVenueId?: string;
         };
         VenueWrite: {
             name: string;
@@ -2069,6 +2176,27 @@ export interface components {
             revokedReason?: string | null;
             upcomingEvents?: components["schemas"]["EventSummary"][];
             pastEventCount?: number;
+            /** @description Newest first (admin read) */
+            evidenceRequests?: components["schemas"]["OrganizerEvidenceRequest"][];
+        };
+        OrganizerEvidenceRequest: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            organizerId: string;
+            note: string;
+            requestedBy?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            resolvedAt?: string | null;
+        };
+        OrganizerEvidenceRequestWrite: {
+            note: string;
+        };
+        OrganizerEvidenceRequestResult: {
+            request: components["schemas"]["OrganizerEvidenceRequest"];
+            organizer: components["schemas"]["OrganizerProfile"];
         };
         OrganizerWrite: {
             slug?: string;
@@ -3893,6 +4021,31 @@ export interface operations {
             403: components["responses"]["Forbidden"];
         };
     };
+    adminGetVenue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["VenueId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Venue with retirement state and evidence */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Venue"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
     adminUpdateVenue: {
         parameters: {
             query?: never;
@@ -3919,6 +4072,75 @@ export interface operations {
             };
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    adminAddVenueEvidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["VenueId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VenueEvidenceWrite"];
+            };
+        };
+        responses: {
+            /** @description Venue with the new evidence row */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Venue"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    adminRetireVenue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["VenueId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VenueRetireWrite"];
+            };
+        };
+        responses: {
+            /** @description Retired venue */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Venue"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description The venue is already retired, the target is retired, or a self-merge was attempted */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     adminListOrganizers: {
@@ -4034,6 +4256,36 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+        };
+    };
+    adminRequestOrganizerEvidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["OrganizerId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizerEvidenceRequestWrite"];
+            };
+        };
+        responses: {
+            /** @description The new request and the organizer with all requests */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizerEvidenceRequestResult"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     adminListEvents: {

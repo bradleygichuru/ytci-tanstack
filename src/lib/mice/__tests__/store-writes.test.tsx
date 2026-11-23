@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { EventDetail } from '#/lib/mice/types'
+import type { EventDetail, OrganizerProfile, Venue } from '#/lib/mice/types'
 
 const detail = {
   id: 'event-1',
@@ -231,6 +231,82 @@ describe('MICE store write path', () => {
       '/v1/admin/events/{id}/people/{personId}',
       { params: { path: { id: 'event-1', personId: 'person-1' } } },
     )
+  })
+
+  it('records venue evidence and retirement through the server', async () => {
+    const store = await renderStore()
+    const venue = {
+      id: 'venue-1',
+      slug: 'kicc',
+      name: 'KICC',
+      county: 'Nairobi',
+    } as Venue
+
+    await store.addVenueEvidence(venue, {
+      claim: 'Step-free entrance',
+      note: 'Ramp inspected at the Harambee gate',
+      reference: 'SITE-2026-11-01',
+    })
+    expect(post).toHaveBeenLastCalledWith('/v1/admin/venues/{id}/evidence', {
+      params: { path: { id: 'venue-1' } },
+      body: {
+        claim: 'Step-free entrance',
+        note: 'Ramp inspected at the Harambee gate',
+        reference: 'SITE-2026-11-01',
+      },
+    })
+
+    await store.retireVenue(venue, 'Duplicate record', 'venue-2')
+    expect(post).toHaveBeenLastCalledWith('/v1/admin/venues/{id}/retire', {
+      params: { path: { id: 'venue-1' } },
+      body: { reason: 'Duplicate record', mergedIntoVenueId: 'venue-2' },
+    })
+
+    await store.retireVenue(venue, 'No longer used')
+    expect(post).toHaveBeenLastCalledWith('/v1/admin/venues/{id}/retire', {
+      params: { path: { id: 'venue-1' } },
+      body: { reason: 'No longer used', mergedIntoVenueId: undefined },
+    })
+  })
+
+  it('requests organizer evidence through the server', async () => {
+    const store = await renderStore()
+    const organizer = {
+      id: 'organizer-1',
+      slug: 'nairobi-bureau',
+      displayName: 'Nairobi Convention Bureau',
+      trustTier: 'programme_partner',
+      label: 'YTCI programme partner',
+    } as OrganizerProfile
+
+    await store.requestOrganizerEvidence(
+      organizer,
+      'Please send the business registration certificate.',
+    )
+    expect(post).toHaveBeenLastCalledWith(
+      '/v1/admin/organizers/{id}/evidence-requests',
+      {
+        params: { path: { id: 'organizer-1' } },
+        body: { note: 'Please send the business registration certificate.' },
+      },
+    )
+  })
+
+  it('rejects venue evidence and organizer requests without the required text', async () => {
+    const store = await renderStore()
+    await expect(
+      store.addVenueEvidence(
+        { id: 'venue-1', slug: 'kicc', name: 'KICC', county: 'Nairobi' } as Venue,
+        { claim: '', note: '' },
+      ),
+    ).resolves.toBe(false)
+    await expect(
+      store.requestOrganizerEvidence(
+        { id: 'organizer-1' } as OrganizerProfile,
+        'too short',
+      ),
+    ).resolves.toBe(false)
+    expect(post).not.toHaveBeenCalled()
   })
 
   it('blocks writes on a stale snapshot', async () => {

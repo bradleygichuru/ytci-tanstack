@@ -2,8 +2,8 @@
  * Organizer verification.
  *
  * Every decision needs a reason and a person other than the submitter. Requesting
- * more evidence is a local loop with an audit row; the contract's decision
- * endpoint handles verify/reject/revoke/restore/expire.
+ * more evidence is a server record (operation 124) that keeps the record
+ * pending until a decision is recorded; decisions use the verification endpoint.
  */
 import { useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
@@ -162,6 +162,7 @@ function OrganisersPage() {
     local,
     actorName,
     noteOrganizer,
+    requestOrganizerEvidence,
     decideOrganizer,
     addAudit,
     isStale,
@@ -170,6 +171,7 @@ function OrganisersPage() {
   const [selected, setSelected] = useState<OrganizerProfile | null>(null)
   const [evidenceFor, setEvidenceFor] = useState<OrganizerProfile | null>(null)
   const [evidenceNote, setEvidenceNote] = useState('')
+  const [evidencePending, setEvidencePending] = useState(false)
 
   const rows = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -329,7 +331,7 @@ function OrganisersPage() {
         </Notice>
         <LocalActionNote>
           Evidence attachments are read from the verification record; requesting
-          more evidence is local.
+          more evidence is server-backed and audited.
         </LocalActionNote>
       </SectionCard>
 
@@ -379,14 +381,12 @@ function OrganisersPage() {
             >
               Request more evidence
             </Button>
-            {local.organizerNotes[selected.id ?? selected.slug]
-              ?.requestedEvidenceAt ? (
+            {selected.evidenceRequests?.length ? (
               <p className="mt-1 text-[11px] text-muted-foreground">
-                Requested{' '}
-                {formatDateTime(
-                  local.organizerNotes[selected.id ?? selected.slug]
-                    ?.requestedEvidenceAt,
-                )}
+                Latest request {formatDateTime(selected.evidenceRequests[0].createdAt)} ·{' '}
+                {selected.evidenceRequests[0].resolvedAt
+                  ? 'resolved'
+                  : 'open'}
               </p>
             ) : null}
           </div>
@@ -407,26 +407,25 @@ function OrganisersPage() {
             : 'Request more evidence'
         }
         submitLabel="Send request"
+        pending={evidencePending}
         fieldErrors={
-          evidenceNote.trim()
+          evidenceNote.trim().length >= 10
             ? undefined
-            : { note: 'Say what evidence is missing.' }
+            : { note: 'Say in at least 10 characters what evidence is missing.' }
         }
         onSubmit={() => {
-          if (!evidenceFor || !evidenceNote.trim()) return
-          noteOrganizer(evidenceFor.id ?? evidenceFor.slug, {
-            requestedEvidenceAt: new Date().toISOString(),
-            requestedEvidenceBy: actorName,
-            note: evidenceNote.trim(),
+          if (!evidenceFor || evidenceNote.trim().length < 10) return
+          setEvidencePending(true)
+          void requestOrganizerEvidence(
+            evidenceFor,
+            evidenceNote,
+          ).then((ok) => {
+            setEvidencePending(false)
+            if (ok) {
+              setEvidenceFor(null)
+              setEvidenceNote('')
+            }
           })
-          addAudit({
-            action: 'More verification evidence requested',
-            entity: evidenceFor.displayName,
-            detail: evidenceNote.trim(),
-            category: 'safety',
-          })
-          setEvidenceFor(null)
-          setEvidenceNote('')
         }}
       >
         <label
@@ -439,10 +438,11 @@ function OrganisersPage() {
           id="evidence-note"
           value={evidenceNote}
           onChange={(change) => setEvidenceNote(change.target.value)}
+          placeholder="e.g. Current business registration certificate and the venue access audit."
         />
         <LocalActionNote>
-          The request is local; the record stays pending until a decision is
-          recorded.
+          The request is written to the organizer's record and the audit log. The
+          record stays pending until a decision is recorded.
         </LocalActionNote>
       </FormDialog>
     </div>

@@ -27,6 +27,11 @@ export type AccessibilityBlock = ContractsSchemas['AccessibilityBlock']
 export type WaitlistOffer = ContractsSchemas['WaitlistOffer']
 export type MiceAuditEvent = ContractsSchemas['MiceAuditEvent']
 export type RegistrationWrite = ContractsSchemas['RegistrationWrite']
+export type VenueEvidence = ContractsSchemas['VenueEvidence']
+export type VenueEvidenceWrite = ContractsSchemas['VenueEvidenceWrite']
+export type VenueRetireWrite = ContractsSchemas['VenueRetireWrite']
+export type OrganizerEvidenceRequest =
+  ContractsSchemas['OrganizerEvidenceRequest']
 
 export type TriState = 'yes' | 'no' | 'unknown'
 
@@ -90,18 +95,8 @@ export interface AuditEntry {
 export type RegistrationState =
   'confirmed' | 'waitlisted' | 'cancelled' | 'checked_in'
 
-export interface VenueEvidence {
-  venueId: string
-  fields: Partial<Record<AccessFieldKey, string>>
-  note?: string
-  updatedAt: string
-  by: string
-}
-
 export interface OrganizerNote {
   organizerId: string
-  requestedEvidenceAt?: string
-  requestedEvidenceBy?: string
   assignedTo?: string
   note?: string
 }
@@ -116,8 +111,6 @@ export interface ReportAssignment {
 export interface MiceLocalState {
   revisions: Record<string, StagedRevision>
   audit: AuditEntry[]
-  venueEvidence: Record<string, VenueEvidence>
-  venueRetired: Record<string, { at: string; by: string; mergedInto?: string }>
   organizerNotes: Record<string, OrganizerNote>
   reportAssignments: Record<string, ReportAssignment>
   reviewAssignments: Record<string, string>

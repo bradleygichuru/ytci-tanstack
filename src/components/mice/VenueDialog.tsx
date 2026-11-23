@@ -1,14 +1,14 @@
 /**
  * Venue editor dialog.
  *
- * Accessibility is structured tri-state, and each claim can carry its own
- * evidence reference. Venue verification (verifiedAt) is separate from the
- * evidence for a single claim.
+ * Accessibility is structured tri-state. Evidence for a single claim is an
+ * append-only server record (operations 121–124) and is added from the venue
+ * row, not from this editor. Venue verification (verifiedAt) is separate from
+ * the evidence for a claim.
  */
 import { useEffect, useState, type ReactNode } from 'react'
 import { FormDialog } from '#/components/shell/FormDialog'
 import { Input } from '#/components/ui/input'
-import { Textarea } from '#/components/ui/textarea'
 import { useMice } from '#/lib/mice/store'
 import {
   ACCESS_FIELDS,
@@ -18,7 +18,7 @@ import {
   type VenueWrite,
 } from '#/lib/mice/types'
 import { formatLongDate } from '#/lib/mice/workflow'
-import { LocalActionNote, MicePill } from '#/components/mice/shared'
+import { MicePill } from '#/components/mice/shared'
 
 export interface VenueDialogProps {
   open: boolean
@@ -27,25 +27,16 @@ export interface VenueDialogProps {
 }
 
 export function VenueDialog({ open, onOpenChange, venue }: VenueDialogProps) {
-  const { saveVenue, setVenueEvidence, local } = useMice()
+  const { saveVenue } = useMice()
   const [form, setForm] = useState<VenueWrite>(toWrite(venue))
-  const [evidence, setEvidence] = useState<Record<string, string>>({})
-  const [note, setNote] = useState('')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
     setForm(toWrite(venue))
-    setEvidence(
-      venue?.id
-        ? ((local.venueEvidence[venue.id]?.fields as Record<string, string>) ??
-            {})
-        : {},
-    )
-    setNote(venue?.id ? (local.venueEvidence[venue.id]?.note ?? '') : '')
     setError(null)
-  }, [local.venueEvidence, open, venue])
+  }, [open, venue])
 
   function patch<K extends keyof VenueWrite>(key: K, value: VenueWrite[K]) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -67,7 +58,6 @@ export function VenueDialog({ open, onOpenChange, venue }: VenueDialogProps) {
     const ok = await saveVenue(venue?.id ?? null, form)
     setPending(false)
     if (!ok) return
-    if (venue?.id) setVenueEvidence(venue.id, evidence, note)
     onOpenChange(false)
   }
 
@@ -76,7 +66,7 @@ export function VenueDialog({ open, onOpenChange, venue }: VenueDialogProps) {
       open={open}
       onOpenChange={onOpenChange}
       title={venue ? `Edit ${venue.name}` : 'Add a curated venue'}
-      description="Accessibility is three-state. Unknown never renders as accessible; evidence is kept per claim."
+      description="Accessibility is three-state. Unknown never renders as accessible; claim evidence is recorded from the venue row."
       submitLabel={venue ? 'Save venue' : 'Create venue'}
       pending={pending}
       error={error}
@@ -208,7 +198,7 @@ export function VenueDialog({ open, onOpenChange, venue }: VenueDialogProps) {
           {ACCESS_FIELDS.map((field) => (
             <div
               key={field.key}
-              className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1.2fr)]"
+              className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_7rem]"
             >
               <label
                 htmlFor={`venue-access-${field.key}`}
@@ -229,34 +219,15 @@ export function VenueDialog({ open, onOpenChange, venue }: VenueDialogProps) {
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
               </select>
-              <Input
-                aria-label={`${field.label} evidence`}
-                placeholder="Evidence reference"
-                value={evidence[field.key] ?? ''}
-                onChange={(event) =>
-                  setEvidence((current) => ({
-                    ...current,
-                    [field.key]: event.target.value,
-                  }))
-                }
-              />
             </div>
           ))}
         </div>
-        <Field label="Evidence note" htmlFor="venue-evidence-note">
-          <Textarea
-            id="venue-evidence-note"
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder="Who verified it, when, and how."
-          />
-        </Field>
+        <p className="text-[11px] text-muted-foreground">
+          {venue?.evidence?.length
+            ? `${venue.evidence.length} evidence record${venue.evidence.length === 1 ? '' : 's'} on file. Add claims from the venue row so the history is audited.`
+            : 'No claim evidence recorded yet. Add it from the venue row so the history is audited.'}
+        </p>
       </div>
-
-      <LocalActionNote>
-        Per-claim evidence and venue verification are separate records. Evidence
-        is stored locally until the contract adds a venue-evidence write.
-      </LocalActionNote>
     </FormDialog>
   )
 }

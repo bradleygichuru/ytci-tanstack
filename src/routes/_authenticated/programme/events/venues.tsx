@@ -1,23 +1,24 @@
 /**
  * Venue catalogue.
  *
- * Structured accessibility with per-claim evidence, separate verification date,
- * and retire/merge controls so duplicate venue records stop appearing in the
- * event editor.
+ * Structured accessibility with per-claim evidence, a separate verification
+ * date, and server-backed retire/merge controls so duplicate venue records stop
+ * appearing in the event editor. Evidence, retirement and merges are recorded
+ * by the API (operations 121–124) and audited in `mice_audit_events`.
  */
 import { useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { ArrowsMerge, Plus, Trash } from '@phosphor-icons/react'
+import { ArrowsMerge, Paperclip, Plus, Trash } from '@phosphor-icons/react'
 import { PageHeader } from '#/components/shell/PageHeader'
 import { FilterBar } from '#/components/shell/FilterBar'
 import { FormDialog } from '#/components/shell/FormDialog'
 import { Button } from '#/components/ui/button'
+import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
 import { VenueDialog } from '#/components/mice/VenueDialog'
 import { useMice } from '#/lib/mice/store'
-import { formatLongDate } from '#/lib/mice/workflow'
+import { formatDateTime, formatLongDate } from '#/lib/mice/workflow'
 import {
-  LocalActionNote,
   MicePill,
   Notice,
   SimpleTable,
@@ -31,25 +32,45 @@ export const Route = createFileRoute('/_authenticated/programme/events/venues')(
 )
 
 function VenuesPage() {
-  const { venues, venuesQuery, local, retireVenue, isStale } = useMice()
+  const {
+    venues,
+    venuesQuery,
+    addVenueEvidence,
+    retireVenue,
+    isStale,
+  } = useMice()
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Venue | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [evidenceVenue, setEvidenceVenue] = useState<Venue | null>(null)
+  const [evidenceClaim, setEvidenceClaim] = useState('')
+  const [evidenceNote, setEvidenceNote] = useState('')
+  const [evidenceReference, setEvidenceReference] = useState('')
+  const [evidencePending, setEvidencePending] = useState(false)
   const [mergeVenue, setMergeVenue] = useState<Venue | null>(null)
   const [mergeTarget, setMergeTarget] = useState('')
+  const [mergePending, setMergePending] = useState(false)
   const [retireVenueRow, setRetireVenueRow] = useState<Venue | null>(null)
   const [retireReason, setRetireReason] = useState('')
+  const [retirePending, setRetirePending] = useState(false)
 
   const rows = useMemo(() => {
     const query = search.trim().toLowerCase()
     return venues.filter((venue) => {
-      if (local.venueRetired[venue.id ?? venue.slug]) return false
+      if (venue.retiredAt) return false
       if (!query) return true
       return `${venue.name} ${venue.county} ${venue.addressLine1 ?? ''}`
         .toLowerCase()
         .includes(query)
     })
-  }, [local.venueRetired, search, venues])
+  }, [search, venues])
+
+  function resetEvidence() {
+    setEvidenceVenue(null)
+    setEvidenceClaim('')
+    setEvidenceNote('')
+    setEvidenceReference('')
+  }
 
   return (
     <div className="space-y-4">
@@ -112,12 +133,10 @@ function VenuesPage() {
             ),
           },
           {
-            header: 'Accessibility',
+            header: 'Evidence',
             cell: (venue) => {
               const fields = venue.accessibility?.fields
-              const evidence = venue.id
-                ? local.venueEvidence[venue.id]
-                : undefined
+              const latest = venue.evidence?.[0]
               return (
                 <span className="text-xs">
                   Step-free:{' '}
@@ -126,8 +145,15 @@ function VenuesPage() {
                   <strong>{fields?.accessibleToilet ?? 'unknown'}</strong> ·
                   Listening: <strong>{fields?.hearingLoop ?? 'unknown'}</strong>
                   <span className="block text-[11px] text-muted-foreground">
-                    {evidence?.note || 'No claim evidence recorded'}
+                    {latest
+                      ? `${latest.claim} · ${latest.note}`
+                      : 'No claim evidence recorded'}
                   </span>
+                  {venue.evidence && venue.evidence.length > 1 ? (
+                    <span className="block text-[11px] text-muted-foreground">
+                      {venue.evidence.length} evidence records
+                    </span>
+                  ) : null}
                 </span>
               )
             },
@@ -163,6 +189,15 @@ function VenuesPage() {
                   Edit
                 </Button>
                 <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`Add evidence for ${venue.name}`}
+                  disabled={isStale}
+                  onClick={() => setEvidenceVenue(venue)}
+                >
+                  <Paperclip className="size-3.5" weight="bold" /> Evidence
+                </Button>
+                <Button
                   variant="outline"
                   size="sm"
                   aria-label={`Merge ${venue.name}`}
@@ -189,15 +224,97 @@ function VenuesPage() {
       <Notice tone="info" title="Verification is not evidence">
         A venue is “verified” when the record itself was checked. Each
         accessibility claim still needs its own evidence reference, and a
-        retired venue stops appearing in the event editor.
+        retired venue stops appearing in the event editor. Retiring and merging
+        are recorded on the server.
       </Notice>
-      <LocalActionNote />
 
       <VenueDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         venue={editing}
       />
+
+      <FormDialog
+        open={Boolean(evidenceVenue)}
+        onOpenChange={(open) => {
+          if (!open) resetEvidence()
+        }}
+        title={
+          evidenceVenue ? `Evidence for ${evidenceVenue.name}` : 'Venue evidence'
+        }
+        description="One claim per record. Corrections are new rows, so the history stays readable."
+        submitLabel="Record evidence"
+        pending={evidencePending}
+        fieldErrors={{
+          ...(evidenceClaim.trim().length < 3
+            ? { claim: 'Name the claim in at least 3 characters.' }
+            : {}),
+          ...(evidenceNote.trim().length < 3
+            ? { note: 'Describe what was checked.' }
+            : {}),
+        }}
+        onSubmit={() => {
+          if (!evidenceVenue || evidenceClaim.trim().length < 3) return
+          setEvidencePending(true)
+          void addVenueEvidence(evidenceVenue, {
+            claim: evidenceClaim,
+            note: evidenceNote,
+            reference: evidenceReference || undefined,
+          }).then((ok) => {
+            setEvidencePending(false)
+            if (ok) resetEvidence()
+          })
+        }}
+      >
+        <label
+          htmlFor="evidence-claim"
+          className="text-xs font-bold text-foreground"
+        >
+          Claim
+        </label>
+        <Input
+          id="evidence-claim"
+          value={evidenceClaim}
+          onChange={(event) => setEvidenceClaim(event.target.value)}
+          placeholder="e.g. Step-free entrance"
+        />
+        <label
+          htmlFor="evidence-note"
+          className="text-xs font-bold text-foreground"
+        >
+          What was checked
+        </label>
+        <Textarea
+          id="evidence-note"
+          value={evidenceNote}
+          onChange={(event) => setEvidenceNote(event.target.value)}
+          placeholder="Who checked it, when, and how."
+        />
+        <label
+          htmlFor="evidence-reference"
+          className="text-xs font-bold text-foreground"
+        >
+          Reference (optional)
+        </label>
+        <Input
+          id="evidence-reference"
+          value={evidenceReference}
+          onChange={(event) => setEvidenceReference(event.target.value)}
+          placeholder="Inspection ticket, photo or report id"
+        />
+        {evidenceVenue?.evidence?.length ? (
+          <div className="rounded-md border border-border bg-muted/30 p-2 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Recent evidence</p>
+            <ul className="mt-1 space-y-1">
+              {evidenceVenue.evidence.slice(0, 3).map((item) => (
+                <li key={item.id}>
+                  {formatDateTime(item.createdAt)} · {item.claim} — {item.note}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </FormDialog>
 
       <FormDialog
         open={Boolean(mergeVenue)}
@@ -210,19 +327,25 @@ function VenuesPage() {
         title={mergeVenue ? `Merge ${mergeVenue.name}` : 'Merge venue'}
         description="Events pointing at the merged venue are re-pointed to the target. The source venue is retired."
         submitLabel="Merge venues"
+        pending={mergePending}
         variant="destructive"
         fieldErrors={
           mergeTarget ? undefined : { target: 'Choose a target venue.' }
         }
         onSubmit={() => {
           if (!mergeVenue || !mergeTarget) return
-          retireVenue(
-            mergeVenue.id ?? mergeVenue.slug,
+          setMergePending(true)
+          void retireVenue(
+            mergeVenue,
+            `Merged into ${venues.find((venue) => venue.id === mergeTarget)?.name ?? 'another venue'}`,
             mergeTarget,
-            `Merged into ${mergeTarget}`,
-          )
-          setMergeVenue(null)
-          setMergeTarget('')
+          ).then((ok) => {
+            setMergePending(false)
+            if (ok) {
+              setMergeVenue(null)
+              setMergeTarget('')
+            }
+          })
         }}
       >
         <label
@@ -239,14 +362,18 @@ function VenuesPage() {
         >
           <option value="">Select a venue</option>
           {venues
-            .filter((venue) => venue.slug !== mergeVenue?.slug)
+            .filter(
+              (venue) =>
+                !venue.retiredAt &&
+                venue.id &&
+                venue.id !== mergeVenue?.id,
+            )
             .map((venue) => (
-              <option key={venue.slug} value={venue.slug}>
+              <option key={venue.id} value={venue.id}>
                 {venue.name}
               </option>
             ))}
         </select>
-        <LocalActionNote />
       </FormDialog>
 
       <FormDialog
@@ -260,21 +387,23 @@ function VenuesPage() {
         title={
           retireVenueRow ? `Retire ${retireVenueRow.name}` : 'Retire venue'
         }
-        description="A retired venue stops appearing in the event editor. Existing events keep their reference until re-pointed."
+        description="A retired venue stops appearing in the event editor and in public payloads. Existing events keep the reference until merged."
         submitLabel="Retire venue"
+        pending={retirePending}
         variant="destructive"
         fieldErrors={
           retireReason.trim() ? undefined : { reason: 'A reason is required.' }
         }
         onSubmit={() => {
           if (!retireVenueRow || !retireReason.trim()) return
-          retireVenue(
-            retireVenueRow.id ?? retireVenueRow.slug,
-            undefined,
-            retireReason.trim(),
-          )
-          setRetireVenueRow(null)
-          setRetireReason('')
+          setRetirePending(true)
+          void retireVenue(retireVenueRow, retireReason).then((ok) => {
+            setRetirePending(false)
+            if (ok) {
+              setRetireVenueRow(null)
+              setRetireReason('')
+            }
+          })
         }}
       >
         <label
@@ -289,7 +418,6 @@ function VenuesPage() {
           onChange={(change) => setRetireReason(change.target.value)}
           placeholder="e.g. duplicate of KICC"
         />
-        <LocalActionNote />
       </FormDialog>
     </div>
   )

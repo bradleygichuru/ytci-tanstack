@@ -2,7 +2,7 @@
 
 Status: implemented on `feat/mice-admin` for [ytci-mobile#363](https://github.com/bradleygichuru/ytci-mobile/issues/363).
 Owner: `stream:mice`. Surface flag: `VITE_FLAG_MICE` (ships dark).
-Contracts: 1.0.0 plus the additive MICE admin operations documented in `ytci-go/docs/execution/mice-admin-ops.md` (operations 112–120). No existing 1.0.0 operation changed.
+Contracts: 1.0.0 plus the additive MICE admin operations documented in `ytci-go/docs/execution/mice-admin-ops.md` (operations 112–124). No existing 1.0.0 operation changed.
 
 ## Routes
 
@@ -39,9 +39,9 @@ stale banner) is in `src/components/mice/shared.tsx`. It composes the shell's
   matching query.
 - The browser store under `ytci.mice.workflow.v1` now holds only the work the
   contract does not model yet: staged review revisions, review assignments,
-  venue evidence/retirement and organizer request notes. The audit screen
-  merges those local review rows with the server audit log and labels the
-  source.
+  organizer assignments and report assignments. Venue evidence/retirement and
+  organizer evidence requests are server records; the audit screen merges the
+  remaining local review rows with the server audit log and labels the source.
 - One realistic review item is seeded on first load so the review queue, second
   reviewer and publish gate are demonstrable without hand-building data.
 
@@ -59,6 +59,10 @@ The additive operations are documented in
 | Check-in undo                             | `POST /v1/admin/events/{id}/checkins/{checkInId}/undo` |
 | Speaker edit / consent / remove           | `PATCH|DELETE /v1/admin/events/{id}/people/{personId}`, `POST .../consent` |
 | MICE audit read                           | `GET /v1/admin/mice/audit` |
+| Venue read with evidence / retirement     | `GET /v1/admin/venues/{id}` |
+| Venue evidence claim                      | `POST /v1/admin/venues/{id}/evidence` |
+| Venue retire / merge                      | `POST /v1/admin/venues/{id}/retire` |
+| Organizer request more evidence           | `POST /v1/admin/organizers/{id}/evidence-requests` |
 
 Existing writes remain in use: `adminCreateEvent`, `adminUpdateEvent`,
 `adminPublishEvent`, `adminCreateEventSession`, `adminUpdateEventSession`,
@@ -67,14 +71,16 @@ Existing writes remain in use: `adminCreateEvent`, `adminUpdateEvent`,
 `adminDraftEventChangeNotice`, the staff check-in endpoint, and
 `adminDecideEventReport`.
 
-## Remaining contract gaps
+## Contract gaps closed
+
+Both former browser-local jobs are now server-backed (operations 121–124):
 
 | Job                              | Behaviour |
 | -------------------------------- | --------- |
-| Venue evidence / retire / merge  | local evidence and retire/merge with a local audit row |
-| Organizer “request more evidence”| local request note; verification decisions use the real endpoint |
+| Venue evidence / retire / merge  | `venue_evidence` rows plus `venues.retired_at`; a merge re-points `events.venue_id` to the target and audits `venue.merged`. Retired venues 404 publicly and are withheld from public event payloads. |
+| Organizer “request more evidence”| `organizer_evidence_requests` row, audited as `organizer.evidence_requested`; a verification decision resolves the open requests. |
 
-Both are documented as out of scope in the change-control note.
+Actions are disabled on the stale fixture state, as for every other write.
 
 ## Carry-forwards from the prototype critique
 
@@ -101,8 +107,9 @@ bun run build
 - 35 unit/component tests cover the capacity floor, organizer tiers, readiness
   blockers, second reviewer, uploader self-review, event diff, agenda conflicts,
   FIFO waitlist, queue navigation, report target, the simple table states and the
-  server write path for lifecycle, waitlist, registration, check-in undo and
-  speaker consent/removal.
+  server write path for lifecycle, waitlist, registration, check-in undo,
+  speaker consent/removal, venue evidence/retirement and organizer evidence
+  requests.
 - SSR smoke (authenticated, against `cmd/contracts-mock`) returned 200 for every
   route; the shared shell's query provider is used, no client fetch wrapper.
 - Per the task instruction, no Playwright device runs were made in this
