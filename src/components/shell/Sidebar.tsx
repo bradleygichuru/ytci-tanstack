@@ -66,7 +66,7 @@ export function AppSidebar() {
       <SidebarContent className="px-3 pt-4 group-data-[collapsible=icon]:px-1">
         {visibleGroups.map((group) => (
           <SidebarGroup key={group.key} className="mb-4">
-            <SidebarGroupLabel className="px-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/50">
+            <SidebarGroupLabel className="px-2 text-[11px] font-semibold uppercase tracking-widest text-sidebar-foreground/80">
               {group.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
