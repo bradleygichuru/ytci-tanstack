@@ -256,7 +256,9 @@ export function EditionsTab({
   const save = async () => {
     const next: Record<string, string> = {}
     if (!draft.name.trim()) next.name = 'Name is required'
-    if (!/^[a-z0-9_-]+$/.test(draft.slug.trim())) {
+    if (!draft.slug.trim()) {
+      next.slug = 'Slug is required'
+    } else if (!/^[a-z0-9_-]+$/.test(draft.slug.trim())) {
       next.slug = 'Use lowercase letters, digits, hyphens or underscores'
     }
     if (!draft.rulesVersion.trim()) next.rulesVersion = 'Rules version is required'
@@ -264,7 +266,14 @@ export function EditionsTab({
     const max = draft.maxAge.trim() === '' ? null : Number(draft.maxAge)
     if (min !== null && max !== null && min > max) next.age = 'Minimum age cannot exceed maximum'
     setErrors(next)
-    if (Object.keys(next).length > 0) return
+    if (Object.keys(next).length > 0) {
+      window.requestAnimationFrame(() => {
+        const field = document.querySelector<HTMLElement>('[role="dialog"] [aria-invalid="true"]')
+        field?.scrollIntoView({ block: 'center' })
+        field?.focus({ preventScroll: true })
+      })
+      return
+    }
 
     setSaving(true)
     try {
@@ -507,6 +516,20 @@ export function EditionsTab({
             </>
           }
         >
+          {Object.keys(errors).length > 0 ? (
+            <div
+              role="alert"
+              className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm"
+            >
+              <p className="font-semibold text-destructive">Check these before saving:</p>
+              <ul className="mt-1 list-disc pl-5 text-destructive/90">
+                {Object.entries(errors).map(([field, message]) => (
+                  <li key={field}>{message}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           <div className="grid gap-4 sm:grid-cols-2">
             <FormInput
               label="Name"

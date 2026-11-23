@@ -1,4 +1,5 @@
 import { X } from '@phosphor-icons/react'
+import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 import type { Icon } from '@phosphor-icons/react'
 import { Button } from '#/components/ui/button'
@@ -114,11 +115,60 @@ export function Panel({
   width?: 'md' | '2xl' | '3xl'
 }) {
   const maxWidth = width === 'md' ? 'max-w-xl' : width === '3xl' ? 'max-w-4xl' : 'max-w-2xl'
+  const titleId = useId()
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null
+    const dialog = dialogRef.current
+    const first = dialog?.querySelector<HTMLElement>(
+      'input, select, textarea, button:not([aria-label="Close panel"])',
+    )
+    ;(first ?? dialog)?.focus()
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        onCloseRef.current()
+        return
+      }
+      if (event.key !== 'Tab' || !dialog) return
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.offsetParent !== null)
+      if (focusable.length === 0) return
+      const firstEl = focusable[0]
+      const lastEl = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === firstEl) {
+        event.preventDefault()
+        lastEl.focus()
+      } else if (!event.shiftKey && document.activeElement === lastEl) {
+        event.preventDefault()
+        firstEl.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown, true)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown, true)
+      previous?.focus?.()
+    }
+  }, [])
+
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/30" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/30">
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         className={cn(
-          'flex h-full w-full flex-col overflow-y-auto bg-background p-6 shadow-2xl',
+          'flex h-full w-full flex-col overflow-y-auto bg-background p-6 shadow-2xl outline-none',
           maxWidth,
         )}
       >
@@ -127,7 +177,7 @@ export function Panel({
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               {kicker}
             </p>
-            <h2 className="mt-1 text-xl font-bold">{title}</h2>
+            <h2 id={titleId} className="mt-1 text-xl font-bold">{title}</h2>
             {description ? (
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">{description}</p>
             ) : null}
