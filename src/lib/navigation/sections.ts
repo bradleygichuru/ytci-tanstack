@@ -113,7 +113,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       },
       {
         key: 'competition',
-        label: 'Competition',
+        label: 'YTCI Awards',
         path: '/competition',
         icon: Medal,
         resource: 'competition',

@@ -139,7 +139,6 @@ function CompetitionAdminPage() {
           canEdit={canEdit}
           canPublish={canPublish}
           createRequest={createRequest}
-          onConsumeCreateRequest={() => setCreateRequest(0)}
         />
       )
     }
@@ -197,7 +196,6 @@ function CompetitionAdminPage() {
             canEdit={canEdit}
             canPublish={canPublish}
             createRequest={createRequest}
-            onConsumeCreateRequest={() => setCreateRequest(0)}
           />
         )
     }

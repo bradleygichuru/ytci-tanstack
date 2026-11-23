@@ -165,6 +165,7 @@ export function EditionsTab({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
+  const [showDiscard, setShowDiscard] = useState(false)
   const [categories, setCategories] = useState<Category[] | null>(null)
   const [categoryForm, setCategoryForm] = useState({ key: '', label: '', sortOrder: '0' })
   const [categorySaving, setCategorySaving] = useState(false)
@@ -213,6 +214,21 @@ export function EditionsTab({
     setPanel(null)
     setEditing(null)
     setErrors({})
+    setShowDiscard(false)
+  }
+
+  const dirty =
+    panel === 'create'
+      ? JSON.stringify(draft) !== JSON.stringify(emptyDraft())
+      : editing !== null && JSON.stringify(draft) !== JSON.stringify(editionToDraft(editing))
+
+  // Escape and the close button must not silently throw away 15 fields.
+  const requestClose = () => {
+    if (dirty) {
+      setShowDiscard(true)
+      return
+    }
+    closePanel()
   }
 
   // The route's primary action asks this tab to open the create panel. Consume
@@ -502,7 +518,7 @@ export function EditionsTab({
               ? 'Dates, ages, and the public vote mode are configuration. The award programme keeps the prize flag off.'
               : 'Update the cycle and the categories the panel scores against.'
           }
-          onClose={closePanel}
+          onClose={requestClose}
           footer={
             <>
               <Button onClick={() => void save()} disabled={saving}>
@@ -782,6 +798,17 @@ export function EditionsTab({
           ) : null}
         </Panel>
       ) : null}
+
+      <ConfirmDialog
+        open={showDiscard}
+        onOpenChange={setShowDiscard}
+        title="Discard this draft?"
+        description="The edition has not been saved. Closing now loses the dates, ages, and mode you entered."
+        confirmLabel="Discard draft"
+        cancelLabel="Keep editing"
+        loading={false}
+        onConfirm={closePanel}
+      />
 
       <ConfirmDialog
         open={showDelete}
