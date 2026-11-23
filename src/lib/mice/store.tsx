@@ -50,7 +50,7 @@ import type {
   ReportAssignment,
   StagedRevision,
   Venue,
-  VenueEvidence,
+  VenueEvidenceWrite,
   VenueWrite,
   WaitlistOffer,
 } from './types'
@@ -61,8 +61,6 @@ export function emptyLocalState(): MiceLocalState {
   return {
     revisions: {},
     audit: [],
-    venueEvidence: {},
-    venueRetired: {},
     organizerNotes: {},
     reportAssignments: {},
     reviewAssignments: {},
@@ -171,18 +169,25 @@ export interface MiceStoreValue {
     checkInId: string,
     reason: string,
   ) => Promise<boolean>
-  setVenueEvidence: (
-    venueId: string,
-    fields: VenueEvidence['fields'],
-    note: string,
-  ) => void
-  retireVenue: (venueId: string, mergedInto?: string, reason?: string) => void
+  addVenueEvidence: (
+    venue: Venue,
+    write: VenueEvidenceWrite,
+  ) => Promise<boolean>
+  retireVenue: (
+    venue: Venue,
+    reason: string,
+    mergedIntoVenueId?: string,
+  ) => Promise<boolean>
   saveVenue: (venueId: string | null, write: VenueWrite) => Promise<boolean>
   decideOrganizer: (
     organizer: OrganizerProfile,
     action: 'verify' | 'reject' | 'revoke' | 'restore' | 'expire',
     reason: string,
     expiresAt?: string | null,
+  ) => Promise<boolean>
+  requestOrganizerEvidence: (
+    organizer: OrganizerProfile,
+    note: string,
   ) => Promise<boolean>
   noteOrganizer: (organizerId: string, patch: Partial<OrganizerNote>) => void
   assignReport: (reportId: string, assignedTo: string) => void
@@ -978,61 +983,103 @@ export function MiceProvider({ children }: { children: ReactNode }) {
     [addAudit, blockIfStale, client, fixtureState, queryClient],
   )
 
-  const setVenueEvidence = useCallback(
-    (venueId: string, fields: VenueEvidence['fields'], note: string) => {
-      if (blockIfStale()) return
-      updateLocal((current) => ({
-        ...current,
-        venueEvidence: {
-          ...current.venueEvidence,
-          [venueId]: {
-            venueId,
-            fields,
-            note,
-            updatedAt: new Date().toISOString(),
-            by: actorName,
-          },
-        },
-      }))
-      notify.saved('Venue evidence')
+  const addVenueEvidence = useCallback(
+    async (venue: Venue, write: VenueEvidenceWrite) => {
+      if (blockIfStale()) return false
+      if (!venue.id) {
+        notify.warning('This venue has no id in the fixture')
+        return false
+      }
+      if (!write.claim.trim() || !write.note.trim()) {
+        notify.warning('A claim and a note are required for venue evidence')
+        return false
+      }
+      try {
+        await client
+          .POST('/v1/admin/venues/{id}/evidence', {
+            params: { path: { id: venue.id } },
+            body: {
+              claim: write.claim.trim(),
+              note: write.note.trim(),
+              reference: write.reference?.trim() || undefined,
+            },
+          })
+          .then((result) => unwrap(result))
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.venues(fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        addAudit({
+          action: 'Venue evidence recorded',
+          entity: venue.name,
+          detail: write.claim.trim(),
+          category: 'events',
+        })
+        notify.saved('Venue evidence')
+        return true
+      } catch (error) {
+        notify.error(error)
+        return false
+      }
     },
-    [actorName, updateLocal],
+    [addAudit, blockIfStale, client, fixtureState, queryClient],
   )
 
   const retireVenue = useCallback(
-    (venueId: string, mergedInto?: string, reason?: string) => {
-      if (blockIfStale()) return
-      updateLocal((current) => ({
-        ...current,
-        venueRetired: {
-          ...current.venueRetired,
-          [venueId]: {
-            at: new Date().toISOString(),
-            by: actorName,
-            mergedInto,
-          },
-        },
-        audit: [
-          {
-            id: auditId(),
-            at: new Date().toISOString(),
-            actor: actorName,
-            role: actorRole,
-            action: mergedInto ? 'Venue merged' : 'Venue retired',
-            entity: venueId,
-            detail:
-              reason?.trim() ||
-              (mergedInto
-                ? `Merged into ${mergedInto}`
-                : 'Removed from future event choices'),
-            category: 'events',
-          },
-          ...current.audit,
-        ],
-      }))
-      notify.success(mergedInto ? 'Venue merged' : 'Venue retired')
+    async (
+      venue: Venue,
+      reason: string,
+      mergedIntoVenueId?: string,
+    ) => {
+      if (blockIfStale()) return false
+      if (!venue.id) {
+        notify.warning('This venue has no id in the fixture')
+        return false
+      }
+      if (!reason.trim()) {
+        notify.warning('A reason is required to retire a venue')
+        return false
+      }
+      try {
+        await client
+          .POST('/v1/admin/venues/{id}/retire', {
+            params: { path: { id: venue.id } },
+            body: {
+              reason: reason.trim(),
+              mergedIntoVenueId: mergedIntoVenueId || undefined,
+            },
+          })
+          .then((result) => unwrap(result))
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.venues(fixtureState),
+          }),
+          queryClient.invalidateQueries({ queryKey: ['mice', 'events'] }),
+          queryClient.invalidateQueries({ queryKey: ['mice', 'event'] }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        addAudit({
+          action: mergedIntoVenueId ? 'Venue merged' : 'Venue retired',
+          entity: venue.name,
+          detail: mergedIntoVenueId
+            ? `${reason.trim()} · merged into ${mergedIntoVenueId}`
+            : reason.trim(),
+          category: 'events',
+        })
+        notify.success(mergedIntoVenueId ? 'Venue merged' : 'Venue retired')
+        return true
+      } catch (error) {
+        notify.error(error)
+        return false
+      }
     },
-    [actorName, actorRole, updateLocal],
+    [addAudit, blockIfStale, client, fixtureState, queryClient],
   )
 
   const saveVenue = useCallback(
@@ -1116,6 +1163,48 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       }
     },
     [addAudit, client, fixtureState, queryClient],
+  )
+
+  const requestOrganizerEvidence = useCallback(
+    async (organizer: OrganizerProfile, note: string) => {
+      if (blockIfStale()) return false
+      if (!organizer.id) {
+        notify.warning('This organizer has no id in the fixture')
+        return false
+      }
+      if (note.trim().length < 10) {
+        notify.warning('Say in at least 10 characters what evidence is missing')
+        return false
+      }
+      try {
+        await client
+          .POST('/v1/admin/organizers/{id}/evidence-requests', {
+            params: { path: { id: organizer.id } },
+            body: { note: note.trim() },
+          })
+          .then((result) => unwrap(result))
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.organizers(fixtureState),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: miceKeys.audit(fixtureState),
+          }),
+        ])
+        addAudit({
+          action: 'More verification evidence requested',
+          entity: organizer.displayName,
+          detail: note.trim(),
+          category: 'safety',
+        })
+        notify.saved('Evidence request')
+        return true
+      } catch (error) {
+        notify.error(error)
+        return false
+      }
+    },
+    [addAudit, blockIfStale, client, fixtureState, queryClient],
   )
 
   const noteOrganizer = useCallback(
@@ -1453,10 +1542,11 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       cancelRegistration,
       checkIn,
       undoCheckIn,
-      setVenueEvidence,
+      addVenueEvidence,
       retireVenue,
       saveVenue,
       decideOrganizer,
+      requestOrganizerEvidence,
       noteOrganizer,
       assignReport,
       escalateReport,
@@ -1474,6 +1564,7 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       actorName,
       actorRole,
       addAudit,
+      addVenueEvidence,
       assignReport,
       assignReview,
       auditQuery,
@@ -1506,6 +1597,7 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       removeSpeaker,
       reports,
       reportsQuery,
+      requestOrganizerEvidence,
       resetLocal,
       resolvedEventId,
       retireVenue,
@@ -1515,7 +1607,6 @@ export function MiceProvider({ children }: { children: ReactNode }) {
       sendOffer,
       setLifecycle,
       setSpeakerConsent,
-      setVenueEvidence,
       submitRevision,
       undoCheckIn,
       updateSession,
