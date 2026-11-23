@@ -370,11 +370,13 @@ export function EventEditorForm({ detail }: { detail: EventDetail }) {
                   }
                 >
                   <option value="">Select a venue</option>
-                  {venues.map((item) => (
-                    <option key={item.id ?? item.slug} value={item.id ?? ''}>
-                      {item.name}, {item.county}
-                    </option>
-                  ))}
+                  {venues
+                    .filter((item) => !item.retiredAt)
+                    .map((item) => (
+                      <option key={item.id ?? item.slug} value={item.id ?? ''}>
+                        {item.name}, {item.county}
+                      </option>
+                    ))}
                 </select>
                 <Button
                   type="button"
