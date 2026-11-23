@@ -110,7 +110,24 @@ function CompetitionAdminPage() {
   }
 
   const renderTab = () => {
-    if (!selectedEdition) return null
+    if (!selectedEdition) {
+      if (search.tab !== 'editions') return null
+      return (
+        <EditionsTab
+          api={api}
+          editions={editions ?? []}
+          loading={loading}
+          selectedEditionId={null}
+          onSelect={(id) => setEdition(id)}
+          onReload={async (selectId) => {
+            await loadEditions()
+            if (selectId) setEdition(selectId)
+          }}
+          canEdit={canEdit}
+          canPublish={canPublish}
+        />
+      )
+    }
     const editionId = selectedEdition.id
     switch (search.tab) {
       case 'entries':
