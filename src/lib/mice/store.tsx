@@ -950,10 +950,11 @@ export function MiceProvider({ children }: { children: ReactNode }) {
                 : page,
           )
         }
+        // Do not refetch the check-ins page here: the delete is already
+        // acknowledged and a lagging/static read would resurrect the row.
+        // The cache is seeded with the post-delete state above; a later
+        // manual refresh reads the server's authoritative list.
         await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: miceKeys.checkIns(eventId, fixtureState),
-          }),
           queryClient.invalidateQueries({
             queryKey: miceKeys.registrations(eventId, fixtureState),
           }),

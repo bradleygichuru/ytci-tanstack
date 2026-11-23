@@ -273,8 +273,12 @@ test.describe('MICE admin — implemented behaviour', () => {
     await expect(page.locator('body')).toContainText(/Registration corrected/)
 
     await page.getByRole('button', { name: 'Events', exact: true }).click()
-    await page.getByRole('button', { name: 'Detail' }).first().click()
-    await expect(page.locator('body')).toContainText(/event\.publish/)
+    const serverRow = page
+      .locator('li')
+      .filter({ hasText: 'Event published' })
+      .first()
+    await serverRow.getByRole('button', { name: 'Detail' }).click()
+    await expect(serverRow).toContainText(/event\.publish/)
 
     // A server write appends a row that the next read shows.
     await openRoute(page, '/programme/events/check-in')
