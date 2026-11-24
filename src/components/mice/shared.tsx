@@ -32,6 +32,7 @@ import { FIXTURE_STATES, type FixtureState } from '#/lib/contracts/client'
 import { useMice } from '#/lib/mice/store'
 import { cn } from '#/lib/utils.ts'
 import type { AuditCategory } from '#/lib/mice/types'
+import { dataStatesAllowed } from '#/lib/env'
 
 export type Tone = 'neutral' | 'green' | 'gold' | 'red' | 'blue' | 'grey'
 
@@ -263,6 +264,7 @@ export function StaleBanner() {
 }
 
 export function FixtureStateControl() {
+  if (!dataStatesAllowed()) return null
   const { fixtureState, setFixtureState } = useMice()
   return (
     <label className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground">

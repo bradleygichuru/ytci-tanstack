@@ -6,6 +6,7 @@
  * persisted here. Every local action still writes an audit row, and every action
  * the contract does expose goes to the API first.
  */
+import { dataStatesAllowed } from '#/lib/env'
 import {
   createContext,
   useCallback,
@@ -244,7 +245,12 @@ function useStoredState(): [
 }
 
 export function MiceProvider({ children }: { children: ReactNode }) {
-  const [fixtureState, setFixtureState] = useState<FixtureState>('default')
+  const [fixtureState, setFixtureStateState] = useState<FixtureState>('default')
+  // The selector is a verification affordance; production stays on live data.
+  const setFixtureState = useCallback(
+    (state: FixtureState) => setFixtureStateState(dataStatesAllowed() ? state : 'default'),
+    [],
+  )
   const [local, updateLocal] = useStoredState()
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const client = useMiceClient(fixtureState)

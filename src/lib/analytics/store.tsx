@@ -8,6 +8,7 @@
  * There is deliberately no sample fallback for contract reads. A failed rollup
  * is shown as a failed rollup, never as plausible-looking sample numbers.
  */
+import { dataStatesAllowed } from '#/lib/env'
 import {
   createContext,
   useCallback,
@@ -237,7 +238,12 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 
   const resetFilters = useCallback(() => setFilters({ ...DEFAULT_FILTERS }), [])
 
-  const setScenario = useCallback((next: Scenario) => setScenarioState(next), [])
+  // Fixture scenarios are a development affordance; a production build stays
+  // on live data even if a control is somehow rendered.
+  const setScenario = useCallback(
+    (next: Scenario) => setScenarioState(dataStatesAllowed() ? next : 'default'),
+    [],
+  )
 
   const searchGap = useMemo(() => buildSearchGap(data?.quality ?? null), [data?.quality])
   const content = useMemo(
