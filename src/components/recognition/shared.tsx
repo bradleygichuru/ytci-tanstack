@@ -14,6 +14,7 @@ import { cn } from '#/lib/utils.ts'
 import { useRecognition } from '#/lib/recognition/store'
 import type { RuleDiffRow } from '#/lib/recognition/logic'
 import type { BoardRow, Scenario } from '#/lib/recognition/types'
+import { dataStatesAllowed } from '#/lib/env'
 
 export const NAV_GROUPS: {
   group: string
@@ -155,6 +156,7 @@ const SCENARIOS: { value: Scenario; label: string }[] = [
 ]
 
 export function FixtureStateControl() {
+  if (!dataStatesAllowed()) return null
   const { scenario, setScenario, actions } = useRecognition()
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-[var(--amber)] bg-[var(--amber-bg)] px-3 py-2">

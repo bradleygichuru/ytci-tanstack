@@ -1,3 +1,4 @@
+import { dataStatesAllowed } from '#/lib/env'
 import { useCallback, useState, type ReactNode } from 'react'
 import { Link, useBlocker, useNavigate } from '@tanstack/react-router'
 import {
@@ -189,6 +190,7 @@ const SCENARIOS: { value: Scenario; label: string }[] = [
 ]
 
 export function FixtureStateControl() {
+  if (!dataStatesAllowed()) return null
   const { scenario, setScenario, actions } = useThenNow()
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-[var(--amber)] bg-[var(--amber-bg)] px-3 py-2">

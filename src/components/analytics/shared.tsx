@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from '#/components/ui/dialog'
 import { DataStateView, StaleNotice } from '#/components/shell/DataState'
+import { dataStatesAllowed } from '#/lib/env'
 import { cn } from '#/lib/utils.ts'
 import { useAnalytics } from '#/lib/analytics/store'
 import {
@@ -294,25 +295,32 @@ export function FilterStateControl({ section }: { section: AnalyticsSectionKey }
         </button>
       ) : null}
 
-      <span className="mx-1 hidden h-5 w-px bg-[var(--amber)]/50 sm:block" aria-hidden="true" />
+      {dataStatesAllowed() ? (
+        <>
+          <span
+            className="mx-1 hidden h-5 w-px bg-[var(--amber)]/50 sm:block"
+            aria-hidden="true"
+          />
 
-      <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--amber-deep)]">
-        <Database className="h-3.5 w-3.5" weight="duotone" aria-hidden />
-        Data state
-        <select
-          aria-label="Data state"
-          data-testid="analytics-fixture-state"
-          value={scenario}
-          onChange={(event) => setScenario(event.target.value as Scenario)}
-          className="h-7 rounded-md border border-[var(--amber)] bg-card px-2 text-xs font-semibold text-foreground"
-        >
-          {SCENARIOS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </label>
+          <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--amber-deep)]">
+            <Database className="h-3.5 w-3.5" weight="duotone" aria-hidden />
+            Data state
+            <select
+              aria-label="Data state"
+              data-testid="analytics-fixture-state"
+              value={scenario}
+              onChange={(event) => setScenario(event.target.value as Scenario)}
+              className="h-7 rounded-md border border-[var(--amber)] bg-card px-2 text-xs font-semibold text-foreground"
+            >
+              {SCENARIOS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      ) : null}
     </div>
   )
 }
